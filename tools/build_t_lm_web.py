@@ -4,9 +4,9 @@
 tools/build_t_lm_web.py
 
 Static Website Generator for Chrysler Logic Module (T-LM) Calibration Reference.
-Reads the centralized JSON database `output/t_lm_descriptors.json` (also accepts
-`output/t_lm_descriptions.json` if specified) and generates the complete standalone
-static web site in `output/T-LM-web/`.
+Reads the centralized JSON database `docs/t_lm_descriptors.json` (also accepts
+`docs/t_lm_descriptions.json` if specified) and generates the complete standalone
+static web site in `docs/T-LM-web/`.
 
 Features:
 1. Enforces 100% standardized H2 section headings across all 367 calibration pages:
@@ -32,7 +32,7 @@ Features:
 4. Generates standalone encapsulated HTML viewers for `T-LMv13.asm` and `T_LM_22_MTX_A171_Stock.tpl`
    with line numbers, `#L123` / `#L123-L145` amber highlighting, auto-centering scroll, and Back button.
 5. Generates `index.html` with MPTune Hierarchical TreeView and instant substring search.
-6. Validates 100% of internal links across all generated HTML pages in `output/T-LM-web/`.
+6. Validates 100% of internal links across all generated HTML pages in `docs/T-LM-web/`.
 """
 
 import os
@@ -97,7 +97,7 @@ def generate_style_css() -> str:
     """
     Generates style.css matching the Chrysler & Dodge Automotive Heritage
     Dark Theme (Dodge Dark Blue & Billet Silver) and Light Theme (Billet Silver & Dodge Dark Blue)
-    defined in output/portal.css.
+    defined in docs/portal.css.
     """
     return """/* ==========================================================================
    Chrysler & Dodge Automotive Heritage Stylesheet (T-LM Calibration Reference)
@@ -594,7 +594,7 @@ def format_group_display(mp_group_raw: str) -> str:
 
 def get_descriptor_rel_url(desc: dict) -> str:
     """
-    Returns the relative URL from output/T-LM-web/ root to this descriptor's HTML page.
+    Returns the relative URL from docs/T-LM-web/ root to this descriptor's HTML page.
     Example: 'AC_Control/ACCRPM_DoNotAllowAcToEngageAboveThisRPM_4000.html'
     """
     meta = desc['metadata']
@@ -1589,25 +1589,25 @@ def main():
     parser.add_argument(
         "--json",
         default=None,
-        help="Path to JSON descriptors file (defaults to output/t_lm_descriptors.json)"
+        help="Path to JSON descriptors file (defaults to docs/t_lm_descriptors.json)"
     )
     parser.add_argument(
         "--out",
         default=None,
-        help="Target output web directory (defaults to output/T-LM-web)"
+        help="Target output web directory (defaults to docs/T-LM-web)"
     )
     args = parser.parse_args()
 
     workspace_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-    json_path = args.json or os.path.join(workspace_root, 'output', 't_lm_descriptors.json')
+    json_path = args.json or os.path.join(workspace_root, 'docs', 't_lm_descriptors.json')
     if not os.path.exists(json_path):
-        alt_json = os.path.join(workspace_root, 'output', 't_lm_descriptions.json')
+        alt_json = os.path.join(workspace_root, 'docs', 't_lm_descriptions.json')
         if os.path.exists(alt_json):
             json_path = alt_json
         else:
             raise FileNotFoundError(f"JSON file not found: {json_path}")
 
-    output_dir = args.out or os.path.join(workspace_root, 'output', 'T-LM-web')
+    output_dir = args.out or os.path.join(workspace_root, 'docs', 'T-LM-web')
 
     print(f"=== Building T-LM Static Website ===")
     print(f"Source JSON: {json_path}")
@@ -1632,7 +1632,7 @@ def main():
     with open(os.path.join(output_dir, 'style.css'), 'w', encoding='utf-8') as sf:
         sf.write(generate_style_css())
 
-    old_web_dir = os.path.join(workspace_root, 'output', 'T-LM-web-old')
+    old_web_dir = os.path.join(workspace_root, 'docs', 'T-LM-web-old')
     guide_src = os.path.join(old_web_dir, 'tuning_guide_modifications.html')
     if os.path.exists(guide_src):
         guide_txt = read_text_with_fallback(guide_src)

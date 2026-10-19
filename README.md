@@ -12,7 +12,7 @@ LLMs (AI) were extensively used to assist with analyzing and documenting these c
 ### Key Components
 
 - **Calibration Data**: Source calibrations for Chrysler LM-87, SMEC, SBEC, SBECII, and T3 platforms in `cals/`.
-- **Builder Tools**: Python scripts in `tools/` that parse calibration templates, assemble descriptions, and generate static HTML documentation in `output/T-LM-web/`.
+- **Builder Tools**: Python scripts in `tools/` that parse calibration templates, assemble descriptions, and generate static HTML documentation in `docs/T-LM-web/`.
 - **Local Server**: A lightweight zero-dependency Node.js HTTP server (`tools/server.js`) to view and navigate generated calibration documentation locally.
 - **Supporting Documentation**: Technical datasheets, microprocessor manuals (6803, 68HC11), and tuning theory in `supporting docs/`.
 
@@ -62,7 +62,7 @@ start-server.bat
 
 ```text
 ├── cals/             # Source calibration templates (.tpl), binary roms, and assembly routines (.asm)
-├── output/           # Generated static HTML site (T-LM-web), JSON descriptors, and portal assets
+├── docs/             # Generated static HTML site (T-LM-web), JSON descriptors, and portal assets
 ├── supporting docs/  # Microprocessor datasheets (6803, 68HC11) and tuning reference PDFs
 ├── tools/            # Python build scripts and local Node.js server
 ├── requirements.txt  # Python package requirements

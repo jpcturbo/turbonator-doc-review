@@ -27,7 +27,7 @@ Features:
 4. Generates MPTune Hierarchical TreeView index.html with instant substring search and
    MPTune naming convention (underscores in identifier long names displayed as spaces).
 5. Seamlessly inherits and synchronizes the user's selected Dark/Light theme with the main
-   Portal (output/index.html), including theme toggle buttons on every page.
+   Portal (docs/index.html), including theme toggle buttons on every page.
 6. Validates 100% of internal links across all generated HTML pages.
 """
 
@@ -47,56 +47,56 @@ ECM_REGISTRY = {
         'code': 'LM-87',
         'title': 'Chrysler Logic Module (T-LM)',
         'subtitle': '1985–1987 Dual-Board Controller (Motorola 6803 MCU)',
-        'default_json': 'output/t_lm_descriptors.json',
-        'default_out': 'output/T-LM-web',
+        'default_json': 'docs/t_lm_descriptors.json',
+        'default_out': 'docs/T-LM-web',
         'hardware_desc': 'Motorola 6803 MCU &bull; 1985–1987 dual-board architecture',
     },
     'LM-87': {
         'code': 'LM-87',
         'title': 'Chrysler Logic Module (T-LM)',
         'subtitle': '1985–1987 Dual-Board Controller (Motorola 6803 MCU)',
-        'default_json': 'output/t_lm_descriptors.json',
-        'default_out': 'output/T-LM-web',
+        'default_json': 'docs/t_lm_descriptors.json',
+        'default_out': 'docs/T-LM-web',
         'hardware_desc': 'Motorola 6803 MCU &bull; 1985–1987 dual-board architecture',
     },
     'SMEC': {
         'code': 'SMEC',
         'title': 'Single Module Engine Controller (T-SMEC)',
         'subtitle': '1988–1989 Single Module (Motorola 68HC11 MCU)',
-        'default_json': 'output/t_smec_descriptors.json',
-        'default_out': 'output/T-SMEC-web',
+        'default_json': 'docs/t_smec_descriptors.json',
+        'default_out': 'docs/T-SMEC-web',
         'hardware_desc': 'Motorola 68HC11 MCU &bull; 1988–1989 single module architecture',
     },
     'SBEC': {
         'code': 'SBEC',
         'title': 'Single Board Engine Controller (T-SBEC)',
         'subtitle': '1990–1991 Consolidated Controller (Motorola 68HC11 MCU)',
-        'default_json': 'output/t_sbec_descriptors.json',
-        'default_out': 'output/T-SBEC-web',
+        'default_json': 'docs/t_sbec_descriptors.json',
+        'default_out': 'docs/T-SBEC-web',
         'hardware_desc': 'Motorola 68HC11 MCU &bull; 1990–1991 consolidated single-board architecture',
     },
     'SBECII': {
         'code': 'SBECII',
         'title': 'Single Board Engine Controller II (T-SBECII)',
         'subtitle': '1992–1993 Sequential EFI Controller (Motorola 68HC11 MCU)',
-        'default_json': 'output/t_sbecii_descriptors.json',
-        'default_out': 'output/T-SBECII-web',
+        'default_json': 'docs/t_sbecii_descriptors.json',
+        'default_out': 'docs/T-SBECII-web',
         'hardware_desc': 'Motorola 68HC11 MCU &bull; 1992–1993 sequential injection & CCD bus',
     },
     'T3-I': {
         'code': 'T3-I',
         'title': 'Turbo III (Gen 1) 16-Valve (T-T3v1)',
         'subtitle': '1991–1992 Lotus DOHC 16V DDIS Platform',
-        'default_json': 'output/t_t3_i_descriptors.json',
-        'default_out': 'output/T3-I-web',
+        'default_json': 'docs/t_t3_i_descriptors.json',
+        'default_out': 'docs/T3-I-web',
         'hardware_desc': '2.2L 16V Lotus DOHC &bull; 1991–1992 distributorless direct ignition',
     },
     'T3-II': {
         'code': 'T3-II',
         'title': 'Turbo III (Gen 2) 16-Valve (T-T3_II)',
         'subtitle': '1993 Lotus DOHC 16V Sequential Platform',
-        'default_json': 'output/t_t3_ii_descriptors.json',
-        'default_out': 'output/T3-II-web',
+        'default_json': 'docs/t_t3_ii_descriptors.json',
+        'default_out': 'docs/T3-II-web',
         'hardware_desc': '2.2L 16V Lotus DOHC &bull; 1993 sequential EFI platform',
     },
 }
@@ -154,11 +154,11 @@ def generate_style_css(ecm_title: str) -> str:
     """
     Generates style.css matching the Chrysler & Dodge Automotive Heritage
     Dark Theme (Dodge Dark Blue & Billet Silver) and Light Theme (Billet Silver & Dodge Dark Blue)
-    defined in output/portal.css.
+    defined in docs/portal.css.
     """
     return f"""/* ==========================================================================
    Chrysler & Dodge Automotive Heritage Stylesheet ({ecm_title})
-   Matches user-selected theme from the main Calibration Portal (output/index.html):
+   Matches user-selected theme from the main Calibration Portal (docs/index.html):
    - Dark Theme (Dodge Midnight Blue #07152b & Deep Mopar Blue #0f274a)
    - Light Theme (Polished Billet Silver #d8e1ec & Crisp Light Silver #edf2f8)
    ========================================================================== */
@@ -1739,7 +1739,7 @@ def build_ecm_site(json_path: str, output_dir: str, ecm_key: str = None, workspa
             print(f"  ! Warning: source file not found at {abs_path}")
 
     # Copy / update engine tuning guide if applicable for LM (or generic)
-    old_web_dir = os.path.join(workspace_root, 'output', 'T-LM-web-old')
+    old_web_dir = os.path.join(workspace_root, 'docs', 'T-LM-web-old')
     guide_src = os.path.join(old_web_dir, 'tuning_guide_modifications.html')
     if os.path.exists(guide_src) and norm_ecm in ['LM', 'LM-87']:
         guide_txt = read_text_with_fallback(guide_src)
@@ -1817,7 +1817,7 @@ def main():
     parser.add_argument("--ecm", default=None, help="ECM Family code (e.g. 'smec', 'lm', 'sbec', 'sbecii', 't3-i', 't3-ii')")
     parser.add_argument("--json", default=None, help="Path to JSON descriptors file")
     parser.add_argument("--out", default=None, help="Target output web directory")
-    parser.add_argument("--all", action="store_true", help="Build all available ECM families found in output/ directory")
+    parser.add_argument("--all", action="store_true", help="Build all available ECM families found in docs/ directory")
     args = parser.parse_args()
 
     workspace_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -1853,25 +1853,25 @@ def main():
 
     if not json_path:
         # Default fallback to LM if nothing specified
-        json_path = os.path.join(workspace_root, 'output', 't_smec_descriptors.json')
+        json_path = os.path.join(workspace_root, 'docs', 't_smec_descriptors.json')
         if not os.path.exists(json_path):
-            json_path = os.path.join(workspace_root, 'output', 't_lm_descriptors.json')
+            json_path = os.path.join(workspace_root, 'docs', 't_lm_descriptors.json')
 
     if not output_dir:
         # Derive output dir from json filename
         fname = os.path.basename(json_path).lower()
         if 'smec' in fname:
-            output_dir = os.path.join(workspace_root, 'output', 'T-SMEC-web')
+            output_dir = os.path.join(workspace_root, 'docs', 'T-SMEC-web')
         elif 'sbecii' in fname:
-            output_dir = os.path.join(workspace_root, 'output', 'T-SBECII-web')
+            output_dir = os.path.join(workspace_root, 'docs', 'T-SBECII-web')
         elif 'sbec' in fname:
-            output_dir = os.path.join(workspace_root, 'output', 'T-SBEC-web')
+            output_dir = os.path.join(workspace_root, 'docs', 'T-SBEC-web')
         elif 't3_ii' in fname:
-            output_dir = os.path.join(workspace_root, 'output', 'T3-II-web')
+            output_dir = os.path.join(workspace_root, 'docs', 'T3-II-web')
         elif 't3' in fname:
-            output_dir = os.path.join(workspace_root, 'output', 'T3-I-web')
+            output_dir = os.path.join(workspace_root, 'docs', 'T3-I-web')
         else:
-            output_dir = os.path.join(workspace_root, 'output', 'T-LM-web')
+            output_dir = os.path.join(workspace_root, 'docs', 'T-LM-web')
 
     ok = build_ecm_site(json_path, output_dir, ecm_key=ecm_key, workspace_root=workspace_root)
     if not ok:

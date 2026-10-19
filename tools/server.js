@@ -1,7 +1,7 @@
 /**
  * tools/server.js
  * Lightweight zero-dependency static web server for local testing.
- * Serves output/ directory on http://localhost:8080 and automatically opens the browser.
+ * Serves docs/ directory on http://localhost:8080 and automatically opens the browser.
  */
 
 const http = require('http');
@@ -10,7 +10,7 @@ const path = require('path');
 const { exec } = require('child_process');
 
 const PORT = 8080;
-const ROOT_DIR = path.resolve(__dirname, '..', 'output');
+const ROOT_DIR = path.resolve(__dirname, '..', 'docs');
 
 const MIME_TYPES = {
     '.html': 'text/html; charset=UTF-8',
