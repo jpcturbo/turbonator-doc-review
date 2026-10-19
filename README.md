@@ -1,4 +1,4 @@
-# Turbonator AI Review
+# Turbonator Doc Review
 
 Analysis, calibration reference database, documentation generator, and interactive web viewer for Chrysler Turbo ECU calibrations (Logic Module, SMEC, SBEC, and related electronic control modules).
 
@@ -7,6 +7,7 @@ Analysis, calibration reference database, documentation generator, and interacti
 ## Overview
 
 This project provides a complete reference suite for Chrysler Turbo calibrations, mapping raw assembly code (`.asm`) and calibration templates (`.tpl`) into structured descriptions, tuning guides, and an interactive local web portal.
+LLMs (AI) were extensively used to assist with analyzing and documenting these calibrations. 
 
 ### Key Components
 
@@ -29,7 +30,7 @@ This project provides a complete reference suite for Chrysler Turbo calibrations
 
 ### Node.js Requirements
 - **Node.js**: 16.x, 18.x, 20.x, or higher
-- **Dependencies**: Zero external `npm` packages required. The built-in standard modules (`http`, `fs`, `path`, `child_process`) are used by the local server.
+- **Dependencies**: Zero external `npm` packages required. The built-in standard modules (`http`, `fs`, `path`, `child_process`) are used by the local test server.
 
 ---
 
@@ -38,7 +39,7 @@ This project provides a complete reference suite for Chrysler Turbo calibrations
 ### 1. Build Static Web Documentation
 To generate the static calibration reference site from the descriptors:
 ```bash
-python tools/build_t_lm_web.py
+python tools/build_ecm_web.py
 ```
 
 ### 2. Launch Local Documentation Server
@@ -73,5 +74,5 @@ start-server.bat
 
 ## Repository
 
-- **GitHub**: [https://github.com/jpcturbo/turbonator-ai-review](https://github.com/jpcturbo/turbonator-ai-review)
+- **GitHub**: [https://github.com/jpcturbo/turbonator-doc-review](https://github.com/jpcturbo/turbonator-doc-review)
 - **Author**: [jpcturbo](https://github.com/jpcturbo)
