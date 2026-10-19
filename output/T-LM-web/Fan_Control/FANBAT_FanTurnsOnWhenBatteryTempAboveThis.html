@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FANBAT: FanTurnsOnWhenBatteryTempAboveThis | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0F67</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fan Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Turbonator</strong>
+        </div>
+        
+        <article class="content">
+            <h1>FANBAT: FanTurnsOnWhenBatteryTempAboveThis</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>FANBAT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>FANBAT_FanTurnsOnWhenBatteryTempAboveThis</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Turbonator</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fan_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0F67</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Battery Temperature Sensor ADC (0x9A = 154 decimal; approx 120°F / 49°C)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x9A                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L3973-L3985"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L6852"><code>ControlFan2_MM</code></a> in <a href="../T-LMv13.asm.html#L6873"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>FANBAT</code> (FanTurnsOnWhenBatteryTempAboveThis) defines an underhood temperature threshold (stock calibration = <code>0x9A</code> / ~120°F) measured by the battery tray thermistor.</p>
+<p>Turbocharged engines radiate immense underhood heat soak from the exhaust manifold and turbo turbine housing. If the battery and ECU (which sits inside the Power Module behind the battery) reach extreme temperatures, lead-acid battery plates warp, and alternator field regulators lose efficiency. If battery temperature rises above <code>FANBAT</code>, the ECU turns the cooling fan ON to flush stagnant hot air out of the engine bay.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside <code>ControlFan2_MM</code> at line 6873.</li>
+<li>Compares <code>AmbientAirTempVolts</code> against <code>FANBAT</code>.</li>
+<li>When underhood temperature exceeds <code>FANBAT</code>, energizes the fan relay.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Underhood Heat Management</strong>: Useful on tight engine bays (like Omni / Charger GLH) where turbo heat buildup is intense.</li>
+<li><strong>Battery Relocation</strong>: If the battery tray thermistor is disconnected or deleted, ensure this check does not trigger false fan activation.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- ControlFan2_MM (T-LMv13.asm:6868-6874) ---
+        ldaa AmbientAirTempVolts                 ; Read battery tray temperature thermistor
+        bitb #0x08                               
+        bne  LF1F6                               
+        deca                                     ; Apply 2-count hysteresis
+        deca                                     
+LF1F6:  cmpa FANBAT_FanTurnsOnWhenBatteryTempAboveThis ; Compare against limit ($0F67, data 0x9A = ~120°F)
+        bcs  LF254                               ; If underhood temp exceeds limit, activate fan!</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Dual Thermal Protection</strong>: Guards both coolant jacket temperature and engine compartment ambient heat.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>FANBAT</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MP5: AutoCalMapCellBoundary5 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0B50</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ F - Adaptive memory</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MP5: AutoCalMapCellBoundary5</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MP5</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MP5_AutoCalMapCellBoundary5</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\F_-_Adaptive_memory\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0B50</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi absolute (inHg vacuum)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x78 (120 counts ≈ 13.8 psia / 1.8 inHg vac)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3086-L3097"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L3350"><code>AdaptiveMemory_DetermineWhichCellApplies_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L3354"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MP5</code> defines the fifth and highest manifold absolute pressure boundary in the adaptive memory grid, separating Cell 8 and 9 from Cell 10 and 11.</p>
+<p>Cell 10 and 11 represent near-atmospheric and initial positive pressure operation before closed-loop lockout occurs. In stock calibrations, <code>MP5</code> is set to 120 counts, which corresponds to approximately 13.8 psia or 1.8 inHg of vacuum, just below standard sea-level barometric pressure.</p>
+<p>This final boundary isolates near-boost closed-loop fuel adaptation from standard manifold vacuum operation.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code> (<code>T-SMEC_v19.asm:3350-3393</code>), instruction line 3354 (evaluated via <code>inx</code> loop at lines 3367-3379).</li>
+<li><strong>Gating Conditions</strong>: <code>MapValue</code> exceeds <a href="../../1_-_Fuel/F_-_Adaptive_memory/MP4_AutoCalMapCellBoundary4.html"><code>MP4</code></a> plus <a href="../../1_-_Fuel/F_-_Adaptive_memory/DLTMAP_MapHysteresisAtMapCellBoundaries.html"><code>DLTMAP</code></a> hysteresis.</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Index register X is incremented four times from <a href="../../1_-_Fuel/F_-_Adaptive_memory/MP1_AutoCalMapCellBoundary1.html"><code>MP1</code></a> to point to <code>MP5</code>.</li>
+<li>Line 3371 executes <code>cmpa MapValue</code>.</li>
+<li>If <code>MP5 &gt;= MapValue</code> (<code>bcc</code>), execution branches to <code>L1247</code> (line 3380), selecting Cell 8 or 9.</li>
+<li>If <code>MP5 &lt; MapValue</code>, loop terminates at <code>cpx #DLTMAP...</code> and falls through to <code>L1247</code>, selecting Cell 10 or 11.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Near-Atmospheric Boundary</strong>:</li>
+<li>Establishes the ceiling for Cell 8/9 and the floor for Cell 10/11, covering heavy engine load prior to boost.</li>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
+<li>Rescale downward from 120 counts to approximately 80 counts on a 3-bar sensor.</li>
+<li><strong>Ascending Order Constraint</strong>:</li>
+<li>Must be strictly greater than <a href="../../1_-_Fuel/F_-_Adaptive_memory/MP4_AutoCalMapCellBoundary4.html"><code>MP4</code></a> and strictly lower than <a href="../../1_-_Fuel/F_-_Adaptive_memory/MAPLIM_NoCellUpdateAboveThisMAP.html"><code>MAPLIM</code></a> (<code>MP4 &lt; MP5 &lt; MAPLIM</code>).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code>, on the fifth iteration of the boundary loop at line 3367 (<code>L1245</code>), index register X points to <code>MP5_AutoCalMapCellBoundary5</code>. Accumulator A loads <code>MP5</code>, adds <a href="../../1_-_Fuel/F_-_Adaptive_memory/DLTMAP_MapHysteresisAtMapCellBoundaries.html"><code>DLTMAP</code></a>, and compares against <code>MapValue</code> at line 3371. If <code>MapValue &lt;= MP5</code>, <code>bcc L1247</code> branches with <code>Temp0</code> equal to 10 (Cell 8 or 9). If <code>MapValue &gt; MP5</code>, line 3373 increments X to <code>#DLTMAP_MapHysteresisAtMapCellBoundaries</code>, line 3378 detects loop completion (<code>cpx</code>), and execution falls through to <code>L1247</code> with <code>Temp0</code> equal to 12 (Cell 10 or 11).</p>
+<pre><code class="language-motorola6803">; --- AdaptiveMemory_DetermineWhichCellApplies_MM (T-SMEC_v19.asm:3367-3379) ---
+L1245:	ldaa 0x00,x	    ; load a with memory at index + value (Load MAP boundary)
+	cmpb Temp0	
+	bcc  L1246	    ; branch if greater or equal
+	adda DLTMAP_MapHysteresisAtMapCellBoundaries	;  (data is 01) (Add hysteresis if jumping cells)
+L1246:	cmpa MapValue	    ; compare a with memory contents
+	bcc  L1247	    ; branch if greater or equal (Found our MAP band)
+	inx		    ; increment index (x=x+1) (Move to next MAP boundary)
+ONTHROTTLE_OR_RPMTOOHIGHFORIDLE:
+	ldab PointerIntoAdaptiveMemory	  ; load b with memory contents
+	inc  Temp0	    ; Increment Temp0 twice to step the cell index for MAP (map bands represent jumps of 2 cells)
+	inc  Temp0	
+	cpx  #DLTMAP_MapHysteresisAtMapCellBoundaries	 ;  -10000100 01001010- (Check if we&#x27;ve hit the end of MAP boundaries)
+	bne  L1245	    ; branch if not equal (not zero)</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Bounded by <a href="../../1_-_Fuel/F_-_Adaptive_memory/MP4_AutoCalMapCellBoundary4.html"><code>MP4</code></a> below and <a href="../../1_-_Fuel/F_-_Adaptive_memory/MAPLIM_NoCellUpdateAboveThisMAP.html"><code>MAPLIM</code></a> above; interacts with <a href="../../1_-_Fuel/F_-_Adaptive_memory/DLTMAP_MapHysteresisAtMapCellBoundaries.html"><code>DLTMAP</code></a>.</li>
+<li><strong>Cell Alignment</strong>: Governs upper limit of Cell 8 (low RPM) and Cell 9 (high RPM), and lower limit of Cell 10/11.</li>
+<li><strong>Persistence</strong>: Evaluated on every main loop pass; cell index saved in <code>PointerIntoAdaptiveMemory</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MP5</code>
+        </footer>
+    </div>
+</body>
+</html>

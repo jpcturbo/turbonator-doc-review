@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPDAGH: DisableMapCheckAboveThisMap | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1CED</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MPDAGH: DisableMapCheckAboveThisMap</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MPDAGH</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MPDAGH_DisableMapCheckAboveThisMap</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1CED</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x81 (129 counts ≈ 14.9 psi absolute / 0.2 psi boost / atmospheric)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7595-L7606"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L7037"><code>StoreAntiDwell</code></a> in <a href="../../T-SMEC_v19.asm.html#L7059"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MPDAGH</code> defines the upper manifold pressure boundary for the steady-state manifold absolute pressure sensor rationality validation window.</p>
+<p>When testing whether the pressure sensor is healthy and delivering plausible signals, the engine controller requires manifold pressure to stay below heavy load or boost levels. Under wide-open throttle or positive turbocharger boost pressure, rapid airflow changes make steady-state rationality validation unreliable.</p>
+<p>In factory calibrations, <code>MPDAGH</code> is set to 129 counts, corresponding to approximately 14.9 psi absolute pressure (roughly 0.2 psi gauge boost or atmospheric barometric pressure). If manifold pressure equals or exceeds <code>MPDAGH</code>, the engine controller suspends the steady-state sensor rationality check, ensuring validation occurs strictly under light-load intake vacuum.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>StoreAntiDwell</code> (<code>T-SMEC_v19.asm:7040-7063</code>), instruction at line 7059.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Engine speed within <code>[MPRPML, MPRPMH]</code> and <code>MapVolts &gt;= MPDAGL</code>.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li><code>cmpa MPDAGH_DisableMapCheckAboveThisMap</code> at line 7059 compares <code>MapVolts</code> against 129 counts.</li>
+<li>If greater or equal (<code>bcc</code>), branches to <code>L1595</code> at line 7060, bypassing <code>b47_MapOK</code>.</li>
+<li>If lower, line 7061 executes <code>bset *BitFlags_47, #b47_MapOK</code>, asserting the MAP sensor healthy flag.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
+<li>Crucial calibration requirement: rescale <code>MPDAGH</code> by multiplying by 0.667 (from 129 counts down to 86 counts) when converting to a 3-bar MAP sensor.</li>
+<li>Without rescaling, the steady-state check remains active up into positive boost (22 psi absolute), causing false sensor errors.</li>
+<li><strong>Camshaft Compatibility</strong>:</li>
+<li>Ensure <code>MPDAGH</code> is comfortably above the engine's warm idle manifold pressure.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Setting <code>MPDAGH</code> below normal idle manifold pressure prevents <code>b47_MapOK</code> from ever setting.</li>
+<li>Setting <code>MPDAGH</code> to maximum (255 counts) allows steady-state validation during peak turbo boost.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In routine <code>StoreAntiDwell</code> (lines 7040-7063), after confirming <code>MapVolts</code> is at or above <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPDAGL_DisableMapCheckBelowThisMap.html"><code>MPDAGL</code></a>, line 7059 executes <code>cmpa MPDAGH_DisableMapCheckAboveThisMap</code> (0x81 = 129 counts, ~14.9 psi absolute). If accumulator A is greater than or equal to <code>MPDAGH</code>, <code>bcc L1595</code> branches to line 7062, bypassing line 7061. If all conditions are met, line 7061 executes <code>bset *BitFlags_47, #b47_MapOK</code>, marking the primary manifold pressure sensor as verified healthy.</p>
+<pre><code class="language-motorola6803">; --- StoreAntiDwell (T-SMEC_v19.asm:7050-7063) ---
+	brset *BitFlags_54, #b54_BigMapChange, L1595	; branch if bit(s) set
+	ldd  EngineRpm_HB    ; load d (a&amp;b) with memory contents
+	cmpD MPRPML_DisableMapCheckUnderThisRpm_600    ; compare D (data is 12)
+	bcs  L1595	    ; branch if lower
+	cmpD MPRPMH_DisableMapCheckAboveThisRpm_1500	; compare D (data is 2e)
+	bcc  L1595	    ; branch if greater or equal
+	ldaa MapVolts	    ; load a with memory contents
+	cmpa MPDAGL_DisableMapCheckBelowThisMap    ; compare a with memory contents (data is 0a)
+	bcs  L1595	    ; branch if lower
+	cmpa MPDAGH_DisableMapCheckAboveThisMap    ; compare a with memory contents (data is 56)
+	bcc  L1595	    ; branch if greater or equal
+	bset *BitFlags_47, #b47_MapOK	 ; set bits
+L1595:	bclr *BitFlags_54, #b54_BigMapChange	; clear bits
+L1596:	ldaa TimerOverflowsBetweenDistPulses	; load a with memory contents
+</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPDAGL_DisableMapCheckBelowThisMap.html"><code>MPDAGL</code></a> (lower MAP boundary), <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPRPML_DisableMapCheckUnderThisRpm_600.html"><code>MPRPML</code></a>, and <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPRPMH_DisableMapCheckAboveThisRpm_1500.html"><code>MPRPMH</code></a>.</li>
+<li><strong>Diagnostic Role</strong>: Ensures turbo boost and wide-open throttle do not interfere with steady-state MAP rationality testing.</li>
+<li><strong>3-Bar Rescaling</strong>: Essential: scale down by 2/3 (0.667) when converting to 3-bar MAP.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MPDAGH</code>
+        </footer>
+    </div>
+</body>
+</html>

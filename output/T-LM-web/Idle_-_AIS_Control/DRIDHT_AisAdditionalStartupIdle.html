@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRIDHT: AisAdditionalStartupIdle | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0A18</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DRIDHT: AisAdditionalStartupIdle</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DRIDHT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DRIDHT_AdditionalStartupIdle</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0A18</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM Adder (8 RPM per LSB; 0x0D = +104 RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x0D                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L2614-L2626"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L5339"><code>DetermineTargetIdleSpeed_MM</code></a> in <a href="../T-LMv13.asm.html#L5367"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DRIDHT</code> (AdditionalStartupIdle) defines a calibrated idle speed adder that is appended to the base coolant-dependent target idle speed right after the engine starts. </p>
+<p>During the first few seconds following combustion initiation, engine friction and alternator drag from initial battery recharging are abnormally elevated. Adding a moderate RPM buffer prevents the engine from stalling or dipping below target as the driver releases the ignition key from the START position to RUN. The duration of this adder is governed by <a href="../Idle_-_AIS_Control/STTIME_AisAdditionalStartupIdleTime.html"><code>STTIME_AdditionalStartupIdleTime</code></a>.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside subroutine <code>DetermineTargetIdleSpeed_MM</code> at line 5367.</li>
+<li>Applied when <code>KeyOnOrEngineRunningTime</code> is less than <a href="../Idle_-_AIS_Control/STTIME_AisAdditionalStartupIdleTime.html"><code>STTIME_AdditionalStartupIdleTime</code></a>.</li>
+<li>Added directly to the base target idle speed looked up from <a href="../Idle_-_AIS_Control/AISPN_IdleSpeedParkNeutral_FromTemp.html"><code>AISPN</code></a> (Park/Neutral) or <a href="../Idle_-_AIS_Control/AISCLD_IdleSpeedDrive_FromTemp.html"><code>AISCLD</code></a> (Drive).</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Increasing DRIDHT</strong>: Produces a more pronounced initial post-start idle flare, keeping engine speed elevated for positive oil pressure buildup and stall avoidance on cold mornings or with lightweight flywheels.</li>
+<li><strong>Decreasing DRIDHT</strong>: Lowers post-cranking flare RPM, yielding a quieter, softer start. Setting too low can cause the engine to stumble or catch-and-die immediately after cranking.</li>
+<li><strong>High-Stall / Big Cam Applications</strong>: High-duration camshafts with low manifold vacuum at idle benefit from setting <code>DRIDHT</code> slightly higher (e.g., <code>0x12</code> to <code>0x18</code> = +144 to +192 RPM) to guarantee stable combustion before closed-loop adaptive idle stabilizes.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- DetermineTargetIdleSpeed_MM (T-LMv13.asm:5364-5369) ---
+        ldab STTIME_AdditionalStartupIdleTime    ; Load startup timer limit ($0A25, data 0x0B)
+        cmpb KeyOnOrEngineRunningTime            ; Compare with elapsed running timer
+        bcs  LE6E1                               ; If timer expired, skip startup idle adder
+        adda DRIDHT_AdditionalStartupIdle        ; Add startup idle speed offset ($0A18, data 0x0D = +104 RPM)
+        bcc  LE6E1                               ; Check for 8-bit overflow
+        ldaa #0xff                               ; Clamp to maximum 255 if overflowed
+LE6E1:  clrb                                     ; Clear lower byte
+        lsrd                                     ; Shift right 3 times (RPM / 8 scaling)
+        lsrd
+        lsrd
+        std  TargetIdleSpeed_HB                  ; Store into 16-bit Target Idle Speed variable</code></pre>
+<p>The scaling is 8 RPM per count. A value of <code>0x0D</code> (13 decimal) represents 13 × 8 = 104 RPM added to the base target idle speed.</p>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 5367</strong> (<code>DetermineTargetIdleSpeed_MM</code>): <code>adda DRIDHT_AdditionalStartupIdle    ;  (data is 0d)</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Interaction with STTIME</strong>: Modifying <code>DRIDHT</code> only affects the height of the startup flare; its duration is controlled solely by <a href="../Idle_-_AIS_Control/STTIME_AisAdditionalStartupIdleTime.html"><code>STTIME_AdditionalStartupIdleTime</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>DRIDHT</code>
+        </footer>
+    </div>
+</body>
+</html>

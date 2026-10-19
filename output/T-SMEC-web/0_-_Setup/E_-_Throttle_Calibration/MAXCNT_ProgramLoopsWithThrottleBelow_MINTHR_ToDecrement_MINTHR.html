@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAXCNT: ProgramLoopsWithThrottleBelow MINTHR ToDecrement MINTHR | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x19B9</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ E - Throttle Calibration</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MAXCNT: ProgramLoopsWithThrottleBelow MINTHR ToDecrement MINTHR</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MAXCNT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MAXCNT_ProgramLoopsWithThrottleBelow_MINTHR_ToDecrement_MINTHR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\E_-_Throttle_Calibration\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x19B9</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Program Loops</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x10                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6775-L6785"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L7818"><code>CheckThrottle_AtFullThrottle</code></a> in <a href="../../T-SMEC_v19.asm.html#L7838"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MAXCNT</code> defines the debounce integration counter that governs how quickly the learned closed-throttle baseline voltage ratchets downward when throttle position sensor voltage drops below the current learned minimum.</p>
+<p>If sensor voltage settles slightly lower than the stored minimum—such as after the throttle linkage warms up or when returning from high engine speeds—the controller does not jump to the new voltage immediately. Instead, it decrements the learned minimum by one count only after throttle voltage remains continuously below the stored value for the number of program loops specified by <code>MAXCNT</code>. Factory calibrations set <code>MAXCNT</code> to sixteen loops, representing approximately one hundred seventy-six milliseconds.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CheckThrottle_AtFullThrottle</code> (<code>T-SMEC_v19.asm:7818-7866</code>), instruction line 7838 (<code>ldaa MAXCNT_...</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated when <code>TpsVolts &lt; MINTHR_LowestSessionTPS</code> and <code>b4f_OffIdle</code> is clear.</li>
+<li><strong>Countdown Execution</strong>:</li>
+<li><code>Timer_DelayBeforeUpdating_MINTHR</code> decrements each pass.</li>
+<li>When it reaches zero, <code>MINTHR_LowestSessionTPS</code> decrements by one count (<code>deca</code>) and the timer is reloaded from <code>MAXCNT</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Downward Ratchet Speed</strong>:</li>
+<li>Controls how many main loop passes (each ~11ms) sensor voltage must remain below <code>MINTHR</code> before <code>MINTHR</code> decrements by 1 count.</li>
+<li><strong>Electrical Noise Rejection</strong>:</li>
+<li>Debounce delay filters out transient sensor ground bounce, ignition coil interference, and sensor wiper vibration.</li>
+<li><strong>Preserve Stock Value</strong>:</li>
+<li>Sixteen loops provides the optimal balance between rapid initial adaptation and electrical noise immunity.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CheckThrottle_AtFullThrottle</code> at lines 7820-7839, if <code>TpsVolts</code> is less than <code>MINTHR_LowestSessionTPS</code> (carry clear at line 7824), the routine decrements <code>Timer_DelayBeforeUpdating_MINTHR</code>. When the timer reaches zero (<code>bne L1647</code> falls through), line 7833 executes <code>deca</code> on <code>MINTHR_LowestSessionTPS</code>. Line 7838 then executes <code>ldaa MAXCNT_ProgramLoopsWithThrottleBelow_MINTHR_ToDecrement_MINTHR</code> and reloads <code>Timer_DelayBeforeUpdating_MINTHR</code>.</p>
+<pre><code class="language-motorola6803">; --- CheckThrottle_AtFullThrottle (T-SMEC_v19.asm:7829-7839) ---
+	ldaa Timer_DelayBeforeUpdating_MINTHR	 ; load a with memory contents
+	deca		    ; decrement a
+	bne  L1647	    ; branch if not equal (not zero)
+	ldaa MINTHR_LowestSessionTPS	; load a with memory contents
+	deca		    ; decrement a
+	bge  L1645	    ; branch if greater or equal
+	ldaa MTHRMX_ValueOf_MINTHR_WhenBatteryDisconnected    ; load a with memory contents (data is 5c)
+L1645:	staa MINTHR_LowestSessionTPS	; store a into memory
+	andb #~b4f_UpdatedMINTHR	    ;  -10111111-
+L1646:	ldaa MAXCNT_ProgramLoopsWithThrottleBelow_MINTHR_ToDecrement_MINTHR    ; load a with memory contents (data is 10)
+L1647:	staa Timer_DelayBeforeUpdating_MINTHR	 ; store a into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Loop Timing</strong>: In the 68HC11 foreground loop, 16 passes equate to approximately 176 milliseconds of persistent low voltage.</li>
+<li><strong>Underflow Clamping</strong>: If decrementing <code>MINTHR</code> drops below zero, line 7835 clamps it to <a href="../../0_-_Setup/E_-_Throttle_Calibration/MTHRMX_ValueOf_MINTHR_WhenBatteryDisconnected.html"><code>MTHRMX</code></a>.</li>
+<li><strong>Factory Default</strong>: 0x10 across all SMEC production calibrations.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MAXCNT</code>
+        </footer>
+    </div>
+</body>
+</html>

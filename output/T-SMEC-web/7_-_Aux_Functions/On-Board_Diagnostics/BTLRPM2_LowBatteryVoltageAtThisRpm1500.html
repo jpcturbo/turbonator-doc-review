@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTLRPM2: LowBatteryVoltageAtThisRpm1500 2 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1BCB</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BTLRPM2: LowBatteryVoltageAtThisRpm1500 2</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BTLRPM2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BTLRPM2_LowBatteryVoltageAtThisRpm1500</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1BCB</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x2E (46 counts ≈ 1472 RPM)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7305-L7315"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5055"><code>VerifyOperationOfASDRelayAndO2Sensor_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L5073"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BTLRPM2</code> defines the minimum engine speed threshold required before the engine controller enables diagnostic testing of the oxygen sensor middle-band circuit.</p>
+<p>Like <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/CTLRPM_LowBatteryVoltageAtThisCoolantTemp.html"><code>CTLRPM</code></a>, this identifier carries a legacy calibration label referring to battery voltage, but firmware analysis demonstrates that it gates oxygen sensor evaluation. At idle, lower exhaust gas flow and cooler exhaust gas temperatures can cause single-wire oxygen sensors to cool off and dwell near their internal 0.45-volt bias voltage.</p>
+<p>To prevent prolonged engine idling from falsely setting Fault Code 21, the engine controller requires engine speed to reach <code>BTLRPM2</code> before evaluating sensor switching.</p>
+<p>In factory calibrations, <code>BTLRPM2</code> is set to 46 counts, corresponding to approximately 1472 RPM. If engine speed is below <code>BTLRPM2</code>, the controller suspends the oxygen sensor middle-band diagnostic.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>VerifyOperationOfASDRelayAndO2Sensor_MM</code> (<code>T-SMEC_v19.asm:5055-5094</code>), instruction at line 5073.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Checked when <code>CoolantTemp &gt;= CTLRPM</code> at line 5070.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li><code>EngineRpm_HB</code> loaded into accumulator A at line 5072.</li>
+<li><code>cmpa BTLRPM2_LowBatteryVoltageAtThisRpm1500</code> at line 5073 compares against 46 counts.</li>
+<li>If lower (<code>bcs</code>), branches to <code>R1407</code> at line 5074, exiting without running O2 test.</li>
+<li>If higher or equal, proceeds to check whether <code>O2SensorValue</code> is stuck between <a href="../../1_-_Fuel/E_-_O2_Controller/O2MIDL_LowLimitForInMiddleDetermination.html"><code>O2MIDL</code></a> and <a href="../../1_-_Fuel/E_-_O2_Controller/O2MIDH_HighLimitForInMiddleDetermination.html"><code>O2MIDH</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Heated O2 Sensor Conversions</strong>:</li>
+<li>When upgrading from a factory 1-wire unheated sensor to a 3-wire or 4-wire heated sensor, <code>BTLRPM2</code> can be safely lowered to 1100-1200 RPM.</li>
+<li><strong>Unheated Sensor Protection</strong>:</li>
+<li>With unheated sensors, keep <code>BTLRPM2</code> at or above 1472 RPM to avoid false stuck-in-middle codes caused by exhaust cooling at idle.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Setting <code>BTLRPM2</code> to zero enables middle-band checking at idle, leading to false Fault Code 21 errors on unheated sensors.</li>
+<li>Setting <code>BTLRPM2</code> to maximum disables oxygen sensor diagnostic testing completely.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In routine <code>VerifyOperationOfASDRelayAndO2Sensor_MM</code> (lines 5055-5094), after confirming coolant temperature meets <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/CTLRPM_LowBatteryVoltageAtThisCoolantTemp.html"><code>CTLRPM</code></a>, line 5072 loads <code>EngineRpm_HB</code> into accumulator A. Line 5073 executes <code>cmpa BTLRPM2_LowBatteryVoltageAtThisRpm1500</code> (0x2E = 46 counts, ~1472 RPM). If accumulator A is strictly less than <code>BTLRPM2</code>, <code>bcs R1407</code> branches to line 5094, skipping the oxygen sensor middle-band test logic. If engine speed is at or above <code>BTLRPM2</code>, line 5075 checks if <code>b4f_O2Valid</code> is asserted before checking for a stuck-in-middle sensor reading.</p>
+<pre><code class="language-motorola6803">; --- VerifyOperationOfASDRelayAndO2Sensor_MM (T-SMEC_v19.asm:5066-5080) ---
+L1404:	ldaa Counter_MainLoop	  ; load a with memory contents
+	bita #0x7f	    ;  -01111111-
+	bne  R1407	    ; branch if not equal (not zero)
+	ldaa CoolantTemp    ; load a with memory contents
+	cmpa CTLRPM_LowBatteryVoltageAtThisCoolantTemp	  ; compare a with memory contents (data is cd)
+	bcs  R1407	    ; branch if lower
+	ldaa EngineRpm_HB    ; load a with memory contents
+	cmpa BTLRPM2_LowBatteryVoltageAtThisRpm1500    ; compare a with memory contents (data is 2e)
+	bcs  R1407	    ; branch if lower
+	brset *BitFlags_4f, #b4f_O2Valid, L1406    ; branch if bit(s) set
+	ldaa O2SensorValue    ; load a with memory contents
+	cmpa O2MIDL_LowLimitForInMiddleDetermination	; compare a with memory contents (data is 12)
+	bcs  L1406	    ; branch if lower
+	cmpa O2MIDH_HighLimitForInMiddleDetermination	 ; compare a with memory contents (data is 1c)
+	bcc  L1406	    ; branch if greater or equal
+</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/CTLRPM_LowBatteryVoltageAtThisCoolantTemp.html"><code>CTLRPM</code></a> (coolant temp gate), <a href="../../1_-_Fuel/E_-_O2_Controller/O2MIDL_LowLimitForInMiddleDetermination.html"><code>O2MIDL</code></a>, and <a href="../../1_-_Fuel/E_-_O2_Controller/O2MIDH_HighLimitForInMiddleDetermination.html"><code>O2MIDH</code></a>.</li>
+<li><strong>Diagnostic Code</strong>: DRB-II Fault Code 21 (oxygen sensor signal circuit / stuck in middle band).</li>
+<li><strong>RPM Scaling</strong>: Evaluated against the high-byte engine speed register where each count equals 32 RPM.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>BTLRPM2</code>
+        </footer>
+    </div>
+</body>
+</html>

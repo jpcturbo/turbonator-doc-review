@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POSTRG: PositiveTransientTriggerLevel | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x08B1</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ D - Transient Enrichment ➔ PumpShot Calculation ➔ TPS PumpShot</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>POSTRG: PositiveTransientTriggerLevel</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>POSTRG</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>POSTRG_PositiveTransientTriggerLevel</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\D_-_Transient_Enrichment\PumpShot_Calculation\TPS_PumpShot\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x08B1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Throttle Position Sensor Delta Voltage (0.0 to 5.0 Volts, 0.02 Volts / count)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x03                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L2415-L2425"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L6484"><code>TransFuel_IncludeTPSTransients</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L6496"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>POSTRG</code> defines the minimum rate of throttle position sensor voltage increase required to trigger a throttle-based acceleration enrichment pump shot.</p>
+<p>When the driver presses the accelerator pedal, the throttle blade opens before the intake manifold plenum can fill with air and register an increased pressure reading. To prevent an immediate lean hesitation or stumble, the engine controller calculates the difference between instantaneous throttle voltage and a rolling average throttle voltage. If this delta exceeds <code>POSTRG</code>, the controller activates acceleration pump fueling.</p>
+<p>The factory setting of 3 counts represents approximately 0.06 volts, filtering out minor driver foot vibrations, electrical noise, and road bumps while ensuring immediate response to deliberate pedal inputs.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Enclosed in routine <code>TransFuel_IncludeTPSTransients</code> at lines 6484-6510 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Evaluated when <code>TpsVolts &gt;= AverageTPSVolts</code> (line 6489, branch <code>bcs TransFuel_CalculateDecreasingTPSTransientFuel</code> not taken).</li>
+<li>Delta calculation: Line 6495 loads <code>Temp0</code> (<code>TpsVolts - AverageTPSVolts</code>).</li>
+<li>Threshold test: Line 6496 executes <code>suba POSTRG_PositiveTransientTriggerLevel</code>.</li>
+<li>Polarity: If <code>Temp0 &lt; POSTRG</code>, carry flag is asserted and <code>bcs L1560</code> branches to line 6549, bypassing TPS transient enrichment.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Tip-in Sensitivity</strong>: Lowering <code>POSTRG</code> makes the throttle acceleration pump more sensitive, firing extra fuel on very small throttle inputs to eliminate hairline tip-in hesitations.</li>
+<li><strong>Preventing False Triggers</strong>: Setting this value to zero or near zero can cause false pump shots from throttle shaft vibration or road roughness, degrading fuel economy and causing subtle rich surges during highway cruising.</li>
+<li><strong>Large Throttle Bodies</strong>: Raising <code>POSTRG</code> requires a firmer pedal depression before enrichment activates, which may be beneficial with oversized aftermarket throttle bodies where small angular openings flow significantly more air.</li>
+<li><strong>Coordination with POSSLP</strong>: Always adjust <code>POSTRG</code> in coordination with the gain slope in <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/POSSLP_DeltaTPSEnrichment_FromTemp.html"><code>POSSLP</code></a>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: Routine <code>TransFuel_IncludeTPSTransients</code> executes at line 6484. Line 6486 loads <code>TpsVolts</code> and line 6487 subtracts <code>AverageTPSVolts</code>, storing the delta into <code>Temp0</code>. If the delta is positive or zero, line 6495 reloads <code>Temp0</code> into accumulator A and line 6496 executes <code>suba POSTRG_PositiveTransientTriggerLevel</code>. If <code>Temp0</code> is less than <code>POSTRG</code>, carry is set and line 6497 branches via <code>bcs L1560</code> directly to line 6549, skipping transient enrichment. If <code>Temp0 &gt;= POSTRG</code>, the remaining delta is evaluated against <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/THRMAX_MaxDeltaTHR.html"><code>THRMAX</code></a>.</p>
+<pre><code class="language-motorola6803">; --- TransFuel_IncludeTPSTransients (T-SMEC_v19.asm:6484-6510) ---
+TransFuel_IncludeTPSTransients:
+	ldaa CoolantTemp    ; load a with memory contents
+	ldab TpsVolts	    ; load b with memory contents
+	subb AverageTPSVolts    ; b = b-memory contents
+	stab Temp0	    ; store b into memory
+	bcs  TransFuel_CalculateDecreasingTPSTransientFuel    ; branch if lower
+	ldx  #THRTCN_EnrichmentTime_FromTemp    ; load index with value
+	jsr  Lookup4ByteTable	 ; call subroutine
+	staa Factor_LeanoutOrEnrichTime_TPS    ; store a into memory
+	clra		    ; a = 0
+	staa Factor_DecelLeanoutWhenThrottleDecreasing	  ; store a into memory
+	ldaa Temp0	    ; load a with memory contents
+	suba POSTRG_PositiveTransientTriggerLevel    ;  (data is 03)
+	bcs  L1560	    ; branch if lower
+	cmpa THRMAX_MaxDeltaTHR    ; compare a with memory contents (data is 26)
+	bcs  L1554	    ; branch if lower
+	ldaa THRMAX_MaxDeltaTHR    ; load a with memory contents (data is 26)
+L1554:	staa Temp1	    ; store a into memory
+	ldaa CoolantTemp    ; load a with memory contents
+	ldx  #POSSLP_DeltaTPSEnrichment_FromTemp    ; load index with value
+	jsr  Lookup4ByteTable	 ; call subroutine
+	ldaa Temp1	    ; load a with memory contents
+	mul		    ; multiply (d=a*b)
+	addd Temp2	    ; d = d + memory contents
+	stD *Temp2	    ; store D to RAM
+	bra  L1560	    ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Hardware Resolution</strong>: Scaled at approximately 0.02 volts per count across the 0 to 5 volt sensor range.</li>
+<li><strong>Companion Parameters</strong>: Works directly with <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/THRMAX_MaxDeltaTHR.html"><code>THRMAX</code></a>, <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/POSSLP_DeltaTPSEnrichment_FromTemp.html"><code>POSSLP</code></a>, and <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/THRTCN_EnrichmentTime_FromTemp.html"><code>THRTCN</code></a>.</li>
+<li><strong>Throttle Body Upgrades</strong>: Aftermarket 52mm or 58mm throttle bodies often benefit from increasing <code>POSTRG</code> to 4 or 5 counts to prevent over-sensitive fueling on rough pavement.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>POSTRG</code>
+        </footer>
+    </div>
+</body>
+</html>

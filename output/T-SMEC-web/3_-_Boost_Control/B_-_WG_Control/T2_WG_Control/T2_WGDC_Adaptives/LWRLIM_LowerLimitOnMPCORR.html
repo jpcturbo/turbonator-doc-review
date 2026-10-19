@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LWRLIM: LowerLimitOnMPCORR | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x143E</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ B - WG Control ➔ T2 WG Control ➔ T2 WGDC Adaptives</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>LWRLIM: LowerLimitOnMPCORR</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>LWRLIM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>LWRLIM_LowerLimitOnMPCORR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\B_-_WG_Control\T2_WG_Control\T2_WGDC_Adaptives\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x143E</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Offset Counts / Gain Clamp</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x20                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5372-L5382"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L9767"><code>T2WGDC_ClearWGDutyCycleVars</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L9845"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>LWRLIM</code> specifies the lower authority clamp applied to the dynamic manifold pressure response correction (<code>MPCORR</code>) in T2 boost creep control when the rate of boost change is negative.</p>
+<p>If boost is falling or dipping, the T2 algorithm applies a negative correction to restore duty cycle. Chrysler configured <code>LWRLIM</code> to 32 counts (16.0 percent duty cycle offset), exactly twice the magnitude of <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Adaptives/UPRLIM_UpperLimitOnMPCORR.html"><code>UPRLIM</code></a>, giving the controller stronger authority to recover duty cycle and prevent boost sagging during transient shifts.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9844-9848</code>), called from <code>CalcWGDutyCycle_MM</code> (<code>T-SMEC_v19.asm:9506-9510</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Active when <code>BoostDelta_Signed</code> (<code>Temp1</code>) is negative (boost falling, high bit set at line 9839).</li>
+<li><strong>Clamp Comparison</strong>:</li>
+<li>Line 9845 loads <code>LWRLIM_LowerLimitOnMPCORR</code> into accumulator A.</li>
+<li>Line 9846 executes <code>cba</code> to compare accumulator B against <code>LWRLIM</code>.</li>
+<li>If accumulator B exceeds <code>LWRLIM</code>, accumulator B is clamped to <code>LWRLIM</code> at line 9848.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Negative Boost Creep Authority Clamp</strong>:</li>
+<li>Caps maximum dynamic correction applied when boost rate is falling or dipping.</li>
+<li>Factory setting is 32 counts (approximately 16.0 percent duty cycle offset authority).</li>
+<li><strong>Eliminating Shift Lag &amp; Boost Dip</strong>:</li>
+<li>Increasing <code>LWRLIM</code> provides stronger authority to prop up wastegate duty cycle after an upshift.</li>
+<li><strong>Asymmetric Authority Architecture</strong>:</li>
+<li>Configured twice as large as <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Adaptives/UPRLIM_UpperLimitOnMPCORR.html"><code>UPRLIM</code></a> to ensure rapid recovery from boost drops without causing runaway overboost.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalcWGDutyCycleT2</code> at line 9839, <code>tst Temp1</code> checks the sign of <code>BoostDelta_Signed</code>. When negative (<code>bmi L7749</code>), line 9845 loads <code>LWRLIM_LowerLimitOnMPCORR</code> into accumulator A. Line 9846 executes <code>cba</code> to compare the correction in accumulator B against <code>LWRLIM</code>. If accumulator B meets or exceeds <code>LWRLIM</code>, line 9848 executes <code>tab</code>, clamping accumulator B to <code>LWRLIM</code> before modifying the target boost at line 9852.</p>
+<pre><code class="language-motorola6803">; --- CalcWGDutyCycleT2 (T-SMEC_v19.asm:9844-9848) ---
+L7749:  
+        ldaa LWRLIM_LowerLimitOnMPCORR ; load a with memory contents (data is 20)
+L7750:  cba
+        bcc  L7747                     ; branch if greater or equal
+        tab                            ; b = a</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Twice Positive Authority</strong>: 32 counts (0x20) vs 16 counts (0x10) for <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Adaptives/UPRLIM_UpperLimitOnMPCORR.html"><code>UPRLIM</code></a>.</li>
+<li><strong>Transient Recovery</strong>: Ensures rapid recovery from boost dips during quick gear changes.</li>
+<li><strong>Factory Value</strong>: 0x20 = 32 counts = 16.0% duty cycle offset authority.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>LWRLIM</code>
+        </footer>
+    </div>
+</body>
+</html>

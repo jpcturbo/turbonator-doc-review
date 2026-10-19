@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTHRMX: ValueOf MINTHR WhenBatteryDisconnected | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x19AC</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ E - Throttle Calibration</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MTHRMX: ValueOf MINTHR WhenBatteryDisconnected</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MTHRMX</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MTHRMX_ValueOf_MINTHR_WhenBatteryDisconnected</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\E_-_Throttle_Calibration\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x19AC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Volts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x5C                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6762-L6772"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L7211"><code>Interrupt_RealTime</code></a> in <a href="../../T-SMEC_v19.asm.html#L7248"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MTHRMX</code> defines the default closed-throttle position baseline voltage loaded into memory whenever the vehicle battery is disconnected, keep-alive memory power is lost, or the engine controller undergoes a hard reset.</p>
+<p>In factory calibrations, <code>MTHRMX</code> is calibrated to ninety-two counts, corresponding to approximately one point eight zero volts. Because physical throttle position sensors typically rest between zero point eight and one point zero volts at idle, initializing the learned minimum throttle register to <code>MTHRMX</code> establishes a safe upper ceiling. Once the engine starts and enters closed-throttle deceleration, the adaptive ratcheting logic steps the learned baseline downward until it matches the physical resting voltage.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: Evaluated in <code>Interrupt_RealTime</code> (<code>T-SMEC_v19.asm:7211-7248</code>, line 7248), <code>SetupSystemAndGoToMainLoop</code> (lines 7445, 7448), and <code>CheckThrottle_AtFullThrottle</code> (lines 7835, 7903, 7905).</li>
+<li><strong>Battery Disconnect Recovery</strong>:</li>
+<li>Loaded into <code>MINTHR_LowestSessionTPS</code> during cold power-on initialization when standby memory power loss is detected.</li>
+<li><strong>Clamping Ceiling</strong>:</li>
+<li>In <code>CheckThrottle_VehicleSpeedStillAboveDecelIdle</code> at line 7903, <code>MINTHR_LowestSessionTPS</code> is compared to <code>MTHRMX</code> and clamped via <code>ldaa MTHRMX</code> to prevent excessive upward drift.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Battery Disconnect Fallback</strong>:</li>
+<li>Default voltage baseline written to <code>MINTHR_LowestSessionTPS</code> during power-up when battery memory is cleared.</li>
+<li><strong>Aftermarket Throttle Bodies</strong>:</li>
+<li>If an aftermarket throttle body rests at or above 1.8 Volts, increase <code>MTHRMX</code> so the reset ceiling remains higher than resting closed-throttle voltage.</li>
+<li><strong>Upper Clamp for Upward Ratchet</strong>:</li>
+<li>Also functions as the maximum permissible voltage cap when the deceleration self-calibration routine increments <code>MINTHR</code>.</li>
+<li><strong>Factory Setting</strong>:</li>
+<li>Set to ninety-two counts (~1.80 Volts) in factory calibrations.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>Interrupt_RealTime</code> at line 7248 and <code>SetupSystemAndGoToMainLoop</code> at lines 7445-7448, <code>ldaa MTHRMX_ValueOf_MINTHR_WhenBatteryDisconnected</code> loads the default closed-throttle voltage into accumulator A and stores it into <code>MINTHR_LowestSessionTPS</code>. In <code>CheckThrottle_VehicleSpeedStillAboveDecelIdle</code> at lines 7901-7906, <code>MINTHR_LowestSessionTPS</code> is incremented and compared against <code>MTHRMX</code>; if <code>MINTHR</code> reaches or exceeds <code>MTHRMX</code>, line 7905 reloads <code>MTHRMX</code> to clamp the maximum learned idle voltage.</p>
+<pre><code class="language-motorola6803">; --- CheckThrottle_VehicleSpeedStillAboveDecelIdle (T-SMEC_v19.asm:7901-7906) ---
+	ldaa MINTHR_LowestSessionTPS	; load a with memory contents
+	inca		    ; increment a
+	cmpa MTHRMX_ValueOf_MINTHR_WhenBatteryDisconnected    ; compare a with memory contents (data is 5c)
+	bcs  L1655	    ; branch if lower
+	ldaa MTHRMX_ValueOf_MINTHR_WhenBatteryDisconnected    ; compare a with memory contents (data is 5c)
+L1655:	staa MINTHR_LowestSessionTPS	; store a into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Dual Function</strong>: Acts as both the cold-boot initialization value and the hard upper clamping ceiling for learned idle voltage.</li>
+<li><strong>Voltage Scaling</strong>: 1 count represents approximately 0.0196 Volts (92 counts = 1.80 Volts).</li>
+<li><strong>Factory Default</strong>: 0x5C across all SMEC production calibrations.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MTHRMX</code>
+        </footer>
+    </div>
+</body>
+</html>

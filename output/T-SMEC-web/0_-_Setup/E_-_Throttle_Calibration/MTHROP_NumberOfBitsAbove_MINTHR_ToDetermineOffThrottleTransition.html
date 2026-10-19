@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTHROP: NumberOfBitsAbove MINTHR ToDetermineOffThrottleTransition | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x19D3</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ E - Throttle Calibration</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MTHROP: NumberOfBitsAbove MINTHR ToDetermineOffThrottleTransition</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MTHROP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MTHROP_NumberOfBitsAbove_MINTHR_ToDetermineOffThrottleTransition</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\E_-_Throttle_Calibration\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x19D3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Counts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x01                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6801-L6811"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L7818"><code>CheckThrottle_AtFullThrottle</code></a> in <a href="../../T-SMEC_v19.asm.html#L7843"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MTHROP</code> defines the return-to-idle threshold above the learned minimum closed-throttle position.</p>
+<p>After an engine has been driven off-idle, releasing the accelerator pedal causes throttle position sensor voltage to drop back toward the mechanical stop. In factory calibrations, <code>MTHROP</code> is set to one count, representing approximately zero point zero two zero volts above the learned closed-throttle baseline. Throttle voltage must fall below the sum of minimum learned throttle plus <code>MTHROP</code> before the engine controller clears the off-idle flag and re-engages closed-loop idle speed regulation and idle spark advance feedback.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CheckThrottle_AtFullThrottle</code> (<code>T-SMEC_v19.asm:7818-7866</code>), instruction line 7843 (<code>ldaa MTHROP_...</code>).</li>
+<li><strong>Selection Logic</strong>:</li>
+<li>Evaluated when the engine is currently off-idle (<code>b4f_OffIdle</code> in <code>BitFlags_4f</code> is set).</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Line 7843 loads <code>MTHROP_NumberOfBitsAbove_MINTHR_ToDetermineOffThrottleTransition</code>.</li>
+<li>Adds <code>MINTHR_LowestSessionTPS</code> at line 7844.</li>
+<li>If <code>cmpa TpsVolts</code> yields carry set (<code>bcc CheckThrottle_AtIdle</code>), branches to re-enter idle mode.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Sticky Throttle Recovery</strong>:</li>
+<li>If weak return springs or thermal expansion prevent the throttle blade from returning to within 0.02V of the stop, increasing <code>MTHROP</code> to two or three counts cures hanging idle.</li>
+<li><strong>Return-to-Idle Deadband</strong>:</li>
+<li>Because <code>MTHROP</code> (1 count) is lower than <a href="../../0_-_Setup/E_-_Throttle_Calibration/MTHRCL_NumberOfBitsAbove_MINTHR_ToDetermineOnThrottleTransition.html"><code>MTHRCL</code></a> (2 counts), the system creates a 1-count hysteresis preventing idle flutter.</li>
+<li><strong>Idle Control Re-Engagement</strong>:</li>
+<li>Clearing the off-idle flag re-activates closed-loop AIS stepper motor control and idle spark advance stabilization.</li>
+<li><strong>Factory Default</strong>:</li>
+<li>Set to one count (~0.020 Volts) in stock calibrations.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CheckThrottle_AtFullThrottle</code> at lines 7840-7846, register B tests <code>b4f_OffIdle</code>. When currently off-idle (<code>tstb; bmi</code>), execution branches to line 7843 to load <code>MTHROP_NumberOfBitsAbove_MINTHR_ToDetermineOffThrottleTransition</code>. Line 7844 adds <code>MINTHR_LowestSessionTPS</code>. Line 7845 executes <code>cmpa TpsVolts</code>; if throttle voltage has dropped below the threshold (<code>bcc</code>), the CPU branches to <code>CheckThrottle_AtIdle</code> to clear <code>b4f_OffIdle</code>.</p>
+<pre><code class="language-motorola6803">; --- CheckThrottle_AtFullThrottle (T-SMEC_v19.asm:7840-7847) ---
+	ldaa MTHRCL_NumberOfBitsAbove_MINTHR_ToDetermineOnThrottleTransition	; load a with memory contents (data is 02)
+	tstb
+	bpl  L1648	    ; branch if plus (hi bit 0)
+	ldaa MTHROP_NumberOfBitsAbove_MINTHR_ToDetermineOffThrottleTransition	 ; load a with memory contents (data is 01)
+L1648:	adda MINTHR_LowestSessionTPS
+	cmpa TpsVolts	    ; compare a with memory contents
+	bcc  CheckThrottle_AtIdle    ; branch if greater or equal</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Hysteresis Relationship</strong>: Must remain less than or equal to <a href="../../0_-_Setup/E_-_Throttle_Calibration/MTHRCL_NumberOfBitsAbove_MINTHR_ToDetermineOnThrottleTransition.html"><code>MTHRCL</code></a> to avoid erratic threshold hunting.</li>
+<li><strong>Voltage Scaling</strong>: 1 count represents approximately 0.0196 Volts.</li>
+<li><strong>Stock Calibration</strong>: 0x01 across all production SMEC calibrations.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MTHROP</code>
+        </footer>
+    </div>
+</body>
+</html>

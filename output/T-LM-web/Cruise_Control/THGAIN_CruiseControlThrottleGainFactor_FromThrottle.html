@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THGAIN: CruiseControlThrottleGainFactor FromThrottle | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x13EB</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Cruise Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Turbonator</strong>
+        </div>
+        
+        <article class="content">
+            <h1>THGAIN: CruiseControlThrottleGainFactor FromThrottle</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>THGAIN</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>THGAIN_CruiseControlThrottleGainFactor_FromThrottle</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Turbonator</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Cruise_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x13EB</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2D Table / Curve)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Servo Gain Multiplier vs. Throttle Position (TPS ADC)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Number of points in table; .byte 0x00, 0x08, 0x00, 0x00     ;Point 1; .byte 0x02, 0x12                 ;Point 2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L5129-L5143"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L2088"><code>CruiseControlSet</code></a> in <a href="../T-LMv13.asm.html#L2303"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>THGAIN</code> (CruiseControlThrottleGainFactor_FromThrottle) provides a nonlinear gain correction factor applied to cruise servo duty cycle based on the current throttle opening angle.</p>
+<p>Mechanical throttle linkages and butterfly throttle bodies are inherently progressive: a 1-degree rotation at 5% throttle allows a massive percentage change in airflow, whereas a 1-degree rotation at 40% throttle produces a much smaller change in airflow. <code>THGAIN</code> compensates for this progressive airflow response by adjusting servo pulse authority as a function of throttle position, linearizing cruise throttle control across the operational range.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside subroutine <code>CruiseControlSet</code> at line 2303.</li>
+<li>Multiplied into the final vacuum and vent pulse calculations during active cruise.</li>
+<li>Indexed by the current throttle position sensor (TPS) reading.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Large Throttle Bodies</strong>: Aftermarket 52mm or 58mm throttle bodies flow significantly more air at small throttle angles than the stock 48mm unit. Flattening or reducing <code>THGAIN</code> at low throttle prevents cruise control twitchiness with oversized throttle bodies.</li>
+<li><strong>High-Speed Hill Assist</strong>: Increasing <code>THGAIN</code> at higher throttle angles gives the cruise controller more authority to hold highway speeds up steep mountain passes.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CruiseControlSet (T-LMv13.asm:2303-2307) ---
+        ldx  #THGAIN_CruiseControlThrottleGainFactor_FromThrottle       ; Load throttle gain table
+        jsr  LookupCruiseControlCurve                                   ; Interpolate gain multiplier
+        staa CruiseThrottleGain                                         ; Apply throttle compensation</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Linearization</strong>: Crucial for aftermarket throttle body upgrades where initial air intake response is significantly sharper than stock.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>THGAIN</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMUPDT: EPPsBetweenCalChangeUpdateOpenThrottle | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0BAD</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ F - Adaptive memory</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>AMUPDT: EPPsBetweenCalChangeUpdateOpenThrottle</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>AMUPDT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>AMUPDT_EPPsBetweenCalChangeUpdateOpenThrottle</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\F_-_Adaptive_memory\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0BAD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Pulse Periods (Distributor Pulses)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x1A (26 counts = 26 distributor rising edges)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3179-L3189"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L3291"><code>AdaptiveMemory_UpdateCellIfRequired_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L3297"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>AMUPDT</code> specifies the number of engine pulse periods (distributor rising edges) that must accumulate while operating off-idle before the controller is permitted to update the active adaptive fuel memory cell.</p>
+<p>On a four-cylinder engine, two distributor pulses occur per crankshaft revolution. In stock calibrations, <code>AMUPDT</code> is set to 26 counts, which corresponds to 13 crankshaft revolutions.</p>
+<p>This update interval ensures that the short-term oxygen sensor feedback counter has integrated multiple combustion cycles before transferring a trim step into long-term memory.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>AdaptiveMemory_UpdateCellIfRequired_MM</code> (<code>T-SMEC_v19.asm:3291-3349</code>), instruction line 3297.</li>
+<li><strong>Gating Conditions</strong>: Off-idle flag set (<code>BitFlags_4f</code> bit <code>b4f_OffIdle</code> set).</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Line 3297 loads <code>AMUPDT_EPPsBetweenCalChangeUpdateOpenThrottle</code> into register B.</li>
+<li>Line 3298 branches via <code>brset *BitFlags_4f, #b4f_OffIdle, UpdateAdaptive_OffIdle</code> to line 3300.</li>
+<li>In <code>UpdateAdaptive_OffIdle</code>, register B is subtracted from <code>AdaptiveCellUpdateTimer</code> at line 3310 via <code>sba</code>.</li>
+<li>If <code>timer &lt; AMUPDT</code> (<code>bcs</code>), execution branches to <code>DontUpdateCellOrTimer</code> (line 3335).</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Cruising Adaptation Pace</strong>:</li>
+<li>Increasing <code>AMUPDT</code> slows down part-throttle learning, requiring longer steady-state operation before trims shift.</li>
+<li><strong>Rapid Calibration Learning</strong>:</li>
+<li>Lowering <code>AMUPDT</code> to 10-15 counts enables faster learning during tuning sessions.</li>
+<li><strong>Distributor Pulse Units</strong>:</li>
+<li>Measured in distributor rising edges (2 edges per crankshaft revolution on a 4-cylinder engine; 26 counts = 13 revolutions).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>AdaptiveMemory_UpdateCellIfRequired_MM</code>, line 3297 executes <code>ldab AMUPDT_EPPsBetweenCalChangeUpdateOpenThrottle</code>. Line 3298 checks <code>BitFlags_4f</code>; if <code>b4f_OffIdle</code> is set, execution branches to <code>UpdateAdaptive_OffIdle</code>. After verifying that open loop is clear and pulse width exceeds <a href="../../1_-_Fuel/F_-_Adaptive_memory/PWMIN_NoCellUpdateBelow_PWMIN_Pulsewidth.html"><code>PWMIN</code></a>, line 3309 loads <code>AdaptiveCellUpdateTimer_IncrementedEveryDistRisingEdge</code> into accumulator A and line 3310 executes <code>sba</code> (subtracting <code>AMUPDT</code>). If carry is set (<code>bcs</code>), insufficient distributor edges have accumulated, and the routine exits without altering the cell.</p>
+<pre><code class="language-motorola6803">; --- AdaptiveMemory_UpdateCellIfRequired_MM (T-SMEC_v19.asm:3294-3301) ---
+	ldx  #AutoCalCell0    ; load index with value
+	ldab PointerIntoAdaptiveMemory	  ; load b with memory contents (Get active cell index 0-12)
+	abx		    ; add b to index (X now points directly to the active AutoCalCell in memory)
+	ldab AMUPDT_EPPsBetweenCalChangeUpdateOpenThrottle    ; load b with memory contents (data is 1a)
+	brset *BitFlags_4f, #b4f_OffIdle, UpdateAdaptive_OffIdle    ; branch if bit(s) set
+	ldab AMUPDI_EPPsBetweenCalChangeUpdateClosedThrottle	; load b with memory contents (data is 1a) (Use idle timer threshold if idle)
+UpdateAdaptive_OffIdle:
+	brset *BitFlags_50, #b50_OpenLoop, DontUpdateCell_MaybeUpdateTimer    ; branch if bit(s) set (Don&#x27;t adapt in Open Loop)</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Counterpart to <a href="../../1_-_Fuel/F_-_Adaptive_memory/AMUPDI_EPPsBetweenCalChangeUpdateClosedThrottle.html"><code>AMUPDI</code></a> (closed throttle) and gated by <a href="../../1_-_Fuel/F_-_Adaptive_memory/PWMIN_NoCellUpdateBelow_PWMIN_Pulsewidth.html"><code>PWMIN</code></a>.</li>
+<li><strong>Units</strong>: Distributor pulses / Engine Pulse Periods (EPPs). 26 counts = 13 engine revolutions.</li>
+<li><strong>Persistence</strong>: Compares against RAM counter <code>AdaptiveCellUpdateTimer_IncrementedEveryDistRisingEdge</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>AMUPDT</code>
+        </footer>
+    </div>
+</body>
+</html>

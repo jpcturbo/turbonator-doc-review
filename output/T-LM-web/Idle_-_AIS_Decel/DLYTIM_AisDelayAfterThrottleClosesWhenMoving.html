@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DLYTIM: AisDelayAfterThrottleClosesWhenMoving | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0BEE</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DLYTIM: AisDelayAfterThrottleClosesWhenMoving</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DLYTIM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DLYTIM_AisDelayAfterThrottleClosesWhenMoving</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0BEE</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Seconds / Countdown Ticks (0x17 = 23 ticks; approx 1.6 seconds)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x17                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L3084-L3096"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L6737"><code>CheckThrottle_AtFullThrottle</code></a> in <a href="../T-LMv13.asm.html#L6807"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DLYTIM</code> (AisDelayAfterThrottleClosesWhenMoving) defines a settling time delay loaded into <code>Timer_CountdownFromStartRunForAisFeedback</code> whenever the throttle snaps shut while the vehicle is in motion (&gt; MPHREF, approx 6 MPH).</p>
+<p>When decelerating while moving, the engine needs time to coast down smoothly under dashpot control. Engaging closed-loop idle speed feedback too early while the car is still rolling in gear would cause the stepper motor to violently close down, inducing driveline jerk and bucking. <code>DLYTIM</code> holds off closed-loop idle regulation for ~1.6 seconds, giving the vehicle time to complete its initial deceleration gracefully.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside subroutine <code>CheckThrottle_AtFullThrottle</code> at line 6807.</li>
+<li>Triggered when throttle transitions from open to closed (<code>tstb; bpl LF192</code>).</li>
+<li>Selected when vehicle speed is greater than or equal to <a href="../Idle_-_AIS_Decel/MPHREF_SwitchPointForDecelIdleAisControl.html"><code>MPHREF_SwitchPointForDecelIdleAisControl</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Driveline Jerk on Decel</strong>: If letting off the gas while cruising causes an immediate jerk or 'thud' as the engine braking kicks in, increasing <code>DLYTIM</code> extends the smooth dashpot transition.</li>
+<li><strong>RPM Hang While Rolling</strong>: If pushing the clutch in while coasting causes the engine RPM to hang above 1,500 RPM for too long before dropping, reduce <code>DLYTIM</code> (e.g. to <code>0x10</code> = ~1.0 sec).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CheckThrottle_AtFullThrottle (T-LMv13.asm:6807-6821) ---
+LF175:  ldx  #DLYTIM_AisDelayAfterThrottleClosesWhenMoving ; Pointer to DLYTIM ($0BEE)
+        stab Temp0                               
+        ldd  VehicleSpeed_HB                     ; Read vehicle speed
+        asld                                     ; Shift left 3 times (scale speed)
+        asld
+        asld
+        ldab Temp0                               
+        cmpa MPHREF_SwitchPointForDecelIdleAisControl ; Compare against speed threshold ($0CE5, data 0x06)
+        bcc  LF18E                               ; If VehicleSpeed &gt;= MPHREF, use DLYTIM
+        ...
+LF18E:  ldaa 0x00,x                              ; Load delay value from address in X
+        staa Timer_CountdownFromStartRunForAisFeedback ; Initialize countdown timer</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 6807</strong> (<code>CheckThrottle_AtFullThrottle</code>): <code>LF175:  ldx  #DLYTIM_AisDelayAfterThrottleClosesWhenMoving    ; load index with value</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Dual-Mode Architecture</strong>: If vehicle speed is below <a href="../Idle_-_AIS_Decel/MPHREF_SwitchPointForDecelIdleAisControl.html"><code>MPHREF</code></a> and in neutral, the pointer X is incremented by 1 (<code>inx</code>) to point directly to <a href="../Idle_-_AIS_Decel/DLYTIM2_AisDelayAfterThrottleClosesWhenStopped.html"><code>DLYTIM2</code></a>!</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>DLYTIM</code>
+        </footer>
+    </div>
+</body>
+</html>

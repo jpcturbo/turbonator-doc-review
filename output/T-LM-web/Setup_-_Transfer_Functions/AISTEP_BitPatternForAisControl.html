@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AISTEP: BitPatternForAisControl | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x14A4</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Setup - Transfer Functions</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>AISTEP: BitPatternForAisControl</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>AISTEP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>AISTEP_BitPatternForAisControl</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Setup_-_Transfer_Functions\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x14A4</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 9 (Bitmask / Pattern Array)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">4-Phase Hardware Coil Bitmask Array (.byte 0x06, 0x0A, 0x09, 0x05)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x06                       ;Point 1; .byte 0x0A                       ;Point 2; .byte 0x09                       ;Point 3; .byte 0x05                       ;Point 4</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L5314-L5328"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L5395"><code>Operate_AIS_Motor</code></a> in <a href="../T-LMv13.asm.html#L5402"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>AISTEP</code> (BitPatternForAisControl) is the hardware commutation table (4 bytes: <code>0x06</code>, <code>0x0A</code>, <code>0x09</code>, <code>0x05</code>) that defines the sequential magnetic coil excitation patterns for the Automatic Idle Speed bipolar stepper motor.</p>
+<p>The Chrysler AIS actuator contains two independent stator windings. To step the rotor forward (opening the pintle) or backward (closing the pintle), the ECU's quad-driver output transistors must energize the coil pairs in a precise quadrature sequence:
+- <strong>Phase 0 (<code>0x06</code>, binary 00000110)</strong>: Coils A+ and B+ energized.
+- <strong>Phase 1 (<code>0x0A</code>, binary 00001010)</strong>: Coils A- and B+ energized.
+- <strong>Phase 2 (<code>0x09</code>, binary 00001001)</strong>: Coils A- and B- energized.
+- <strong>Phase 3 (<code>0x05</code>, binary 00000101)</strong>: Coils A+ and B- energized.</p>
+<p>Inside <code>Operate_AIS_Motor</code>, the ECU increments (<code>+1</code>) or decrements (<code>-1</code>) <code>AISMotorBits</code>, masks to 2 bits (<code>andb #0x03</code>), and fetches the coil bit pattern from <code>AISTEP</code> to drive the motor hardware.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside subroutine <code>Operate_AIS_Motor</code> at line 5402 and initialization in <code>ResetRoutine</code> at line 5644.</li>
+<li>Indexed by 2-bit phase pointer <code>AISMotorBits</code> (0 to 3).</li>
+<li>Outputs directly to the ECU's power output driver latch.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Fixed Hardware Driver Table</strong>: <strong>NEVER MODIFY</strong>. Changing these bit patterns will cause the stepper motor coils to fight each other, resulting in a buzzing, vibrating motor that cannot rotate, leading to permanent idle motor failure or blown driver transistors in the Power Module / SMEC.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- Operate_AIS_Motor (T-LMv13.asm:5395-5407) ---
+Operate_AIS_Motor:
+        ldaa #0x01                               ; Step increment (+1)
+        cmpb DesiredNewAisPosition               ; Compare current vs desired position
+        beq  LE730                               ; If at target, exit
+        bcs  LE711                               ; If current &lt; desired, move forward (+1)
+        nega                                     ; Else move backward (-1 / $FF)
+LE711:  staa Temp0                               
+        ldx  #AISTEP_BitPatternForAisControl     ; Pointer to 4-phase step table ($14A4)
+        ldab AISMotorBits                        ; Load current 2-bit phase index (0-3)
+        addb Temp0                               ; Increment/decrement phase
+        andb #0x03                               ; Wrap modulo 4 (0, 1, 2, 3)
+        stab AISMotorBits                        ; Save new phase index
+        ; Fetch bitmask and output to H-bridge driver!</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 5402</strong> (<code>Operate_AIS_Motor</code>): <code>ldx  #AISTEP_BitPatternForAisControl    ; load index with value</code></li>
+<li><strong>Line 5644</strong> (<code>ResetRoutine</code>): <code>ldx  #AISTEP_BitPatternForAisControl    ; load index with value</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Quadrature Commutation</strong>: Standard 4-step full-step bipolar stepper motor driver pattern.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>AISTEP</code>
+        </footer>
+    </div>
+</body>
+</html>

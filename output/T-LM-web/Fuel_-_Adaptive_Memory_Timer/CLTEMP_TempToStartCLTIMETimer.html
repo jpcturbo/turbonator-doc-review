@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLTEMP: TempToStartCLTIMETimer | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0458</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - Adaptive Memory Timer</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CLTEMP: TempToStartCLTIMETimer</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CLTEMP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CLTEMP_TempToStartCLTIMETimer</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_Adaptive_Memory_Timer\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0458</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Coolant Temperature (Â°F scaled)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x9B (155 raw counts $\approx 77^\circ\text{F}$)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L1142-L1154"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L3062"><code>HandleO2Processing_MM</code></a> in <a href="../T-LMv13.asm.html#L3089"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CLTEMP_TempToStartCLTIMETimer</code> defines the <strong>coolant temperature threshold that unlocks the closed-loop delay timer</strong>.</p>
+<p>Before the ECU will consider running in closed-loop fuel feedback or adapting fuel tables, the engine must warm up past cold-enrichment levels. When coolant temperature reaches <code>CLTEMP</code>, the ECU starts the <code>Timer_CLTIME_ClosedLoopTimer</code> countdown. Once that timer reaches <a href="../Fuel_-_O2_Controller/O2TIME_DelayTimeToClosedLoop.html"><code>O2TIME</code></a>, the ECU tests oxygen sensor activity and transitions into closed-loop control.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Warmup Progression:</strong></li>
+<li>Active during engine warmup from cold start.</li>
+<li>If <code>CoolantTemp &lt; CLTEMP</code>: The closed loop delay timer is inhibited from advancing. Fueling remains purely open-loop based on warmup curves (<a href="../Fuel_-_Running/CURVEA_FuelColdEnrichmentCurveA.html"><code>CURVEA</code></a> and <a href="../Fuel_-_Running/CURVEB_FuelColdEnrichmentCurveB.html"><code>CURVEB</code></a>).</li>
+<li>If <code>CoolantTemp &gt;= CLTEMP</code>: The closed loop timer begins ticking toward <a href="../Fuel_-_O2_Controller/O2TIME_DelayTimeToClosedLoop.html"><code>O2TIME</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stock Setting:</strong> <code>0x9B</code> (≈ 77°F). The factory cal enables closed-loop qualification early (at mild ambient temps) to reduce cold-start tailpipe emissions.</li>
+<li><strong>Increasing <code>CLTEMP</code> (e.g., to 120Â°Fâ€“140Â°F):</strong></li>
+<li><strong>Effect:</strong> Keeps the engine in open loop longer until physical warmth is established in the combustion chambers.</li>
+<li><strong>When to Use:</strong> Ethanol fuels (E85) or large aftermarket camshafts that struggle with lean stumble or erratic idle if closed-loop engages at lukewarm engine temperatures.</li>
+<li><strong>Decreasing <code>CLTEMP</code>:</strong></li>
+<li>Forces closed-loop qualification when cold, risking poor driveability and surging.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 3088â€“3093):</p>
+<pre><code class="language-motorola6803">ldaa CoolantTemp    ; Read current engine coolant temperature
+        cmpa CLTEMP_TempToStartCLTIMETimer ; Compare with 0x9B (77Â°F)
+        bcs  LD6F2          ; If CoolantTemp &lt; CLTEMP, bypass closed loop timer!
+        ldaa Timer_CLTIME_ClosedLoopTimer ; If warm enough, check timer
+        cmpa O2TIME_DelayTimeToClosedLoop
+        bcc  CheckIfO2SensorDataIsValid</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><code>CLTEMP</code> acts as the primary gatekeeper for both closed-loop O2 feedback and adaptive fuel memory learning. If the engine never reaches <code>CLTEMP</code> (e.g. thermostat stuck open), adaptive learning is disabled indefinitely.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>CLTEMP</code>
+        </footer>
+    </div>
+</body>
+</html>

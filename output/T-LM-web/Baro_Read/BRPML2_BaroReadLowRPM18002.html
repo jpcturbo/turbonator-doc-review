@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRPML2: BaroReadLowRPM18002 | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0F74</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Baro Read</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BRPML2: BaroReadLowRPM18002</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BRPML2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BRPML2_BaroReadLowRPM18002</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Baro_Read\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0F74</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine RPM (16-bit raw word; 0x1C20 = 1,800 RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0x1C20                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L3986-L3998"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L1665"><code>HandleBaroReadRequirement_MM</code></a> in <a href="../T-LMv13.asm.html#L1704"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BRPML2</code> (BaroReadLowRPM18002) defines the minimum engine speed (stock calibration = 1,800 RPM / <code>0x1C20</code>) required to execute an in-flight barometric pressure read.</p>
+<p>Chrysler turbo vehicles utilize a single Manifold Absolute Pressure (MAP) sensor to measure both intake manifold boost/vacuum and ambient atmospheric barometric pressure. To measure barometric pressure while driving, the ECU momentarily energizes the Baro Solenoid, venting the MAP sensor port to ambient atmosphere. To ensure this pressure pulse does not disrupt engine fueling or cause a stumble, the ECU requires the engine to be running within a stable, moderate cruising RPM window between <code>BRPML2</code> (1,800 RPM) and <a href="../Baro_Read/BRPMH_BaroReadHighRPM66502.html"><code>BRPMH</code></a> (6,650 RPM).</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside subroutine <code>HandleBaroReadRequirement_MM</code> at line 1704.</li>
+<li>Compares 16-bit <code>EngineRpm_HB</code> register against <code>BRPML2</code>.</li>
+<li>If <code>EngineRpm &lt; BRPML2</code> (<code>bcs LCDAE</code>), the baro reading cycle is aborted.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stock Setting</strong>: <code>0x1C20</code> (1,800 RPM).</li>
+<li><strong>Preventing Low-Speed Baro Cycling</strong>: Solenoid clicks during slow city driving can occasionally cause tiny manifold pressure dips. Keeping <code>BRPML2</code> at or above 1,800 RPM ensures the baro solenoid only cycles during highway cruising where intake airflow momentum absorbs the momentary vent pulse seamlessly.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- HandleBaroReadRequirement_MM (T-LMv13.asm:1701-1705) ---
+        ldx  EngineRpm_HB                        ; Load live 16-bit engine speed
+        cpx  BRPMH2_BaroReadHighRPM66502         ; Check upper limit ($0F81, data 0x3E80 = 6650 RPM)
+        bhi  LCDAE                               ; If RPM &gt; BRPMH, abort baro read
+        cpx  BRPML2_BaroReadLowRPM18002          ; Check lower limit ($0F74, data 0x1C20 = 1800 RPM)
+        bcs  LCDAE                               ; If RPM &lt; BRPML2, abort baro read</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 1704</strong> (<code>HandleBaroReadRequirement_MM</code>): <code>cpx  BRPML2_BaroReadLowRPM18002    ;  (data is 1c20)</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>16-bit Comparison</strong>: The 6803 executes a double-byte index comparison (<code>cpx</code>) directly against the 16-bit threshold.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>BRPML2</code>
+        </footer>
+    </div>
+</body>
+</html>

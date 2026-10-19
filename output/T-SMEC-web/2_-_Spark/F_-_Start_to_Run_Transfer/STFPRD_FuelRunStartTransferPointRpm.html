@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STFPRD: FuelRunStartTransferPointRpm | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x065E</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>2 - Spark ➔ F - Start to Run Transfer</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>STFPRD: FuelRunStartTransferPointRpm</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>STFPRD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>STFPRD_FuelRunStartTransferPointRpm</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>2_-_Spark\F_-_Start_to_Run_Transfer\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x065E</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">period counts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x41                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1820-L1830"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L6992"><code>RpmBelowStartRunTransfer</code></a> in <a href="../../T-SMEC_v19.asm.html#L6993"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>STFPRD</code> defines the fuel injection run-to-start stall hysteresis distributor pulse period threshold.</p>
+<p>Once the engine is running on normal speed-density fuel calculations, if engine speed sags severely (such as during abrupt clutch release, severe load, or an impending stall), speed-density manifold pressure readings become erratic and fuel injectors cannot deliver stable small pulsewidths. If the distributor pulse period exceeds <code>STFPRD</code> (engine speed falls below approximately 460 RPM in factory calibrations), the engine controller recognizes an impending stall, drops running fuel mode, and re-engages starting/cranking fuel enrichment logic to catch the falling engine and prevent stalling.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>RpmBelowStartRunTransfer</code> (<code>T-SMEC_v19.asm:6992-6995</code>), called from <code>HandleFuelStartRunStartTransfer</code>.</li>
+<li><strong>Input Variable</strong>: <code>DistributorFallingEdgePulsewidth_HB</code> (RAM address 0x0090).</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li><code>cmpb STFPRD_FuelRunStartTransferPointRpm</code> at line 6993.</li>
+<li>If period &lt; <code>STFPRD</code> (<code>bcs L1589</code>), engine speed remains above stall threshold (~460 RPM), preserving running fuel mode.</li>
+<li>If period &gt;= <code>STFPRD</code>, line 6995 executes <code>bset *BitFlags_54, #b54_FuelEngineNotRunning | b54_Starting</code> to drop back to cranking fuel.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Fuel Stall Recovery Deadband</strong>:</li>
+<li>Factory setting of 460 RPM (65 counts) sits 165 RPM below the start-to-run transfer threshold (<a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/RNFPRD_FuelStartRunTransferPointRpm.html"><code>RNFPRD</code></a> at 625 RPM), preventing mode-switching hunting.</li>
+<li><strong>Anti-Lug Tuning for Manual Transmissions</strong>:</li>
+<li>Raising <code>STFPRD</code> prevents sudden rich bogging when heavily loading the engine at low speeds in parking lots or stop-and-go traffic.</li>
+<li><strong>Period Scaling Reminder</strong>:</li>
+<li>Period counts are inversely proportional to RPM (RPM ≈ 30000 / count).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>RpmBelowStartRunTransfer</code> at line 6992, execution arrives when period &gt;= <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/RNFPRD_FuelStartRunTransferPointRpm.html"><code>RNFPRD</code></a>. Line 6993 executes <code>cmpb STFPRD_FuelRunStartTransferPointRpm</code>. If accumulator B is less than <code>STFPRD</code> (engine speed between 460 and 625 RPM), carry is set and <code>bcs L1589</code> branches to line 6996, keeping running fuel active. If accumulator B is greater than or equal to <code>STFPRD</code> (engine speed stalled below 460 RPM), line 6995 executes <code>bset *BitFlags_54, #b54_FuelEngineNotRunning | b54_Starting</code>, re-engaging cranking fueling.</p>
+<pre><code class="language-motorola6803">; --- RpmBelowStartRunTransfer (T-SMEC_v19.asm:6992-6996) ---
+RpmBelowStartRunTransfer:
+	cmpb STFPRD_FuelRunStartTransferPointRpm    ; compare b with memory contents (data is 41) --&gt; 460 rpm
+	bcs  L1589	    ; branch if lower
+	bset *BitFlags_54, #b54_FuelEngineNotRunning | b54_Starting    ; set bits
+L1589:	ldaa #0xff	    ; load a with value -11111111-</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Hysteresis Deadband</strong>: Operates as the fuel counterpart to <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/RNSTTR_SparkRunStartTransferPointRpm.html"><code>RNSTTR</code></a> (460 RPM fuel stall vs. 422 RPM spark stall).</li>
+<li><strong>Scaling</strong>: 1 count represents period duration (RPM ≈ 30,000 / count). Factory setting 0x41 = 65 counts ≈ 460 RPM.</li>
+<li><strong>Re-Engages Cranking Enrichment</strong>: Sets bits <code>b54_FuelEngineNotRunning</code> and <code>b54_Starting</code> in <code>BitFlags_54</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>STFPRD</code>
+        </footer>
+    </div>
+</body>
+</html>

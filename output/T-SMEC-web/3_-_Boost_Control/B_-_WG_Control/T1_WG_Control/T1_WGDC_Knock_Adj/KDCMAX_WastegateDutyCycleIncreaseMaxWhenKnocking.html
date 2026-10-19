@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KDCMAX: WastegateDutyCycleIncreaseMaxWhenKnocking | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1242</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ B - WG Control ➔ T1 WG Control ➔ T1 WGDC Knock Adj</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>KDCMAX: WastegateDutyCycleIncreaseMaxWhenKnocking</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>KDCMAX</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>KDCMAX_WastegateDutyCycleIncreaseMaxWhenKnocking</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\B_-_WG_Control\T1_WG_Control\T1_WGDC_Knock_Adj\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1242</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">percent duty cycle</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x3C                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4864-L4874"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L9600"><code>WGDC_LookupWGDutyCycleBase</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L9627"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>KDCMAX</code> defines the upper ceiling on total cumulative wastegate duty cycle reduction that can be commanded by the knock protection system in T1 control.</p>
+<p>When severe or persistent detonation occurs under boost, repeated knock events add incremental duty cycle reductions to the knock reduction variable. <code>KDCMAX</code> prevents this reduction variable from winding down indefinitely, capping total knock-induced duty cycle reduction to a safe maximum that typically returns the wastegate straight to mechanical base actuator spring pressure.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_LookupWGDutyCycleBase</code> (<code>T-SMEC_v19.asm:9626-9629</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
+<li><strong>Gating Conditions</strong>: Evaluated immediately after <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Knock_Adj/KDCINC_WastegateDutyCycleIncreaseStepWhenKnocking.html"><code>KDCINC</code></a> is added to accumulator B.</li>
+<li><strong>Comparison &amp; Clamp</strong>:</li>
+<li>Accumulator A loads <code>KDCMAX_WastegateDutyCycleIncreaseMaxWhenKnocking</code> at line 9627.</li>
+<li>Compares accumulator B with accumulator A (<code>cba</code> at line 9628).</li>
+<li>If accumulator B exceeds <code>KDCMAX</code> (<code>bcs</code>), execution branches to line 9633 (<code>tab</code>) to clamp accumulator B to <code>KDCMAX</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Maximum Knock Boost Reduction Authority</strong>:</li>
+<li>Caps total cumulative duty cycle reduction commanded by knock protection.</li>
+<li>Factory setting is 60 counts (30.0 percent duty cycle reduction).</li>
+<li><strong>High-Boost Calibration Adjustment</strong>:</li>
+<li>When running 20+ psi where base WGDC is 80%, increase <code>KDCMAX</code> to 100 to 120 counts (50% to 60% reduction) to ensure boost drops to base spring.</li>
+<li><strong>Fail-Safe Operation</strong>:</li>
+<li>Prevents excessive boost penalty while ensuring severe knock pulls enough boost to save pistons and head gaskets.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>WGDC_LookupWGDutyCycleBase</code> at line 9627, <code>ldaa KDCMAX_WastegateDutyCycleIncreaseMaxWhenKnocking</code> loads the maximum allowable knock reduction into accumulator A. Line 9628 executes <code>cba</code> to compare accumulator B against accumulator A. If accumulator B is higher, carry is set and line 9629 branches to line 9633, where <code>tab</code> transfers <code>KDCMAX</code> from accumulator A into accumulator B. The capped value is then stored in <code>WastegateDutyCycleIncreaseFromKnock</code>.</p>
+<pre><code class="language-motorola6803">; --- WGDC_LookupWGDutyCycleBase (T-SMEC_v19.asm:9626-9629) ---
+	ldab #0xff	    ; load b with value -11111111-
+L1865:	ldaa KDCMAX_WastegateDutyCycleIncreaseMaxWhenKnocking	 ; load a with memory contents (data is 3c)
+	cba
+	bcs  L1866	    ; branch if lower</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Upper Boundary</strong>: Limits how deep knock boost reduction can cut into base duty cycle.</li>
+<li><strong>Spring Pressure Target</strong>: Sized so that <code>Base Duty Cycle - KDCMAX &lt;= 0%</code>, guaranteeing wastegate returns to mechanical actuator spring pressure.</li>
+<li><strong>T1 vs. T2 Equivalents</strong>: T1 uses <code>KDCMAX</code> (0x3C = 30%), while T2 uses <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2KDCMAX_WastegateDutyCycleIncreaseMaxWhenKnocking.html"><code>T2KDCMAX</code></a> (0x50 = 40%).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>KDCMAX</code>
+        </footer>
+    </div>
+</body>
+</html>

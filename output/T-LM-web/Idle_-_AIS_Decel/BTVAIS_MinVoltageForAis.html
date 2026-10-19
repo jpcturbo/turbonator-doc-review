@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTVAIS: MinVoltageForAis | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0C8F</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BTVAIS: MinVoltageForAis</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BTVAIS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BTVAIS_MinVoltageForAis</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0C8F</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Battery Voltage Threshold (raw ADC / Volts; 0x71 = ~10.5 Volts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x71                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L3245-L3256"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L5377"><code>CheckVoltageforAIS</code></a> in <a href="../T-LMv13.asm.html#L5379"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BTVAIS</code> (MinVoltageForAis) is a critical electrical protection threshold that guards the AIS stepper motor and ECU hardware against low system voltage.</p>
+<p>The Chrysler AIS unit is a 4-wire bipolar stepper motor that draws substantial coil current through the ECU's internal quad-driver circuitry. If system voltage collapses (e.g. during heavy starter cranking, dead battery, or broken alternator belt), pulsing the stepper motor coils can draw enough current to drag the ECU's internal 5V regulated logic rail down, causing a microprocessor brownout reset. Furthermore, below 10.5V, the motor coils cannot generate sufficient magnetic torque to reliably overcome pintle spring tension, causing the rotor to skip steps and lose position synchronization. <code>BTVAIS</code> freezes the stepper motor in place whenever <code>BatteryVolts &lt; BTVAIS</code>.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside subroutine <code>CheckVoltageforAIS</code> at line 5379.</li>
+<li>Compares <code>BatteryVolts</code> against <code>BTVAIS</code>.</li>
+<li>If <code>BatteryVolts &lt; BTVAIS</code> (<code>bcs LE730</code>), the routine immediately exits, bypassing all stepper motor H-bridge coil driving logic.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stock Value</strong>: <code>0x71</code> (113 decimal = approximately 10.5 Volts).</li>
+<li><strong>Low-Voltage Tuning / Relocated Batteries</strong>: Do not lower <code>BTVAIS</code> below 10.0V. If an aftermarket trunk-mounted battery or undersized racing battery causes voltage sag during cranking, keeping <code>BTVAIS</code> at stock ensures the ECU does not lose stepper step count synchronization.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CheckVoltageforAIS (T-LMv13.asm:5377-5380) ---
+CheckVoltageforAIS:
+        ldaa BatteryVolts                        ; Read battery voltage ADC
+        cmpa BTVAIS_MinVoltageForAis             ; Compare against minimum threshold ($0C8F, data 0x71 = ~10.5V)
+        bcs  LE730                               ; If BatteryVolts &lt; BTVAIS, abort motor drive!
+MoveAISStepper:
+        ldab CurrentAisPosition                  ; Proceed to stepper coil step logic</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 5379</strong> (<code>CheckVoltageforAIS</code>): <code>cmpa BTVAIS_MinVoltageForAis    ; compare a with memory contents (data is 71)</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Hardware Safety Interlock</strong>: Acts as a hard gatekeeper preceding all stepper motor stepping routines (<code>MoveAISStepper</code>, <code>Operate_AIS_Motor</code>).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>BTVAIS</code>
+        </footer>
+    </div>
+</body>
+</html>

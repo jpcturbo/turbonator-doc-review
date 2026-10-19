@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSTEMP: TempAboveWhichSparkScatterIsActive | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0592</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>2 - Spark ➔ C - Scatter Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>SSTEMP: TempAboveWhichSparkScatterIsActive</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>SSTEMP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>SSTEMP_TempAboveWhichSparkScatterIsActive</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>2_-_Spark\C_-_Scatter_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0592</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">degF</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x58                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1616-L1626"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8106"><code>HandleSparkScatter</code></a> in <a href="../../T-SMEC_v19.asm.html#L8122"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>SSTEMP</code> defines the minimum engine coolant temperature threshold required to activate spark scatter idle speed stabilization.</p>
+<p>Spark scatter is a high-speed closed-loop idle control system that rapidly modulates ignition timing advance and retard on each individual distributor pulse to hold engine idle speed precisely on target. During cold warm-up operation, the engine is already running rich warm-up fueling and elevated idle bypass airflow; applying rapid timing modulation on cold cylinder charges could destabilize combustion and cause rough running. In factory calibrations, <code>SSTEMP</code> is set to 88 counts, corresponding to approximately 122 degF, ensuring that spark scatter remains locked out until the combustion chambers reach stable operating temperatures.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>HandleSparkScatter</code> (<code>T-SMEC_v19.asm:8121-8123</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Engine running confirmed (<code>b54_FuelEngineNotRunning</code> clear).</li>
+<li>Throttle closed (<code>b4f_OffIdle</code> clear).</li>
+<li>Not in automatic transmission gear shift (<code>b0c_ATXChngGear</code> clear).</li>
+<li>AIS start-to-run delay expired (<code>Timer_CountdownFromStartRunForAisFeedback</code> = 0).</li>
+<li>Not falling to idle (<code>b50_FallToIdle</code> clear).</li>
+<li>Sensor fault flags clear (<code>b45_BadCoolantTemp</code>, <code>b45_MapStuck</code>, <code>b45_MapBadSignal</code> clear).</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li><code>ldab CoolantTemp</code> loads coolant temperature.</li>
+<li><code>cmpb SSTEMP_TempAboveWhichSparkScatterIsActive</code> at line 8122.</li>
+<li>If <code>CoolantTemp</code> &lt;= <code>SSTEMP</code> (<code>bls DontUseSparkScatter</code>), branches to line 8175 to disable spark scatter.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Disabling for Track / Road Racing</strong>:</li>
+<li>Setting <code>SSTEMP</code> to 254 permanently disables spark scatter, preventing closed-throttle timing retards between quick manual gear shifts and assisting rev-matching on deceleration.</li>
+<li><strong>Aftermarket Camshaft Idling</strong>:</li>
+<li>Engines with aggressive camshaft overlap often dislike rapid spark modulation; raising <code>SSTEMP</code> or disabling scatter allows the engine to settle into a natural, steady idle lope.</li>
+<li><strong>Warmup Stability</strong>:</li>
+<li>Factory setting of 122 degF keeps scatter disabled while cold enrichment curves are active, transitioning smoothly to scatter as closed-loop fueling approaches.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>HandleSparkScatter</code> at line 8121, <code>ldab CoolantTemp</code> loads current coolant temperature into accumulator B. Line 8122 executes <code>cmpb SSTEMP_TempAboveWhichSparkScatterIsActive</code>. If accumulator B is lower than or equal to <code>SSTEMP</code>, carry or zero is set and <code>bls DontUseSparkScatter</code> branches directly to line 8175, clearing accumulator A to zero and storing it into <code>SparkScatter</code>. Only when coolant temperature strictly exceeds <code>SSTEMP</code> does execution continue to evaluate engine run time against <a href="../../2_-_Spark/C_-_Scatter_Control/SSITIM_ScatterInhibitTime.html"><code>SSITIM</code></a>.</p>
+<pre><code class="language-motorola6803">; --- HandleSparkScatter (T-SMEC_v19.asm:8121-8124) ---
+L1677:	ldab CoolantTemp    ; load b with memory contents
+	cmpb SSTEMP_TempAboveWhichSparkScatterIsActive	  ; compare b with memory contents (data is 58)
+	bls  DontUseSparkScatter    ; branch if lower or same
+	ldx  KeyOnOrEngineRunningTime</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Master Temperature Switch</strong>: First temperature-based gate enabling the spark scatter routine.</li>
+<li><strong>Factory Value</strong>: 0x58 = 88 counts ≈ 122 degF on Chrysler thermistor curve.</li>
+<li><strong>Mopar Performance Race Calibrations</strong>: Regularly configured to 0xFE to lock out scatter entirely.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>SSTEMP</code>
+        </footer>
+    </div>
+</body>
+</html>

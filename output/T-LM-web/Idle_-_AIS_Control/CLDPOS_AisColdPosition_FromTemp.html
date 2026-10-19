@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLDPOS: AisColdPosition FromTemp | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0A50</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CLDPOS: AisColdPosition FromTemp</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CLDPOS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CLDPOS_AisColdPosition_FromTemp</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0A50</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2D Table / Curve)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Stepper Motor Steps vs Coolant Temp (°F / raw ADC)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x03                       ;Number of points in table; .byte 0x6E, 0x78, 0xFC, 0x78     ;Point 1; .byte 0x7F, 0x3C, 0xFF, 0x32     ;Point 2; .byte 0xC7, 0x02                 ;Point 3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L2670-L2685"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L5003"><code>CalculateTargetIdleSpeedAndAisPosition_MM</code></a> in <a href="../T-LMv13.asm.html#L5213"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CLDPOS</code> (AisColdPosition_FromTemp) establishes an extra off-idle bypass airflow opening based on engine coolant temperature. </p>
+<p>When a cold engine is driven off-idle and the throttle is opened, the engine requires additional bypass air pre-positioning so that when the throttle suddenly snaps shut, cold intake manifold walls (which condense liquid fuel) do not cause an immediate lean stall. As engine coolant reaches normal operating temperature, <code>CLDPOS</code> decays down towards zero steps, handing full dynamic dashpot authority over to throttle and RPM-based tables.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated in <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at line 5213.</li>
+<li>Indexed by <code>CoolantTemp</code>.</li>
+<li>Multiplied by barometric compensation factor <code>BARAIS_AisBaroCompensation</code> before being combined with RPM and throttle off-idle terms.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Cold Stall on Decel / Clutch In</strong>: If a modified engine stalls when coming to a stop during the first 3-5 minutes of driving before full warmup, increase the values in <code>CLDPOS</code> in the 70°F - 140°F region.</li>
+<li><strong>Cold High Idle / Hanging RPM</strong>: If cold off-idle cruising causes engine RPM to 'hang' or refuse to drop below 1,500 RPM when you lift off the accelerator, reduce the step values in <code>CLDPOS</code>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateTargetIdleSpeedAndAisPosition_MM (T-LMv13.asm:5212-5225) ---
+        ldaa CoolantTemp                         ; Read coolant temperature
+        ldx  #CLDPOS_AisColdPosition_FromTemp    ; Pointer to CLDPOS table ($0A50)
+        jsr  Lookup4ByteTable                    ; Interpolate cold steps
+        staa Temp0                               ; Store intermediate result
+        ldaa BaroPressure                        ; Read atmospheric pressure
+        ldx  #BARAIS_AISBaroCompensation         ; Pointer to barometric correction ($0A60)
+        jsr  Lookup4ByteTable                    
+        ldaa Temp0                               
+        mul                                      ; Multiply cold steps by barometric factor
+        asld                                     ; Double precision shift left (x2)
+        bcs  LE63E                               ; Clamp on overflow
+        asld                                     ; Double precision shift left (x4 scaling)
+        bcs  LE63E                               ; Clamp on overflow
+        staa Temp0                               ; Store scaled cold off-idle position</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 5213</strong> (<code>CalculateTargetIdleSpeedAndAisPosition_MM</code>): <code>ldx  #CLDPOS_AisColdPosition_FromTemp    ; load index with value</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Mathematical Scaling</strong>: Notice that <code>(CLDPOS * BARAIS)</code> is shifted left twice (multiplied by 4), meaning <a href="../Idle_-_AIS_Control/BARAIS_BaroCompensation_FromBaro.html"><code>BARAIS</code></a> acts as a fractional multiplier normalized around $0.25$ (1.0× multiplier).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>CLDPOS</code>
+        </footer>
+    </div>
+</body>
+</html>

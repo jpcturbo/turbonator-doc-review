@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T-LM Engine Modifications Tuning Guide | Chrysler Turbo Logic Module (1985–1987)</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggleNav');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggleNav');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="T-LM-web/style.css">
+    <style>
+        :root {
+            --badge-high-bg: #fee2e2;
+            --badge-high-text: #991b1b;
+            --badge-high-border: #f87171;
+            --badge-med-bg: #fef3c7;
+            --badge-med-text: #92400e;
+            --badge-med-border: #fcd34d;
+            --badge-opt-bg: #e0f2fe;
+            --badge-opt-text: #0369a1;
+            --badge-opt-border: #7dd3fc;
+            --tip-bg: #f0fdf4;
+            --tip-border: #22c55e;
+            --tip-text: #166534;
+            --note-bg: #eff6ff;
+            --note-border: #3b82f6;
+            --note-text: #1e40af;
+            --alert-bg: #fffbeb;
+            --alert-border: #f59e0b;
+            --alert-text: #b45309;
+        }
+        [data-theme="dark"] {
+            --badge-high-bg: #450a0a;
+            --badge-high-text: #fecaca;
+            --badge-high-border: #b91c1c;
+            --badge-med-bg: #451a03;
+            --badge-med-text: #fde68a;
+            --badge-med-border: #b45309;
+            --badge-opt-bg: #0c4a6e;
+            --badge-opt-text: #bae6fd;
+            --badge-opt-border: #0284c7;
+            --tip-bg: #052e16;
+            --tip-border: #16a34a;
+            --tip-text: #bbf7d0;
+            --note-bg: #172554;
+            --note-border: #2563eb;
+            --note-text: #bfdbfe;
+            --alert-bg: #451a03;
+            --alert-border: #d97706;
+            --alert-text: #fef3c7;
+        }
+
+        .guide-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 16px 60px 16px;
+        }
+
+        /* Top Sticky Nav */
+        .sticky-nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(11, 31, 61, 0.95);
+            backdrop-filter: blur(8px);
+            border-bottom: 2px solid var(--border-color);
+            padding: 12px 0;
+            margin-bottom: 24px;
+        }
+        [data-theme="light"] .sticky-nav {
+            background: rgba(237, 242, 248, 0.95);
+        }
+        .sticky-nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+        .nav-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .nav-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            transition: all 0.15s ease-in-out;
+        }
+        .nav-pill:hover, .nav-pill:focus {
+            background: var(--primary-light);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        /* Hero Header */
+        .hero-banner {
+            background: linear-gradient(135deg, #0b1f3d 0%, #07152b 100%);
+            color: #ffffff;
+            border-radius: 12px;
+            padding: 30px 28px;
+            margin-bottom: 28px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+        }
+        [data-theme="light"] .hero-banner {
+            background: linear-gradient(135deg, #1e3a8a 0%, #0f274a 100%);
+            color: #ffffff;
+        }
+        .hero-banner h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #f8fafc;
+        }
+        .hero-banner p {
+            font-size: 15px;
+            color: #cbd5e1;
+            max-width: 960px;
+            line-height: 1.6;
+            margin-bottom: 14px;
+        }
+        .hero-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .hero-badge {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #e2e8f0;
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        /* Callout Boxes */
+        .callout {
+            border-left: 4px solid;
+            border-radius: 6px;
+            padding: 14px 18px;
+            margin: 18px 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .callout-title {
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+            font-size: 14.5px;
+        }
+        .callout-alert {
+            background-color: var(--alert-bg);
+            border-color: var(--alert-border);
+            color: var(--alert-text);
+        }
+        .callout-tip {
+            background-color: var(--tip-bg);
+            border-color: var(--tip-border);
+            color: var(--tip-text);
+        }
+        .callout-note {
+            background-color: var(--note-bg);
+            border-color: var(--note-border);
+            color: var(--note-text);
+        }
+
+        /* Section Cards */
+        .mod-section {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 36px;
+            box-shadow: var(--shadow-sm);
+            scroll-margin-top: 75px;
+        }
+        .mod-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .mod-title-area h2 {
+            font-size: 22px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+        .mod-meta {
+            font-size: 13.5px;
+            color: var(--text-muted);
+        }
+
+        /* Tables */
+        .guide-table-wrap {
+            overflow-x: auto;
+            margin: 16px 0 20px 0;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        .guide-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+            text-align: left;
+        }
+        .guide-table th {
+            background-color: var(--table-stripe);
+            color: var(--text-main);
+            font-weight: 600;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+        .guide-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: top;
+            line-height: 1.5;
+        }
+        .guide-table tr:last-child td {
+            border-bottom: none;
+        }
+        .guide-table tr:hover {
+            background-color: var(--table-stripe);
+        }
+
+        /* Identifiers & Badges */
+        .ident-name {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .ident-name:hover {
+            text-decoration: underline;
+        }
+        .ident-code {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            margin-top: 2px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+
+        .priority-badge {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 2px 7px;
+            border-radius: 4px;
+            margin-top: 4px;
+            border: 1px solid;
+            letter-spacing: 0.5px;
+        }
+        .priority-high {
+            background-color: var(--badge-high-bg);
+            color: var(--badge-high-text);
+            border-color: var(--badge-high-border);
+        }
+        .priority-med {
+            background-color: var(--badge-med-bg);
+            color: var(--badge-med-text);
+            border-color: var(--badge-med-border);
+        }
+        .priority-opt {
+            background-color: var(--badge-opt-bg);
+            color: var(--badge-opt-text);
+            border-color: var(--badge-opt-border);
+        }
+
+        .direction-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 600;
+            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .dir-down {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .dir-up {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .dir-modify {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+        [data-theme="dark"] .dir-down {
+            background: #450a0a;
+            color: #fecaca;
+        }
+        [data-theme="dark"] .dir-up {
+            background: #052e16;
+            color: #bbf7d0;
+        }
+        [data-theme="dark"] .dir-modify {
+            background: #1e1b4b;
+            color: #c7d2fe;
+        }
+
+        /* Tips & Pro-Tips Box */
+        .pro-tip-box {
+            background-color: var(--table-stripe);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+        .pro-tip-box h4 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            font-size: 15px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .check-box {
+            font-size: 16px;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        /* Matrix search */
+        .matrix-search {
+            width: 100%;
+            max-width: 380px;
+            padding: 8px 12px;
+            font-size: 13.5px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--card-bg);
+            color: var(--text-main);
+            margin-bottom: 12px;
+        }
+
+        footer.guide-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="guide-container">
+
+    <!-- Sticky Navigation -->
+    <nav class="sticky-nav">
+        <div class="sticky-nav-inner">
+            <a href="T-LM-web/index.html" class="nav-link" style="font-weight: 700; color: var(--primary); text-decoration: none;">
+                &larr; Back to T-LM Reference
+            </a>
+            <ul class="nav-pills">
+                <li><a href="#exhaust" class="nav-pill">1. Larger Exhaust / Cat Delete</a></li>
+                <li><a href="#throttle-body" class="nav-pill">2. Bigger Throttle Body</a></li>
+                <li><a href="#injectors" class="nav-pill">3. Injectors (+20, +40, 72#)</a></li>
+                <li><a href="#map-sensors" class="nav-pill">4. 3 & 4 Bar MAP Sensors</a></li>
+                <li><a href="#camshaft" class="nav-pill">5. Generic Larger Cam</a></li>
+                <li><a href="#matrix" class="nav-pill" style="border-color: var(--primary); color: var(--primary);">Master Matrix</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Header Banner -->
+    <header class="hero-banner">
+        <h1>T-LM Engine Modifications Tuning Guide</h1>
+        <p>
+            A practical, real-world calibration guide for Chrysler Turbo Logic Module (T-LM / Turbonator) applications. 
+            While <strong>MPTune</strong> automatically handles the basic math for injector scaling and MAP sensor conversion slopes, 
+            it does not perform the hands-on fine tuning, nor does it have built-in features for exhaust, throttle body, or camshaft upgrades.
+            This guide breaks down each modification individually: which tables and constants to adjust in MPTune, why they need to change, and what values work best.
+        </p>
+        <div class="hero-badges">
+            <span class="hero-badge">Hardware: Chrysler 2.2L & 2.5L Turbo (T1 / T2)</span>
+            <span class="hero-badge">ECU: Turbo Logic Module (T-LM)</span>
+            <span class="hero-badge">Tuning Tools: MPTune & MPScan</span>
+            <span class="hero-badge">Format: Practical Tuner Reference</span>
+        </div>
+    </header>
+
+    <!-- Overview Card -->
+    <div class="mod-section" style="padding: 22px 28px;">
+        <h3 style="margin-bottom: 10px; font-size: 18px;">Automated MPTune Setup vs. Hands-On Fine Tuning</h3>
+        <p style="font-size: 14.5px; color: var(--text-main); line-height: 1.6;">
+            When setting up a calibration for a modified car in MPTune:
+        </p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-top: 14px;">
+            <div style="background: var(--table-stripe); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
+                <h4 style="color: var(--primary); margin-bottom: 8px; font-size: 15px;">What MPTune Does For You</h4>
+                <ul style="padding-left: 18px; font-size: 13.5px; line-height: 1.6; color: var(--text-muted);">
+                    <li><strong>Basic Injector Rescaling:</strong> Scales down the base fuel pulsewidth tables (<code>WOTTBL</code>, <code>MAPTBL</code>, and <code>FuelBaselineFromMAP</code>) proportionately based on old vs. new injector flow ratings.</li>
+                    <li><strong>Basic MAP Sensor Rescaling:</strong> Updates the voltage-to-pressure slope constants (<code>MAPMULT</code> and <code>MAPADD</code>) and stretches the pressure axes on your fuel, spark, and boost tables.</li>
+                </ul>
+            </div>
+            <div style="background: var(--table-stripe); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
+                <h4 style="color: #b45309; margin-bottom: 8px; font-size: 15px;">What You Need to Tune by Hand</h4>
+                <ul style="padding-left: 18px; font-size: 13.5px; line-height: 1.6; color: var(--text-muted);">
+                    <li><strong>Injector Latency / Dead Time (<code>BATOFF</code>):</strong> Injector opening delays do not scale with flow rate.</li>
+                    <li><strong>Adaptive Learning Floor (<code>PWMIN</code>):</strong> Keeping cruise pulse widths within the ECU's adaptive learning window.</li>
+                    <li><strong>Part-Throttle Boost Fueling (<code>FPWUNK / PTPWOF</code>):</strong> Rescaling the boost-onset fuel adder slope for 3-bar MAP conversions and larger injectors.</li>
+                    <li><strong>High-Boost Ignition Timing:</strong> MPTune leaves timing flat above 14.7 psi; higher boost requires pulling timing out to avoid knock.</li>
+                    <li><strong>Physical Airflow & Exhaust Changes:</strong> Fast spool-up, boost creep, throttle tip-in response, and camshaft idle vacuum.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- 1. LARGER EXHAUST & CAT REMOVAL -->
+    <!-- ========================================================================= -->
+    <section id="exhaust" class="mod-section">
+        <div class="mod-header">
+            <div class="mod-title-area">
+                <h2>1. Larger Exhaust & Catalytic Converter Removal</h2>
+                <div class="mod-meta">Physical modifications: 2.5" or 3" downpipe, high-flow cat or cat delete, free-flowing exhaust.</div>
+            </div>
+            <span class="direction-badge dir-modify">Exhaust & Boost Control</span>
+        </div>
+
+        <h3 style="font-size: 16px; margin-bottom: 8px;">What Happens to the Engine</h3>
+        <p style="font-size: 14.5px; line-height: 1.65; margin-bottom: 14px;">
+            The factory exhaust on Chrysler turbo cars flows reasonably well, but opening it up to 2.5" or 3" and removing the catalytic converter reduces backpressure behind the turbo. 
+            This frees up extra horsepower and improves turbo spool-up response:
+        </p>
+        <ul style="padding-left: 20px; font-size: 14px; line-height: 1.6; margin-bottom: 16px;">
+            <li><strong>Slightly Quicker Spool:</strong> Boost builds 200 to 400 RPM sooner, and the turbo feels more eager to respond to throttle input.</li>
+            <li><strong>Factory Boost Control vs. Manual Boost Controllers:</strong> The factory ECU boost control routine generally manages a free-flowing exhaust without drama. If you are using a manual boost controller (grainger valve / ball-and-spring), boost is regulated mechanically under the hood, and ECU duty cycle tables are not used. If using factory ECU solenoid control, you may just notice a slight 1–2 psi boost overshoot when the turbo first spools, which is easy to trim out.</li>
+            <li><strong>Improved Top-End Breathing:</strong> Lower exhaust backpressure helps clear spent exhaust gases out of the cylinders during valve overlap, improving volumetric efficiency at higher RPM (4,500+ RPM) and slightly reducing combustion chamber heat.</li>
+        </ul>
+
+        <h3 style="font-size: 16px; margin: 20px 0 10px 0;">Identifiers to Change & Tuning Guidelines</h3>
+        <div class="guide-table-wrap">
+            <table class="guide-table">
+                <thead>
+                    <tr>
+                        <th style="width: 22%;">Identifier Name</th>
+                        <th style="width: 14%;">Subsystem</th>
+                        <th style="width: 16%;">Action & Direction</th>
+                        <th style="width: 48%;">Why & Specific Tuning Guidelines</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Boost_-_WG_Control/DCWOT_FullThrottleWastegateDutyCycle_C8is100Percent_FromMap.html" class="ident-name">DCWOT</a>
+                            <div class="ident-code">FullThrottleWastegateDutyCycle...</div>
+                        </td>
+                        <td>Boost WG Control</td>
+                        <td><span class="direction-badge dir-down">Slight Trim (5% to 15%) if Needed</span></td>
+                        <td>
+                            <strong>Base WOT Wastegate Duty Cycle:</strong> If you are using factory ECU boost control and see a small boost spike when the turbo spools, trim <code>DCWOT</code> down slightly around the spool-up points. (If using a manual boost controller, this table is bypassed).
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Boost_-_WG_Control/DCWADJ_FullThrottleWastegateDutyCycleAdjustment_FromRpm.html" class="ident-name">DCWADJ</a>
+                            <div class="ident-code">FullThrottleWastegateAdjustment_FromRpm</div>
+                        </td>
+                        <td>Boost WG Control</td>
+                        <td><span class="direction-badge dir-down">Optional High-RPM Trim</span></td>
+                        <td>
+                            <strong>RPM-Based Wastegate Offset:</strong> Only needed if you run factory ECU boost control and notice slight top-end boost creep at 5,500+ RPM. Lowering values here allows the wastegate flapper to open as far as possible.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Boost_-_Target_Lookup/WSGTIM_AllowedBoost_FromTime.html" class="ident-name">WSGTIM</a>
+                            <div class="ident-code">AllowedBoost_FromTime</div>
+                        </td>
+                        <td>Boost Target</td>
+                        <td><span class="direction-badge dir-modify">Optional Smoothing</span></td>
+                        <td>
+                            <strong>Boost Ramp vs. Time:</strong> Controls how quickly boost is allowed to build. If boost comes on slightly faster than you prefer, soften the initial slope so power delivery is smooth and progressive.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Fuel_-_Modifiers/PEFTBL_PumpingEfficiency.html" class="ident-name">PEFTBL</a>
+                            <div class="ident-code">PEFTBL_PumpingEfficiency</div>
+                        </td>
+                        <td>Fuel Modifiers</td>
+                        <td><span class="direction-badge dir-up">Bump 2% to 4% (High RPM)</span></td>
+                        <td>
+                            <strong>Pumping Efficiency (VE) Multiplier:</strong> Because the engine breathes slightly better above 4,800 RPM with the free-flowing exhaust, bumping <code>PEFTBL</code> slightly at the highest RPM points ensures your full-throttle wideband AFR stays right on target.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Spark_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html" class="ident-name">WOTMAP</a>
+                            <div class="ident-code">AdvanceFromMAPWarmFull</div>
+                        </td>
+                        <td>Spark Advance</td>
+                        <td><span class="direction-badge dir-up">Advance +1&deg; to +2&deg; (Optional)</span></td>
+                        <td>
+                            <strong>Full-Throttle Timing vs. Boost:</strong> With less exhaust backpressure, the combustion chambers run slightly cooler. Once your AFR is dialed in, you can often add 1 to 2 degrees of timing at peak boost for a bit more power if your octane and knock logging allow it.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/OB,_Speed,_and_Rev_Limiter/MPSHFA_OverboostFuelShutoffEnablePointFromMap_Absolute.html" class="ident-name">MPSHFA</a> / 
+                            <a href="T-LM-web/OB,_Speed,_and_Rev_Limiter/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html" class="ident-name">MPSHFT</a>
+                        </td>
+                        <td>OB / Limits</td>
+                        <td><span class="direction-badge dir-modify">Adjust if Raising Boost</span></td>
+                        <td>
+                            <strong>Overboost Safety Cutoffs:</strong> Only needs to be changed if you are increasing your target boost beyond stock levels. Set it 2 to 3 psi above your target so it serves as a safety cushion.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pro-tip-box">
+            <h4>Tuner's Notes for Exhaust Upgrades</h4>
+            <div class="checklist-item"><span class="check-box">&#10003;</span> <strong>Manual Boost Controllers:</strong> Many Chrysler enthusiasts run a simple ball-and-spring manual boost controller (grainger valve). If you are using an MBC, your boost level is set mechanically under the hood, and ECU duty cycle tables (<code>DCWOT</code>, <code>DCWADJ</code>) do not affect boost.</div>
+            <div class="checklist-item"><span class="check-box">&#10003;</span> <strong>Check High-RPM AFR:</strong> Do a quick 3rd gear pull and watch your wideband. If AFR leans out slightly past 5,000 RPM due to the extra breathing, simply add 2% to 4% in <code>PEFTBL</code> at the top RPM points.</div>
+        </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- 2. BIGGER THROTTLE BODY -->
+    <!-- ========================================================================= -->
+    <section id="throttle-body" class="mod-section">
+        <div class="mod-header">
+            <div class="mod-title-area">
+                <h2>2. Bigger Throttle Body (52mm / 58mm vs. Stock 46mm)</h2>
+                <div class="mod-meta">Physical modifications: 52mm (Mopar / Super 60), 58mm (minivan swap), or custom aftermarket throttle body.</div>
+            </div>
+            <span class="direction-badge dir-modify">Transient Fuel & Airflow</span>
+        </div>
+
+        <h3 style="font-size: 16px; margin-bottom: 8px;">What Happens to the Engine</h3>
+        <p style="font-size: 14.5px; line-height: 1.65; margin-bottom: 14px;">
+            A 52mm throttle body has 28% more flow area than stock, and a 58mm has 59% more area. 
+            Because the opening is so much larger, cracking the throttle just a few degrees dumps a massive surge of air into the intake manifold:
+        </p>
+        <ul style="padding-left: 20px; font-size: 14px; line-height: 1.6; margin-bottom: 16px;">
+            <li><strong>Severe Lean Tip-In Stumble (The Bog):</strong> When you quickly tap or press the throttle, manifold vacuum drops to atmospheric pressure almost instantly. The engine gets an immediate gulp of air before the fuel system can catch up, causing a momentary lean condition (16:1–18:1 AFR) and a noticeable stumble or bog.</li>
+            <li><strong>Higher Idle Air Leakage:</strong> A larger throttle plate has a larger circumference. Small gaps around the butterfly allow more air into the engine when the throttle is closed, which can cause the idle to hang high unless base idle airflow is readjusted.</li>
+            <li><strong>Full Airflow Reached Early:</strong> With a 52mm or 58mm throttle body, the intake plenum reaches zero vacuum (atmospheric pressure) at only 40% to 55% throttle pedal travel rather than 75% to 80%.</li>
+        </ul>
+
+        <div class="callout callout-note">
+            <div class="callout-title">Understanding Pumpshot (Accelerator Pump Enrichment)</div>
+            In Chrysler turbo ECUs, there are two separate pumpshot calculations:
+            <br>
+            1. <strong>TPS-Based Pumpshot (<code>POSSLP</code> & <code>THRMAX</code>):</strong> Reacts immediately to how fast the throttle pedal is moving.
+            <br>
+            2. <strong>MAP-Based Pumpshot (<code>AESLOP</code> & <code>MAPMAX</code>):</strong> Reacts to how fast manifold vacuum drops.
+            <br>
+            When you install a bigger throttle body, <strong>increasing TPS-based pumpshot (<code>POSSLP</code>) is the primary cure</strong> for off-idle hesitation.
+        </div>
+
+        <h3 style="font-size: 16px; margin: 20px 0 10px 0;">Identifiers to Change & Tuning Guidelines</h3>
+        <div class="guide-table-wrap">
+            <table class="guide-table">
+                <thead>
+                    <tr>
+                        <th style="width: 22%;">Identifier Name</th>
+                        <th style="width: 14%;">Subsystem</th>
+                        <th style="width: 16%;">Action & Direction</th>
+                        <th style="width: 48%;">Why & Specific Tuning Guidelines</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Fuel_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/POSSLP_DeltaTPSEnrichment_FromTemp.html" class="ident-name">POSSLP</a>
+                            <div class="ident-code">DeltaTPSEnrichment_FromTemp</div>
+                            <span class="priority-badge priority-high">High Priority</span>
+                        </td>
+                        <td>Transient Fuel</td>
+                        <td><span class="direction-badge dir-up">Increase 20% to 45%</span></td>
+                        <td>
+                            <strong>TPS Pumpshot Multiplier:</strong> This is the number-one setting to fix throttle tip-in stumble. 
+                            Multiply table values across normal operating temperatures (40&deg;C to 100&deg;C) by 1.25 for a 52mm throttle body, or 1.40 for a 58mm. 
+                            Injects more transient fuel the instant the pedal moves.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Fuel_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/THRMAX_MaxDeltaTHR.html" class="ident-name">THRMAX</a>
+                            <div class="ident-code">MaxDeltaTHR</div>
+                        </td>
+                        <td>Transient Fuel</td>
+                        <td><span class="direction-badge dir-up">Increase 15% to 30%</span></td>
+                        <td>
+                            <strong>Maximum TPS Delta Cap:</strong> This limits the maximum fuel squirt allowed for rapid pedal movement. 
+                            Increasing <code>THRMAX</code> allows a larger total shot of fuel when you quickly smash the pedal.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Fuel_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/POSTRG_PositiveTransientTriggerLevel.html" class="ident-name">POSTRG</a>
+                            <div class="ident-code">PositiveTransientTriggerLevel</div>
+                        </td>
+                        <td>Transient Fuel</td>
+                        <td><span class="direction-badge dir-down">Lower by 1 Count</span></td>
+                        <td>
+                            <strong>TPS Transient Trigger Level:</strong> Minimum pedal movement required to trigger pumpshot fuel. 
+                            Lowering this slightly makes the fuel enrichment trigger on very small, gentle off-idle movements before the big throttle bore leans things out.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Fuel_-_Transient_Enrichment/PumpShot_Calculation/MAP_PumpShot/AESLOP_DeltaMAPEnrichment_FromTemp2.html" class="ident-name">AESLOP</a>
+                            <div class="ident-code">DeltaMAPEnrichment_FromTemp2</div>
+                        </td>
+                        <td>Transient Fuel</td>
+                        <td><span class="direction-badge dir-up">Increase 10% to 20%</span></td>
+                        <td>
+                            <strong>MAP Pumpshot Multiplier:</strong> Supplies secondary transient fuel when manifold pressure jumps upward. 
+                            Increasing <code>AESLOP</code> helps back up <code>POSSLP</code> as plenum vacuum quickly equalizes.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Idle_-_AIS_Control/CALPOS_PositionAisMotorIsAtIdle.html" class="ident-name">CALPOS</a>
+                            <div class="ident-code">PositionAisMotorIsAtIdle</div>
+                        </td>
+                        <td>Idle / AIS</td>
+                        <td><span class="direction-badge dir-down">Decrease 10 to 20 Steps</span></td>
+                        <td>
+                            <strong>Nominal Idle AIS Position:</strong> Because a larger throttle body allows more air around the closed plate, the AIS idle stepper motor needs to sit further closed (e.g., 15–25 steps instead of stock 35–45 steps). Lower <code>CALPOS</code> to prevent high idle.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Setup_-_Transfer_Functions/WOTDLT_DeltaThrottleFrom_MINTHR_ToDetermineFullThrottle.html" class="ident-name">WOTDLT</a>
+                            <div class="ident-code">DeltaThrottle_ToDetermineFullThrottle</div>
+                        </td>
+                        <td>Setup OBD</td>
+                        <td><span class="direction-badge dir-down">Lower 10% to 15%</span></td>
+                        <td>
+                            <strong>Throttle Delta to Trigger WOT Mode:</strong> A larger throttle body flows full air volume at less than full pedal travel. 
+                            Lowering <code>WOTDLT</code> commands the ECU to switch to WOT fuel and timing earlier in pedal travel.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Boost_-_Target_Lookup/WSGPRT_AllowedBoostPartThrottle_FromThrottle.html" class="ident-name">WSGPRT</a>
+                            <div class="ident-code">AllowedBoostPartThrottle...</div>
+                        </td>
+                        <td>Boost Target</td>
+                        <td><span class="direction-badge dir-modify">Rescale Throttle Axis</span></td>
+                        <td>
+                            <strong>Part-Throttle Boost Limits:</strong> Prevents the turbo from building full boost at light pedal openings. 
+                            Shift the throttle breakpoints so boost delivery feels progressive rather than like an on/off light switch.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pro-tip-box">
+            <h4>Setting Mechanical Base Idle on a Bigger Throttle Body</h4>
+            <ol style="padding-left: 20px; line-height: 1.6; font-size: 13.5px;">
+                <li>Get the engine fully warmed up to operating temp. Unplug the 4-wire AIS motor connector while running.</li>
+                <li>Adjust the throttle stop screw until base idle sits around <strong>650–700 RPM</strong>.</li>
+                <li>Check your TPS voltage in MPScan with throttle closed. It should sit between <strong>0.60V and 0.90V</strong>.</li>
+                <li>Shut off the engine, plug the AIS back in, and disconnect the battery for 60 seconds to reset minimum throttle learned voltage.</li>
+            </ol>
+        </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- 3. BIGGER INJECTORS (+20%, +40%, 72 PPH) -->
+    <!-- ========================================================================= -->
+    <section id="injectors" class="mod-section">
+        <div class="mod-header">
+            <div class="mod-title-area">
+                <h2>3. Bigger Injectors (+20%, +40%, 72 pph) [Fine-Tuning Guidelines]</h2>
+                <div class="mod-meta">Injector sizes: +20% (~42 lb/hr), +40% (~52–55 lb/hr Bosch/Siemens), and 72 pph (~750–800 cc/min large format).</div>
+            </div>
+            <span class="direction-badge dir-modify">Fine-Tuning Only (MPTune Handles Base Scale)</span>
+        </div>
+
+        <h3 style="font-size: 16px; margin-bottom: 8px;">What MPTune Automatically Scales vs. What Needs Fine Tuning</h3>
+        <p style="font-size: 14.5px; line-height: 1.65; margin-bottom: 14px;">
+            In MPTune, using <em>Scaling &rarr; Injectors &rarr; Size</em> scales down your fuel tables (<code>WOTTBL</code>, <code>MAPTBL</code>, and <code>FuelBaselineFromMAP</code>). 
+            Many cars run for years with just this basic scaling. However, for a truly clean, factory-smooth idle, steady closed-loop operation, and crisp off-idle manners, there are four key areas every tuner should keep in mind:
+        </p>
+        <ul style="padding-left: 20px; font-size: 14px; line-height: 1.6; margin-bottom: 16px;">
+            <li><strong>Injector Latency / Dead Time (<code>BATOFF</code>):</strong> Flow rate scales, but mechanical opening and closing dead time does not. At warm idle on big injectors, the total pulsewidth is very short (1.1–1.5 ms). If the dead time is off even slightly, idle will run noticeably richer or leaner than intended, especially when battery voltage changes (like when the radiator fan kicks on).</li>
+            <li><strong>Adaptive Learning Pulsewidth Floor (<code>PWMIN</code>):</strong> The ECU has a safety floor setting designed to stop it from learning adaptive trims during decel when pulsewidths are near zero. With large injectors (+40% or 72#), your normal cruising pulsewidth drops down into the 2.2–3.2 ms range. Scaling <code>PWMIN</code> down ensures the ECU recognizes normal cruising as valid running time and allows adaptive fuel trims to update smoothly.</li>
+            <li><strong>Closed-Loop O2 Ramp Slopes (<code>SECRMP / PRIRMP</code>):</strong> Because larger injectors deliver much more fuel per millisecond, the ECU's continuous O2 integration ramp (<code>SECRMP</code>) must be scaled down (from +3/-3 counts to +1/-1 counts) to prevent the wideband from aggressively hunting around 14.7:1 at idle and cruise.</li>
+            <li><strong>Part-Throttle Boost Fuel Adder (<code>FPWUNK / PTPWOF</code>):</strong> The boost-onset fuel offset constant (<code>FPWUNK</code> in stock calibrations, <code>PTPWOF</code> in Turbonator Stage IV) adds supplemental pulsewidth when manifold pressure exceeds ~5 psi under partial throttle. Because larger injectors spray significantly more fuel per millisecond, this constant must be divided by your injector flow multiplier (e.g. divide by 1.20 for +20% or 1.40 for +40%) to prevent rich bogging and black smoke when rolling into boost on the highway.</li>
+        </ul>
+
+        <h3 style="font-size: 16px; margin: 20px 0 10px 0;">Identifiers to Change & Tuning Guidelines</h3>
+        <div class="guide-table-wrap">
+            <table class="guide-table">
+                <thead>
+                    <tr>
+                        <th style="width: 22%;">Identifier Name</th>
+                        <th style="width: 14%;">Subsystem</th>
+                        <th style="width: 18%;">Injector Specific Guidance</th>
+                        <th style="width: 46%;">Why & Calibration Values</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Fuel_-_Running/BATOFF_FuelBatteryOffset.html" class="ident-name">BATOFF</a>
+                            <div class="ident-code">FuelBatteryOffset</div>
+                            <span class="priority-badge priority-high">High Priority</span>
+                        </td>
+                        <td>Fuel Running</td>
+                        <td>
+                            <strong>+20%:</strong> Keep Stock<br>
+                            <strong>+40%:</strong> Rescale -45% / S60<br>
+                            <strong>72#:</strong> Latency Curve
+                        </td>
+                        <td>
+                            <strong>Injector Latency (Dead Time) vs. Battery Voltage:</strong> 
+                            Compensates for the electromechanical opening delay of the injector pintle.
+                            <br>&bull; <strong>+20%:</strong> Factory Mopar +20s share stock pintle mechanics; stock <code>BATOFF</code> works great.
+                            <br>&bull; <strong>+40%:</strong> Bosch/Siemens +40s open much quicker than stock. Copy the factory Chrysler Super 60 (S60) <code>BATOFF</code> table or scale the table down by 40%–50%.
+                            <br>&bull; <strong>72 pph:</strong> Modern high-flow injectors open much faster. Enter the manufacturer latency data if available so warm idle fuel stays rock-solid when voltage drops.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Fuel_-_Adaptive_memory/PWMIN_NoCellUpdateBelow_PWMIN_Pulsewidth.html" class="ident-name">PWMIN</a>
+                            <div class="ident-code">NoCellUpdateBelow_PWMIN_Pulsewidth</div>
+                            <span class="priority-badge priority-high">High Priority</span>
+                        </td>
+                        <td>Fuel Adaptive</td>
+                        <td>
+                            <strong>+20%:</strong> ~3.80 ms (950 cts)<br>
+                            <strong>+40%:</strong> ~2.80 ms (700 cts)<br>
+                            <strong>72#:</strong> ~1.90 ms (475 cts)
+                        </td>
+                        <td>
+                            <strong>Minimum Pulsewidth Floor for Adaptive Fuel Learning:</strong> 
+                            Factory setting is 4.80 ms (1200 counts). 
+                            With larger injectors, cruise pulsewidths are shorter. 
+                            Scaling <code>PWMIN</code> down proportionately ensures the ECU can update its closed-loop adaptive fuel memory cells during normal light-throttle cruising.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Fuel_-_Running/PTPWOF_PartThrottlePulsewidthOffset.html" class="ident-name">FPWUNK</a> / 
+                            <a href="T-LM-web/Fuel_-_Running/PTPWOF_PartThrottlePulsewidthOffset.html" class="ident-name">PTPWOF</a>
+                            <div class="ident-code">FuelPulsewidthFunctionUnknown / PartThrottlePulsewidthOffset</div>
+                            <span class="priority-badge priority-high">High Priority</span>
+                        </td>
+                        <td>Fuel Running / Transient</td>
+                        <td>
+                            <strong>+20%:</strong> ~6,548 cts (/ 1.20)<br>
+                            <strong>+40%:</strong> ~5,613 cts (/ 1.40)<br>
+                            <strong>72#:</strong> ~2,840 cts (/ 2.76)
+                        </td>
+                        <td>
+                            <strong>Part-Throttle Boost Fuel Adder Slope:</strong> 
+                            Progressive fuel adder that acts like a power-valve jet once manifold pressure crosses ~5 psi under partial throttle (before wide-open throttle is reached).
+                            <br>&bull; <strong>Why Rescale:</strong> Because larger injectors deliver more fuel per millisecond, keeping the stock pulsewidth slope will cause the engine to run excessively rich and bog or puff black smoke when rolling into boost.
+                            <br>&bull; <strong>Tuning Math:</strong> Divide the stock baseline (7,858 counts) by your injector flow multiplier.
+                            <br>&bull; <em>Note: If also converting from a 2-bar to 3-bar MAP sensor, multiply by 1.5 first (see Section 4).</em>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Fuel_-_O2_Controller_Ramps/SECRMP_SecondaryRamp.html" class="ident-name">SECRMP</a> / 
+                            <a href="T-LM-web/Fuel_-_O2_Controller_Ramps/PRIRMP_PrimaryRamp.html" class="ident-name">PRIRMP</a>
+                            <div class="ident-code">SecondaryRamp / PrimaryRamp</div>
+                            <span class="priority-badge priority-high">High Priority</span>
+                        </td>
+                        <td>Fuel O2 Ramps</td>
+                        <td>
+                            <strong>SECRMP:</strong> Reduce from +3/-3 to +1/-1 counts<br>
+                            <strong>PRIRMP:</strong> Idle Cell stays stock (1 count rich / 1 count lean); trim cruise cells if surging
+                        </td>
+                        <td>
+                            <strong>Closed-Loop O2 Ramp Slopes:</strong> 
+                            Upgrading to larger injectors delivers more fuel per step tick. 
+                            <br>&bull; <strong>Secondary Ramp (<code>SECRMP</code>):</strong> Controls the continuous fueling slope while waiting for the O2 sensor to switch. In stock calibrations, idle and cruise cells ramp at +3 counts rich / -3 counts lean. With +40% or 72# injectors, scaling this down to +1 count rich / -1 count lean slows the ramp rate by 66%, eliminating wideband hunting and holding a steady 14.7:1 idle.
+                            <br>&bull; <strong>Primary Ramp (<code>PRIRMP</code>):</strong> The factory Idle Cell is already at the single-step minimum of 1 count rich / 1 count lean and cannot be lowered further. Only the cruise cells and RPM/MAP boundaries need trimming if cruise shows excessive cycling.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Fuel_-_Starting/STRTFL_FuelStartFromCoolantTemp.html" class="ident-name">STRTFL</a> / 
+                            <a href="T-LM-web/Fuel_-_Starting/SFDCAY_FuelStartDecayIntoRun.html" class="ident-name">SFDCAY</a>
+                        </td>
+                        <td>Fuel Starting</td>
+                        <td>
+                            <strong>+20%:</strong> Stock MPTune<br>
+                            <strong>+40%:</strong> -10% to -15%<br>
+                            <strong>72#:</strong> -20% to -30%
+                        </td>
+                        <td>
+                            <strong>Cranking Fuel & Start-to-Run Decay:</strong> 
+                            Even after MPTune scales cranking fuel, massive injectors squirt heavy fuel during slow cranking (150–250 RPM). 
+                            If the car cranks hard or smells rich on restart, trim <code>STRTFL</code> down by 15%–25% to prevent wet plugs.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Fuel_-_Adaptive_memory/IDLOFS_DeltaForIdleRPMForClosedThrottleCell.html" class="ident-name">IDLADD / IDLOFS</a>
+                            <div class="ident-code">FuelStabilization_FromDeltaRPM</div>
+                        </td>
+                        <td>Fuel Adaptive</td>
+                        <td>
+                            <strong>+20%:</strong> Stock<br>
+                            <strong>+40%:</strong> -15% to -20%<br>
+                            <strong>72#:</strong> -30% to -50%
+                        </td>
+                        <td>
+                            <strong>Idle Spark Scatter Fuel Trim:</strong> 
+                            When spark scatter idle stabilization dithers timing to hold idle, it adds a tiny fuel trim. 
+                            With 72 pph injectors, that tiny fuel trim injects a lot of fuel, which can cause an idle roll/surge. Scale this trim table down on 72# injectors.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Fuel_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/POSSLP_DeltaTPSEnrichment_FromTemp.html" class="ident-name">POSSLP</a>
+                            <div class="ident-code">DeltaTPSEnrichment_FromTemp</div>
+                        </td>
+                        <td>Transient Fuel</td>
+                        <td><span class="direction-badge dir-down">Trim -10% to -15% on 72#</span></td>
+                        <td>
+                            <strong>Pumpshot Trimming on 72 pph:</strong> 
+                            If a quick throttle stab gives a puff of black smoke and a rich bog on big injectors, trim <code>POSSLP</code> down slightly. Large injectors deliver plenty of fuel without needing heavy transient squirts.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pro-tip-box">
+            <h4>Dialing in BATOFF by Watching Battery Voltage</h4>
+            <p style="margin-bottom: 0;">
+                To verify your <code>BATOFF</code> dead time setting: Warm the car to operating temp and let it idle. 
+                Watch your wideband AFR while turning on high electrical loads (headlights, blower motor on high, radiator fan). 
+                If the AFR goes lean when voltage drops, your latency value at 12–13V is too low (increase <code>BATOFF</code> slightly). 
+                If the AFR goes rich when voltage drops, your latency value is too high (decrease <code>BATOFF</code>).
+            </p>
+        </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- 4. 3-BAR AND 4-BAR MAP SENSORS -->
+    <!-- ========================================================================= -->
+    <section id="map-sensors" class="mod-section">
+        <div class="mod-header">
+            <div class="mod-title-area">
+                <h2>4. 3-Bar and 4-Bar MAP Sensors [Fine-Tuning Guidelines]</h2>
+                <div class="mod-meta">Sensor upgrades: Mopar Super 60 / GM 3-Bar (~29 psi boost) and GM / Omnipower 4-Bar (~44 psi boost).</div>
+            </div>
+            <span class="direction-badge dir-modify">Fine-Tuning Only (MPTune Handles Scaling)</span>
+        </div>
+
+        <h3 style="font-size: 16px; margin-bottom: 8px;">What Happens When You Go to a Larger MAP Sensor</h3>
+        <p style="font-size: 14.5px; line-height: 1.65; margin-bottom: 14px;">
+            The Chrysler computer uses an 8-bit sensor input with 256 discrete digital steps across the 0–5 Volt range. 
+            When you install a 3-bar or 4-bar sensor, you are stretching that same 0–5V range over twice as much pressure:
+        </p>
+        <ul style="padding-left: 20px; font-size: 14px; line-height: 1.6; margin-bottom: 16px;">
+            <li><strong>Coarser Vacuum Resolution:</strong> On a 2-bar sensor, each digital step is about 0.11 psi. On a 3-bar it is 0.17 psi, and on a 4-bar it is 0.23 psi. In deep idle vacuum (14 to 20 inHg), the engine's entire idle and light cruise range lives in a narrow band of only 25 to 35 steps.</li>
+            <li><strong>Vacuum Step Jitter:</strong> If fuel or spark tables have steep ramps in the idle vacuum region, a 1-step sensor flicker can cause timing or fuel to jump, resulting in a hunting idle or surging cruise. Smoothing these areas cures it.</li>
+            <li><strong>Part-Throttle Boost Fuel Rate Slope (<code>FPWUNK / PTPWOF</code>):</strong> Because a 3-bar sensor spreads 0–44.1 psia over the same 0–5V range as a 2-bar sensor (0–29.4 psia), each digital step represents 50% more boost, so the computer counts delta MAP 1.5 times slower. To deliver the proper fuel adder per pound of boost, <code>FPWUNK / PTPWOF</code> must be scaled up by 1.5 (+50%), and <code>OBCONST</code> must be reduced from 170 down to 113 to keep the boost trigger at ~5 psi.</li>
+        </ul>
+
+        <div class="callout callout-alert">
+            <div class="callout-title">Important Tuning Rule: Retard Ignition Timing in High Boost!</div>
+            When you select 3-bar or 4-bar in MPTune, MPTune stretches the pressure axis of your spark table, <strong>but it keeps the timing flat above 14.7 psi</strong>.
+            <br>
+            That means whatever advance you had at 14 psi (typically 18&deg; to 22&deg;) will still be delivered at 25 or 30 psi! 
+            You must manually add points to your <code>WOTMAP</code> table to retard timing as boost climbs, keeping the engine safe from detonation.
+        </div>
+
+        <h3 style="font-size: 16px; margin: 20px 0 10px 0;">Identifiers to Change & Tuning Guidelines</h3>
+        <div class="guide-table-wrap">
+            <table class="guide-table">
+                <thead>
+                    <tr>
+                        <th style="width: 22%;">Identifier Name</th>
+                        <th style="width: 14%;">Subsystem</th>
+                        <th style="width: 18%;">Action & Direction</th>
+                        <th style="width: 46%;">Why & Calibration Values</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Spark_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html" class="ident-name">WOTMAP</a>
+                            <div class="ident-code">AdvanceFromMAPWarmFull</div>
+                            <span class="priority-badge priority-high">High Priority</span>
+                        </td>
+                        <td>Spark Advance</td>
+                        <td><span class="direction-badge dir-down">Retard Timing Above 15 psi</span></td>
+                        <td>
+                            <strong>Full-Throttle Timing vs. Boost:</strong> 
+                            Right-click the table in MPTune and insert points at 18 psi, 22 psi, 26 psi, and 30 psi. 
+                            Pull approximately <strong>1.0&deg; to 1.5&deg; of timing per pound of boost</strong> over 15 psi.
+                            <br>&bull; 15 psi: ~18&deg;–20&deg; total timing
+                            <br>&bull; 20 psi: ~16&deg;–18&deg; total timing
+                            <br>&bull; 25 psi: ~14&deg;–16&deg; total timing
+                            <br>&bull; 30+ psi: ~12&deg;–14&deg; total timing (on quality race gas / water-meth).
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Fuel_-_Running/PTPWOF_PartThrottlePulsewidthOffset.html" class="ident-name">FPWUNK</a> / 
+                            <a href="T-LM-web/Fuel_-_Running/PTPWOF_PartThrottlePulsewidthOffset.html" class="ident-name">PTPWOF</a>
+                            <div class="ident-code">FuelPulsewidthFunctionUnknown / PartThrottlePulsewidthOffset</div>
+                            <span class="priority-badge priority-high">High Priority</span>
+                        </td>
+                        <td>Fuel Running / Transient</td>
+                        <td><span class="direction-badge dir-up">&uarr; Multiply</span></td>
+                        <td>
+                            <strong>Part-Throttle Boost Fuel Rate Slope:</strong> 
+                            Compensates for the wider pressure range and slower count rate of 3-bar and 4-bar sensors.
+                            <br>&bull; <strong>3-Bar Sensor Adjustment:</strong> Multiply this setting by <strong>1.5</strong> (+50%) so the engine receives the proper fuel adder per pound of boost.
+                            <br>&bull; <strong>4-Bar Sensor Adjustment:</strong> Multiply this setting by <strong>2.0</strong> (+100%).
+                            <br>&bull; <strong>Boost Trigger Adjustment (<a href="T-LM-web/Fuel_-_Transient_Enrichment/OBCONST_OverboostConstant1.html"><code>OBCONST</code></a>):</strong> Lower <code>OBCONST</code> from 170 down to 113 (for 3-bar) so the adder kicks in at the correct ~4.9–5.0 psi threshold.
+                            <br>&bull; <strong>Combined with Bigger Injectors:</strong> <code>New Value = Base Value &times; 1.5 / Injector Multiplier</code>. (For example, 3-bar with +40% injectors: 7,858 &times; 1.5 &divide; 1.25 &approx; 9,451 counts / <code>0x24EB</code>, matching Stage IV calibrations).
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Spark_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html" class="ident-name">HOTMAP</a>
+                            <div class="ident-code">AdvanceFromMAPWarmPart</div>
+                        </td>
+                        <td>Spark Advance</td>
+                        <td><span class="direction-badge dir-modify">Smooth Vacuum Cells</span></td>
+                        <td>
+                            <strong>Part-Throttle Advance:</strong> 
+                            Smooth out the slope across the cruise vacuum cells (10 to 20 inHg). 
+                            Because 3-bar and 4-bar sensors have coarser steps in vacuum, smoothing prevents timing from jumping several degrees between adjacent sensor steps.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Fuel_-_Running/MAPTBL_FuelPartThrottle.html" class="ident-name">MAPTBL</a> / 
+                            <code>FuelBaseline</code>
+                        </td>
+                        <td>Fuel Running</td>
+                        <td><span class="direction-badge dir-modify">Flatten Vacuum Slope</span></td>
+                        <td>
+                            <strong>Part-Throttle & Idle Fuel Tables:</strong> 
+                            Gently flatten the fuel curve in the deep idle vacuum band to prevent AFR hunting from digital step flicker.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/OB,_Speed,_and_Rev_Limiter/MPSHFA_OverboostFuelShutoffEnablePointFromMap_Absolute.html" class="ident-name">MPSHFA</a> / 
+                            <a href="T-LM-web/OB,_Speed,_and_Rev_Limiter/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html" class="ident-name">MPSHFT</a>
+                        </td>
+                        <td>OB / Limits</td>
+                        <td><span class="direction-badge dir-up">Set to Match Target Boost</span></td>
+                        <td>
+                            <strong>Overboost Fuel Cutoffs:</strong> 
+                            Set these cutoffs 2 to 3 psi above your intended maximum boost target for the new sensor range.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Boost_-_Target_Lookup/WSGRPM_AllowedBoost_FromRpm.html" class="ident-name">WSGRPM</a>
+                            <div class="ident-code">AllowedBoost_FromRpm</div>
+                        </td>
+                        <td>Boost Target</td>
+                        <td><span class="direction-badge dir-up">Populate Boost Target</span></td>
+                        <td>
+                            <strong>Boost Target vs. RPM:</strong> 
+                            Fill in your desired boost levels across the RPM band (e.g. 18–26 psi) now that the sensor can read that high.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Boost_-_WG_Control/DCWOT_FullThrottleWastegateDutyCycle_C8is100Percent_FromMap.html" class="ident-name">DCWOT</a>
+                            <div class="ident-code">FullThrottleWastegateDutyCycle...</div>
+                        </td>
+                        <td>Boost WG Control</td>
+                        <td><span class="direction-badge dir-modify">Extend Curve</span></td>
+                        <td>
+                            <strong>Wastegate Duty Cycle vs. MAP:</strong> 
+                            Extend the table curve out to 25–35 psi. Make sure duty cycle tapers down as boost approaches target so boost doesn't overshoot.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pro-tip-box">
+            <h4>Use MPTune's 3D Timing View Before Flashing</h4>
+            <p style="margin-bottom: 0;">
+                Always open <strong>View &rarr; 3D Table View &rarr; Ignition Timing</strong> in MPTune after rescaling for a 3-bar or 4-bar sensor. 
+                MPTune combines your RPM timing and MAP timing into a single 3D surface. 
+                Make sure the timing curve slopes downward in high boost so you have a safe total timing advance (14&deg; to 17&deg;) at peak boost.
+            </p>
+        </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- 5. GENERIC LARGER CAMSHAFT -->
+    <!-- ========================================================================= -->
+    <section id="camshaft" class="mod-section">
+        <div class="mod-header">
+            <div class="mod-title-area">
+                <h2>5. Generic Larger Camshaft (Higher Duration & Lift)</h2>
+                <div class="mod-meta">Camshaft upgrades: Mopar Super 60, FWD-P Enforcer / F-Series, Taft, or custom turbo grinds.</div>
+            </div>
+            <span class="direction-badge dir-modify">VE Rotation & Idle Vacuum</span>
+        </div>
+
+        <h3 style="font-size: 16px; margin-bottom: 8px;">What Happens to the Engine</h3>
+        <p style="font-size: 14.5px; line-height: 1.65; margin-bottom: 14px;">
+            Installing a larger camshaft with more duration and lift increases valve overlap. This causes noticeable physical changes:
+        </p>
+        <ul style="padding-left: 20px; font-size: 14px; line-height: 1.6; margin-bottom: 16px;">
+            <li><strong>Lower Idle Vacuum:</strong> Increased overlap causes exhaust reversion at low engine speeds. Idle vacuum drops from stock 18–20 inHg down to <strong>11–14 inHg</strong> (or even 10 inHg on radical grinds).</li>
+            <li><strong>The "Cruise Cell at Idle" Issue:</strong> Because the ECU reads 16-14 inHg at idle, it thinks the car is cruising under light load. It looks up cruise fuel and spark tables, dumping too much fuel and delivering sluggish timing. This causes a hunting, rolling idle and can foul plugs.</li>
+            <li><strong>Volumetric Efficiency Shifts Higher:</strong> The cam sacrifices low-end efficiency (below 2,800 RPM) to make huge breathing gains at high RPM (above 4,500 RPM).</li>
+            <li><strong>Valvetrain Noise & False Knock:</strong> Stiff valve springs, aggressive lobes, and roller followers create mechanical valvetrain noise that the factory knock sensor can mistake for real detonation.</li>
+        </ul>
+
+        <div class="callout callout-tip">
+            <div class="callout-title">The Classic "PEFTBL Rotation" Rule</div>
+            Tuning for a performance cam in Chrysler turbo engines is universally described as <strong>rotating the Pumping Efficiency table (<code>PEFTBL</code>) counter-clockwise</strong>:
+            <br>
+            &bull; <strong>Low RPM (1,200–2,800 RPM):</strong> Drop values by 4% to 8% (cures soggy throttle response and rich loading up).
+            <br>
+            &bull; <strong>Mid RPM (3,500–4,000 RPM):</strong> Leave near stock.
+            <br>
+            &bull; <strong>High RPM (4,800–6,500 RPM):</strong> Raise values by 6% to 12%+ (provides the extra fuel the cam breathes in at high RPM).
+        </div>
+
+        <h3 style="font-size: 16px; margin: 20px 0 10px 0;">Identifiers to Change & Tuning Guidelines</h3>
+        <div class="guide-table-wrap">
+            <table class="guide-table">
+                <thead>
+                    <tr>
+                        <th style="width: 22%;">Identifier Name</th>
+                        <th style="width: 14%;">Subsystem</th>
+                        <th style="width: 16%;">Action & Direction</th>
+                        <th style="width: 48%;">Why & Specific Tuning Guidelines</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Fuel_-_Modifiers/PEFTBL_PumpingEfficiency.html" class="ident-name">PEFTBL</a>
+                            <div class="ident-code">PEFTBL_PumpingEfficiency</div>
+                            <span class="priority-badge priority-high">High Priority</span>
+                        </td>
+                        <td>Fuel Modifiers</td>
+                        <td><span class="direction-badge dir-modify">Rotate Counter-Clockwise</span></td>
+                        <td>
+                            <strong>Pumping Efficiency (VE) vs. RPM:</strong> 
+                            The master volumetric efficiency table. 
+                            <br>&bull; Lower by 4%–8% in the 1,500–2,800 RPM range (cures sluggish off-idle response).
+                            <br>&bull; Raise by 6%–12% from 4,800 to 6,500 RPM to feed top-end breathing.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Idle_-_AIS_Control/AISPN_IdleSpeedParkNeutral_FromTemp.html" class="ident-name">AISPN</a> / 
+                            <a href="T-LM-web/Idle_-_AIS_Control/AISCLD_IdleSpeedDrive_FromTemp.html" class="ident-name">AISCLD</a>
+                        </td>
+                        <td>Idle / AIS</td>
+                        <td><span class="direction-badge dir-up">Raise to 875–925 RPM</span></td>
+                        <td>
+                            <strong>Target Idle Speed:</strong> 
+                            Larger cams need higher idle speed to maintain stable combustion and healthy oil pressure. 
+                            Raise warm idle to 875–925 RPM in neutral (<code>AISPN</code>) and 825–875 RPM in gear (<code>AISCLD</code>).
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Idle_-_AIS_Control/CALPOS_PositionAisMotorIsAtIdle.html" class="ident-name">CALPOS</a>
+                            <div class="ident-code">PositionAisMotorIsAtIdle</div>
+                        </td>
+                        <td>Idle / AIS</td>
+                        <td><span class="direction-badge dir-up">Increase 10 to 20 Steps</span></td>
+                        <td>
+                            <strong>Nominal Idle AIS Position:</strong> 
+                            Because the engine has lower vacuum, the AIS stepper needs to supply more baseline bypass air to sustain the higher target idle RPM without stalling.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Spark_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html" class="ident-name">HOTMAP</a>
+                            <div class="ident-code">AdvanceFromMAPWarmPart</div>
+                        </td>
+                        <td>Spark Advance</td>
+                        <td><span class="direction-badge dir-up">Add +4&deg; to +8&deg; at Idle MAP</span></td>
+                        <td>
+                            <strong>Part-Throttle Timing at Idle Vacuum:</strong> 
+                            Because overlap dilutes the intake charge at idle, flame burn speed is slower. 
+                            Add 4&deg; to 8&deg; of timing in the 14-15 inHg region where the cam idles (targeting <strong>14&deg;–18&deg; total idle timing</strong>). This cleans up idle quality and stabilizes vacuum.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Fuel_-_Running/MAPTBL_FuelPartThrottle.html" class="ident-name">MAPTBL</a> / 
+                            <code>FuelBaseline</code>
+                        </td>
+                        <td>Fuel Running</td>
+                        <td><span class="direction-badge dir-down">Lean Out Idle Cells 10%–20%</span></td>
+                        <td>
+                            <strong>Idle Vacuum Fuel:</strong> 
+                            Because the ECU reads 14-15 inHg at idle, it looks up cruise fuel. 
+                            Pull fuel out of the closed-throttle cells at 14-15 inHg to restore a clean 14.0–14.7:1 idle AFR instead of running rich.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Idle_-_AIS_Decel/MAPFLR_AdditionToControlMap_FromRpm.html" class="ident-name">MAPFLR</a> / 
+                            <a href="T-LM-web/Idle_-_AIS_Decel/DCLMIN_MinLimitOnDecelAisControlledMap.html" class="ident-name">DCLMIN</a>
+                        </td>
+                        <td>Idle / AIS Decel</td>
+                        <td><span class="direction-badge dir-up">Raise Decel Floors</span></td>
+                        <td>
+                            <strong>Decel Anti-Stall Floor:</strong> 
+                            The ECU monitors vacuum on coast-down to catch a falling idle. 
+                            Because a larger cam pulls less vacuum on decel, raise <code>MAPFLR</code> and <code>DCLMIN</code> so the ECU doesn't trigger false idle flare-ups when you let off the gas.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Spark_-_Knock_Retard/DLTKNK_KnockFromRpms.html" class="ident-name">DLTKNK</a>
+                            <div class="ident-code">DLTKNK_KnockFromRpms</div>
+                        </td>
+                        <td>Spark Knock</td>
+                        <td><span class="direction-badge dir-up">Raise Threshold 15%–25%</span></td>
+                        <td>
+                            <strong>Knock Sensitivity vs. RPM:</strong> 
+                            Stiffer springs and aggressive cam lobes make mechanical noise that can trick the knock sensor. 
+                            Raise <code>DLTKNK</code> in the 3,000–5,500 RPM range so mechanical chatter doesn't pull timing under boost (always verify with det-cans that there is no real knock).
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Fuel_-_Transient_Enrichment/RPMMAP_SwitchPointForDownUp_FromRpm.html" class="ident-name">RPMMAP</a>
+                            <div class="ident-code">SwitchPointForDownUp_FromRpm</div>
+                        </td>
+                        <td>Fuel Transient</td>
+                        <td><span class="direction-badge dir-up">Raise MAP Switch Points</span></td>
+                        <td>
+                            <strong>Part-Throttle Enrichment (PTE) Threshold:</strong> 
+                            Because the cam causes the engine to cruise at higher absolute manifold pressure, raise <code>RPMMAP</code> points slightly so normal light-throttle highway cruising doesn't trigger extra enrichment prematurely.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Fuel_-_O2_Controller_Ramps/SECRMP_SecondaryRamp.html" class="ident-name">SECRMP</a>
+                            <div class="ident-code">SecondaryRamp (Idle Cell)</div>
+                        </td>
+                        <td>Fuel O2 Ramps</td>
+                        <td><span class="direction-badge dir-down">Set to +1/-1 Counts</span></td>
+                        <td>
+                            <strong>Closed-Loop Idle O2 Ramp Rate:</strong> 
+                            When running larger injectors alongside a bigger cam, reduce the Idle Cell in <code>SECRMP</code> from stock +3 counts rich / -3 counts lean down to +1 count rich / -1 count lean. 
+                            This slows down the continuous O2 integration rate, preventing the ECU from aggressively chasing the cam's lope. (Note: <code>PRIRMP</code>'s idle cell is already at the factory minimum of 1 count rich / 1 count lean and does not need to change).
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pro-tip-box">
+            <h4>Listening for Real Knock vs. Valvetrain Noise</h4>
+            <p style="margin-bottom: 0;">
+                Before raising <code>DLTKNK</code>, build a simple mechanical det-can using a length of copper tube bolted to the cylinder head connected with fuel hose to sound earmuffs. 
+                Mechanical valvetrain noise sounds like a fast sewing machine clatter. 
+                Real detonation sounds like sharp pebbles rattling in a tin can. 
+                Raise <code>DLTKNK</code> only enough to ignore the valvetrain clatter while preserving real knock detection.
+            </p>
+        </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- MASTER CALIBRATION MATRIX -->
+    <!-- ========================================================================= -->
+    <section id="matrix" class="mod-section">
+        <div class="mod-header">
+            <div class="mod-title-area">
+                <h2>Master Identifier Tuning Matrix</h2>
+                <div class="mod-meta">Quick cross-reference of all key T-LM identifiers across the five engine modifications.</div>
+            </div>
+            <input type="text" id="matrixSearch" class="matrix-search" placeholder="Filter identifiers (e.g., 'BATOFF', 'PWMIN', 'pumpshot', 'boost')..." oninput="filterMatrix()">
+        </div>
+
+        <div class="guide-table-wrap">
+            <table class="guide-table" id="matrixTable">
+                <thead>
+                    <tr>
+                        <th>Identifier</th>
+                        <th>Subsystem</th>
+                        <th>Exhaust</th>
+                        <th>Bigger TB</th>
+                        <th>Injectors</th>
+                        <th>3/4 Bar MAP</th>
+                        <th>Larger Cam</th>
+                        <th>Priority</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><a href="T-LM-web/Fuel_-_Running/BATOFF_FuelBatteryOffset.html" class="ident-name">BATOFF</a></td>
+                        <td>Fuel Running</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-modify">Rescale</span></td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="priority-badge priority-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Fuel_-_Adaptive_memory/PWMIN_NoCellUpdateBelow_PWMIN_Pulsewidth.html" class="ident-name">PWMIN</a></td>
+                        <td>Fuel Adaptive</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-down">&darr; Rescale</span></td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="priority-badge priority-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Fuel_-_Running/PTPWOF_PartThrottlePulsewidthOffset.html" class="ident-name">FPWUNK</a> / 
+                            <a href="T-LM-web/Fuel_-_Running/PTPWOF_PartThrottlePulsewidthOffset.html" class="ident-name">PTPWOF</a>
+                            <div class="ident-code" style="font-size: 11px; color: #64748b;">FuelPulsewidthFunctionUnknown / PartThrottlePulsewidthOffset</div>
+                        </td>
+                        <td>Fuel Running / Transient</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-down">&darr; / Flow Mult</span></td>
+                        <td><span class="direction-badge dir-up">&uarr; &times; 1.5 (3-Bar)</span></td>
+                        <td>&mdash;</td>
+                        <td><span class="priority-badge priority-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a href="T-LM-web/Fuel_-_Transient_Enrichment/OBCONST_OverboostConstant1.html" class="ident-name">OBCONST</a>
+                            <div class="ident-code" style="font-size: 11px; color: #64748b;">OverboostConstant1</div>
+                        </td>
+                        <td>Fuel Transient</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-down">&darr; 170 &rarr; 113</span></td>
+                        <td>&mdash;</td>
+                        <td><span class="priority-badge priority-med">Medium</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Fuel_-_O2_Controller_Ramps/SECRMP_SecondaryRamp.html" class="ident-name">SECRMP</a></td>
+                        <td>Fuel O2 Ramps</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-down">&darr; +1/-1 Cts</span></td>
+                        <td><span class="direction-badge dir-modify">Align Bounds</span></td>
+                        <td><span class="direction-badge dir-down">&darr; +1/-1 Idle</span></td>
+                        <td><span class="priority-badge priority-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Fuel_-_O2_Controller_Ramps/PRIRMP_PrimaryRamp.html" class="ident-name">PRIRMP</a></td>
+                        <td>Fuel O2 Ramps</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-down">&darr; Cruise Cells</span></td>
+                        <td><span class="direction-badge dir-modify">Align Bounds</span></td>
+                        <td>&mdash;</td>
+                        <td><span class="priority-badge priority-med">Medium</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Spark_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html" class="ident-name">WOTMAP</a></td>
+                        <td>Spark Advance</td>
+                        <td><span class="direction-badge dir-up">&uarr; +1&deg;–2&deg;</span></td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-down">&darr; Retard</span></td>
+                        <td>&mdash;</td>
+                        <td><span class="priority-badge priority-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Fuel_-_Modifiers/PEFTBL_PumpingEfficiency.html" class="ident-name">PEFTBL</a></td>
+                        <td>Fuel Modifiers</td>
+                        <td><span class="direction-badge dir-up">&uarr; +3%–6%</span></td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-modify">Rotate CCW</span></td>
+                        <td><span class="priority-badge priority-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Fuel_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/POSSLP_DeltaTPSEnrichment_FromTemp.html" class="ident-name">POSSLP</a></td>
+                        <td>Transient Fuel</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-up">&uarr; +25%–45%</span></td>
+                        <td><span class="direction-badge dir-down">&darr; -10%–15%</span></td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="priority-badge priority-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Fuel_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/THRMAX_MaxDeltaTHR.html" class="ident-name">THRMAX</a></td>
+                        <td>Transient Fuel</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-up">&uarr; +15%–30%</span></td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="priority-badge priority-med">Medium</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Fuel_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/POSTRG_PositiveTransientTriggerLevel.html" class="ident-name">POSTRG</a></td>
+                        <td>Transient Fuel</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-down">&darr; Lower</span></td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="priority-badge priority-med">Medium</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Fuel_-_Transient_Enrichment/PumpShot_Calculation/MAP_PumpShot/AESLOP_DeltaMAPEnrichment_FromTemp2.html" class="ident-name">AESLOP</a></td>
+                        <td>Transient Fuel</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-up">&uarr; +10%–20%</span></td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="priority-badge priority-med">Medium</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Boost_-_WG_Control/DCWOT_FullThrottleWastegateDutyCycle_C8is100Percent_FromMap.html" class="ident-name">DCWOT</a></td>
+                        <td>Boost WG Control</td>
+                        <td><span class="direction-badge dir-down">&darr; -10%–25%</span></td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-modify">Extend</span></td>
+                        <td>&mdash;</td>
+                        <td><span class="priority-badge priority-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Boost_-_WG_Control/DCWADJ_FullThrottleWastegateDutyCycleAdjustment_FromRpm.html" class="ident-name">DCWADJ</a></td>
+                        <td>Boost WG Control</td>
+                        <td><span class="direction-badge dir-down">&darr; High RPM</span></td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="priority-badge priority-med">Medium</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Boost_-_Target_Lookup/WSGRPM_AllowedBoost_FromRpm.html" class="ident-name">WSGRPM</a></td>
+                        <td>Boost Target</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-up">&uarr; Populate</span></td>
+                        <td>&mdash;</td>
+                        <td><span class="priority-badge priority-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Boost_-_Target_Lookup/WSGTIM_AllowedBoost_FromTime.html" class="ident-name">WSGTIM</a></td>
+                        <td>Boost Target</td>
+                        <td><span class="direction-badge dir-modify">Soften Ramp</span></td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="priority-badge priority-med">Medium</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Boost_-_Target_Lookup/WSGPRT_AllowedBoostPartThrottle_FromThrottle.html" class="ident-name">WSGPRT</a></td>
+                        <td>Boost Target</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-modify">Rescale</span></td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="priority-badge priority-med">Medium</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/OB,_Speed,_and_Rev_Limiter/MPSHFA_OverboostFuelShutoffEnablePointFromMap_Absolute.html" class="ident-name">MPSHFA / T</a></td>
+                        <td>OB / Limits</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-up">&uarr; Set Target</span></td>
+                        <td>&mdash;</td>
+                        <td><span class="priority-badge priority-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Idle_-_AIS_Control/AISPN_IdleSpeedParkNeutral_FromTemp.html" class="ident-name">AISPN / CLD</a></td>
+                        <td>Idle / AIS</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-up">&uarr; 900 RPM</span></td>
+                        <td><span class="priority-badge priority-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Idle_-_AIS_Control/CALPOS_PositionAisMotorIsAtIdle.html" class="ident-name">CALPOS</a></td>
+                        <td>Idle / AIS</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-down">&darr; Lower Steps</span></td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-up">&uarr; Raise Steps</span></td>
+                        <td><span class="priority-badge priority-med">Medium</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Spark_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html" class="ident-name">HOTMAP</a></td>
+                        <td>Spark Advance</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-modify">Smooth Vac</span></td>
+                        <td><span class="direction-badge dir-up">&uarr; +4&deg;–8&deg; Idle</span></td>
+                        <td><span class="priority-badge priority-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Fuel_-_Running/MAPTBL_FuelPartThrottle.html" class="ident-name">MAPTBL</a></td>
+                        <td>Fuel Running</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-modify">Smooth Vac</span></td>
+                        <td><span class="direction-badge dir-down">&darr; Lean Idle</span></td>
+                        <td><span class="priority-badge priority-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Spark_-_Knock_Retard/DLTKNK_KnockFromRpms.html" class="ident-name">DLTKNK</a></td>
+                        <td>Spark Knock</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-up">&uarr; +15%–25%</span></td>
+                        <td><span class="priority-badge priority-high">High</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Idle_-_AIS_Decel/MAPFLR_AdditionToControlMap_FromRpm.html" class="ident-name">MAPFLR</a></td>
+                        <td>Idle / AIS Decel</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-up">&uarr; Raise Floor</span></td>
+                        <td><span class="priority-badge priority-med">Medium</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Idle_-_AIS_Decel/DCLMIN_MinLimitOnDecelAisControlledMap.html" class="ident-name">DCLMIN</a></td>
+                        <td>Idle / AIS Decel</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-up">&uarr; Raise Limit</span></td>
+                        <td><span class="priority-badge priority-med">Medium</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Fuel_-_Starting/STRTFL_FuelStartFromCoolantTemp.html" class="ident-name">STRTFL / SFDCAY</a></td>
+                        <td>Fuel Starting</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-down">&darr; -15%–25%</span></td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="priority-badge priority-med">Medium</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Fuel_-_Transient_Enrichment/RPMMAP_SwitchPointForDownUp_FromRpm.html" class="ident-name">RPMMAP</a></td>
+                        <td>Fuel Transient</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-up">&uarr; Raise MAP</span></td>
+                        <td><span class="priority-badge priority-opt">Optional</span></td>
+                    </tr>
+                    <tr>
+                        <td><a href="T-LM-web/Setup_-_Transfer_Functions/WOTDLT_DeltaThrottleFrom_MINTHR_ToDetermineFullThrottle.html" class="ident-name">WOTDLT</a></td>
+                        <td>Setup OBD</td>
+                        <td>&mdash;</td>
+                        <td><span class="direction-badge dir-down">&darr; Lower 10%</span></td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td>&mdash;</td>
+                        <td><span class="priority-badge priority-opt">Optional</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="guide-footer">
+        <p>
+            Created for Chrysler Turbo Logic Module (T-LM / Turbonator) tuners.
+            <br>
+            All identifiers link directly to their corresponding definition and calibration pages.
+        </p>
+    </footer>
+
+</div>
+
+<script>
+function filterMatrix() {
+    var input = document.getElementById("matrixSearch");
+    var filter = input.value.toUpperCase();
+    var table = document.getElementById("matrixTable");
+    var tr = table.getElementsByTagName("tr");
+
+    for (var i = 1; i < tr.length; i++) {
+        var rowText = tr[i].textContent || tr[i].innerText;
+        if (rowText.toUpperCase().indexOf(filter) > -1) {
+            tr[i].style.display = "";
+        } else {
+            tr[i].style.display = "none";
+        }
+    }
+}
+</script>
+
+</body>
+</html>

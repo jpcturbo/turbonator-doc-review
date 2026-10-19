@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FWDAIS: ForwardAisSteps NoSlope | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0ADE</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>FWDAIS: ForwardAisSteps NoSlope</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>FWDAIS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>FWDAIS_ForwardAisSteps_NoSlope</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0ADE</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2D Table / Curve)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Stepper Motor Forward (Open) Steps vs Underspeed RPM Error</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x04                       ;Number of points in table; .byte 0x14, 0x01, 0x00, 0x00     ;Point 1; .byte 0x28, 0x02, 0x00, 0x00     ;Point 2; .byte 0x3C, 0x04, 0x00, 0x00     ;Point 3; .byte 0x50, 0x06                 ;Point 4</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L2812-L2828"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L5003"><code>CalculateTargetIdleSpeedAndAisPosition_MM</code></a> in <a href="../T-LMv13.asm.html#L5172"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>FWDAIS</code> (ForwardAisSteps_NoSlope) is a stepped lookup table (without linear interpolation) that dictates how many forward (opening) steps the ECU commands the AIS stepper motor to take when the engine is running slower than target idle speed.</p>
+<p>When engine load increases (such as power steering pump lock, alternator charging surge, or clutch drag), engine speed sags below <code>TargetIdleSpeed_HB</code>. The ECU calculates the underspeed error <code>(Target - Actual) / 4</code>. Based on the magnitude of the error, <code>FWDAIS</code> assigns an immediate step increase (1, 2, 4, or 6 steps). Small RPM errors command single-step adjustments to avoid overshooting, while severe RPM drops command aggressive multi-step corrections to prevent an imminent stall.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at line 5172.</li>
+<li>Active when <code>TargetIdleSpeed_HB &gt;= EngineRpm_HB</code> (engine is below target).</li>
+<li>Executed only after the decel timing delay <code>Timer_AisChanges</code> exceeds <a href="../Idle_-_AIS_Decel/DCLRF2_TimeBetweenAisPulsesForDecelAis2.html"><code>DCLRF2</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stalling Under Sudden Load</strong>: If turning the steering wheel to full lock or turning on headlights causes the engine to dip and stall, increase the step values in <code>FWDAIS</code> (especially for mid-to-high RPM error brackets).</li>
+<li><strong>Idle Oscillating / Hunting</strong>: If the engine surges up and down rhythmically at idle ('hunting' between 750 and 1,100 RPM), <code>FWDAIS</code> is over-correcting. Reduce the step counts at low error brackets (e.g. keep small errors at 1 step).</li>
+<li><strong>Large Aftermarket Throttle Bodies</strong>: Larger throttle bodies flow much more bypass air per step. Reduce <code>FWDAIS</code> values by 30% to 50% to maintain smooth, non-oscillating idle recovery.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateTargetIdleSpeedAndAisPosition_MM (T-LMv13.asm:5172-5181) ---
+        ldx  #FWDAIS_ForwardAisSteps_NoSlope     ; Pointer to forward steps table ($0ADE)
+        ldd  TargetIdleSpeed_HB                  ; Load target idle speed (16-bit)
+        subd EngineRpm_HB                        ; Subtract actual engine RPM (Target - Actual)
+        bcc  LE582                               ; Branch if Target &gt;= Actual (underspeed)
+        ...
+LE582:  lsrd                                     ; Divide RPM error by 2
+        lsrd                                     ; Divide RPM error by 4
+        ; Table lookup without slope is executed using scaled RPM error</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 5172</strong> (<code>CalculateTargetIdleSpeedAndAisPosition_MM</code>): <code>ldx  #FWDAIS_ForwardAisSteps_NoSlope    ; load index with value</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>No-Slope Table</strong>: Unlike 4-byte interpolated tables, <code>FWDAIS</code> uses a stepped lookup to produce discrete, stable step increments without continuous fractional rounding.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>FWDAIS</code>
+        </footer>
+    </div>
+</body>
+</html>

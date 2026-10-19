@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KNKLIM: MaxKnockRetard | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x045D</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>2 - Spark ➔ B - Knock Retard</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>KNKLIM: MaxKnockRetard</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>KNKLIM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>KNKLIM_MaxKnockRetard</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>2_-_Spark\B_-_Knock_Retard\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x045D</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">degrees retard</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x05                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1307-L1317"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8225"><code>CalculateKnockRetard_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L8243"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>KNKLIM</code> defines a fixed maximum knock retard limit applied during low-speed transient throttle transitions.</p>
+<p>When accelerating from low engine speeds with significant throttle input, sudden mechanical torque loading, engine mount flex, and exhaust shield vibrations can produce mechanical noise spikes. Under these low-RPM, high-throttle conditions (below <a href="../../2_-_Spark/B_-_Knock_Retard/KLMRPM_MinKnockDetectRpm.html"><code>KLMRPM</code></a> with throttle opening above <a href="../../2_-_Spark/B_-_Knock_Retard/THRKNK_DeltaAbove_MINTHR.html"><code>THRKNK</code></a>), <code>KNKLIM</code> restricts maximum allowable knock retard to a modest limit (factory setting 5 counts = 2.5 degrees) to prevent false vibration noise from triggering excessive, bog-inducing timing retard.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateKnockRetard_MM</code> (<code>T-SMEC_v19.asm:8240-8245</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Engine speed &gt;= <a href="../../2_-_Spark/B_-_Knock_Retard/KNKRPM_MinRpmforKnockRetard.html"><code>KNKRPM</code></a>.</li>
+<li>Sensor fault flags clear (<code>b45_MapStuck</code>, <code>b45_TpsBadSignal</code>, <code>b45_MapBadSignal</code> clear).</li>
+<li>Throttle delta &gt;= <a href="../../2_-_Spark/B_-_Knock_Retard/THRKNK_DeltaAbove_MINTHR.html"><code>THRKNK</code></a> (<code>TpsVolts - MINTHR &gt;= THRKNK</code>).</li>
+<li>Engine speed &lt; <a href="../../2_-_Spark/B_-_Knock_Retard/KLMRPM_MinKnockDetectRpm.html"><code>KLMRPM</code></a> (<code>cmpb KLMRPM; bcc CalculateMaxAllowedRetard</code> not taken).</li>
+<li><strong>Execution Flow</strong>:</li>
+<li>Accumulator A is loaded with <code>KNKLIM_MaxKnockRetard</code> and stored directly into <code>MaxRetardFromMAP</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Low-RPM Tip-In Hesitation Prevention</strong>:</li>
+<li>Factory setting of 2.5 degrees (5 counts) prevents false knock spikes during sudden throttle stomps from bogging the engine.</li>
+<li><strong>Stiff Engine Mounts &amp; Clutches</strong>:</li>
+<li>Polyurethane engine mounts or aggressive clutch discs transmit heavy vibration; lowering <code>KNKLIM</code> prevents false retard bogs.</li>
+<li><strong>Raising for Lugging Protection</strong>:</li>
+<li>If an engine experiences genuine low-RPM detonation when accelerating in high gears at 1200 RPM, raise <code>KNKLIM</code> to 4.0 or 5.0 degrees.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateKnockRetard_MM</code> at line 8240, <code>ldab EngineRpm_HB</code> loads engine speed. Line 8241 compares against <a href="../../2_-_Spark/B_-_Knock_Retard/KLMRPM_MinKnockDetectRpm.html"><code>KLMRPM_MinKnockDetectRpm</code></a>. If engine speed is greater than or equal to <a href="../../2_-_Spark/B_-_Knock_Retard/KLMRPM_MinKnockDetectRpm.html"><code>KLMRPM</code></a>, <code>bcc CalculateMaxAllowedRetard</code> branches to line 8246. If engine speed is below <a href="../../2_-_Spark/B_-_Knock_Retard/KLMRPM_MinKnockDetectRpm.html"><code>KLMRPM</code></a> (and throttle delta exceeded <a href="../../2_-_Spark/B_-_Knock_Retard/THRKNK_DeltaAbove_MINTHR.html"><code>THRKNK</code></a>), line 8243 executes <code>ldaa KNKLIM_MaxKnockRetard</code> and line 8244 branches to line 8249 (<code>StoreMaxAllowedRetard</code>), storing <code>KNKLIM</code> directly into <code>MaxRetardFromMAP</code>.</p>
+<pre><code class="language-motorola6803">; --- CalculateKnockRetard_MM (T-SMEC_v19.asm:8240-8245) ---
+	ldab EngineRpm_HB    ; load b with memory contents
+	cmpb KLMRPM_MinKnockDetectRpm	 ; compare b with memory contents (data is 20)
+	bcc  CalculateMaxAllowedRetard	  ; branch if greater or equal
+	ldaa KNKLIM_MaxKnockRetard    ; load a with memory contents (data is 05)
+	bra  StoreMaxAllowedRetard    ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Transient Low-Speed Clamp</strong>: Restricts knock retard authority during low-RPM high-throttle transitions.</li>
+<li><strong>Scaling</strong>: 1 count = 0.5 degrees. Factory setting 0x05 = 5 counts = 2.5 degrees.</li>
+<li><strong>Bypassed at High RPM</strong>: Automatically superseded by <a href="../../2_-_Spark/B_-_Knock_Retard/RETMAX_MaxKnockRetardFromMap.html"><code>RETMAX</code></a> once engine speed crosses <a href="../../2_-_Spark/B_-_Knock_Retard/KLMRPM_MinKnockDetectRpm.html"><code>KLMRPM</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>KNKLIM</code>
+        </footer>
+    </div>
+</body>
+</html>

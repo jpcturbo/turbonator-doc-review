@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HUNTSV: Huntsville Code | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x00FC</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ B - Cal ID</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>HUNTSV: Huntsville Code</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>HUNTSV</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>HunstvilleTesterCodeBits</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\B_-_Cal_ID\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x00FC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Test Word</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0xC92D                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L435-L445"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L3829"><code>SendECUIDToSCI</code></a> in <a href="../../T-SMEC_v19.asm.html#L3830"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>HUNTSV</code> holds the Huntsville manufacturing test code within the calibration identification header.</p>
+<p>Manufactured at Chrysler's Huntsville Electronics division in Alabama, each engine control unit underwent automated functional testing on the assembly line before shipment to vehicle assembly plants. <code>HUNTSV</code> contains a sixteen-bit code word configured to C92D in the factory calibration. During factory end-of-line verification, automated testing equipment interrogated the controller via serial communications to verify correct program loading, module hardware revision, and circuit board manufacturing compliance.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>SendECUIDToSCI</code> (<code>T-SMEC_v19.asm:3829-3841</code>), accessed via indexed offset +4 from <a href="../../0_-_Setup/B_-_Cal_ID/ENDIT1_PNPrefix.html"><code>ENDIT1_PNPrefix</code></a>.</li>
+<li><strong>Transmission Protocol</strong>:</li>
+<li>When diagnostic command 0x16 is executed, <code>SendECUIDToSCI</code> transmits sequential header bytes across the SCI serial link.</li>
+<li><strong>No Execution Logic</strong>:</li>
+<li>Unreferenced by any operational math or branch decisions in <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Factory Test Artifact</strong>:</li>
+<li><code>HUNTSV</code> is a legacy manufacturing and circuit board test code that does not influence any engine control subroutines.</li>
+<li><strong>Leave Stock</strong>:</li>
+<li>There is no functional or performance reason to alter this value during calibration tuning.</li>
+<li><strong>Checksum Sensitivity</strong>:</li>
+<li>Modifying this word alters the memory checksum, requiring a corresponding fixup update in <a href="../../0_-_Setup/B_-_Cal_ID/CHKFIX_ChecksumFixupValue.html"><code>CHKFIX</code></a>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: <a href="../../0_-_Setup/B_-_Cal_ID/HunstvilleTesterCodeBits.html"><code>HunstvilleTesterCodeBits</code></a> is located at offset +4 from <a href="../../0_-_Setup/B_-_Cal_ID/ENDIT1_PNPrefix.html"><code>ENDIT1_PNPrefix</code></a>. In <code>SendECUIDToSCI</code>, index register X is loaded with <code>#ENDIT1_PNPrefix</code> at line 3830. When <code>DRBPointer2</code> reaches offset 4 and 5, <code>HUNTSV</code> is retrieved via <code>ldaa 0x00,x</code> and transmitted to the serial interface via <code>SerialOutput1a</code>. It is also summed as part of the ROM checksum loop in <code>CaculateChecksum</code>.</p>
+<pre><code class="language-motorola6803">; --- SendECUIDToSCI (T-SMEC_v19.asm:3829-3841) ---
+SendECUIDToSCI:
+	ldx  #ENDIT1_PNPrefix	 ; Point to ECU ID string in ROM
+	ldab DRBPointer2    ; Load requested string character index
+	bpl  L1269	    
+	lslb		    
+	lslb		    
+	stab DRBPointer2    
+L1269:	abx		    ; Add index to base pointer
+	ldaa 0x00,x	    ; Load ASCII character
+	inc  DRBPointer2    ; Increment for next request
+	brclr *DRBPointer2, #$%00000011, L1270	  ; Branch logic for checksum
+	bra  SerialOutput1a ; Transmit character</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Physical Location</strong>: Stored at calibration address 0x00FC (ROM address 0x8004).</li>
+<li><strong>Historical Lineage</strong>: Present in all Chrysler logic modules and SMEC computers produced at the Huntsville facility.</li>
+<li><strong>Companion Constants</strong>: Sits between <a href="../../0_-_Setup/B_-_Cal_ID/ENDITM_ECUID.html"><code>ENDITM</code></a> and <a href="../../0_-_Setup/B_-_Cal_ID/MDLCDE_ModelTypeCode.html"><code>MDLCDE</code></a> in the calibration ROM header.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>HUNTSV</code>
+        </footer>
+    </div>
+</body>
+</html>

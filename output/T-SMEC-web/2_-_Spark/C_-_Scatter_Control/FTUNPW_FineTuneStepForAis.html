@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTUNPW: FineTuneStepForAis | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x059F</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>2 - Spark ➔ C - Scatter Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>FTUNPW: FineTuneStepForAis</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>FTUNPW</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>FTUNPW_FineTuneStepForAis</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>2_-_Spark\C_-_Scatter_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x059F</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">steps</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x01                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1629-L1639"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8106"><code>HandleSparkScatter</code></a> in <a href="../../T-SMEC_v19.asm.html#L8157"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>FTUNPW</code> defines the Automatic Idle Speed (AIS) stepper motor fine-tuning step size driven by spark scatter tracking register overflow.</p>
+<p>While spark scatter provides instantaneous cycle-by-cycle ignition timing adjustments to counter rapid idle speed fluctuations, the engine controller tracks long-term idle bias through the <code>SparkScatter</code> tracking variable. If ignition timing corrections persistently saturate in one direction (indicating that timing alone cannot bring idle speed back to the target), the tracking variable overflows. When overflow occurs, the controller steps the mechanical AIS motor by <code>FTUNPW</code> steps to alter baseline bypass airflow, bringing the engine back into the active spark scatter timing authority window. In factory calibrations, <code>FTUNPW</code> is set to 1 step.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>HandleSparkScatter</code> (<code>T-SMEC_v19.asm:8154-8174</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Spark scatter accumulator addition overflows (<code>bvc DoUseSparkScatter</code> not taken at line 8153).</li>
+<li>Stepper motor must be stationary (<code>DesiredNewAisPosition == CurrentAisPosition</code>).</li>
+<li><code>FTUNPW_FineTuneStepForAis</code> must be non-zero (<code>ldab FTUNPW; beq DontUseSparkScatter</code>).</li>
+<li><strong>Directional Stepping</strong>:</li>
+<li>If accumulator A is positive (engine fast), <code>DesiredNewAisPosition</code> is decremented by <code>FTUNPW</code>.</li>
+<li>If accumulator A is negative (engine slow), <code>DesiredNewAisPosition</code> is incremented by <code>FTUNPW</code>, clamped to <a href="../../5_-_Idle/B_-_AIS_Decel/AISHLM_AisHighLimitMaxOpenSteps.html"><code>AISHLM</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Fast Airflow Convergence</strong>:</li>
+<li>Raising <code>FTUNPW</code> to 2 or 3 steps allows the AIS motor to adjust more rapidly when high electrical or air conditioning loads push idle speed off target.</li>
+<li><strong>Surge Prevention</strong>:</li>
+<li>If the engine develops a slow, rhythmic 1 to 2 Hz idle surge, ensure <code>FTUNPW</code> is set to the factory 1 step.</li>
+<li><strong>Disabling AIS Integration</strong>:</li>
+<li>Setting <code>FTUNPW</code> to 0 prevents spark scatter from commanding stepper motor movement, leaving idle airflow purely to nominal proportional-integral AIS routines.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>HandleSparkScatter</code> at line 8152, accumulator A is added to <code>SparkScatter</code>. If the addition overflows the 8-bit signed range (<code>bvc</code> not taken), lines 8154-8155 verify that <code>DesiredNewAisPosition</code> equals <code>CurrentAisPosition</code>. Line 8157 loads <code>FTUNPW_FineTuneStepForAis</code>; if zero (<code>beq</code>), it branches to exit. At line 8159, <code>tsta</code> tests the overflow polarity: if positive, line 8162 subtracts <code>FTUNPW</code> from <code>DesiredNewAisPosition</code> (closing AIS); if negative, line 8168 adds <code>FTUNPW</code> to <code>DesiredNewAisPosition</code> (opening AIS), clamping to <a href="../../5_-_Idle/B_-_AIS_Decel/AISHLM_AisHighLimitMaxOpenSteps.html"><code>AISHLM_AisHighLimitMaxOpenSteps</code></a>.</p>
+<pre><code class="language-motorola6803">; --- HandleSparkScatter (T-SMEC_v19.asm:8152-8175) ---
+	adda SparkScatter
+	bvc  DoUseSparkScatter	  ; branch if overflow
+	ldab DesiredNewAisPosition    ; load b with memory contents
+	cmpb CurrentAisPosition
+	bne  DontUseSparkScatter    ; branch if not equal (not zero)
+	ldab FTUNPW_FineTuneStepForAis	  ; load b with memory contents (data is 01)
+	beq  DontUseSparkScatter    ; branch if equal (zero)
+	tsta		    ; test a
+	bmi  L1681	    ; branch if minus(hi bit 1)
+	ldaa DesiredNewAisPosition    ; load a with memory contents
+	sba		    ; subtract (a=a-b)
+	bcc  SaveDesiredAisPosition    ; branch if greater or equal
+	clra		    ; a = 0
+	bra  SaveDesiredAisPosition    ; branch
+
+L1681:	ldaa AISHLM_AisHighLimitMaxOpenSteps	; load a with memory contents (data is a0)
+	addb DesiredNewAisPosition    ; b=b+memory contents
+	bcs  SaveDesiredAisPosition    ; branch if lower
+	cba		
+	bls  SaveDesiredAisPosition    ; branch if lower or same
+	tba		    ; a = b
+SaveDesiredAisPosition:
+	staa DesiredNewAisPosition    ; store a into memory
+DontUseSparkScatter:</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Dual-Layer Idle Control</strong>: Bridges high-speed ignition timing modulation (fast transient) with mechanical stepper airflow (slow integral).</li>
+<li><strong>Overflow Pacing</strong>: Stepper motor movement only triggers when the cumulative spark scatter sum overflows 8-bit signed bounds.</li>
+<li><strong>Clamped by AISHLM</strong>: New position is strictly clamped between 0 and <a href="../../5_-_Idle/B_-_AIS_Decel/AISHLM_AisHighLimitMaxOpenSteps.html"><code>AISHLM_AisHighLimitMaxOpenSteps</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>FTUNPW</code>
+        </footer>
+    </div>
+</body>
+</html>

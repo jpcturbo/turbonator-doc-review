@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FANTMP3: FanTurnOnTempBelow35Mph | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0F3F</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fan Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Turbonator</strong>
+        </div>
+        
+        <article class="content">
+            <h1>FANTMP3: FanTurnOnTempBelow35Mph</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>FANTMP3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>FANTMP3_FanTurnOnTempBelow35Mph</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Turbonator</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fan_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0F3F</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Coolant Temperature ADC (0xE3 = 227 decimal; approx 200°F / 93°C)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xE3                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L3933-L3945"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;">Direct symbol reference or ROM header constant in <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>FANTMP3</code> (FanTurnOnTempBelow35Mph) is the primary low-speed and curb idle radiator fan turn-on threshold (stock calibration = <code>0xE3</code> / ~200°F).</p>
+<p>When driving in slow city traffic, waiting at stoplights, or idling in gridlock (&lt; 35 MPH), there is virtually zero passive ram airflow through the front fascia. Engine waste heat rapidly accumulates in the radiator coolant. When coolant temperature reaches <code>FANTMP3</code>, the ECU grounds the cooling fan relay driver, initiating forced airflow through the radiator core and condenser to bring engine temperature under control.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside <code>ControlFan2_MM</code> at line 6908.</li>
+<li>Selected when vehicle speed is below 35 MPH (<code>Temp0 &lt; 0x46</code>).</li>
+<li>When <code>CoolantTemp &gt;= FANTMP3</code>, energizes the fan relay driver.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Most Important Fan Setting</strong>: <code>FANTMP3</code> is the parameter tuners adjust most frequently to control hot idle temperatures.</li>
+<li><strong>180°F Thermostat Setup</strong>: Lower <code>FANTMP3</code> from stock ~200°F (<code>0xE3</code>) down to <code>0xCB</code> (~188°F).</li>
+<li><strong>160°F Thermostat Setup</strong>: Lower <code>FANTMP3</code> to <code>0xB5</code> (~172°F).</li>
+<li><strong>Summer Traffic Knock Resistance</strong>: Keeping city idle coolant temperatures around 185°F - 190°F prevents heat-soak of the intake manifold, sharply reducing tip-in knock when accelerating away from stoplights.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- ControlFan2_MM (T-LMv13.asm:6903-6909) ---
+        cmpa #0x46                               ; Compare vehicle speed against 35 MPH threshold
+        ldaa BitFlags_84                         
+        bcs  LF23D                               ; If low speed (&lt;35 MPH), advance pointer to FANTMP3 ($0F3F)</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>A/C Override</strong>: Turning on the A/C or windshield defroster forces the fan ON regardless of <code>FANTMP3</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>FANTMP3</code>
+        </footer>
+    </div>
+</body>
+</html>

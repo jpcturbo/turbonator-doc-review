@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REVLMT4: MapAbove75PctAndThrLimpin2000 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x18CE</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>4 - OB, Speed, and Rev Limiter ➔ D - Misc, Limp Mode</strong> &nbsp;|&nbsp; Subsystem: <strong>Limiters_Limp</strong>
+        </div>
+        
+        <article class="content">
+            <h1>REVLMT4: MapAbove75PctAndThrLimpin2000</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>REVLMT4</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>REVLMT4_MapAbove75PctAndThrLimpin2000</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Limiters_Limp</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>4_-_OB,_Speed,_and_Rev_Limiter\D_-_Misc,_Limp_Mode\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x18CE</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x5E (94 counts ≈ 3008 RPM)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6540-L6550"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5680"><code>MAPSENSOR_OKAY_OR_LIGHTTHROTTLE</code></a> in <a href="../../T-SMEC_v19.asm.html#L5681"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>REVLMT4</code> establishes the upper engine speed fuel cutout threshold for the plausibility safety check that protects against throttle mechanical sticking and low-speed throttle sensor faults.</p>
+<p>When the engine controller observes manifold absolute pressure exceeding 75 percent of barometric pressure (indicating near-wide-open throttle manifold conditions) while the throttle position sensor indicates idle or closed throttle, the engine may be experiencing a broken throttle return spring, mechanical linkage hang-up, or massive intake air leak. Additionally, if the throttle position sensor signal is lost while the vehicle is moving below 10 mph, this safety mode engages. In factory calibrations, <code>REVLMT4</code> is set to 94 counts, corresponding to approximately 3000 RPM. When engine speed climbs to <code>REVLMT4</code> under these fault conditions, the controller cuts fuel injection to halt unwanted acceleration.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>MAPSENSOR_OKAY_OR_LIGHTTHROTTLE</code> (<code>T-SMEC_v19.asm:5680-5687</code>), called from <code>Cutout_CheckRevLimiters</code> (<code>T-SMEC_v19.asm:5672-5699</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>MAP sensor healthy (or throttle &lt; 25%), and either:<ol>
+<li><code>b45_TpsBadSignal</code> is set and vehicle speed (<code>Temp0</code>) is below <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/RVLSPD_CarSpeedForRevLimitWithTBOff.html"><code>RVLSPD</code></a> (10 mph); or</li>
+<li>Throttle is closed (<code>b4f_OffIdle</code> clear in <code>BitFlags_4f</code>) and <code>MapValue</code> is greater than 75% of <code>BaroPressure</code>.</li>
+</ol>
+</li>
+<li><strong>Cutout Trigger</strong>:</li>
+<li>Index register X is loaded with <code>#REVLMT4_MapAbove75PctAndThrLimpin2000</code>.</li>
+<li>In <code>Cutout_CheckRevLimitingValues</code>, if <code>EngineRpm_HB &gt;= REVLMT4</code>, execution jumps to <code>Cutout_ShutOffEngineForThisRotation</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Camshaft Compatibility</strong>:</li>
+<li>If a high-overlap performance camshaft causes idle vacuum to drop below 7.5 inHg (manifold pressure &gt; 75% of barometric pressure), raise <code>REVLMT4</code> to 4500+ RPM to eliminate false rev limiter cuts.</li>
+<li><strong>Hysteresis Gap</strong>:</li>
+<li>Keep <code>REVLMT4</code> approximately 500 to 1000 RPM above <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/REVLMT3_MapAbove75PctAndIdleSwitchClosed2000.html"><code>REVLMT3</code></a> to provide a wide, stable hysteresis band.</li>
+<li><strong>Safety Preservation</strong>:</li>
+<li>Retaining <code>REVLMT4</code> at 3000 RPM ensures that a severed throttle spring cannot cause uncontrolled acceleration.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>MAPSENSOR_OKAY_OR_LIGHTTHROTTLE</code> at line 5681, <code>ldx #REVLMT4_MapAbove75PctAndThrLimpin2000</code> loads the comparison pointer. Lines 5682-5697 verify if <code>b45_TpsBadSignal</code> is set (with <code>Temp0 &lt; RVLSPD</code>) or if <code>b4f_OffIdle</code> is clear with <code>MapValue &gt; 0.75 * BaroPressure</code>. If either condition is true, the routine branches to <code>Cutout_CheckRevLimitingValues</code> with X pointing to <code>REVLMT4</code>, cutting fuel if RPM reaches or exceeds 94 counts.</p>
+<pre><code class="language-motorola6803">; --- MAPSENSOR_OKAY_OR_LIGHTTHROTTLE (T-SMEC_v19.asm:5680-5687) ---
+MAPSENSOR_OKAY_OR_LIGHTTHROTTLE:
+	ldx  #REVLMT4_MapAbove75PctAndThrLimpin2000    ; load index with value
+	brclr *b45_IPL1, #b45_TpsBadSignal, THROTTLESENSOR_OKAY    ; branch if bit(s) clear
+	ldaa Temp0	    ; load a with memory contents
+	cmpa RVLSPD_CarSpeedForRevLimitWithTBOff    ; compare a with memory contents (data is 14)
+	bcc  L1484	    ; branch if greater or equal
+	bra  L1483	    ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Hysteresis Pair</strong>: <code>REVLMT4</code> (upper cutout limit) is paired with <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/REVLMT3_MapAbove75PctAndIdleSwitchClosed2000.html"><code>REVLMT3</code></a> (lower restore limit).</li>
+<li><strong>Calibration Value</strong>: Factory setting is 94 counts (3008 RPM) in stock 2.5L calibrations, providing headroom above high-idle flare while protecting against runaway.</li>
+<li><strong>RPM Scaling</strong>: Scaled at 32 RPM per count ($8160 / 255$). 94 counts equals 94 × 32 = 3008 RPM.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>REVLMT4</code>
+        </footer>
+    </div>
+</body>
+</html>

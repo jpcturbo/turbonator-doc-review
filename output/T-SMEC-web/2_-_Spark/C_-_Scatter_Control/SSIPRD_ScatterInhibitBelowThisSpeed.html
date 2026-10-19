@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSIPRD: ScatterInhibitBelowThisSpeed | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x05B9</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>2 - Spark ➔ C - Scatter Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>SSIPRD: ScatterInhibitBelowThisSpeed</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>SSIPRD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>SSIPRD_ScatterInhibitBelowThisSpeed</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>2_-_Spark\C_-_Scatter_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x05B9</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">period counts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0x0033                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1655-L1665"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8106"><code>HandleSparkScatter</code></a> in <a href="../../T-SMEC_v19.asm.html#L8128"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>SSIPRD</code> defines the low-engine-speed distributor pulse period threshold below which spark scatter idle stabilization is inhibited.</p>
+<p>The engine controller evaluates the time elapsed between distributor pulses (<code>TimerOverflowsBetweenDistPulses</code>). In period-based timing logic, a larger period represents a slower engine speed. If an engine begins to stall and engine speed sags severely, rapidly dithering ignition timing can destabilize combustion and accelerate the stall. If the distributor pulse period is greater than or equal to <code>SSIPRD</code> (engine speed falls below approximately 565 RPM in factory calibrations), spark scatter is inhibited, allowing the controller to focus on maximum solid ignition advance and idle air opening to rescue the engine from stalling.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>HandleSparkScatter</code> (<code>T-SMEC_v19.asm:8127-8129</code>).</li>
+<li><strong>Period Comparison</strong>:</li>
+<li><code>TimerOverflowsBetweenDistPulses</code> is loaded into index register X.</li>
+<li><code>cpx SSIPRD_ScatterInhibitBelowThisSpeed</code> at line 8128.</li>
+<li>If distributor pulse period &gt;= <code>SSIPRD</code> (<code>bcc DontUseSparkScatter</code>), branches to disable spark scatter.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Mopar Performance Shift-Hang Calibration</strong>:</li>
+<li>Setting <code>SSIPRD</code> to 65075 counts (hexadecimal FE33) inhibits spark scatter entirely on manual transmission cars, eliminating abrupt timing drops between shifts and keeping revs up for aggressive gear changes.</li>
+<li><strong>Anti-Stall Protection Floor</strong>:</li>
+<li>Factory setting of 51 counts (~565 RPM) locks out spark scatter when the engine sags toward an impending stall, allowing base timing to catch the engine.</li>
+<li><strong>Period-vs-RPM Logic</strong>:</li>
+<li>Remember that period is inversely proportional to RPM: larger numbers mean lower engine speed.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>HandleSparkScatter</code> at line 8127, <code>ldx TimerOverflowsBetweenDistPulses</code> loads the distributor pulse overflow period. Line 8128 executes <code>cpx SSIPRD_ScatterInhibitBelowThisSpeed</code>. If the period is greater than or equal to <code>SSIPRD</code> (engine running slower than threshold), carry is clear and <code>bcc DontUseSparkScatter</code> branches to line 8175 to zero the scatter accumulator. Only when the period is strictly less than <code>SSIPRD</code> (engine speed fast enough) does execution proceed to line 8130 to calculate delta RPM.</p>
+<pre><code class="language-motorola6803">; --- HandleSparkScatter (T-SMEC_v19.asm:8127-8130) ---
+	ldx  TimerOverflowsBetweenDistPulses
+	cpx  SSIPRD_ScatterInhibitBelowThisSpeed    ;  (data is 0033)
+	bcc  DontUseSparkScatter    ; branch if greater or equal
+	ldx  #SPKRET_SparkAdvanceRetardedWhenRpmAboveControl_FromDeltaRpm    ; load index with value</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Inverse Period Scaling</strong>: Evaluated as period duration between distributor pulses; larger numbers = lower RPM.</li>
+<li><strong>Type 4 Constant</strong>: 16-bit word constant. Factory setting 0x0033 = 51 counts ≈ 565 RPM.</li>
+<li><strong>MP Racing Trick</strong>: Set to 0xFE33 in Mopar Performance calibrations to defeat scatter and keep revs high between shifts.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>SSIPRD</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KLMRPM: MinKnockDetectRpm | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0341</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Spark - Knock Retard</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>KLMRPM: MinKnockDetectRpm</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>KLMRPM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>KLMRPM_MinKnockDetectRpm</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Spark_-_Knock_Retard\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0341</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM (0 to 8192 RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x10 (16 decimal, ~1,024 RPM)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L863-L875"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L2716"><code>KnockDetect_MM</code></a> in <a href="../T-LMv13.asm.html#L2733"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>KLMRPM_MinKnockDetectRpm</code> is the <strong>engine speed ceiling for the low-RPM knock retard clamp</strong> (<a href="../Spark_-_Knock_Retard/KNKLIM_MaxKnockRetard.html"><code>KNKLIM</code></a>).</p>
+<p>While <a href="../Spark_-_Knock_Retard/KNKRPM_MinRpmforKnockRetard.html"><code>KNKRPM</code></a> completely turns off knock retard below 1,024 RPM, <code>KLMRPM</code> establishes the transition boundary where the ECU switches from the restricted low-RPM knock ceiling (<a href="../Spark_-_Knock_Retard/KNKLIM_MaxKnockRetard.html"><code>KNKLIM</code></a>) to the full dynamic knock retard table (<a href="../Spark_-_Knock_Retard/RETMAX_MaxKnockRetardFromMap.html"><code>RETMAX</code></a>).</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<p><code>KLMRPM</code> is evaluated when throttle opening exceeds <a href="../Spark_-_Knock_Retard/THRKNK_DeltaAbove_MINTHR.html"><code>THRKNK</code></a>:
+* If <code>EngineRpm_HB &lt; KLMRPM</code>: The ECU clamps maximum retard to <a href="../Spark_-_Knock_Retard/KNKLIM_MaxKnockRetard.html"><code>KNKLIM</code></a> (stock 2.0°).
+* If <code>EngineRpm_HB &gt;= KLMRPM</code>: The ECU branches to look up maximum allowable retard from <a href="../Spark_-_Knock_Retard/RETMAX_MaxKnockRetardFromMap.html"><code>RETMAX</code></a> as a function of intake manifold pressure.</p>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Increasing the Value (Higher RPM Threshold):</strong></li>
+<li>Extends the restricted low-RPM knock clamp (<a href="../Spark_-_Knock_Retard/KNKLIM_MaxKnockRetard.html"><code>KNKLIM</code></a>) to higher engine speeds (e.g., 1,500 or 2,000 RPM).</li>
+<li>Useful for heavily cammed or mechanically noisy engines where false knock causes power hesitation during lower gear acceleration.</li>
+<li><strong>Decreasing the Value (Lower RPM Threshold):</strong></li>
+<li>Allows the full <a href="../Spark_-_Knock_Retard/RETMAX_MaxKnockRetardFromMap.html"><code>RETMAX</code></a> curve to take effect at lower RPMs, providing maximum knock retard protection sooner.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 2732–2738):</p>
+<pre><code class="language-motorola6803">ldab EngineRpm_HB
+        cmpb KLMRPM_MinKnockDetectRpm ; Compare RPM to KLMRPM (0x10 = 1024 RPM)
+        bcc  LD489                    ; If RPM &gt;= KLMRPM, branch to lookup RETMAX(MAP)
+        ldaa KNKLIM_MaxKnockRetard    ; Else clamp to KNKLIM
+        bra  LD48C
+LD489:  jsr  Lookup4ByteTable         ; Lookup RETMAX(MAP)</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Scaling:</strong> 64 RPM per bit. <code>0x10</code> equals 16 × 64 = 1,024 RPM.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>KLMRPM</code>
+        </footer>
+    </div>
+</body>
+</html>

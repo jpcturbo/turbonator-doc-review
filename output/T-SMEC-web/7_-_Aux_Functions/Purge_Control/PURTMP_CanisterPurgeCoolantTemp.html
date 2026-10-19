@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PURTMP: CanisterPurgeCoolantTemp | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x156C</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Purge Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PURTMP: CanisterPurgeCoolantTemp</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PURTMP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>PURTMP_CanisterPurgeCoolantTemp</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Purge_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x156C</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">degF</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x82                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5674-L5684"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L1807"><code>ControlPurgeSolenoid_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L1810"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PURTMP</code> defines the minimum engine coolant temperature required to enable evaporative canister purge operation.</p>
+<p>When an engine is warming up from a cold start, fuel atomization is inefficient, combustion chamber walls are cold, and the engine operates in open-loop fuel enrichment. Introducing unmetered raw hydrocarbon vapors from the carbon canister into a cold intake manifold destabilizes warmup fueling, causing rough idle, spark plug fouling, or engine stalling. In factory calibrations, <code>PURTMP</code> is configured to 130 counts, corresponding to approximately 130 °F. Until engine coolant reaches this temperature, the controller holds the canister purge solenoid closed.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ControlPurgeSolenoid_MM</code> (<code>T-SMEC_v19.asm:1807-1815</code>), instruction line 1810.</li>
+<li><strong>Engine Running Check</strong>: Engine running flag <code>b54_FuelEngineNotRunning</code> must be clear.</li>
+<li><strong>Temperature Comparison</strong>:</li>
+<li>Compares <code>CoolantTemp</code> against <code>PURTMP_CanisterPurgeCoolantTemp</code> at line 1810.</li>
+<li>If <code>CoolantTemp &gt;= PURTMP</code> (<code>bcc L1057</code>), sets flag <code>b50_Purge</code> in <code>BitFlags_50</code>.</li>
+<li>If <code>CoolantTemp &lt; PURTMP</code>, clears flag <code>b50_Purge</code> and disables purge.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Warmup Idle Stabilization</strong>:</li>
+<li>Raise <code>PURTMP</code> to 160 °F to 170 °F on big-cam or large-injector setups to prevent vapor-induced idle hunting during warmup.</li>
+<li><strong>Cold Start Protection</strong>:</li>
+<li>Do not lower <code>PURTMP</code> below 120 °F to avoid rich stumbling before closed-loop oxygen sensor feedback is active.</li>
+<li><strong>Emissions Compliance</strong>:</li>
+<li>Factory 130 °F setting achieves early canister purge without compromising cold drivability.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>ControlPurgeSolenoid_MM</code> at line 1809, accumulator A loads <code>CoolantTemp</code>. Line 1810 executes <code>cmpa PURTMP_CanisterPurgeCoolantTemp</code>. If coolant temperature meets or exceeds the threshold (<code>bcc</code>), it branches to line 1815 (<code>L1057</code>), which executes <code>bset *BitFlags_50, #b50_Purge</code>. If coolant temperature is lower, line 1812 executes <code>bclr *BitFlags_50, #b50_Purge</code>, ensuring the purge solenoid cannot be turned on.</p>
+<pre><code class="language-motorola6803">; --- ControlPurgeSolenoid_MM (T-SMEC_v19.asm:1807-1816) ---
+ControlPurgeSolenoid_MM:
+	brclr *BitFlags_54, #b54_FuelEngineNotRunning, L1058	; branch if bit(s) clear
+	ldaa CoolantTemp    ; load a with memory contents
+	cmpa PURTMP_CanisterPurgeCoolantTemp	    ; compare a with memory contents (data is 82)
+	bcc  L1057	    ; branch if greater or equal
+	bclr *BitFlags_50, #b50_Purge	 ; clear bits
+	bra  L1058	    ; branch
+L1057:	bset *BitFlags_50, #b50_Purge	 ; set bits</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Flag Management</strong>: Directly manipulates <code>b50_Purge</code> in <code>BitFlags_50</code>.</li>
+<li><strong>Downstream Interlock</strong>: When <code>b50_Purge</code> is clear, open-loop operation immediately forces purge off at line 1828.</li>
+<li><strong>Temperature Scaling</strong>: Standard Chrysler coolant temperature curve where 130 counts represents approximately 130 °F.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>PURTMP</code>
+        </footer>
+    </div>
+</body>
+</html>

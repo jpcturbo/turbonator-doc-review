@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RICHSA: OpenLoopEnrichFactorWhenSettingBasicTiming | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0A8F</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ C - Special setup</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>RICHSA: OpenLoopEnrichFactorWhenSettingBasicTiming</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>RICHSA</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>RICHSA_OpenLoopEnrichFactorWhenSettingBasicTiming</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\C_-_Special_setup\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0A8F</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">enrichment counts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x1A                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L2893-L2903"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5813"><code>DealWithSpecialIdle_SetBasicTiming_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L5815"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>RICHSA</code> establishes the open-loop fuel enrichment factor injected whenever the engine controller enters mechanical basic ignition timing service mode.</p>
+<p>To properly synchronize distributor orientation with true engine top dead center using a timing light, the technician disconnects the coolant temperature sensor, forcing a coolant sensor diagnostic fault. In response, the engine controller locks ignition advance to a fixed reference angle, commands a steady idle airflow, and loads <code>RICHSA</code> as a rich open-loop fueling multiplier.</p>
+<p>In factory calibrations, <code>RICHSA</code> is set to 26 counts. This provides extra fuel dampening to stabilize combustion, prevent lean misfiring, and suppress engine speed oscillations while closed-loop oxygen sensor feedback and adaptive fuel memory updates are temporarily suspended.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>DealWithSpecialIdle_SetBasicTiming_MM</code> (<code>T-SMEC_v19.asm:5813-5835</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Throttle state must be closed; tested via <code>BitFlags_4f</code> bit <code>b4f_OffIdle</code> at line 5814. If set (off-idle), branches to <code>THROTTLE_PRESSED1</code> and clears enrichment.</li>
+<li>Coolant temperature sensor fault flag <code>b45_BadCoolantTemp</code> in <code>b45_IPL1</code> must be set at line 5816 (triggered when the coolant sensor connector is unplugged or shorted to ground for timing setup).</li>
+<li>Diagnostic enrichment timer <code>Timer_OffThrottleFuelEnrich</code> is loaded with <code>RICHSA</code> at line 5833, which in turn suspends oxygen sensor switching and adaptive trim updates.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Factory Baseline &amp; Retention</strong>:</li>
+<li>Retain <code>RICHSA</code> at its factory value of 26 counts for standard street engines to maintain predictable open-loop fueling during distributor synchronization.</li>
+<li><strong>Aftermarket Camshafts &amp; Overlap</strong>:</li>
+<li>Raising <code>RICHSA</code> slightly (up to 30 to 35 counts) helps stabilize erratic combustion on aggressive camshafts that generate poor idle manifold vacuum.</li>
+<li><strong>Large Injector Considerations</strong>:</li>
+<li>When installing large aftermarket fuel injectors, ensure overall fuel scaling is trimmed so that the uncorrected multiplier in <code>RICHSA</code> does not saturate cylinders or foul spark plugs during timing light alignment.</li>
+<li><strong>Lowering &amp; Lean Stumbles</strong>:</li>
+<li>Lowering <code>RICHSA</code> below 20 counts can produce lean idle instability, causing the engine to surge or die when entering diagnostic basic timing mode.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>DealWithSpecialIdle_SetBasicTiming_MM</code> at line 5813, the microcontroller inspects <code>BitFlags_4f</code> bit <code>b4f_OffIdle</code>. If closed throttle is confirmed, the CPU executes <code>ldaa RICHSA_OpenLoopEnrichFactorWhenSettingBasicTiming</code> at line 5815. It then checks <code>b45_IPL1</code> for <code>b45_BadCoolantTemp</code> at line 5816. If set, execution bypasses the DRB pointer checks and branches to <code>L1495</code>, ultimately storing accumulator A into <code>Timer_OffThrottleFuelEnrich</code> at line 5833. While this timer is non-zero, the ECU zeroes <code>Counter_PrimaryAndSecondaryRamp</code> and <code>Counter_AdaptiveMem_Erase</code>, holding the engine in rich open-loop idle.</p>
+<pre><code class="language-motorola6803">; --- DealWithSpecialIdle_SetBasicTiming_MM (T-SMEC_v19.asm:5813-5828) ---
+DealWithSpecialIdle_SetBasicTiming_MM:
+	brset *BitFlags_4f, #b4f_OffIdle, THROTTLE_PRESSED1    ; branch if bit(s) set
+	ldaa RICHSA_OpenLoopEnrichFactorWhenSettingBasicTiming	  ; load a with memory contents (data is 1a)
+	brset *b45_IPL1, #b45_BadCoolantTemp, L1495	  ; branch if bit(s) set
+	ldaa RIDLST_OpenLoopEnrichFactorWhenSettingMinThrottleOpening	 ; load a with memory contents (data is 1a)
+	ldab DRBPointer1    ; load b with memory contents
+	cmpb #0x14	    ;  -00010100-
+	bne  L1494	    ; branch if not equal (not zero)
+	ldab DRBPointer2    ; load b with memory contents
+	cmpb #0x10	    ;  -00010000-
+	beq  L1495	    ; branch if equal (zero)
+L1494:	clra		    ; a = 0
+L1495:	brclr *Timer_OffThrottleFuelEnrich, #$%11111111, LOAD_FUELENRICHVAR    ; branch if bit(s) clear
+	tsta		    ; test a
+	bne  LOAD_FUELENRICHVAR    ; branch if not equal (not zero)
+	ldaa O2ITIM_TimeO2InhibitedSwitchingRichIdleToClosedLoop    ; load a with memory contents (data is ff)</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameter</strong>: Operates directly alongside <a href="../../5_-_Idle/C_-_Special_setup/SPKSET_ConstantSparkAdvanceWhenSettingBasicTiming.html"><code>SPKSET</code></a>, which locks spark timing to a static 12 degrees BTDC while <code>RICHSA</code> supplies rich open-loop fueling.</li>
+<li><strong>Service Procedure</strong>: Chrysler factory service manual instructions require unplugging the coolant temperature sensor on a fully warmed engine, which forces <code>b45_BadCoolantTemp</code>, setting timing to <a href="../../5_-_Idle/C_-_Special_setup/SPKSET_ConstantSparkAdvanceWhenSettingBasicTiming.html"><code>SPKSET</code></a> and enrichment to <code>RICHSA</code>.</li>
+<li><strong>Lineage</strong>: Inherited directly from the Turbo Chrysler Logic Module architecture, where rich idle open-loop enrichment was standard protocol during service distributor alignment.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>RICHSA</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAROLO: BaroReadValidLowLimit | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0FD0</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Baro Read</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BAROLO: BaroReadValidLowLimit</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BAROLO</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BAROLO_BaroReadValidLowLimit</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Baro_Read\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0FD0</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Barometric Pressure ADC (0x45 = 69 decimal; approx 16.5 inHg / 55.8 kPa)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x45                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L4078-L4091"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L4254"><code>BaroReadIfRequired</code></a> in <a href="../T-LMv13.asm.html#L4262"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BAROLO</code> (BaroReadValidLowLimit) establishes the lower physical and electrical sanity limit for atmospheric barometric pressure.</p>
+<p>Even at extreme drivable elevations (such as the summit of Pikes Peak at 14,115 feet), ambient atmospheric pressure hovers around 17.8 - 18.0 inHg (~60 kPa). If an in-flight baro reading returns an ADC value below <code>BAROLO</code> (stock calibration = <code>0x45</code> / ~16.5 inHg / ~15,000 feet), the reading is physically impossible for a ground-driven vehicle. The ECU flags the sensor as open-circuit, disconnected, or leaking intake vacuum into the vent line, discards the reading, and substitutes <a href="../Baro_Read/BARDFT_BaroReadDefaultValue.html"><code>BARDFT</code></a>.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside <code>BaroReadIfRequired</code> at line 4262 and <code>CheckBaroPressure</code> at line 4959.</li>
+<li>Compares barometric reading against <code>BAROLO</code>.</li>
+<li>If <code>BaroPressure &lt; BAROLO</code> (<code>bcs LDEDD</code>), branches to substitute <a href="../Baro_Read/BARDFT_BaroReadDefaultValue.html"><code>BARDFT</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Pikes Peak / Extreme High Altitude Racing</strong>: Stock <code>BAROLO</code> permits operation up to ~15,000 feet. If operating specialized vehicles at extreme altitudes, verify that raw baro readings do not dip below <code>BAROLO</code>.</li>
+<li><strong>Vacuum Leaks in Baro Solenoid</strong>: If the baro solenoid internal vent valve sticks partially closed, engine vacuum will bleed into the reading, dropping the reading below <code>BAROLO</code> and triggering fallback to <a href="../Baro_Read/BARDFT_BaroReadDefaultValue.html"><code>BARDFT</code></a>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- BaroReadIfRequired (T-LMv13.asm:4260-4265) ---
+        cmpa BAROHI_BaroReadValidHighLimit       ; Check upper bound
+        bcc  LDEDD                               ; Reject if too high
+        cmpa BAROLO_BaroReadValidLowLimit        ; Check lower bound ($0FD0, data 0x45)
+        bcc  LDEE0                               ; Keep reading if within valid window
+LDEDD:  ldaa BARDFT_BaroReadDefaultValue         ; Load default sea level baro ($0FDE, data 0x7F)
+LDEE0:  staa BaroPressure                        ; Store validated barometric pressure</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 4262</strong> (<code>BaroReadIfRequired</code>): <code>cmpa BAROLO_BaroReadValidLowLimit    ; compare a with memory contents (data is 45)</code></li>
+<li><strong>Line 4959</strong> (<code>CheckBaroPressure</code>): <code>cmpa BAROLO_BaroReadValidLowLimit    ; compare a with memory contents (data is 45)</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Valid Window</strong>: A barometric reading is valid if and only if BAROLO ≤ BaroPressure &lt; BAROHI.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>BAROLO</code>
+        </footer>
+    </div>
+</body>
+</html>

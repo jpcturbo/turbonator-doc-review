@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STRLMT: ColdestTempAllowedAtClosedThrottle | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x03EF</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - Starting</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel</strong>
+        </div>
+        
+        <article class="content">
+            <h1>STRLMT: ColdestTempAllowedAtClosedThrottle</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>STRLMT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>STRLMT_ColdestTempAllowedAtClosedThrottle</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_Starting\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x03EF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Coolant Temp (-200 to 260 Degrees)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x63 (99 decimal, ~30°F / -1°C)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L1037-L1049"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L3811"><code>CalculateInjectorPulsewidthForStarting_MM</code></a> in <a href="../T-LMv13.asm.html#L3829"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>STRLMT_ColdestTempAllowedAtClosedThrottle</code> is a <strong>minimum temperature floor clamped onto the cranking fuel lookup</strong> when starting at closed throttle.</p>
+<p>Because the cranking fuel table (<a href="../Fuel_-_Starting/STRTFL_FuelStartFromCoolantTemp.html"><code>STRTFL</code></a>) uses square-root math, pulse widths explode exponentially as temperatures plunge into sub-zero freezing ranges. If a car is started in -20°F weather at closed throttle, delivering the un-clamped sub-zero fuel pulse width can instantly drown the intake runners, soak the spark plugs in liquid gasoline, and wash down cylinder walls. <code>STRLMT</code> prevents this by capping the coldest temperature input permitted into <a href="../Fuel_-_Starting/STRTFL_FuelStartFromCoolantTemp.html"><code>STRTFL</code></a> at closed throttle to roughly 30°F (<code>0x63</code>).</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<p><code>STRLMT</code> is checked during cranking:
+* <strong>Throttle State:</strong> Throttle is closed (<code>BitFlags_81</code> bit 7 = <code>0</code>).
+* <strong>Temperature Check:</strong> If <code>CoolantTemp &lt; STRLMT</code>, <code>CoolantTemp</code> is replaced with <code>STRLMT</code> before calling <a href="../Fuel_-_Starting/STRTFL_FuelStartFromCoolantTemp.html"><code>STRTFL</code></a>.
+* <strong>Off-Idle Bypass:</strong> If the driver presses the gas pedal slightly off-idle, this clamp is bypassed, allowing the driver to command richer sub-freezing starting fuel manually.</p>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Increasing the Value (Warmer Clamp):</strong></li>
+<li>Caps cold cranking fuel at a warmer temperature. Prevents cold flooding in winter climates.</li>
+<li><strong>Decreasing the Value (Colder Clamp):</strong></li>
+<li>Allows the ECU to deliver richer cranking pulse widths at extreme sub-freezing temperatures.</li>
+<li>Useful in extreme northern climates (e.g., -20°F to -40°F) if an engine struggles with dry-cranking lean-out.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 3827–3832):</p>
+<pre><code class="language-motorola6803">ldab BitFlags_81    ; Check throttle status
+        bmi  LDBAF          ; If off-idle, bypass clamp
+        cmpa STRLMT_ColdestTempAllowedAtClosedThrottle ; Compare CoolantTemp to STRLMT (0x63)
+        bcc  LDBAF          ; If CoolantTemp &gt;= STRLMT, keep temp
+        ldaa STRLMT_ColdestTempAllowedAtClosedThrottle ; Else clamp temp up to STRLMT!
+LDBAF:  jsr  Lookup4ByteTable ; A = STRTFL(clamped temp)</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Scaling:</strong> Coolant temperature in Fahrenheit. <code>0x63</code> represents ~30°F (-1°C).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>STRLMT</code>
+        </footer>
+    </div>
+</body>
+</html>

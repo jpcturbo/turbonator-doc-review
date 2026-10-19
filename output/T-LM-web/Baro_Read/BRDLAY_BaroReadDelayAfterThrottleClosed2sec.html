@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRDLAY: BaroReadDelayAfterThrottleClosed2sec | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0F8E</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Baro Read</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BRDLAY: BaroReadDelayAfterThrottleClosed2sec</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BRDLAY</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BRDLAY_BaroReadDelayAfterThrottleClosed2sec</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Baro_Read\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0F8E</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Seconds / Running Timer Ticks (0x2D = 45 ticks; approx 2.0 seconds)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x2D                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L4012-L4024"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L1665"><code>HandleBaroReadRequirement_MM</code></a> in <a href="../T-LMv13.asm.html#L1710"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BRDLAY</code> (BaroReadDelayAfterThrottleClosed2sec) establishes the settling time delay (stock calibration = 45 ticks / ~2.0 seconds) that the engine must remain in a stable, closed-throttle state within the valid RPM window before the baro read solenoid is energized.</p>
+<p>If the driver is rapidly pumping the throttle pedal or shifting gears, manifold pressure is undergoing turbulent transient swings. Venting the MAP sensor during rapid pedal movements would introduce severe signal noise. <code>BRDLAY</code> ensures the vehicle is in a steady, settled state before initiating a baro sample.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside <code>HandleBaroReadRequirement_MM</code> at line 1710.</li>
+<li>Increments <code>BaroReadTimeEngineWithinReadRange</code>.</li>
+<li>If counter is less than <code>BRDLAY</code> (<code>bcs LCDAE</code>), the baro update cycle is delayed.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stock Value</strong>: <code>0x2D</code> (~2.0 seconds).</li>
+<li><strong>Transient Resistance</strong>: Increasing <code>BRDLAY</code> makes the system more conservative, requiring longer settled periods before taking a reading. Setting too low can cause baro readings to be triggered during erratic pedal movement.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- HandleBaroReadRequirement_MM (T-LMv13.asm:1706-1711) ---
+        ldaa BaroReadTimeEngineWithinReadRange   ; Load settled timer
+        inca                                     ; Increment timer
+        beq  LCD61                               ; Branch on 8-bit overflow
+        staa BaroReadTimeEngineWithinReadRange   ; Save updated timer
+        cmpa BRDLAY_BaroReadDelayAfterThrottleClosed2sec ; Compare against delay threshold ($0F8E, data 0x2D)
+        bcs  LCDAE                               ; If timer &lt; BRDLAY, exit without reading</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 1710</strong> (<code>HandleBaroReadRequirement_MM</code>): <code>cmpa BRDLAY_BaroReadDelayAfterThrottleClosed2sec    ; compare a with memory contents (data is 2d)</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Timer Reset</strong>: If engine RPM drops below <a href="../Baro_Read/BRPML2_BaroReadLowRPM18002.html"><code>BRPML2</code></a> or exceeds <a href="../Baro_Read/BRPMH_BaroReadHighRPM66502.html"><code>BRPMH</code></a>, <code>BaroReadTimeEngineWithinReadRange</code> is reset to zero.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>BRDLAY</code>
+        </footer>
+    </div>
+</body>
+</html>

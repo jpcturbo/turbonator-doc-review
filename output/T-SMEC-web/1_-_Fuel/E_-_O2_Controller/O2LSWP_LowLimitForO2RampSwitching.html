@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O2LSWP: LowLimitForO2RampSwitching | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0CEF</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ E - O2 Controller</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>O2LSWP: LowLimitForO2RampSwitching</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>O2LSWP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>O2LSWP_LowLimitForO2RampSwitching</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\E_-_O2_Controller\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0CEF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">volts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x18 (24 counts ≈ 0.47 volts)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3501-L3511"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L3051"><code>O2Signal_InOuterMiddleRange</code></a> in <a href="../../T-SMEC_v19.asm.html#L3056"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>O2LSWP</code> defines the lean switching threshold for closed-loop oxygen sensor feedback.</p>
+<p>When sensor voltage falls below <code>O2LSWP</code>, the mixture is classified as lean, instructing the controller to apply rich ramp kicks to add fuel. In factory calibrations, <code>O2LSWP</code> is set to 24 counts, corresponding to approximately 0.47 volts.</p>
+<p>The difference between <code>O2LSWP</code> (24 counts) and <a href="../../1_-_Fuel/E_-_O2_Controller/O2HSWP_HighLimitForO2RampSwitching.html"><code>O2HSWP</code></a> (25 counts) forms a 1-count hysteresis deadband that prevents electrical noise from causing rapid toggle chatter when voltage passes through the center.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> / <code>O2Signal_InOuterMiddleRange</code> (<code>T-SMEC_v19.asm:3051-3059</code>), instruction line 3056.</li>
+<li><strong>Gating Conditions</strong>: Signal tested lower than <a href="../../1_-_Fuel/E_-_O2_Controller/O2HSWP_HighLimitForO2RampSwitching.html"><code>O2HSWP</code></a>.</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Line 3056 executes <code>cmpb O2LSWP_LowLimitForO2RampSwitching</code>.</li>
+<li>If <code>O2SensorValue &lt; O2LSWP</code> (<code>bcs</code>), execution branches to <code>O2Signal_BelowToggle</code> (line 3062), retaining register A as 0 to add fuel.</li>
+<li>If <code>O2SensorValue &gt;= O2LSWP</code> (inside deadband between 24 and 25 counts), line 3058 executes <code>rts</code> to exit without changing ramp state.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Hysteresis Widening</strong>:</li>
+<li>Lowering <code>O2LSWP</code> to 22-23 counts (0.43-0.45V) widens the deadband against <a href="../../1_-_Fuel/E_-_O2_Controller/O2HSWP_HighLimitForO2RampSwitching.html"><code>O2HSWP</code></a>, filtering electrical noise from single-wire sensors.</li>
+<li><strong>Centering Stoichiometric Point</strong>:</li>
+<li>Calibrated to 0.47V, immediately below the steep slope of the narrowband sensor voltage curve.</li>
+<li><strong>Polarity Requirement</strong>:</li>
+<li>Must be strictly less than <a href="../../1_-_Fuel/E_-_O2_Controller/O2HSWP_HighLimitForO2RampSwitching.html"><code>O2HSWP</code></a> (<code>O2LSWP &lt; O2HSWP</code>).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>HandleO2Processing_MM</code>, if <code>O2SensorValue &lt; O2HSWP</code>, line 3056 executes <code>cmpb O2LSWP_LowLimitForO2RampSwitching</code>. If accumulator B is less than <code>O2LSWP</code> (24 counts ≈ 0.47V), carry is set and <code>bcs O2Signal_BelowToggle</code> branches to line 3062, where accumulator A (holding 0) triggers rich fuel addition. If accumulator B is between <code>O2LSWP</code> and <a href="../../1_-_Fuel/E_-_O2_Controller/O2HSWP_HighLimitForO2RampSwitching.html"><code>O2HSWP</code></a>, execution reaches line 3058 (<code>rts</code>) and exits, providing hysteresis deadband behavior.</p>
+<pre><code class="language-motorola6803">; --- O2Signal_InOuterMiddleRange (T-SMEC_v19.asm:3054-3059) ---
+	cmpb O2HSWP_HighLimitForO2RampSwitching    ; compare b with memory contents (data is 19)
+	bcc  O2Signal_AboveToggle    ; branch if greater or equal
+	cmpb O2LSWP_LowLimitForO2RampSwitching	  ; compare b with memory contents (data is 18)
+	bcs  O2Signal_BelowToggle    ; branch if lower
+	rts		    ; return from subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Lower counterpart to <a href="../../1_-_Fuel/E_-_O2_Controller/O2HSWP_HighLimitForO2RampSwitching.html"><code>O2HSWP</code></a>.</li>
+<li><strong>Deadband Logic</strong>: Values between <code>O2LSWP</code> and <a href="../../1_-_Fuel/E_-_O2_Controller/O2HSWP_HighLimitForO2RampSwitching.html"><code>O2HSWP</code></a> take no action (<code>rts</code>), preventing switch chatter.</li>
+<li><strong>Voltage Conversion</strong>: 24 counts equals approximately 0.47 volts.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>O2LSWP</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTUCNH: PTUCounterHiSpeed | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1799</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ PTU Control ➔ Hysteresis</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PTUCNH: PTUCounterHiSpeed</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PTUCNH</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>PTUCNH_PTUCounterHiSpeed</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\PTU_Control\Hysteresis\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1799</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">loop counts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x5D                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6231-L6241"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_v19.asm.html#L10478"><code>PTU_CheckVehicleSpeed</code></a> in <a href="../../../T-SMEC_v19.asm.html#L10483"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PTUCNH</code> defines the high-speed debounce counter reload value for Part Throttle Unlock state transitions.</p>
+<p>When the vehicle is traveling at or above <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMSP_PTUMinLockSpeed.html"><code>PTUMSP</code></a> (highway cruising speed), rapid cycling of the torque converter clutch must be prevented to avoid driveline shudder and premature clutch wear. When the PTU counter expires, the controller reloads <code>Counter_PartThrottleUnlock</code> from <code>PTUCNH</code>. In factory calibrations, <code>PTUCNH</code> is configured to 93 counts. Because the PTU routine executes every 8 main loop passes, this sets the delay duration that throttle conditions must remain within the hysteresis window before changing lockup state.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ControlPTU_MM</code> / <code>PTU_CheckVehicleSpeed</code> (<code>T-SMEC_v19.asm:10478-10488</code>), instruction line 10483.</li>
+<li><strong>Trigger Condition</strong>: <code>Counter_PartThrottleUnlock</code> reaches zero in <code>PTU_CheckThresholdsForUnlock</code>.</li>
+<li><strong>Speed Selection</strong>:</li>
+<li>Scaled speed compared against <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMSP_PTUMinLockSpeed.html"><code>PTUMSP_PTUMinLockSpeed</code></a> at line 10484.</li>
+<li>If speed <code>&gt;= PTUMSP</code> (<code>bcc LD67B</code>), <code>PTUCNH</code> in accumulator B is stored into <code>Counter_PartThrottleUnlock</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Highway Shift Stability</strong>:</li>
+<li>Raise <code>PTUCNH</code> to 110 to 130 counts to hold converter lockup firmly against highway throttle flutter.</li>
+<li><strong>Accelerated Passing Kickdown</strong>:</li>
+<li>Lower <code>PTUCNH</code> toward 50 to 60 counts for faster converter unlock when tipping into throttle on the freeway.</li>
+<li><strong>Debounce Filter Integrity</strong>:</li>
+<li>Avoid setting <code>PTUCNH</code> below 30 counts to maintain adequate lockup deadband damping.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>PTU_CheckVehicleSpeed</code> at line 10483, accumulator B is loaded with <code>PTUCNH_PTUCounterHiSpeed</code>. Line 10484 compares scaled vehicle speed against <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMSP_PTUMinLockSpeed.html"><code>PTUMSP_PTUMinLockSpeed</code></a>. If speed is greater than or equal (<code>bcc</code>), execution branches to <code>LD67B</code> at line 10487, executing <code>stab Counter_PartThrottleUnlock</code> to initialize the high-speed debounce timer.</p>
+<pre><code class="language-motorola6803">; --- PTU_CheckVehicleSpeed (T-SMEC_v19.asm:10478-10488) ---
+PTU_CheckVehicleSpeed:
+	ldd  VehicleSpeed_HB    ; load d (a&amp;b) with memory contents
+	asld                ; shift left (d=d*2)
+	asld                ; shift left (d=d*2)
+	asld                ; shift left (d=d*2)
+	ldab PTUCNH_PTUCounterHiSpeed          ; load b with memory contents (data is 5b)
+	cmpa PTUMSP_PTUMinLockSpeed          ; compare a with memory contents (data is 68)
+	bcc  LD67B          ; branch if greater or equal
+	ldab PTUCNL_PTUCounterLoSpeed          ; load b with memory contents (data is b5)
+LD67B:  stab Counter_PartThrottleUnlock    ; store b into memory
+	rts                 ; return from subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameter</strong>: Paired with <a href="../../../7_-_Aux_Functions/PTU_Control/Hysteresis/PTUCNL_PTUCounterLoSpeed.html"><code>PTUCNL_PTUCounterLoSpeed</code></a> which handles low-speed debounce.</li>
+<li><strong>Timer Decrement</strong>: In <code>PTU_CheckCounter</code> at lines 10455-10459, counter is decremented each loop while conditions persist.</li>
+<li><strong>Execution Rate</strong>: Controlled by <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUCNI_PTUCounterTimerIntervalForLoop.html"><code>PTUCNI_PTUCounterTimerIntervalForLoop</code></a> (runs every 8th main program pass).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>PTUCNH</code>
+        </footer>
+    </div>
+</body>
+</html>

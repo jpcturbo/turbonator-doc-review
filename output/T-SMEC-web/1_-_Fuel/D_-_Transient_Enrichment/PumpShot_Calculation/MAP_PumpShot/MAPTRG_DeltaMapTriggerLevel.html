@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAPTRG: DeltaMapTriggerLevel | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x08DC</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ D - Transient Enrichment ➔ PumpShot Calculation ➔ MAP PumpShot</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MAPTRG: DeltaMapTriggerLevel</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MAPTRG</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MAPTRG_DeltaMapTriggerLevel</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\D_-_Transient_Enrichment\PumpShot_Calculation\MAP_PumpShot\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x08DC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Absolute Pressure Delta (0.0 to 29.4 psi, 0.115 psi / count)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x0D                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L2458-L2469"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L6419"><code>TransFuel_CalculateIncreasingMAPTransientFuel</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L6421"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MAPTRG</code> defines the minimum rate of intake manifold pressure increase required to trigger a MAP-based acceleration enrichment pump shot.</p>
+<p>As the throttle opens and manifold pressure rises from vacuum toward atmospheric pressure or positive boost, the air density in the intake plenum increases rapidly. If the instantaneous manifold pressure exceeds the rolling average manifold pressure by more than <code>MAPTRG</code>, the engine controller calculates an immediate transient fuel addition.</p>
+<p>The factory threshold of 13 counts corresponds to approximately 1.5 psi of sudden pressure rise, effectively screening out harmless vacuum ripples caused by camshaft overlap and normal intake valve cycling while responding promptly to real engine load spikes.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Enclosed in routine <code>TransFuel_CalculateIncreasingMAPTransientFuel</code> at lines 6419-6434 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Called from <code>CalculatePartThrottleTransientFuel_MM</code> when <code>MapValue &gt;= AverageMAPValue</code> (line 6407).</li>
+<li>Delta comparison: Line 6420 loads <code>Temp0</code> (<code>MapValue - AverageMAPValue</code>) and line 6421 executes <code>suba MAPTRG_DeltaMapTriggerLevel</code>.</li>
+<li>Polarity: If <code>Temp0 &lt; MAPTRG</code>, carry is asserted and <code>bcs TransFuel_IncludeTPSTransients</code> branches away to line 6484, skipping MAP transient enrichment.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Sensitivity Adjustment</strong>: Lowering <code>MAPTRG</code> increases sensitivity to manifold pressure changes, triggering transient enrichment on smaller throttle modulations to eliminate light-throttle tip-in hesitation.</li>
+<li><strong>Camshaft Pulsation Filtering</strong>: Raising <code>MAPTRG</code> prevents false triggers on rough-idling engines or aggressive high-overlap camshafts where vacuum fluctuates naturally.</li>
+<li><strong>3-Bar MAP Scaling</strong>: When converting to a 3-bar MAP sensor, scale down <code>MAPTRG</code> by roughly 33 percent (e.g. from 13 counts down to 8 or 9 counts) to preserve the stock 1.5 psi sensitivity threshold.</li>
+<li><strong>Coordination with MAPMAX</strong>: Ensure <code>MAPTRG</code> remains well below <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/MAP_PumpShot/MAPMAX_MaxDeltaMapAllowed.html"><code>MAPMAX</code></a> to provide a functional linear calculation window.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: Within <code>CalculatePartThrottleTransientFuel_MM</code>, if <code>MapValue</code> meets or exceeds <code>AverageMAPValue</code> at line 6407, execution proceeds to line 6419 (<code>TransFuel_CalculateIncreasingMAPTransientFuel</code>). Line 6420 loads delta MAP from <code>Temp0</code> into accumulator A. Line 6421 subtracts <code>MAPTRG_DeltaMapTriggerLevel</code>. If the delta is less than <code>MAPTRG</code>, carry is set and line 6422 branches via <code>bcs TransFuel_IncludeTPSTransients</code> directly to line 6484, bypassing MAP pump shot math. If the delta meets or exceeds <code>MAPTRG</code>, execution continues to line 6423 to clamp against <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/MAP_PumpShot/MAPMAX_MaxDeltaMapAllowed.html"><code>MAPMAX</code></a>.</p>
+<pre><code class="language-motorola6803">; --- TransFuel_CalculateIncreasingMAPTransientFuel (T-SMEC_v19.asm:6419-6434) ---
+TransFuel_CalculateIncreasingMAPTransientFuel:
+	ldaa Temp0	    ; delta MAP
+	suba MAPTRG_DeltaMapTriggerLevel    ;  (data is 0b)
+	bcs  TransFuel_IncludeTPSTransients    ; branch if lower
+	cmpa MAPMAX_MaxDeltaMapAllowed	  ; compare a with memory contents (data is ff)
+	bcs  L1547	    ; branch if lower
+	ldaa MAPMAX_MaxDeltaMapAllowed	  ; load a with memory contents (data is ff)
+L1547:	staa Temp1	    ; store a into memory
+	ldaa CoolantTemp    ; load a with memory contents
+	ldx  #AESLOP_DeltaMAPEnrichmentPT    ; load index with value
+	jsr  Lookup4ByteTable	 ; call subroutine
+	ldaa Temp1	    ; load a with memory contents
+	mul		    ; multiply (d=a*b)
+	stD *Temp2	    ; store D to RAM
+	bra  TransFuel_IncludeTPSTransients    ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Pressure Scaling</strong>: In a 2-bar MAP calibration, each count represents approximately 0.115 psi (0.23 inHg).</li>
+<li><strong>Sensor Conversion Criticality</strong>: When converting to a 3-bar MAP sensor, each count represents approximately 0.176 psi, requiring <code>MAPTRG</code> to be lowered by approximately one-third.</li>
+<li><strong>Companion Parameter</strong>: Directly paired with <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/MAP_PumpShot/MAPMAX_MaxDeltaMapAllowed.html"><code>MAPMAX</code></a>, <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/MAP_PumpShot/AESLOP_DeltaMAPEnrichmentPT.html"><code>AESLOP</code></a>, and <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/MAP_PumpShot/AETIME_EnrichmentTime_FromTemp.html"><code>AETIME</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MAPTRG</code>
+        </footer>
+    </div>
+</body>
+</html>

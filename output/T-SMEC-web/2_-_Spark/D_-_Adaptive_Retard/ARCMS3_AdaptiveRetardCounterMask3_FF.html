@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARCMS3: AdaptiveRetardCounterMask3 FF | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0515</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>2 - Spark ➔ D - Adaptive Retard</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ARCMS3: AdaptiveRetardCounterMask3 FF</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ARCMS3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ARCMS3_AdaptiveRetardCounterMask3_FF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>2_-_Spark\D_-_Adaptive_Retard\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0515</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">counts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xFF                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1491-L1501"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L9518"><code>WGDC_LookAtCylRetards</code></a> in <a href="../../T-SMEC_v19.asm.html#L9546"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ARCMS3</code> defines the subtraction decrement value applied to the boost knock persistence timer (<code>Timer_Over5PsiBoostMaxFF</code>) whenever all cylinders are clear of knock retard.</p>
+<p>When no cylinders are experiencing detonation, the controller decrements the boost knock timer to eliminate accumulated history. In factory calibrations, <code>ARCMS3</code> is set to 255 counts (maximum). Subtracting 255 instantly resets <code>Timer_Over5PsiBoostMaxFF</code> to zero on the very first non-knocking loop pass, ensuring that the timer only accumulates when knock is truly continuous and unbroken.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_LookAtCylRetards</code> (<code>T-SMEC_v19.asm:9545-9551</code>), called from <code>CalcWGDutyCycleT1</code>.</li>
+<li><strong>Execution Flow</strong>:</li>
+<li>Reached when all cylinders have zero knock retard and <a href="../../2_-_Spark/D_-_Adaptive_Retard/ARCMS2_AdaptiveRetardCounterMask2_00.html"><code>ARCMS2</code></a> mask test passes.</li>
+<li><code>ldaa Timer_Over5PsiBoostMaxFF</code> loads the current timer.</li>
+<li><code>suba ARCMS3_AdaptiveRetardCounterMask3_FF</code> at line 9546.</li>
+<li>If carry clear (<code>bcc WGDC_Store5psiBoostTimer</code>), remaining value is stored; if carry set (underflow), branches to clear timer to 0.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Instant Timer Clearing</strong>:</li>
+<li>Factory setting of 255 resets <code>Timer_Over5PsiBoostMaxFF</code> to zero immediately when knock ceases, preventing intermittent ping from accumulating.</li>
+<li><strong>Gradual Decay Alternative</strong>:</li>
+<li>Lowering <code>ARCMS3</code> to a small value (e.g., 1 to 5 counts) allows the timer to decay gradually, linking intermittent knock events together.</li>
+<li><strong>Standard Recommendation</strong>:</li>
+<li>Retain factory setting of 255 for predictable, reliable adaptive knock behavior.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>WGDC_LookAtCylRetards</code> at line 9545, <code>ldaa Timer_Over5PsiBoostMaxFF</code> loads the timer. Line 9546 executes <code>suba ARCMS3_AdaptiveRetardCounterMask3_FF</code>. With <code>ARCMS3</code> equal to 0xFF, subtracting 255 produces a borrow/carry unless the timer was already 255. Carry set causes execution to fall through to line 9548 (<code>WGDC_Clear5psiBoostTimer</code>), which executes <code>clra</code> and stores 0 into <code>Timer_Over5PsiBoostMaxFF</code> at line 9551.</p>
+<pre><code class="language-motorola6803">; --- WGDC_LookAtCylRetards (T-SMEC_v19.asm:9545-9551) ---
+	ldaa Timer_Over5PsiBoostMaxFF	 ; load a with memory contents
+	suba ARCMS3_AdaptiveRetardCounterMask3_FF    ;	(data is ff)
+	bcc  WGDC_Store5psiBoostTimer	    ; branch if greater or equal
+WGDC_Clear5psiBoostTimer:
+	clra		    ; a = 0
+WGDC_Store5psiBoostTimer:
+	staa Timer_Over5PsiBoostMaxFF	 ; store a into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Immediate Reset</strong>: With stock value 0xFF (255), instantly resets <code>Timer_Over5PsiBoostMaxFF</code> upon cylinder knock cessation.</li>
+<li><strong>Underflow Clamp</strong>: Subtraction underflow drops into <code>clra</code> to guarantee clean zero reset.</li>
+<li><strong>Companion Parameter</strong>: Paired directly with <a href="../../2_-_Spark/D_-_Adaptive_Retard/ARCMS2_AdaptiveRetardCounterMask2_00.html"><code>ARCMS2_AdaptiveRetardCounterMask2_00</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>ARCMS3</code>
+        </footer>
+    </div>
+</body>
+</html>

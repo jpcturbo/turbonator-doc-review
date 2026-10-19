@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMPTL1: TempForColdScaleFromA2D | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1326</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Setup - Transfer Functions</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>TMPTL1: TempForColdScaleFromA2D</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>TMPTL1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>TMPTL1_TempForColdScaleFromA2D</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Setup_-_Transfer_Functions\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1326</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2D Table / Curve)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Coolant Temp (°F / raw units) vs Raw ADC Counts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x03                       ;Number of points in table; .byte 0x00, 0xC9, 0xFF, 0xA2     ;Point 1; .byte 0xD7, 0x7A, 0xFF, 0x0D     ;Point 2; .byte 0xFF, 0x54                 ;Point 3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L4932-L4947"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L945"><code>GetCoolantTempQuick</code></a> in <a href="../T-LMv13.asm.html#L950"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>TMPTL1</code> (TempForColdScaleFromA2D) is the primary non-linear analog transfer lookup table that translates raw 8-bit ADC voltages from the Engine Coolant Temperature (ECT) sensor into engineering temperature units when operating on the cold temperature range.</p>
+<p>Automotive coolant thermistors have severe exponential resistance curves (hundreds of thousands of ohms when freezing, dropping to a few hundred ohms when boiling). An 8-bit ADC measuring a single resistor divider would lose all resolution at either cold or hot extremes. Chrysler solved this by creating a switched dual-bias circuit:
+- On cold engines, the ECU engages a high-range bias resistor on Port 1 (<code>bitb #0x08</code>) and references <code>TMPTL1</code>.
+- When the engine warms up past the crossover point, the ECU toggles the bias resistor (<code>ToggleCTSbias</code>) and transitions to <a href="../Setup_-_Transfer_Functions/TMPTL2_TempForHotScaleA2D.html"><code>TMPTL2</code></a>.
+This provides exceptional ± 1°F measurement precision across the entire span from -40°F to +260°F.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside subroutine <code>GetCoolantTempQuick</code> at line 950 and <code>ResetRoutine</code> at line 5743.</li>
+<li>Active when Port 1 bias bit is set (<code>BitFlags_Port1 bit 3 = 1</code>).</li>
+<li>Used by <code>Lookup4ByteTable</code> to convert raw sensor ADC into <code>CoolantTemp</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Sensor Swaps / Custom Sensors</strong>: If swapping to an aftermarket or GM coolant temperature sensor with a different thermistor resistance curve, <code>TMPTL1</code> and <a href="../Setup_-_Transfer_Functions/TMPTL2_TempForHotScaleA2D.html"><code>TMPTL2</code></a> must be recalibrated to match the new sensor's voltage output.</li>
+<li><strong>Factory Sensor</strong>: Leave stock for factory Chrysler 2-pin coolant sensors.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- GetCoolantTempQuick (T-LMv13.asm:946-953) ---
+        ldx  #TMPTL2_TempForHotScaleA2D          ; Default to hot scale table
+        ldab CPU_Port1_ControlRegister           ; Read Port 1 hardware register
+        bitb #0x08                               ; Test dual-bias control bit
+        beq  LC850                               ; If hot bias active, use TMPTL2
+        ldx  #TMPTL1_TempForColdScaleFromA2D     ; Else switch pointer to cold scale table ($1326)
+        cmpa #0x40                               ; Check for crossover point
+        bcc  LC854                               ; Proceed to table lookup
+ToggleCTSbias:
+        ...</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 950</strong> (<code>GetCoolantTempQuick</code>): <code>ldx  #TMPTL1_TempForColdScaleFromA2D    ; load index with value</code></li>
+<li><strong>Line 5743</strong> (<code>ResetRoutine</code>): <code>ldx  #TMPTL1_TempForColdScaleFromA2D    ; load index with value</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Switched Dual-Bias Hardware</strong>: A pioneering Chrysler hardware engineering technique that delivers 10-bit effective resolution from an 8-bit ADC.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>TMPTL1</code>
+        </footer>
+    </div>
+</body>
+</html>

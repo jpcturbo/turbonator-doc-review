@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O2TLMH: HighLimitForDelayedSwitchToClosedLoop | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x047F</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - O2 Controller</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel</strong>
+        </div>
+        
+        <article class="content">
+            <h1>O2TLMH: HighLimitForDelayedSwitchToClosedLoop</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>O2TLMH</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>O2TLMH_HighLimitForDelayedSwitchToClosedLoop</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_O2_Controller\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x047F</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">ADC Raw Voltage Steps ($1 \text{ count} \approx 19.5\text{ mV}$)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x1F (31 counts $\approx 0.605\text{ V}$)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L1181-L1193"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L3103"><code>CheckIfO2SensorDataIsValid</code></a> in <a href="../T-LMv13.asm.html#L3105"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>O2TLMH_HighLimitForDelayedSwitchToClosedLoop</code> defines the <strong>upper voltage threshold required to qualify O2 sensor readiness</strong> before the ECU officially activates closed-loop feedback operation.</p>
+<p>When an oxygen sensor is cold and inactive, its internal electrochemical cell cannot pass current and rests at an indeterminate floating voltage (typically 0.40V to 0.50V). To prevent entering closed-loop on a dead or cold sensor, the ECU requires the sensor to provide positive physical proof of life by swinging above <code>O2TLMH</code> (rich) or below <a href="../Fuel_-_O2_Controller/O2TLML_LowLimitForDelayedSwitchToClosedLoop.html"><code>O2TLML</code></a> (lean) before closed-loop control is allowed to engage.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Warmup Qualification Window:</strong></li>
+<li>Engine coolant temperature has surpassed <a href="../Fuel_-_Adaptive_Memory_Timer/CLTEMP_TempToStartCLTIMETimer.html"><code>CLTEMP</code></a>.</li>
+<li>The startup delay timer <a href="../Fuel_-_O2_Controller/O2TIME_DelayTimeToClosedLoop.html"><code>O2TIME</code></a> has elapsed.</li>
+<li><strong>Threshold Evaluation:</strong></li>
+<li>If <code>O2SensorVolts &gt;= O2TLMH</code>: The sensor has actively pulled rich. Sensor is confirmed operational! Closed loop activates (<code>BitFlags_81</code> bit 4 set).</li>
+<li>If <code>O2SensorVolts &lt;= O2TLML</code>: The sensor has actively pulled lean. Confirmed operational! Closed loop activates.</li>
+<li>If <code>O2TLML &lt; O2SensorVolts &lt; O2TLMH</code>: Sensor is still resting in the unheated deadband. Closed loop remains blocked, and the ECU stays in open loop warm-up mode.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stock Value:</strong> <code>0x1F</code> (31 counts ≈ 0.605V).</li>
+<li><strong>Sensor Health Diagnostic:</strong> If an engine has reached full operating temperature (180Â°F+) but steadfastly refuses to enter closed-loop (scantool shows open-loop status indefinitely), the O2 sensor may have lost its heater or deteriorated to where it cannot swing above <code>0x1F</code> (0.605V).</li>
+<li><strong>Adjusting for Aftermarket / Wideband Emulated Outputs:</strong></li>
+<li>When using a wideband controller's simulated narrow-band output (e.g. Innovate LC-2, AEM X-Series), ensure the emulated analog curve crosses cleanly above <code>O2TLMH</code> (0.605V) and below <a href="../Fuel_-_O2_Controller/O2TLML_LowLimitForDelayedSwitchToClosedLoop.html"><code>O2TLML</code></a> (0.293V).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 3103â€“3117):</p>
+<pre><code class="language-motorola6803">CheckIfO2SensorDataIsValid:
+        ldaa O2SensorVolts    ; Read O2 sensor voltage ADC
+        cmpa O2TLMH_HighLimitForDelayedSwitchToClosedLoop ; Compare with 0x1F (0.605V)
+        bcc  LD6E7          ; If O2Volts &gt;= O2TLMH -&gt; Valid rich swing! Enable Closed-Loop!
+        cmpa O2TLML_LowLimitForDelayedSwitchToClosedLoop ; Compare with 0x0F (0.293V)
+        bcc  LD6F2          ; If in middle (0.293V - 0.605V) -&gt; NOT valid! Exit!
+LD6E7:  clra                ; Sensor is active!
+        staa Counter_AdaptiveMem_Erase    
+        staa Timer_CLTIME_ClosedLoopTimer    
+        ldaa BitFlags_81    
+        oraa #0x10          ; Set Bit 4 of BitFlags_81 (CLOSED LOOP ACTIVE!)
+        staa BitFlags_81</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><code>O2TLMH</code> represents a much wider safety margin (0.605V) than normal switching thresholds (<a href="../Fuel_-_O2_Controller/O2HSWP_HighLimitForO2RampSwitching.html"><code>O2HSWP</code></a> at 0.488V). This ensures the sensor is genuinely hot and active, rather than hovering near stoichiometric rest.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>O2TLMH</code>
+        </footer>
+    </div>
+</body>
+</html>

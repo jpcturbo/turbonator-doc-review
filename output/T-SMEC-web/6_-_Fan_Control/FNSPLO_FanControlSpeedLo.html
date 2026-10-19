@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FNSPLO: FanControlSpeedLo | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1543</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>6 - Fan Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>FNSPLO: FanControlSpeedLo</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>FNSPLO</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>FNSPLO_FanControlSpeedLo</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>6_-_Fan_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1543</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">MPH</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x09                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T-SMEC_25_ATX_A283_Stock.tpl.html#L5633-L5643"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SMEC_v19.asm.html#L1711"><code>PreventRadSteaming</code></a> in <a href="../T-SMEC_v19.asm.html#L1733"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>FNSPLO</code> defines the low vehicle speed transition threshold that switches the cooling fan logic back into low-speed mode when the vehicle decelerates.</p>
+<p>Speedometer pulse period variable <code>VehicleSpeed_HB</code> is compared against <code>FNSPLO</code> after clearing the high-speed check. In factory calibrations, <code>FNSPLO</code> is set to 9 counts, representing approximately 36 MPH. When vehicle speed drops below 36 MPH (pulse period exceeds 9 counts), the controller clears the high-speed status flag and engages the low-speed temperature setpoints <a href="../6_-_Fan_Control/FANTMP3_FanTurnOnTempBelow35MPH.html"><code>FANTMP3</code></a> and <a href="../6_-_Fan_Control/FANTMP4_FanTurnOffTempBelow35MPH.html"><code>FANTMP4</code></a>.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ControlFan_MM</code> / <code>PreventRadSteaming</code> (<code>T-SMEC_v19.asm:1729-1744</code>), instruction line 1733.</li>
+<li><strong>Evaluation Chain</strong>:</li>
+<li>Evaluated only when <code>VehicleSpeed_HB &lt; FNSPHI_FanControlSpeedHi</code>.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Compares <code>VehicleSpeed_HB</code> against <code>FNSPLO_FanControlSpeedLo</code> at line 1733.</li>
+<li>If <code>VehicleSpeed_HB &lt; FNSPLO</code> (<code>bcs Above36MPH</code>), road speed exceeds ~36 MPH (accelerating into highway range).</li>
+<li>Clears <code>b51_SpeedUnder40</code> and advances index pointer by 2.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Hysteresis Boundary</strong>:</li>
+<li>Completes the 8 MPH speed deadband with <a href="../6_-_Fan_Control/FNSPHI_FanControlSpeedHi.html"><code>FNSPHI</code></a> to eliminate mode hunting during suburban cruising.</li>
+<li><strong>Tuning Direction</strong>:</li>
+<li>Lower count values raise the transition speed in miles per hour; higher count values lower it.</li>
+<li><strong>Spread Retention</strong>:</li>
+<li>Keep <code>FNSPLO</code> 2 to 3 counts lower than <a href="../6_-_Fan_Control/FNSPHI_FanControlSpeedHi.html"><code>FNSPHI</code></a> to preserve stable speed hysteresis.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>PreventRadSteaming</code> at line 1733, <code>cmpa FNSPLO_FanControlSpeedLo</code> compares the vehicle speed pulse period. If accumulator A is lower (<code>bcs</code>), road speed is above 36 MPH and execution branches to <code>Above36MPH</code>. Lines 1737-1738 execute <code>inx; inx;</code> to advance the pointer past the highway fan thresholds, and line 1739 executes <code>bclr *BitFlags_51, #b51_SpeedUnder40</code> to clear the low-speed status bit.</p>
+<pre><code class="language-motorola6803">; --- PreventRadSteaming (T-SMEC_v19.asm:1733-1741) ---
+	cmpa FNSPLO_FanControlSpeedLo	    ; compare a with value 0x09
+	bcs  Above36MPH     ; branch if lower
+	brset *BitFlags_51, #b51_SpeedUnder40, L1049    ; branch if bit(s) set
+Above36MPH:
+	inx		    ; increment index (x=x+1)
+	inx		    ; increment index (x=x+1)
+	bclr *BitFlags_51, #b51_SpeedUnder40    ; clear bits
+	bra  L1049	    ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Hysteresis Pair</strong>: Directly coupled with <a href="../6_-_Fan_Control/FNSPHI_FanControlSpeedHi.html"><code>FNSPHI_FanControlSpeedHi</code></a>.</li>
+<li><strong>Pointer Manipulation</strong>: When branching to <code>Above36MPH</code>, two <code>inx</code> instructions shift the pointer to select the appropriate temperature entry.</li>
+<li><strong>Flag Clearing</strong>: Clears bit <code>b51_SpeedUnder40</code> when cruising above the threshold.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>FNSPLO</code>
+        </footer>
+    </div>
+</body>
+</html>

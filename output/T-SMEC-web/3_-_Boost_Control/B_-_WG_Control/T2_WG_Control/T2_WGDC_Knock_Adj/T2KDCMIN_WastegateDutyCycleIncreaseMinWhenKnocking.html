@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T2KDCMIN: WastegateDutyCycleIncreaseMinWhenKnocking | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x13F5</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ B - WG Control ➔ T2 WG Control ➔ T2 WGDC Knock Adj</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>T2KDCMIN: WastegateDutyCycleIncreaseMinWhenKnocking</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>T2KDCMIN</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T2KDCMIN_WastegateDutyCycleIncreaseMinWhenKnocking</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\B_-_WG_Control\T2_WG_Control\T2_WGDC_Knock_Adj\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x13F5</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">percent duty cycle</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x10                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5299-L5309"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L9857"><code>T2WGDC_LookupWGDutyCycleBase</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L9898"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>T2KDCMIN</code> specifies the minimum baseline duty cycle step applied immediately upon the initial detection of detonation under boost in T2 control.</p>
+<p>When knocking starts under high boost, waiting for small incremental steps to accumulate can allow several damaging engine cycles to occur. <code>T2KDCMIN</code> forces an immediate substantial jump in the knock reduction penalty on the very first event, delivering prompt physical relief to knocking cylinders.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9897-9903</code>).</li>
+<li><strong>Gating Conditions</strong>: Evaluated after comparing against <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2KDCMAX_WastegateDutyCycleIncreaseMaxWhenKnocking.html"><code>T2KDCMAX</code></a>.</li>
+<li><strong>Comparison &amp; Jump</strong>:</li>
+<li>Line 9898 loads <code>T2KDCMIN_WastegateDutyCycleIncreaseMinWhenKnocking</code> into accumulator A.</li>
+<li>Line 9899 executes <code>cba</code> to compare accumulator B against accumulator A.</li>
+<li>If accumulator B is lower than <code>T2KDCMIN</code> (<code>bcs</code>), line 9901 executes <code>tab</code> to force accumulator B up to <code>T2KDCMIN</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Immediate Initial Knock Response</strong>:</li>
+<li>Forces an immediate minimum duty cycle addition on the very first knock event under boost in T2 mode.</li>
+<li>Factory setting is 16 counts in template (8.0% duty cycle), or 12 counts in ASM (6.0% duty cycle).</li>
+<li><strong>Aggressive Protection</strong>:</li>
+<li>Raising <code>T2KDCMIN</code> to 20 counts (10.0% duty cycle) provides rapid protection on pump fuel.</li>
+<li><strong>Transient Smoothing</strong>:</li>
+<li>Lowering <code>T2KDCMIN</code> to 8 counts softens initial power reduction during momentary tip-in knock.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalcWGDutyCycleT2</code> at line 9898, <code>ldaa T2KDCMIN_WastegateDutyCycleIncreaseMinWhenKnocking</code> loads the minimum knock addition floor into accumulator A. Line 9899 executes <code>cba</code> to compare accumulator B against accumulator A. If accumulator B is less than <code>T2KDCMIN</code>, carry is clear, falling into line 9901 where <code>tab</code> forces accumulator B up to <code>T2KDCMIN</code>. If accumulator B already exceeds <code>T2KDCMIN</code>, line 9900 branches directly to <code>T2WGDC_StoreWGDutyCycleFromKnock</code> at line 9922.</p>
+<pre><code class="language-motorola6803">; --- CalcWGDutyCycleT2 (T-SMEC_v19.asm:9897-9903) ---
+        bcs  L7760                     ; branch if lower
+        ldaa T2KDCMIN_WastegateDutyCycleIncreaseMinWhenKnocking    ; load a with memory contents (data is 0c)
+        cba
+        bcs  T2WGDC_StoreWGDutyCycleFromKnock                     ; branch if lower
+L7760:  tab                            ; b = a
+        bra  T2WGDC_StoreWGDutyCycleFromKnock                     ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Minimum Floor</strong>: Guarantees first knock event adds at least 6.0% to 8.0% duty cycle to open wastegate.</li>
+<li><strong>Factory Setting</strong>: 0x10 = 16 counts = 8.0% (template), 0x0C = 12 counts = 6.0% (ASM).</li>
+<li><strong>T1 vs. T2 Comparison</strong>: Parallels <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Knock_Adj/KDCMIN_WastegateDutyCycleIncreaseMinWhenKnocking.html"><code>KDCMIN</code></a> in T1 control, but applied additively to WGDC.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>T2KDCMIN</code>
+        </footer>
+    </div>
+</body>
+</html>

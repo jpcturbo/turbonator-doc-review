@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACCRPM: DoNotAllowAcToEngageAboveThisRPM 4000 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1593</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ AC Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ACCRPM: DoNotAllowAcToEngageAboveThisRPM 4000</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ACCRPM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ACCRPM_DoNotAllowAcToEngageAboveThisRPM_4000</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\AC_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1593</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0x7D00                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5713-L5723"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L1641"><code>AIRCONDITIONING_CURRENTLY_OFF</code></a> in <a href="../../T-SMEC_v19.asm.html#L1647"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ACCRPM</code> defines the maximum engine speed lockout threshold for air conditioning compressor clutch engagement.</p>
+<p>Automotive reciprocating piston and rotary vane air conditioning compressors are engineered with strict rotational speed limits. Spinning an automotive A/C compressor beyond 4500 to 5000 engine RPM generates severe internal friction, reed valve flutter, excessive head pressure, and clutch bearing failure. In factory calibrations, <code>ACCRPM</code> is configured to 4000 RPM (32000 counts in 16-bit word format). If engine speed exceeds 4000 RPM, the controller prevents the A/C clutch from engaging, protecting the mechanical compressor and accessory drive belt during high-RPM driving.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ControlAirConditioning_MM</code> (<code>T-SMEC_v19.asm:1647-1648</code>), instruction line 1647.</li>
+<li><strong>Evaluation Sequence</strong>: Evaluated after throttle cutout checks have passed.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Compares 16-bit <code>EngineRpm_HB</code> against <code>ACCRPM_DoNotAllowAcToEngageAboveThisRPM_4000</code> at line 1647.</li>
+<li>If <code>EngineRpm_HB &gt; ACCRPM</code> (<code>bhi R1040</code>), branches to exit without allowing clutch engagement.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Compressor Protection Ceiling</strong>:</li>
+<li>Never calibrate <code>ACCRPM</code> above 4500 RPM to protect internal reed valves and clutch bearings.</li>
+<li><strong>High-RPM Track Safety</strong>:</li>
+<li>Ensures the compressor is locked out when racing or revving through the gears.</li>
+<li><strong>Highway Gearing Considerations</strong>:</li>
+<li>Keep <code>ACCRPM</code> at least 500 RPM above normal 70 MPH highway cruising engine speed to maintain cabin cooling.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>ControlAirConditioning_MM</code> at line 1647 (<code>L1038</code>), index register X holds <code>EngineRpm_HB</code>. The instruction <code>cpx ACCRPM_DoNotAllowAcToEngageAboveThisRPM_4000</code> compares current engine speed against the 16-bit ceiling. If engine speed is higher than the threshold (<code>bhi</code>), execution branches immediately to <code>R1040</code>, returning from the routine without enabling the A/C relay output.</p>
+<pre><code class="language-motorola6803">; --- ControlAirConditioning_MM (T-SMEC_v19.asm:1647-1649) ---
+L1038:	cpx  ACCRPM_DoNotAllowAcToEngageAboveThisRPM_4000    ;	(data is 7d00)
+	bhi  R1040	    ; branch if higher
+	cpx  TargetIdleSpeed_HB</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>16-Bit Word Encoding</strong>: Stored as a 16-bit word (<code>Type 4</code>), factory value <code>0x7D00</code> (32000 counts = 4000 RPM).</li>
+<li><strong>Companion Low-RPM Limiter</strong>: Complements <a href="../../7_-_Aux_Functions/AC_Control/ACLRPM_DisableAcBelowThisRPM_500.html"><code>ACLRPM_DisableAcBelowThisRPM_500</code></a> which protects against low-RPM stalls.</li>
+<li><strong>Belt Toss Prevention</strong>: Prevents accessory belt slip and throwing during aggressive high-RPM revving.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>ACCRPM</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPMDLT: RollingAisMinRpm | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1002</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>RPMDLT: RollingAisMinRpm</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>RPMDLT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>RPMDLT_RollingAisMinRpm</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1002</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0x07D0                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4288-L4298"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8407"><code>ControlCruiseServo1_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L8459"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>RPMDLT</code> defines the engine speed tolerance adder above target idle speed that permits entry into rolling idle mode on manual transmission vehicles.</p>
+<p>While coasting in neutral below the speed threshold set in <a href="../../5_-_Idle/B_-_AIS_Decel/AISMPH_RollingAisMaxSpeed.html"><code>AISMPH</code></a>, the engine controller must decide whether engine speed is close enough to target idle to engage closed-loop rolling idle regulation. If actual engine speed is significantly higher than target idle (for instance, if the driver just downshifted or revved the engine), entering rolling idle mode prematurely would cause the controller to actively fight the descending revs.</p>
+<p><code>RPMDLT</code> is added to target idle speed to form an upper RPM boundary. Only when actual engine speed is below this combined threshold is rolling idle mode activated.</p>
+<p>In factory calibrations, <code>RPMDLT</code> is set to 7 counts, corresponding to an RPM tolerance of approximately 56 RPM.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>L1710</code> (<code>T-SMEC_v19.asm:8440-8472</code>) within <code>ControlCruiseServo1_MM</code>.</li>
+<li><strong>Gating Conditions</strong>: </li>
+<li>Manual transmission vehicle confirmed, and vehicle speed &lt;= <a href="../../5_-_Idle/B_-_AIS_Decel/AISMPH_RollingAisMaxSpeed.html"><code>AISMPH</code></a>.</li>
+<li>Loads <code>TargetIdleSpeed_HB</code> into register pair D at line 8458.</li>
+<li>Adds <code>RPMDLT_RollingAisMinRpm</code> to D at line 8459.</li>
+<li>Compares D against <code>EngineRpm_HB</code> at line 8460. If <code>EngineRpm_HB</code> is higher (<code>bcs L1714</code>), rolling idle mode is rejected.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Earlier Rolling Idle Catch</strong>:</li>
+<li>Increase <code>RPMDLT</code> to 100 to 150 RPM to allow rolling idle mode to engage earlier as engine speed drops toward idle while coasting.</li>
+<li><strong>Factory Tolerance</strong>:</li>
+<li>Factory setting of 56 RPM (7 counts) requires engine speed to settle very close to target idle before rolling idle locks in.</li>
+<li><strong>Upper Boundary Warning</strong>:</li>
+<li>Keep <code>RPMDLT</code> below 250 RPM to avoid false idle mode triggering during high-RPM coast-down.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>L1710</code>, lines 8458-8459 execute <code>ldd TargetIdleSpeed_HB; addd RPMDLT_RollingAisMinRpm</code>. Line 8460 executes <code>cmpD EngineRpm_HB</code>. If actual engine speed is greater than the sum (<code>bcs L1714</code>), execution branches to <code>L1714</code>, setting <code>b50_FallToIdle</code> and clearing <code>b50_IdleSpeedMode</code>. If engine speed is below or equal to the sum, lines 8465-8466 clear <code>b50_FallToIdle</code> and set <code>b50_IdleSpeedMode</code>, engaging rolling idle control.</p>
+<pre><code class="language-motorola6803">; --- ControlCruiseServo1_MM (T-SMEC_v19.asm:8458-8467) ---
+	ldd  TargetIdleSpeed_HB	; load d (a&amp;b) with memory contents
+	addd RPMDLT_RollingAisMinRpm	;  (data is 07)
+	cmpD EngineRpm_HB    ; compare D
+	bcs  L1714	    ; branch if lower
+	brset *BitFlags_50, #b50_IdleSpeedMode, L1713	 ; branch if bit(s) set
+	ldd  EngineRpm_HB    ; load d (a&amp;b) with memory contents
+	stD *TargetIdleSpeed_HB	; store D to RAM
+L1713:	bclr *BitFlags_50, #b50_FallToIdle    ; clear bits
+	bset *BitFlags_50, #b50_IdleSpeedMode	 ; set bits
+	rts		    ; return from subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Word-Length Constant</strong>: Type 4 (16-bit word) stored as 2 bytes.</li>
+<li><strong>Companion Parameter</strong>: Works directly with <a href="../../5_-_Idle/B_-_AIS_Decel/AISMPH_RollingAisMaxSpeed.html"><code>AISMPH</code></a> (speed gate) and <code>TargetIdleSpeed_HB</code>.</li>
+<li><strong>Factory Value</strong>: 0x0007 (7 counts = approximately 56 RPM).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>RPMDLT</code>
+        </footer>
+    </div>
+</body>
+</html>

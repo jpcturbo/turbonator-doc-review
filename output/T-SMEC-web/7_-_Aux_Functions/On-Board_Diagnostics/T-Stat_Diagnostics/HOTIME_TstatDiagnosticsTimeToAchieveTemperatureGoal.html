@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOTIME: TstatDiagnosticsTimeToAchieveTemperatureGoal | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1D66</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ On-Board Diagnostics ➔ T-Stat Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>HOTIME: TstatDiagnosticsTimeToAchieveTemperatureGoal</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>HOTIME</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>HOTIME_TstatDiagnosticsTimeToAchieveTemperatureGoal</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\On-Board_Diagnostics\T-Stat_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1D66</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">minutes</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0xAE (174 counts ≈ 11.6 minutes driving time)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7716-L7726"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_v19.asm.html#L5028"><code>VerifyOperationOfThermostat_MM</code></a> in <a href="../../../T-SMEC_v19.asm.html#L5046"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>HOTIME</code> defines the maximum allowable vehicle driving time permitted for the engine to achieve the <a href="../../../7_-_Aux_Functions/On-Board_Diagnostics/T-Stat_Diagnostics/TDAGTP_TstatDiagnosticsTemperatureGoalWithin_HOTIME.html"><code>TDAGTP</code></a> warm-up temperature goal before the engine controller declares a thermostat fault.</p>
+<p>To ensure that the thermostat diagnostic only measures active engine operation under road load, the timer increments only when the vehicle is moving at or above approximately 3.5 mph. Idling at traffic lights does not advance the timer, preventing extended idle periods from prematurely expiring the warm-up budget.</p>
+<p>In factory calibrations, <code>HOTIME</code> is configured to 174 counts, representing approximately 11.6 minutes of active vehicle travel. If the vehicle is driven for this duration without coolant temperature reaching <a href="../../../7_-_Aux_Functions/On-Board_Diagnostics/T-Stat_Diagnostics/TDAGTP_TstatDiagnosticsTemperatureGoalWithin_HOTIME.html"><code>TDAGTP</code></a>, the engine controller flags <strong>Fault Code 17</strong>, turns on the check engine lamp, and records a stuck-open thermostat code.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>VerifyOperationOfThermostat_MM</code> (<code>T-SMEC_v19.asm:5028-5053</code>), instruction at line 5046.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li><code>CoolantTemp &lt; TDAGTP</code> at line 5036.</li>
+<li>Vehicle speed at or above <code>0x07</code> (~3.5 mph) at line 5042.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li><code>Timer_ThermostatDiagnostics</code> incremented in accumulator A at line 5044.</li>
+<li><code>cmpa HOTIME_TstatDiagnosticsTimeToAchieveTemperatureGoal</code> compares against 174 counts at line 5046.</li>
+<li>If lower (<code>bcs</code>), branches to <code>L1402</code> at line 5047, saving timer without error.</li>
+<li>If equal or exceeded, executes <code>ThrowNonCriticalError</code> with code <code>0x2101</code> (Fault Code 17) at line 5049.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Extended Warm-Up Accommodation</strong>:</li>
+<li>If cold weather commutes or large aluminum radiators cause premature Fault Code 17 triggers, raise <code>HOTIME</code> from 174 counts (11.6 min) to 210-230 counts (14-16 min).</li>
+<li><strong>Disabling Fault Code 17</strong>:</li>
+<li>Setting <code>HOTIME</code> to 255 counts (maximum byte) effectively disables the thermostat diagnostic test.</li>
+<li><strong>Speed Gating Mechanism</strong>:</li>
+<li>The timer advances only when vehicle speed is at or above 3.5 mph; extended warm-up idling does not advance <code>HOTIME</code>.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Setting <code>HOTIME</code> to 1 or 2 counts sets Fault Code 17 within seconds of pulling away from the curb.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In routine <code>VerifyOperationOfThermostat_MM</code> (lines 5028-5053), if <code>CoolantTemp</code> is below <a href="../../../7_-_Aux_Functions/On-Board_Diagnostics/T-Stat_Diagnostics/TDAGTP_TstatDiagnosticsTemperatureGoalWithin_HOTIME.html"><code>TDAGTP</code></a>, line 5041 loads <code>VehicleSpeed_HB</code>. Line 5042 executes <code>cmpb #0x07</code> (~3.5 mph). If moving, line 5044 executes <code>inca</code> on <code>Timer_ThermostatDiagnostics</code>. Line 5046 executes <code>cmpa HOTIME_TstatDiagnosticsTimeToAchieveTemperatureGoal</code> (0xAE = 174 counts, ~11.6 minutes). If accumulator A is less than <code>HOTIME</code>, <code>bcs L1402</code> stores the timer. If <code>HOTIME</code> is reached, line 5048 loads 0x2101 into register D, line 5049 executes <code>ThrowNonCriticalError</code> (Fault Code 17), and line 5051 clears <code>Timer_ThermostatDiagnostics</code>.</p>
+<pre><code class="language-motorola6803">; --- VerifyOperationOfThermostat_MM (T-SMEC_v19.asm:5038-5053) ---
+	ldab KeyOnOrEngineRunningTime	 ; load b with memory contents
+	incb		
+	bne  R1403	    ; branch if not equal (not zero)
+	ldab VehicleSpeed_HB	; load b with memory contents
+	cmpb #0x07	    ;  -00000111-
+	bcs  R1403	    ; branch if lower
+	inca		    ; increment a
+	beq  L1400	    ; branch if equal (zero)
+	cmpa HOTIME_TstatDiagnosticsTimeToAchieveTemperatureGoal    ; compare a with memory contents (data is ae)
+	bcs  L1402	    ; branch if lower
+L1400:	ldd  #0x2101	    ; load d (a&amp;b) with value -00100001 00000001-
+	jsr  ThrowNonCriticalError    ; call subroutine
+	bcc  R1403	    ; branch if greater or equal
+L1401:	clra		    ; a = 0
+L1402:	staa Timer_ThermostatDiagnostics    ; store a into memory
+R1403:	rts		    ; return from subroutine
+</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../../../7_-_Aux_Functions/On-Board_Diagnostics/T-Stat_Diagnostics/TDAGTP_TstatDiagnosticsTemperatureGoalWithin_HOTIME.html"><code>TDAGTP</code></a> (target temperature), <a href="../../../7_-_Aux_Functions/On-Board_Diagnostics/T-Stat_Diagnostics/TTEMPL_TstatDiagnosticsMinTempToArmDiagnosticsAtStartup.html"><code>TTEMPL</code></a>, and <a href="../../../7_-_Aux_Functions/On-Board_Diagnostics/T-Stat_Diagnostics/TTEMPH_TstatDiagnosticsMaxTempToArmDiagnosticsAtStartup.html"><code>TTEMPH</code></a>.</li>
+<li><strong>Diagnostic Code</strong>: DRB-II Fault Code 17 (engine running too cool / thermostat stuck open).</li>
+<li><strong>Speed Gating</strong>: Vehicle must exceed ~3.5 mph (<code>VehicleSpeed_HB &gt;= 0x07</code>) to advance the countdown timer.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>HOTIME</code>
+        </footer>
+    </div>
+</body>
+</html>

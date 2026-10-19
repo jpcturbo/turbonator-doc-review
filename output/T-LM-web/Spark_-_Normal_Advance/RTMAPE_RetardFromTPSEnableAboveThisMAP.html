@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RTMAPE: RetardFromTPSEnableAboveThisMAP | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0230</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Spark - Normal Advance</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>RTMAPE: RetardFromTPSEnableAboveThisMAP</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>RTMAPE</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>RTMAPE_RetardFromTPSEnableAboveThisMAP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Spark_-_Normal_Advance\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0230</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">MAP (-14.7 to 14.7 psi)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x93 (147 decimal, ~1.5 psi boost on 2-bar MAP)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L590-L603"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L6556"><code>CalculateSparkAdvance_MM</code></a> in <a href="../T-LMv13.asm.html#L6666"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>RTMAPE_RetardFromTPSEnableAboveThisMAP</code> is the manifold pressure enable threshold for the <strong>Tip-In / Rapid Throttle Opening Retard routine</strong> (<code>CheckForTPSRetard</code>).</p>
+<p>When an engine is already operating under positive manifold pressure (boost) and the driver suddenly snaps the throttle open further, the immediate surge of air into the intake manifold can outpace fuel film delivery and transient enrichment, causing an instantaneous lean spike. Under boost, a momentary lean spike paired with steady ignition advance can trigger immediate tip-in knock. To counter this, the ECU monitors the rate of throttle opening (\DeltaTPS) and pulls timing instantaneously via <a href="../Spark_-_Normal_Advance/RETTPS_RetardFromTPS.html"><code>RETTPS</code></a>, but only if manifold pressure is above the boost threshold defined by <code>RTMAPE</code>.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<p><code>RTMAPE</code> is the first gatekeeper in the <code>CheckForTPSRetard</code> logic:
+1. <strong>MAP Threshold:</strong> Manifold Absolute Pressure (<code>MapValue</code>) must be strictly <strong>greater than</strong> <code>RTMAPE</code>.
+   - In stock calibrations, <code>0x93</code> represents roughly ~1.5 psi of positive manifold boost.
+2. <strong>Additional Gates:</strong>
+   - RPM must be above <a href="../Spark_-_Normal_Advance/RTRPME_RetardFromTPSEnableAboveThisRPM.html"><code>RTRPME</code></a> (~2500 RPM).
+   - Average throttle position must be above <a href="../Spark_-_Normal_Advance/RTTPSE_RetardFromTPSEnableAboveThisTPS.html"><code>RTTPSE</code></a> (~1.57 V).
+   - Instantaneous TPS voltage must be higher than rolling average TPS voltage (\DeltaTPS &gt; 0).</p>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Increasing the Value (Higher MAP Threshold):</strong></li>
+<li><strong>What it does:</strong> Requires higher boost pressure before rapid-throttle ignition retard is allowed to activate.</li>
+<li><strong>Real-World Driving Feel:</strong> Prevents tip-in retard during low-boost throttle adjustments, providing sharper throttle response. However, setting it too high leaves the engine unprotected against transient tip-in knock under moderate boost.</li>
+<li><strong>Decreasing the Value (Lower MAP Threshold):</strong></li>
+<li><strong>What it does:</strong> Enables transient throttle retard at lower boost levels or even into deep vacuum.</li>
+<li><strong>Real-World Driving Feel:</strong> Enhances knock protection during aggressive throttle snaps, but setting it too low can cause a noticeable "bog" or hesitation when blipping the throttle.</li>
+<li><strong>Disabling TPS Retard:</strong></li>
+<li>Setting <code>RTMAPE</code> to <code>0xFF</code> effectively disables the entire TPS transient retard mechanism.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 6663–6667):</p>
+<pre><code class="language-motorola6803">CheckForTPSRetard:
+        stab Temp0          ; Store intermediate advance into Temp0
+        ldaa MapValue       ; Load A with current MAP
+        cmpa RTMAPE_RetardFromTPSEnableAboveThisMAP ; Compare MAP to RTMAPE (0x93)
+        bls  LF092          ; If MAP &lt;= RTMAPE, branch past TPS retard logic
+        ...</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Sensor Scaling:</strong> On a 2-bar MAP sensor (0–29.4 psia):</li>
+</ul>
+<p><code>Boost Threshold = (0x93 / 255) × 29.4 - 14.7 ≈ 16.2 - 14.7 = +1.5 psi boost.</code></p>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>RTMAPE</code>
+        </footer>
+    </div>
+</body>
+</html>

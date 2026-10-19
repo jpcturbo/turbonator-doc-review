@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MININC: Amount MINTHR IsIncreasedAtKeyOnOnly | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1984</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>4 - OB, Speed, and Rev Limiter ➔ D - Misc, Limp Mode</strong> &nbsp;|&nbsp; Subsystem: <strong>Limiters_Limp</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MININC: Amount MINTHR IsIncreasedAtKeyOnOnly</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MININC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MININC_Amount_MINTHR_IsIncreasedAtKeyOnOnly</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Limiters_Limp</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>4_-_OB,_Speed,_and_Rev_Limiter\D_-_Misc,_Limp_Mode\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1984</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">volts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x03 (3 counts ≈ 0.059 Volts)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6722-L6732"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L7411"><code>ConvertCoolantRawReadingToTemperature</code></a> in <a href="../../T-SMEC_v19.asm.html#L7444"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MININC</code> defines the incremental voltage offset added to the stored minimum closed-throttle position sensor reading at key-on initialization.</p>
+<p>The Chrysler engine controller employs a dynamic closed-throttle learning strategy that continuously monitors the lowest throttle sensor voltage observed during a drive cycle and stores it in <code>MINTHR_LowestSessionTPS</code>. Because mechanical throttle bodies and sensor brackets expand and contract with underhood temperature changes, the physical throttle stop voltage may vary slightly between cold starts and hot restarts. At every ignition key-on, <code>MININC</code> adds 3 counts (approximately 0.059 volts) to the learned minimum throttle voltage. This slight upward nudge guarantees that closed throttle is not falsely locked below the current mechanical position, allowing the controller to dynamically learn down to the true closed-throttle voltage as the engine idles.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ConvertCoolantRawReadingToTemperature</code> (<code>T-SMEC_v19.asm:7411-7460</code>), line 7444.</li>
+<li><strong>Operating Phase</strong>:</li>
+<li>Executed strictly once per key-on ignition event during ECU startup initialization.</li>
+<li><strong>Addition &amp; Clamping</strong>:</li>
+<li><code>MININC</code> is added to <code>MINTHR_LowestSessionTPS</code> (<code>adda MININC_Amount_MINTHR_IsIncreasedAtKeyOnOnly</code>).</li>
+<li>Compared against <a href="../../0_-_Setup/E_-_Throttle_Calibration/MTHRMX_ValueOf_MINTHR_WhenBatteryDisconnected.html"><code>MTHRMX_ValueOf_MINTHR_WhenBatteryDisconnected</code></a> (92 counts / 1.80 V).</li>
+<li>If lower, stored directly into <code>MINTHR_LowestSessionTPS</code> (<code>staa MINTHR_LowestSessionTPS</code> at line 7452).</li>
+<li>Downstream impact: Directly affects idle state detection and rev limiter threshold <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/THRTHR_25PctThrValueFromShutoff.html"><code>THRTHR</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Thermal Drift Compensation</strong>:</li>
+<li>The factory 3-count offset provides reliable closed-throttle relearning across ambient temperature swings.</li>
+<li><strong>Aftermarket Throttle Bodies</strong>:</li>
+<li>Increase <code>MININC</code> to 5 to 6 counts if an aftermarket throttle body binds slightly when warm, ensuring the idle switch engages reliably.</li>
+<li><strong>Zero Setting Hazard</strong>:</li>
+<li>Setting <code>MININC</code> to 0 prevents the controller from re-establishing an accurate closed-throttle datum on key-on restarts.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In startup initialization at line 7443, <code>ldaa MINTHR_LowestSessionTPS</code> loads the minimum TPS reading from battery-backed RAM. Line 7444 executes <code>adda MININC_Amount_MINTHR_IsIncreasedAtKeyOnOnly</code>, bumping the voltage datum upward by 3 counts. Lines 7445-7452 compare the sum against <a href="../../0_-_Setup/E_-_Throttle_Calibration/MTHRMX_ValueOf_MINTHR_WhenBatteryDisconnected.html"><code>MTHRMX_ValueOf_MINTHR_WhenBatteryDisconnected</code></a> and store the clamped result back to <code>MINTHR_LowestSessionTPS</code>.</p>
+<pre><code class="language-motorola6803">; --- ConvertCoolantRawReadingToTemperature (T-SMEC_v19.asm:7443-7452) ---
+	ldaa MINTHR_LowestSessionTPS	; load a with memory contents
+	adda MININC_Amount_MINTHR_IsIncreasedAtKeyOnOnly    ;  (data is 03)
+	cmpa MTHRMX_ValueOf_MINTHR_WhenBatteryDisconnected    ; compare a with memory contents (data is 5c)
+	bcs  L1617	    ; branch if lower
+	addb #0x06	    ;  -00000110-
+	ldaa MTHRMX_ValueOf_MINTHR_WhenBatteryDisconnected    ; load a with memory contents (data is 5c)
+	cba		
+	bcs  L1617	    ; branch if lower
+	tba		    ; a = b
+L1617:	staa MINTHR_LowestSessionTPS	; store a into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Key-On Execution</strong>: This calculation executes once at ignition power-on, never while the engine is running.</li>
+<li><strong>Voltage Scaling</strong>: Scaled at approx 0.0196 volts per count ($5.0 / 255$). 3 counts equals 3 × 5.0 / 255 ≈ 0.059 volts.</li>
+<li><strong>Gating Impact</strong>: Determines the zero-reference datum for <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/THRTHR_25PctThrValueFromShutoff.html"><code>THRTHR_25PctThrValueFromShutoff</code></a> in <code>Cutout_CheckRevLimiters</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MININC</code>
+        </footer>
+    </div>
+</body>
+</html>

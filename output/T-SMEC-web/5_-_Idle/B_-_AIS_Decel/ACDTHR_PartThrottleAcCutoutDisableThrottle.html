@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACDTHR: PartThrottleAcCutoutDisableThrottle | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1050</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ACDTHR: PartThrottleAcCutoutDisableThrottle</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ACDTHR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ACDTHR_PartThrottleAcCutoutDisableThrottle</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1050</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Volts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xFF                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4366-L4376"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L2170"><code>HandleAcCutout</code></a> in <a href="../../T-SMEC_v19.asm.html#L2182"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ACDTHR</code> defines the throttle position sensor voltage delta threshold required to activate part-throttle air conditioning compressor cutout.</p>
+<p>When accelerating moderately to merge onto a highway or pass traffic, disengaging the air conditioning compressor eliminates parasitic pumping loss and delivers maximum engine torque to the drive wheels. ACDTHR establishes the throttle opening threshold (measured relative to the base closed-throttle stop) above which the controller initiates a temporary compressor cutout.</p>
+<p>In factory calibrations, <code>ACDTHR</code> is set to 255 counts (5.0 Volts delta above idle stop).</p>
+<p>This maximum setting disables part-throttle cutout on factory calibrations, ensuring that the air conditioning remains active until true wide-open throttle is reached.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2205</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Coolant temp must meet <a href="../../5_-_Idle/B_-_AIS_Decel/ACDTMP_PartThrottleAcCutoutDisableTemp.html"><code>ACDTMP</code></a> threshold at line 2178.</li>
+<li>Computes throttle delta: <code>ldaa TpsVolts; suba MINTHR_LowestSessionTPS</code> at lines 2179-2180.</li>
+<li>Compares delta against <code>ACDTHR</code> at line 2182 (<code>cmpa ACDTHR_PartThrottleAcCutoutDisableThrottle</code>).</li>
+<li>If delta is below <code>ACDTHR</code> (<code>bcs L1100</code>), cutout is aborted.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Brisk Passing Boost</strong>:</li>
+<li>Lower <code>ACDTHR</code> to 2.0 to 2.5 Volts to automatically cut the A/C compressor during half-throttle acceleration, improving passing power.</li>
+<li><strong>Uninterrupted Cabin Cooling</strong>:</li>
+<li>Retain factory 255 counts (5.0 Volts) to prevent the air conditioner from cutting out during part-throttle driving.</li>
+<li><strong>Delta TPS Input</strong>:</li>
+<li>Evaluated relative to <code>MINTHR</code>, meaning physical TPS mounting variations are automatically zeroed out.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>HandleAcCutout</code>, line 2179 loads <code>TpsVolts</code> into accumulator A and line 2180 subtracts <code>MINTHR</code>. If negative, it branches to <code>L1100</code>. Line 2182 executes <code>cmpa ACDTHR_PartThrottleAcCutoutDisableThrottle</code>. If the throttle delta is less than <code>ACDTHR</code> (<code>bcs L1100</code>), execution branches to <code>L1100</code> without cutting the clutch. If throttle delta meets or exceeds <code>ACDTHR</code>, line 2184 proceeds to check vehicle speed against <a href="../../5_-_Idle/B_-_AIS_Decel/ACDSPD_PartThrottleAcCutoutDisableSpeed.html"><code>ACDSPD</code></a>.</p>
+<pre><code class="language-motorola6803">; --- HandleAcCutout (T-SMEC_v19.asm:2179-2184) ---
+	ldaa TpsVolts	    ; load a with memory contents
+	suba MINTHR_LowestSessionTPS
+	bcs  L1100	    ; branch if lower
+	cmpa ACDTHR_PartThrottleAcCutoutDisableThrottle    ; compare a with memory contents (data is ff)
+	bcs  L1100	    ; branch if lower
+	ldx  VehicleSpeed_HB</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Relative TPS Measurement</strong>: Uses delta voltage (<code>TpsVolts - MINTHR</code>).</li>
+<li><strong>Companion Parameter</strong>: Direct gating partner to <a href="../../5_-_Idle/B_-_AIS_Decel/ACDTMP_PartThrottleAcCutoutDisableTemp.html"><code>ACDTMP</code></a> and <a href="../../5_-_Idle/B_-_AIS_Decel/ACDSPD_PartThrottleAcCutoutDisableSpeed.html"><code>ACDSPD</code></a>.</li>
+<li><strong>Factory Value</strong>: 0xFF (255 counts = 5.0 Volts).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>ACDTHR</code>
+        </footer>
+    </div>
+</body>
+</html>

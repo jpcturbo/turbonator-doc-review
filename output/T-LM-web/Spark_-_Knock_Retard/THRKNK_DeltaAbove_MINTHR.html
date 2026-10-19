@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THRKNK: DeltaAbove MINTHR | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0334</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Spark - Knock Retard</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>THRKNK: DeltaAbove MINTHR</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>THRKNK</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>THRKNK_DeltaAbove_MINTHR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Spark_-_Knock_Retard\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0334</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">TPS (0 to 5 Volts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x53 (83 decimal, ~1.63 Volts above closed throttle)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L850-L862"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L2716"><code>KnockDetect_MM</code></a> in <a href="../T-LMv13.asm.html#L2730"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>THRKNK_DeltaAbove_MINTHR</code> defines the <strong>throttle opening threshold above base idle position</strong> required to trigger the low-RPM knock retard limit (<a href="../Spark_-_Knock_Retard/KNKLIM_MaxKnockRetard.html"><code>KNKLIM</code></a>).</p>
+<p>The ECU tracks the minimum historical TPS voltage recorded during the driving session (<code>MINTHR_LowestSessionTPS</code>). When the throttle is opened beyond <code>MINTHR</code> by more than <code>THRKNK</code> while operating below <a href="../Spark_-_Knock_Retard/KLMRPM_MinKnockDetectRpm.html"><code>KLMRPM</code></a>, the ECU activates the low-RPM knock protection ceiling.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<p><code>THRKNK</code> is evaluated inside <code>KnockDetect_MM</code>:
+* <strong>Evaluation:</strong> Delta TPS (TpsVolts - MINTHR) is compared against <code>THRKNK</code>.
+* <strong>Action:</strong> If Delta TPS ≥ <code>THRKNK</code> and RPM &lt; <a href="../Spark_-_Knock_Retard/KLMRPM_MinKnockDetectRpm.html"><code>KLMRPM</code></a>, the ECU overrides the normal MAP knock retard curve with the constant <a href="../Spark_-_Knock_Retard/KNKLIM_MaxKnockRetard.html"><code>KNKLIM</code></a>.</p>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Increasing the Value (Higher Throttle Delta):</strong></li>
+<li>Requires a larger throttle opening before the low-RPM <a href="../Spark_-_Knock_Retard/KNKLIM_MaxKnockRetard.html"><code>KNKLIM</code></a> clamp activates, allowing the standard <a href="../Spark_-_Knock_Retard/RETMAX_MaxKnockRetardFromMap.html"><code>RETMAX</code></a> curve to operate over a broader throttle range.</li>
+<li><strong>Decreasing the Value (Lower Throttle Delta):</strong></li>
+<li>Engages the low-RPM <a href="../Spark_-_Knock_Retard/KNKLIM_MaxKnockRetard.html"><code>KNKLIM</code></a> retard clamp on lighter pedal movements.</li>
+<li><strong>Stock Setting:</strong></li>
+<li><code>0x53</code> equals (83 / 255) × 5.0V ≈ 1.63 Volts above minimum idle TPS.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 2727–2736):</p>
+<pre><code class="language-motorola6803">ldab TpsVolts
+        subb MINTHR_LowestSessionTPS ; Delta TPS above base idle
+        bcs  LD489
+        cmpb THRKNK_DeltaAbove_MINTHR ; Compare against THRKNK (0x53)
+        bcs  LD489                   ; If below THRKNK, use RETMAX
+        ldab EngineRpm_HB
+        cmpb KLMRPM_MinKnockDetectRpm ; Check RPM
+        bcc  LD489
+        ldaa KNKLIM_MaxKnockRetard    ; Apply low-RPM clamp
+        bra  LD48C</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Adaptive Baseline:</strong> Because <code>MINTHR</code> dynamically learns the lowest TPS voltage on every key cycle, <code>THRKNK</code> represents a true relative delta regardless of mechanical throttle cable slack or TPS sensor installation angle.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>THRKNK</code>
+        </footer>
+    </div>
+</body>
+</html>

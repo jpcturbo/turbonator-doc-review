@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REVLMT6: RPMLimiterNormalOffRPM | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x18E8</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>4 - OB, Speed, and Rev Limiter ➔ B - Rev Limiter</strong> &nbsp;|&nbsp; Subsystem: <strong>Limiters_Limp</strong>
+        </div>
+        
+        <article class="content">
+            <h1>REVLMT6: RPMLimiterNormalOffRPM</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>REVLMT6</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>REVLMT6_RPMLimiterNormalOffRPM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Limiters_Limp</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>4_-_OB,_Speed,_and_Rev_Limiter\B_-_Rev_Limiter\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x18E8</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0xC2 (194 counts ≈ 6208 RPM)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6566-L6576"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5688"><code>THROTTLESENSOR_OKAY</code></a> in <a href="../../T-SMEC_v19.asm.html#L5698"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>REVLMT6</code> defines the primary engine speed redline fuel cutout threshold during normal, fault-free vehicle operation.</p>
+<p>To prevent valvetrain separation, valve-to-piston contact from valve float, and excessive mechanical stress on pistons and connecting rods, the Chrysler engine controller constantly monitors distributor ignition pulse periods. When engine speed accelerates to <code>REVLMT6</code> (194 counts, or approximately 6200 RPM in factory automatic calibrations, and 6464 RPM in manual calibrations), the controller instantly terminates fuel injector firing for the current engine revolution. Fuel remains deactivated until the engine speed decelerates below the companion recovery setpoint (<a href="../../4_-_OB,_Speed,_and_Rev_Limiter/B_-_Rev_Limiter/REVLMT5_RPMLimiterNormalOnRPM.html"><code>REVLMT5</code></a>).</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>THROTTLESENSOR_OKAY</code> (<code>T-SMEC_v19.asm:5688-5703</code>), called from <code>Cutout_CheckRevLimiters</code> (<code>T-SMEC_v19.asm:5672-5712</code>).</li>
+<li><strong>Operating Conditions</strong>:</li>
+<li>Selected when operating without sensor faults (MAP sensor valid, TPS valid, and throttle off-idle).</li>
+<li><strong>Cutout Execution</strong>:</li>
+<li>Index register X is loaded with <code>#REVLMT6_RPMLimiterNormalOffRPM</code> at line 5698 (<code>L1484</code>).</li>
+<li>In <code>Cutout_CheckRevLimitingValues</code>, <code>EngineRpm_HB</code> is compared against <code>0x00,x</code>.</li>
+<li>If <code>EngineRpm_HB &gt;= REVLMT6</code> (<code>bcc Cutout_ShutOffEngineForThisRotation</code>), <code>Turbonator_MainFuelOff</code> is set, shutting off fuel injection.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Valvetrain-Limited Redline</strong>:</li>
+<li>Stock Chrysler 8-valve engines encounter valve float above 6300 RPM. Raise <code>REVLMT6</code> only after installing stiffer valve springs and lightweight retainers.</li>
+<li><strong>Performance Calibration</strong>:</li>
+<li>For built cylinder heads, raise <code>REVLMT6</code> to 6800 to 7200 RPM (212 to 225 counts) to extend power through the traps.</li>
+<li><strong>Companion Update</strong>:</li>
+<li>Always raise <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/B_-_Rev_Limiter/REVLMT5_RPMLimiterNormalOnRPM.html"><code>REVLMT5</code></a> when elevating <code>REVLMT6</code> to maintain a functional hysteresis deadband.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>THROTTLESENSOR_OKAY</code> at line 5698, <code>ldx #REVLMT6_RPMLimiterNormalOffRPM</code> loads the normal rev limit pointer into register X. In <code>Cutout_CheckRevLimitingValues</code> at line 5701, <code>ldaa EngineRpm_HB</code> loads the high byte of current engine speed and <code>cmpa 0x00,x</code> compares it against <code>REVLMT6</code>. If <code>EngineRpm_HB</code> meets or exceeds <code>REVLMT6</code>, <code>bcc Cutout_ShutOffEngineForThisRotation</code> branches to shut off fuel for this rotation.</p>
+<pre><code class="language-motorola6803">; --- THROTTLESENSOR_OKAY (T-SMEC_v19.asm:5688-5703) ---
+THROTTLESENSOR_OKAY:
+	ldab BitFlags_4f    ; load b with memory contents
+	bmi  L1484	    ; branch if minus(hi bit 1)
+L1483:	ldab BaroPressure    ; load b with memory contents
+	lsrb		    ; logical shift right b
+	tba		    ; a = b
+	lsrb		    ; logical shift right b
+	aba		    ; a=a+b
+	cmpa MapValue	    ; compare a with memory contents
+	bcs  Cutout_CheckRevLimitingValues    ; branch if lower
+L1484:	ldx  #REVLMT6_RPMLimiterNormalOffRPM	 ; load index with value
+
+Cutout_CheckRevLimitingValues:
+	ldaa EngineRpm_HB    ; load a with memory contents
+	cmpa 0x00,x	    ; compare a with memory at index + value
+	bcc  Cutout_ShutOffEngineForThisRotation    ; branch if greater or equal</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Primary Rev Limiter Pair</strong>: <code>REVLMT6</code> is the upper cutout limit paired with <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/B_-_Rev_Limiter/REVLMT5_RPMLimiterNormalOnRPM.html"><code>REVLMT5</code></a> as the lower restore limit.</li>
+<li><strong>RPM Scaling</strong>: Scaled at 32 RPM per count ($8160 / 255$). 194 counts equals 194 × 32 = 6208 RPM.</li>
+<li><strong>Stage IV Setting</strong>: In Stage IV calibrations, <code>REVLMT6</code> is set to 219 counts (7008 RPM) with <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/B_-_Rev_Limiter/REVLMT5_RPMLimiterNormalOnRPM.html"><code>REVLMT5</code></a> at 218 counts (6976 RPM).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>REVLMT6</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STGTPS: StageLimiterMinTPS | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x184B</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ C - Turbonator Features ➔ Launch Control ➔ Launch Control Entry Conditions</strong> &nbsp;|&nbsp; Subsystem: <strong>Turbonator_Features</strong>
+        </div>
+        
+        <article class="content">
+            <h1>STGTPS: StageLimiterMinTPS</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>STGTPS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>STGTPS_StageLimiterMinTPS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Turbonator_Features</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\C_-_Turbonator_Features\Launch_Control\Launch_Control_Entry_Conditions\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x184B</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Throttle Delta Above Idle (0.0 to 5.0 Volts, ~19.5 mV / count)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x27                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6409-L6419"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L10147"><code>LaunchControl_CheckTPS</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L10151"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>STGTPS</code> defines the minimum throttle opening required above the closed-throttle idle baseline before the staging rev limiter will engage.</p>
+<p>Without a throttle opening check, a vehicle stopped in traffic or idling in the staging lanes could inadvertently trigger launch control rev limiting. By requiring throttle position to exceed the closed-throttle baseline by this calibrated threshold, the controller guarantees that launch control only arms when the driver intentionally steps on the accelerator pedal.</p>
+<p>The factory setting corresponds to approximately 0.76 volts above idle baseline, representing roughly 15 to 20 percent throttle opening.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Enclosed in subroutine <code>LaunchControl_CheckTPS</code> at lines 10147-10153 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Evaluated in <code>LaunchControl_MM</code> after switch verification passes.</li>
+<li><code>TpsVolts</code> is loaded into accumulator B and closed-throttle baseline <code>MINTHR_LowestSessionTPS</code> is subtracted (lines 10148-10149).</li>
+<li>If <code>TpsVolts &lt; MINTHR</code> (<code>bcs LaunchControl_Off</code>), launch control terminates immediately.</li>
+<li>If delta throttle voltage is less than <code>STGTPS</code> (<code>cmpb STGTPS_StageLimiterMinTPS; bcs LaunchControl_Off</code>), launch control disengages.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Factory Threshold</strong>: 39 counts corresponds to approximately 0.76 volts above idle baseline, requiring deliberate pedal depression.</li>
+<li><strong>Wide-Open Throttle Arming</strong>: Raising to 80-120 counts ensures launch control activates only when the throttle is pinned to the floor.</li>
+<li><strong>False Trigger Prevention</strong>: Avoid setting below 15 counts (approx 0.3 volts) to prevent throttle baseline drift from triggering launch cuts at idle.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: At line 10148 within <code>LaunchControl_CheckTPS</code>, accumulator B loads instantaneous throttle voltage <code>TpsVolts</code>. Line 10149 executes <code>subb MINTHR_LowestSessionTPS</code>, subtracting the learned closed-throttle baseline. If a borrow occurs (<code>bcs LaunchControl_Off</code>), throttle position is invalid and launch control terminates. Line 10151 executes <code>cmpb STGTPS_StageLimiterMinTPS</code>. If delta throttle opening is less than <code>STGTPS</code>, branch <code>bcs LaunchControl_Off</code> exits the routine. Only when throttle depression meets or exceeds <code>STGTPS</code> does execution proceed to speed verification.</p>
+<pre><code class="language-motorola6803">; --- LaunchControl_CheckTPS (T-SMEC_v19.asm:10147-10153) ---
+LaunchControl_CheckTPS:
+        ldab  TpsVolts
+        subb  MINTHR_LowestSessionTPS
+        bcs   LaunchControl_Off ; turn off launch control if TPS is lower than MINTHR
+        cmpb  STGTPS_StageLimiterMinTPS ; to prevent the lauch control from coming on at idle
+        bcs   LaunchControl_Off ; brach if TPS over MINTHR is less than threshold</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Relative Voltage Offset</strong>: Evaluated relative to <code>MINTHR_LowestSessionTPS</code>, automatically compensating for throttle body mechanical idle stop adjustments.</li>
+<li><strong>Sensor Scaling</strong>: Scaled at approximately 19.5 millivolts per count across 0 to 5 volts (39 counts = ~0.76 V).</li>
+<li><strong>Option Dependency</strong>: Active when <code>opt_StageLim</code> is set in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>STGTPS</code>
+        </footer>
+    </div>
+</body>
+</html>

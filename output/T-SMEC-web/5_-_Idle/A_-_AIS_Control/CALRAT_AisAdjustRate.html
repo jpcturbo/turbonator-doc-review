@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CALRAT: AisAdjustRate | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0E1A</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ A - AIS Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CALRAT: AisAdjustRate</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CALRAT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CALRAT_AisAdjustRate</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\A_-_AIS_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0E1A</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">loop mask</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x07                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3800-L3810"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L1859"><code>CalculateAisPosition_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L1952"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CALRAT</code> defines the loop counter bitmask that paces how frequently the engine controller nudges the automatic idle speed stepper motor toward its nominal idle position.</p>
+<p>When the engine is idling at steady state with engine speed within a narrow window around target idle, the ECU gradually converges the stepper motor toward the calibrated baseline step position set in <a href="../../5_-_Idle/A_-_AIS_Control/CALPOS_PositionAisMotorIsAtIdle.html"><code>CALPOS</code></a>. To prevent this centering action from causing perceptible idle speed fluctuations or fighting closed-loop proportional corrections, updates must occur very slowly.</p>
+<p><code>CALRAT</code> masks the main program loop counter to enforce a deliberate update interval.</p>
+<p>In factory calibrations, <code>CALRAT</code> is configured to 7 counts, which functions as a binary bitmask allowing an adjustment only once every 8 main loop cycles, or approximately every 88 milliseconds.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1977</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Bitwise AND of <code>Counter_MainLoop</code> with <code>CALRAT</code> must equal zero at lines 1951-1953 (<code>bitb CALRAT_AisAdjustRate; bne R1075</code>).</li>
+<li>Engine RPM error magnitude must be less than 10 counts at line 1964.</li>
+<li>Motor desired and current position must match (<code>DesiredNewAisPosition</code> == <code>CurrentAisPosition</code>) at line 1968.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Pacing Centering Action</strong>:</li>
+<li>Keep <code>CALRAT</code> at 7 counts for factory-like convergence pacing toward <a href="../../5_-_Idle/A_-_AIS_Control/CALPOS_PositionAisMotorIsAtIdle.html"><code>CALPOS</code></a>.</li>
+<li><strong>Slowing Adaptive Wander</strong>:</li>
+<li>On engines with aftermarket camshafts where idle airflow requirements drift slightly with engine temperature, raise <code>CALRAT</code> to 15 or 31 counts to slow down background position nudging.</li>
+<li><strong>Surge Hazard</strong>:</li>
+<li>Do not set <code>CALRAT</code> to 0 or 1, as rapid position nudging will conflict directly with the <a href="../../5_-_Idle/A_-_AIS_Control/FWDAIS_ForwardAisSteps_NoSlope.html"><code>FWDAIS</code></a>/<a href="../../5_-_Idle/A_-_AIS_Control/REVAIS_ReverseAisSteps_NoSlope.html"><code>REVAIS</code></a> feedback loops.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateAisPosition_MM</code> at line 1951, the CPU loads <code>Counter_MainLoop</code> into accumulator B. Line 1952 executes <code>bitb CALRAT_AisAdjustRate</code>. If any bit in the mask is non-zero, <code>bne R1075</code> branches immediately to return, bypassing the adjustment. Only when the masked counter reaches zero does execution proceed to check RPM error and nudge the motor toward <a href="../../5_-_Idle/A_-_AIS_Control/CALPOS_PositionAisMotorIsAtIdle.html"><code>CALPOS</code></a>.</p>
+<pre><code class="language-motorola6803">; --- CalculateAisPosition_MM (T-SMEC_v19.asm:1951-1955) ---
+L1072:	ldab Counter_MainLoop	  ; load b with memory contents
+	bitb CALRAT_AisAdjustRate    ;	(data is 07)
+	bne  R1075	    ; branch if not equal (not zero)
+	ldd  EngineRpm_HB    ; load d (a&amp;b) with memory contents
+	subd TargetIdleSpeed_HB	; d = d - memory contents</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Bitmask Convention</strong>: Must be configured as a power-of-two minus one mask (1, 3, 7, 15, 31, 63, 127, 255).</li>
+<li><strong>Companion Parameter</strong>: Direct pacing partner to <a href="../../5_-_Idle/A_-_AIS_Control/CALPOS_PositionAisMotorIsAtIdle.html"><code>CALPOS</code></a>.</li>
+<li><strong>Factory Value</strong>: 0x07 (7 counts = every 8th loop execution).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>CALRAT</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STGBST: AllowedBoostDuringStaging | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x117E</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ A - Target Lookup</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>STGBST: AllowedBoostDuringStaging</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>STGBST</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>STGBST_AllowedBoostDuringStaging</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\A_-_Target_Lookup\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x117E</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi boost</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x29                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4668-L4679"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L9463"><code>LoadStagingBoostAndLookup</code></a> in <a href="../../T-SMEC_v19.asm.html#L9466"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>STGBST</code> defines the maximum allowable turbocharger boost pressure permitted while launch control staging mode is actively engaged.</p>
+<p>When the staging logic is triggered by clutch or brake engagement at a standstill, the engine controller applies specialized spark cut and fuel rev limiting while restricting manifold pressure to this threshold. In factory Turbonator calibrations, <code>STGBST</code> is calibrated to 41 counts, corresponding to approximately 4.7 psi of boost above atmospheric pressure. Holding boost to this calibrated ceiling prevents excessive wheel spin on launch while spooling the turbocharger to build immediate torque at the starting line.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>LoadStagingBoostAndLookup</code> (<code>T-SMEC_v19.asm:9463-9468</code>), called from <code>CalcTargetBoost_MM</code> (<code>T-SMEC_v19.asm:9423-9504</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Reached after evaluating the six primary target tables.</li>
+<li>Checks <code>Turbonator_Flags</code> bit <code>Turbonator_Staging</code> at line 9465. If clear (<code>brclr</code>), execution skips staging boost and jumps to <code>CheckBoostSwitch</code>.</li>
+<li><strong>Target Evaluation</strong>:</li>
+<li>If staging bit is set, line 9466 loads <code>STGBST_AllowedBoostDuringStaging</code> into accumulator A.</li>
+<li>Calls <code>bsr KeepSmallerBoostGoal</code> (line 9467) to clamp running minimum <code>Temp4</code> to <code>STGBST</code> if smaller.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Launch Boost Management</strong>:</li>
+<li>Sets the stationary boost limit enforced while on the two-step launch limiter.</li>
+<li>Balances immediate turbo spool against starting line tire spin and driveline shock.</li>
+<li><strong>Tire &amp; Surface Optimization</strong>:</li>
+<li>For prepped drag surfaces with drag slicks, raise <code>STGBST</code> to 8 to 12 psi for explosive 60-foot times.</li>
+<li>For street tires or unglued tracks, lower <code>STGBST</code> to 3 to 5 psi (or base spring pressure) to avoid instant tire smoke on release.</li>
+<li><strong>Staging Flag Dependency</strong>:</li>
+<li>Active only while <code>Turbonator_Staging</code> flag is set in <code>Turbonator_Flags</code>; bypassed during normal rolling driving.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>LoadStagingBoostAndLookup</code> at line 9464, index register X loads <code>#Turbonator_Flags</code>. The instruction <code>brclr 0x00, x, #Turbonator_Staging, CheckBoostSwitch</code> checks if launch staging is active. If active, <code>ldaa STGBST_AllowedBoostDuringStaging</code> loads the calibrated staging limit into accumulator A at line 9466 and calls <code>KeepSmallerBoostGoal</code>. If <code>STGBST</code> is smaller than <code>Temp4</code>, <code>Temp4</code> is updated with the staging boost ceiling.</p>
+<pre><code class="language-motorola6803">; --- LoadStagingBoostAndLookup (T-SMEC_v19.asm:9463-9468) ---
+LoadStagingBoostAndLookup:
+        ldx  #Turbonator_Flags
+        brclr 0x00, x, #Turbonator_Staging, CheckBoostSwitch 	 ; don&#x27;t do anything unless we&#x27;re staging, normal spark
+        ldaa STGBST_AllowedBoostDuringStaging    ; staging boost constant
+        bsr  KeepSmallerBoostGoal</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Two-Step Coordination</strong>: Works directly with staging rev limiters <code>STGRPM</code> and ignition retard <code>STGSPK</code>.</li>
+<li><strong>Pneumatic Limitation</strong>: Cannot force boost lower than the mechanical wastegate actuator spring pressure.</li>
+<li><strong>Instantaneous Release</strong>: As soon as the staging switch (clutch or handbrake) opens, <code>Turbonator_Staging</code> clears, releasing full boost target.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>STGBST</code>
+        </footer>
+    </div>
+</body>
+</html>

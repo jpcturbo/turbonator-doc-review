@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EGR4: ExhGasRecircConst4 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1A96</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ EGR</strong> &nbsp;|&nbsp; Subsystem: <strong>EGR_Emissions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>EGR4: ExhGasRecircConst4</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>EGR4</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>EGR4_ExhGasRecircConst</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">EGR_Emissions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\EGR\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1A96</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Failed test attempt counts (0 to 255; factory 235 attempts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xEB                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6996-L7006"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5470"><code>EGR_ResetEGRVars</code></a> in <a href="../../T-SMEC_v19.asm.html#L5520"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>EGR4</code> (ExhGasRecircConst) establishes the cumulative diagnostic failure threshold before the engine controller logs Fault Code 32 (EGR System Failure) and illuminates the Check Engine lamp.</p>
+<p>During Phase 2 flow verification, if the diagnostic timer expires without detecting the required oxygen sensor shift, the controller increments a dedicated failure counter in RAM (<code>EGRVar1</code>).</p>
+<p>At line 5520, the controller compares this failure counter against <code>EGR4</code>. The factory setting of 235 attempts provides substantial filtering against transient driving disturbances, requiring the EGR monitor to fail repeatedly across multiple driving sequences before setting an active trouble code.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5520.</li>
+<li><strong>Trigger Condition</strong>: Phase 2 diagnostic timer timeout (<code>EGRVar3 &gt;= EGR6_ExhGasRecircConst</code> at line 5485) branching to <code>L1470</code>.</li>
+<li><strong>State Counter</strong>: <code>EGRVar1</code> (RAM address 0x00A0), incremented at line 5518.</li>
+<li><strong>Comparison</strong>: <code>cmpa EGR4_ExhGasRecircConst</code> at line 5520.</li>
+<li><strong>Fault Trigger</strong>: If <code>EGRVar1 &gt;= EGR4</code>, executes <code>ThrowNonCriticalError</code> with error code <code>0x2E01</code> (Fault Code 32) and sets bit 7 of <code>b46_IPL2</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Raising EGR4 (to 255)</strong>: Maximizes fault filtering, requiring 255 failed test cycles before setting Fault Code 32. Effective for silencing intermittent fault codes on high-mileage EGR valves or modified camshaft engines.</li>
+<li><strong>Lowering EGR4</strong>: Speeds up fault reporting. Setting this parameter to 1 or 2 causes Fault Code 32 to trigger on the very first or second failed test attempt.</li>
+<li><strong>EGR Delete Applications</strong>: Setting <code>EGR4</code> to 255 complements physical EGR block-off plates, preventing Fault Code 32 from latching during normal driving.</li>
+<li><strong>Factory Calibration</strong>: 235 attempts provides factory-grade noise immunity against road and load fluctuations.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: When Phase 2 times out without satisfying the oxygen sensor shift delta (<a href="../../7_-_Aux_Functions/EGR/EGR7_ExhGasRecircConst.html"><code>EGR7</code></a>), the CPU branches to <code>L1470</code> (line 5514). It clears <code>EGRVar3</code> via <code>stD *EGRVar3</code>, loads failure counter <code>EGRVar1</code> into accumulator A, increments it via <code>inca</code>, and stores it back (<code>staa EGRVar1</code>). At line 5520, the CPU executes <code>cmpa EGR4_ExhGasRecircConst</code>. If A is less than <code>EGR4</code> (factory 0xEB = 235 counts), <code>bcs L1471</code> skips fault generation. If A meets or exceeds <code>EGR4</code>, line 5522 loads double-word <code>0x2E01</code> into register D, calls <code>ThrowNonCriticalError</code> at line 5523, and sets bit 7 in <code>b46_IPL2</code> at line 5524, activating the Check Engine lamp for Fault Code 32.</p>
+<pre><code class="language-motorola6803">; --- ExhGasRecirc_MM (T-SMEC_v19.asm:5517-5524) ---
+	ldaa EGRVar1    ; load a with memory contents
+	inca		    ; increment a
+	staa EGRVar1    ; store a into memory
+	cmpa EGR4_ExhGasRecircConst	; compare a with memory contents (data is eb)
+	bcs  L1471	    ; branch if lower
+	ldd  #0x2e01	    ; load d (a&amp;b) with value -00101110 00000001-
+	jsr  ThrowNonCriticalError    ; call subroutine
+	bset *b46_IPL2, #b46_bit7	; set bits</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Single-Byte Type 3 Constant</strong>: Located at calibration address 0x1A96 (calculated ROM address 0x86E5 / template org 0x882D).</li>
+<li><strong>Error Code Coupling</strong>: Directly governs invocation of diagnostic trouble code 32 (<code>0x2E01</code>) in the SMEC diagnostic reporting subsystem.</li>
+<li><strong>Non-Volatile Fault Latching</strong>: Setting bit 7 in <code>b46_IPL2</code> causes the fault to be mirrored to EEPROM error memory during controller shutdown.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>EGR4</code>
+        </footer>
+    </div>
+</body>
+</html>

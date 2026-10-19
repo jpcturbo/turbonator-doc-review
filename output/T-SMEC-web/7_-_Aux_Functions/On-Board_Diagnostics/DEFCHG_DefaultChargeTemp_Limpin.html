@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEFCHG: DefaultChargeTemp Limpin | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1C0C</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DEFCHG: DefaultChargeTemp Limpin</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DEFCHG</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DEFCHG_DefaultChargeTemp_Limpin</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1C0C</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">deg F</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0xAD (173 counts ≈ 140 deg F default charge temp)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7370-L7380"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L7633"><code>UseLimpinForChargeTemp</code></a> in <a href="../../T-SMEC_v19.asm.html#L7634"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DEFCHG</code> specifies the fixed default charge air temperature value substituted into the engine controller's fueling and spark calculations when the charge air temperature sensor is faulted.</p>
+<p>The charge air temperature sensor provides manifold air temperature readings used by the engine controller to apply air density fuel corrections and charge-temperature spark advance modifiers. If the sensor circuit is disconnected or shorted to ground (<strong>Fault Code 23</strong>), the engine controller enters limp-home mode and replaces the sensor reading with <code>DEFCHG</code>.</p>
+<p>In factory calibrations, <code>DEFCHG</code> is set to 173 counts, corresponding to approximately 140 deg F. This represents a typical warm turbocharged intake manifold temperature, providing stable drivability and preventing severe lean fueling or aggressive spark advance.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>UseLimpinForChargeTemp</code> (<code>T-SMEC_v19.asm:7633-7637</code>), instruction at line 7634.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Active when <code>b45_IPL1</code> bit <code>b45_BadChargeTemp</code> is set.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li><code>ldab DEFCHG_DefaultChargeTemp_Limpin</code> loads 173 counts at line 7634.</li>
+<li><code>stab ChargeTemp</code> stores register B into <code>ChargeTemp</code> at line 7636.</li>
+<li>Branches to <code>CheckCoolantTempSensor</code> at line 7637.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Intercooled vs. Non-Intercooled Setups</strong>:</li>
+<li>Factory setting of 140 deg F suits intercooled street setups.</li>
+<li>Non-intercooled turbo setups can raise <code>DEFCHG</code> to 160 deg F to ensure adequate spark retard safety margin if the sensor fails.</li>
+<li><strong>Failsafe Fuel Density Tuning</strong>:</li>
+<li>Lowering <code>DEFCHG</code> enriches the failsafe fuel mixture by calculating higher air density.</li>
+<li>Raising <code>DEFCHG</code> leans out the failsafe fuel mixture.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Setting <code>DEFCHG</code> to 0 deg F commands heavy cold air enrichment and maximum spark advance, increasing detonation risk under boost.</li>
+<li>Setting <code>DEFCHG</code> to maximum causes excessive spark retard and reduced power.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In routine <code>UseLimpinForChargeTemp</code> (lines 7633-7637), when <code>b45_BadChargeTemp</code> is active, the CPU executes <code>ldab DEFCHG_DefaultChargeTemp_Limpin</code> at line 7634. Register B is loaded with 0xAD (173 counts, approximately 140 deg F) and stored directly into RAM variable <code>ChargeTemp</code> at line 7636 via <code>stab ChargeTemp</code>. Execution then branches to <code>CheckCoolantTempSensor</code> at line 7637.</p>
+<pre><code class="language-motorola6803">; --- UseLimpinForChargeTemp (T-SMEC_v19.asm:7633-7637) ---
+UseLimpinForChargeTemp:
+	ldab DEFCHG_DefaultChargeTemp_Limpin	; load b with memory contents (data is ad)
+StoreChargeTemp:
+	stab ChargeTemp	; store b into memory
+	bra  CheckCoolantTempSensor	    ; branch
+</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/CHGLOW_ChargeTempOutOfRangeLow.html"><code>CHGLOW</code></a> and <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/CHGHIG_ChargeTempOutOfRangeHigh.html"><code>CHGHIG</code></a> (electrical fault bounds).</li>
+<li><strong>Diagnostic Code</strong>: DRB-II Fault Code 23 (charge air temperature sensor fault).</li>
+<li><strong>Subsystem Impact</strong>: Directly feeds the charge temperature fuel modifier table (<code>CHGTRN</code>) and charge temperature spark retard routines.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>DEFCHG</code>
+        </footer>
+    </div>
+</body>
+</html>

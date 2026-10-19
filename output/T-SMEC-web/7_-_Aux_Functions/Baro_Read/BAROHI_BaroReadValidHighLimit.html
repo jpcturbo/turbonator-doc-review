@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAROHI: BaroReadValidHighLimit | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x14BF</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Baro Read</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BAROHI: BaroReadValidHighLimit</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BAROHI</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BAROHI_BaroReadValidHighLimit</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Baro_Read\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x14BF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi absolute</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x85                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5501-L5512"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L1541"><code>SaveBaroPressure</code></a> in <a href="../../T-SMEC_v19.asm.html#L1547"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BAROHI</code> defines the maximum credible atmospheric pressure threshold used during barometric pressure validation.</p>
+<p>When the engine controller samples barometric pressure at key-on or during closed-throttle deceleration, it evaluates the measured reading against <code>BAROHI</code> to verify sensor plausibility. Standard sea level atmospheric pressure is approximately 14.7 psi absolute (29.9 inHg), and extreme meteorological high-pressure weather cells rarely exceed 15.2 psi absolute. In factory calibrations, <code>BAROHI</code> is configured to 133 counts, corresponding to approximately 15.3 psi absolute (31.1 inHg). If an atmospheric reading equals or exceeds <code>BAROHI</code>, the controller identifies the measurement as electrically implausible (such as a 5-volt reference short or broken sensor ground) and substitutes the failsafe default value <a href="../../7_-_Aux_Functions/Baro_Read/BARDFT_BaroReadDefaultValue.html"><code>BARDFT</code></a>.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>SaveBaroPressure</code> (<code>T-SMEC_v19.asm:1541-1554</code>), instruction line 1547.</li>
+<li><strong>Execution Trigger</strong>: Called at key-on startup and following successful in-flight baro read equalization.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Raw sensor reading converted to pressure count in accumulator B.</li>
+<li>Compares accumulator B against <code>BAROHI_BaroReadValidHighLimit</code> at line 1547.</li>
+<li>If accumulator B is greater than or equal (<code>bcc L1029</code>), branches to substitute <a href="../../7_-_Aux_Functions/Baro_Read/BARDFT_BaroReadDefaultValue.html"><code>BARDFT_BaroReadDefaultValue</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
+<li>On a 3-bar sensor, rescale <code>BAROHI</code> from factory 133 counts down to ~88 counts (15.2 psi on 44.1 psi scale).</li>
+<li><strong>Failsafe Substitution</strong>:</li>
+<li>Any reading meeting or exceeding <code>BAROHI</code> is immediately rejected, and <a href="../../7_-_Aux_Functions/Baro_Read/BARDFT_BaroReadDefaultValue.html"><code>BARDFT</code></a> is loaded into memory.</li>
+<li><strong>Diagnostic Protection</strong>:</li>
+<li>Protects fuel calibration against high-voltage sensor wire shorts and disconnected sensor ground circuits.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>SaveBaroPressure</code> at line 1545, <code>jsr ConvertMAPVoltsToValue</code> converts the raw sensor voltage into a scaled pressure value in accumulator A, which is transferred to B via <code>tab</code> at line 1546. Line 1547 executes <code>cmpb BAROHI_BaroReadValidHighLimit</code>. If accumulator B is greater than or equal to <code>BAROHI</code> (<code>bcc</code>), execution branches to <code>L1029</code>, loading <a href="../../7_-_Aux_Functions/Baro_Read/BARDFT_BaroReadDefaultValue.html"><code>BARDFT_BaroReadDefaultValue</code></a> into B before storing to <code>BaroPressure</code> at line 1552.</p>
+<pre><code class="language-motorola6803">; --- SaveBaroPressure (T-SMEC_v19.asm:1541-1554) ---
+SaveBaroPressure:
+	jsr  ConvertMAPVoltsToValue    ; call subroutine
+	tab		    ; b = a
+	cmpb BAROHI_BaroReadValidHighLimit    ; compare b with memory contents (data is 58)
+	bcc  L1029	    ; branch if greater or equal
+	cmpb BAROLO_BaroReadValidLowLimit    ; compare b with memory contents (data is 2e)
+	bcc  L1030	    ; branch if greater or equal
+L1029:	ldab BARDFT_BaroReadDefaultValue    ; load b with memory contents (data is 54)
+L1030:	stab BaroPressure    ; store b into memory
+	rts		    ; return from subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Plausibility Window</strong>: Establishes the upper ceiling of the <a href="../../7_-_Aux_Functions/Baro_Read/BAROLO_BaroReadValidLowLimit.html"><code>BAROLO</code></a> to <code>BAROHI</code> plausibility window.</li>
+<li><strong>Fallback Destination</strong>: Pairs directly with <a href="../../7_-_Aux_Functions/Baro_Read/BARDFT_BaroReadDefaultValue.html"><code>BARDFT_BaroReadDefaultValue</code></a> upon plausibility failure.</li>
+<li><strong>WOT &amp; Boost Impact</strong>: Directly affects overboost cutout thresholds (<a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a>, <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFA_OverboostFuelShutoffEnablePointFromMap_Absolute.html"><code>MPSHFA</code></a>) which calculate boost gauge pressure as <code>MapValue - BaroPressure</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>BAROHI</code>
+        </footer>
+    </div>
+</body>
+</html>

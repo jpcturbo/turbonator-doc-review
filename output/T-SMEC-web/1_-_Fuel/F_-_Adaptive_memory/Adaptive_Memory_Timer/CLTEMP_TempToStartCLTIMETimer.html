@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLTEMP: TempToStartCLTIMETimer | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0AFB</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ F - Adaptive memory ➔ Adaptive Memory Timer</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CLTEMP: TempToStartCLTIMETimer</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CLTEMP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CLTEMP_TempToStartCLTIMETimer</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\F_-_Adaptive_memory\Adaptive_Memory_Timer\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0AFB</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">degF</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x92 (146 counts ≈ 70 degF)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3001-L3011"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_v19.asm.html#L2991"><code>O2_FullThrottle</code></a> in <a href="../../../T-SMEC_v19.asm.html#L2997"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CLTEMP</code> defines the absolute minimum engine coolant temperature required before the engine controller will start the closed-loop countdown timer and allow closed-loop oxygen sensor feedback.</p>
+<p>Below this coolant temperature, the engine is considered completely cold, and fuel condensation on runner walls necessitates dedicated open-loop cold enrichment.</p>
+<p>In factory calibrations, <code>CLTEMP</code> is set to 146 counts, which corresponds to approximately 70 degF. If coolant temperature is lower than <code>CLTEMP</code>, closed-loop feedback is strictly locked out and fuel pulse width is governed entirely by open-loop base and warmup tables.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> / <code>O2_FullThrottle</code> (<code>T-SMEC_v19.asm:2991-3007</code>), instruction line 2997.</li>
+<li><strong>Gating Conditions</strong>: Engine running, initial sensor check passed or sensor not yet declared valid (<code>b4f_O2Valid</code> clear).</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li><code>CoolantTemp</code> is loaded into register B and compared against <code>CLTEMP_TempToStartCLTIMETimer</code> via <code>cmpb</code>.</li>
+<li>If <code>CoolantTemp &lt; CLTEMP</code> (<code>bcs</code>), execution branches directly to <code>O2_StopUsingFeedback</code> (line 3033), clearing ramp counters and setting <code>b50_StayOpenLoop</code>.</li>
+<li>If <code>CoolantTemp &gt;= CLTEMP</code>, execution proceeds to evaluate <code>Timer_CLTIME_ClosedLoopTimer</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Cold Climate Optimization</strong>:</li>
+<li>In freezing conditions, raising <code>CLTEMP</code> to 85 or 90 degF ensures thorough engine warmup before closed-loop trimming engages.</li>
+<li><strong>Warm Climate Tuning</strong>:</li>
+<li>Lowering <code>CLTEMP</code> toward 55 or 60 degF allows faster closed-loop engagement, improving fuel economy.</li>
+<li><strong>Open-Loop Racing Setup</strong>:</li>
+<li>Setting <code>CLTEMP</code> to 255 counts locks the ECU permanently in open loop across all operating temperatures, which is useful for drag racing on race gas or methanol.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>HandleO2Processing_MM</code> at line 2996, <code>CoolantTemp</code> is loaded into accumulator B. Line 2997 executes <code>cmpb CLTEMP_TempToStartCLTIMETimer</code>. If accumulator B is less than <code>CLTEMP</code>, carry is set and <code>bcs O2_StopUsingFeedback</code> branches to line 3033. In <code>O2_StopUsingFeedback</code>, accumulator A (cleared to zero) is stored into <code>Counter_PrimaryAndSecondaryRamp</code> and <code>Counter_PrimaryRamp</code>, and line 3036 sets <code>b50_StayOpenLoop | b50_OpenLoop</code> in <code>BitFlags_50</code>, keeping fueling in open loop.</p>
+<pre><code class="language-motorola6803">; --- O2_FullThrottle (T-SMEC_v19.asm:2995-3001) ---
+L1202:	brset *BitFlags_4f, #b4f_O2Valid, O2_UsingFeedback    ; branch if bit(s) set
+L1203:	ldab CoolantTemp    ; load b with memory contents
+	cmpb CLTEMP_TempToStartCLTIMETimer    ; compare b with memory contents (data is 92)
+	bcs  O2_StopUsingFeedback    ; branch if lower
+	brset *BitFlags_4f, #b4f_OpenLoop, L1205    ; branch if bit(s) set
+	ldab Counter_MainLoop	  ; load b with memory contents
+	bne  O2_StopUsingFeedback    ; branch if not equal (not zero)</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Directly gates <a href="../../../1_-_Fuel/F_-_Adaptive_memory/Adaptive_Memory_Timer/CLTIME_ClosedLoopTimeFromEngTempAtStartup_FromTemp.html"><code>CLTIME</code></a> countdown timer and feeds into <code>O2_ValidSignal_OutsideMiddleRange</code> logic.</li>
+<li><strong>Units Scaling</strong>: 146 counts equals approximately 70 degF (0x92 hex).</li>
+<li><strong>Persistence</strong>: Evaluated continuously every loop pass; threshold changes immediately update closed-loop qualification.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>CLTEMP</code>
+        </footer>
+    </div>
+</body>
+</html>

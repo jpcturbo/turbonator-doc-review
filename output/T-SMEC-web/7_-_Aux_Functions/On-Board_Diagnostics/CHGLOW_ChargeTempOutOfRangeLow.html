@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHGLOW: ChargeTempOutOfRangeLow | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1BF2</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CHGLOW: ChargeTempOutOfRangeLow</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CHGLOW</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CHGLOW_ChargeTempOutOfRangeLow</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1BF2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">volts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x08 (8 counts ≈ 0.16 volts / sensor short circuit)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7344-L7354"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L7608"><code>FilterAndStoreChargeTemp</code></a> in <a href="../../T-SMEC_v19.asm.html#L7611"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CHGLOW</code> establishes the lower electrical voltage boundary for the charge air temperature sensor circuit.</p>
+<p>The charge air temperature sensor measures compressed intake air in the intake manifold using a negative temperature coefficient thermistor. Because thermistor resistance decreases as charge air warms, signal voltage drops closer to ground at high temperatures. If the signal wire chafes and shorts directly to engine ground or if the thermistor fails internally, signal voltage drops toward zero.</p>
+<p>In factory calibrations, <code>CHGLOW</code> is set to 8 counts, corresponding to approximately 0.16 volts. When the sensor signal falls below <code>CHGLOW</code>, the engine controller flags <strong>Fault Code 23</strong>, latches a charge temperature sensor error, and substitutes default temperature <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/DEFCHG_DefaultChargeTemp_Limpin.html"><code>DEFCHG</code></a>.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>FilterAndStoreChargeTemp</code> (<code>T-SMEC_v19.asm:7608-7620</code>), instruction at line 7611.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Active when <code>cfg_CTS</code> bit in <a href="../../0_-_Setup/A_-_Cal_Configuration/CONFIG_ConfigurationFlags.html"><code>CONFIG_ConfigurationFlags</code></a> is set.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li>Register B loaded with <code>0x1C</code> at line 7609.</li>
+<li><code>RawChargeTempVolts</code> loaded into accumulator A at line 7610.</li>
+<li><code>cmpa CHGLOW_ChargeTempOutOfRangeLow</code> compares against 8 counts at line 7611.</li>
+<li>If lower (<code>bcs</code>), branches to <code>SetChargeTempError</code> at line 7612.</li>
+<li>Throws non-critical error code 0x1C94 (Fault Code 23) and sets <code>b45_IPL1</code> bit <code>b45_BadChargeTemp</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>High-Boost &amp; Non-Intercooled Applications</strong>:</li>
+<li>High boost pressures generate elevated charge temperatures that pull sensor voltage low.</li>
+<li>Ensure <code>CHGLOW</code> remains at or below 8 counts (0.16 volts) to prevent false Code 23 triggers under high-boost dyno or track operation.</li>
+<li><strong>Short Circuit Troubleshooting</strong>:</li>
+<li>Inspect the two-pin charge temperature harness near the intake manifold runners for chafing against metal brackets.</li>
+<li><strong>Lowering &amp; Edge Cases</strong>:</li>
+<li>Lowering <code>CHGLOW</code> to zero disables short-circuit fault logging.</li>
+<li>Raising <code>CHGLOW</code> too high causes false diagnostic fault codes during normal hot engine operation.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In routine <code>FilterAndStoreChargeTemp</code> (lines 7608-7620), <code>RawChargeTempVolts</code> is loaded into accumulator A at line 7610 and compared against <code>CHGLOW_ChargeTempOutOfRangeLow</code> (0x08 = 8 counts, 0.16 volts) at line 7611. If accumulator A is strictly less than <code>CHGLOW</code>, the carry bit is set and <code>bcs SetChargeTempError</code> branches to line 7639. The routine throws error 0x1C94 (Fault Code 23), sets <code>b45_BadChargeTemp</code> in register <code>b45_IPL1</code>, and routes execution to <code>UseLimpinForChargeTemp</code>.</p>
+<pre><code class="language-motorola6803">; --- FilterAndStoreChargeTemp (T-SMEC_v19.asm:7608-7620) ---
+FilterAndStoreChargeTemp:
+	ldab #0x1c	                  ; load b with value -00011100-
+	ldaa RawChargeTempVolts           ; load a with memory contents
+	cmpa CHGLOW_ChargeTempOutOfRangeLow    ; compare a with memory contents (data is 08)
+	bcs  SetChargeTempError	          ; branch if lower
+	incb
+	cmpa CHGHIG_ChargeTempOutOfRangeHigh	; compare a with memory contents (data is fd)
+	bhi  SetChargeTempError	          ; branch if higher
+	brclr *b45_IPL1, #b45_BadChargeTemp, FilterChargeTemp	 ; branch if bit(s) clear
+	ldaa #0x01	                  ; load a with value -00000001-
+	jsr  ResetErrorCodeIfTimerExpired ; call subroutine
+	bra  UseLimpinForChargeTemp       ; branch
+
+</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/CHGHIG_ChargeTempOutOfRangeHigh.html"><code>CHGHIG</code></a> (open circuit boundary) and <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/DEFCHG_DefaultChargeTemp_Limpin.html"><code>DEFCHG</code></a> (default charge temperature substitution).</li>
+<li><strong>Diagnostic Code</strong>: DRB-II Fault Code 23 (charge air temperature sensor out of range low / short circuit).</li>
+<li><strong>Hardware Dependency</strong>: Bypassed entirely if <code>cfg_CTS</code> is disabled in <a href="../../0_-_Setup/A_-_Cal_Configuration/CONFIG_ConfigurationFlags.html"><code>CONFIG_ConfigurationFlags</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>CHGLOW</code>
+        </footer>
+    </div>
+</body>
+</html>

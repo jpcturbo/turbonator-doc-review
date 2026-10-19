@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAPPT2: WastegateDutyCycleMapSwitchPoint2 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x121A</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ B - WG Control ➔ T1 WG Control ➔ T1 WGDC Adaptives</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MAPPT2: WastegateDutyCycleMapSwitchPoint2</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MAPPT2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MAPPT2_WastegateDutyCycleMapSwitchPoint2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\B_-_WG_Control\T1_WG_Control\T1_WGDC_Adaptives\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x121A</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi boost</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x0F                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4824-L4835"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L9550"><code>WGDC_Store5psiBoostTimer</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L9553"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MAPPT2</code> establishes the minimum manifold gauge pressure threshold that must be reached before the engine controller activates electronic wastegate duty cycle calculations.</p>
+<p>Below this threshold, manifold pressure is near or below atmospheric pressure, where modulating the wastegate solenoid is unnecessary and would cause needless solenoid wear and clicking. When manifold pressure is below atmospheric pressure plus <code>MAPPT2</code>, the controller zeros the wastegate duty cycle and clears all knock-reduction duty cycle offsets. In factory calibrations, this is set to 15 counts (approximately 1.7 psi of boost).</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9552-9556</code>) and <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9761-9765</code>).</li>
+<li><strong>T1 Comparison Logic</strong>:</li>
+<li>Line 9552 loads <code>BaroPressure</code> and executes <code>adda MAPPT2_WastegateDutyCycleMapSwitchPoint2</code> at line 9553.</li>
+<li>Compares against <code>MapValue</code> at line 9554 (<code>cmpa MapValue</code>). If <code>MapValue</code> is lower than the sum, branches to <code>WGDC_ClearWGDutyCycleVars</code> (line 9556).</li>
+<li><strong>T2 Comparison Logic</strong>:</li>
+<li>At line 9762, gauge boost is computed as <code>MapValue - BaroPressure</code>.</li>
+<li>Line 9764 executes <code>cmpa MAPPT2_WastegateDutyCycleMapSwitchPoint2</code>. If gauge boost is below <code>MAPPT2</code>, branches to <code>T2WGDC_ClearWGDutyCycleVars</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Boost Activation Threshold</strong>:</li>
+<li>Minimum boost above barometric pressure required before the ECU begins modulating the wastegate solenoid.</li>
+<li>Factory setting is 15 counts (approximately 1.7 psi boost above atmospheric pressure).</li>
+<li><strong>Quiet Solenoid Operation</strong>:</li>
+<li>Below this pressure, duty cycle is held at 0%, preventing solenoid clicking during vacuum and light-throttle cruise.</li>
+<li><strong>Firmware Copy-Paste Anomaly</strong>:</li>
+<li>Line 9764 in <code>CalcWGDutyCycleT2</code> incorrectly references <code>MAPPT2</code> instead of <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Adaptives/T2MAPPT2_WastegateDutyCycleMapSwitchPoint2.html"><code>T2MAPPT2</code></a>; modifying <code>MAPPT2</code> alters the activation threshold in both modes.</li>
+<li><strong>3-Bar MAP Scaling</strong>:</li>
+<li>In 3-bar sensor calibrations, scale <code>MAPPT2</code> to half its 2-bar count value to maintain the same 1.7 psi activation threshold.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalcWGDutyCycleT1</code> at line 9552, <code>ldaa BaroPressure</code> loads atmospheric pressure into accumulator A and adds <code>MAPPT2_WastegateDutyCycleMapSwitchPoint2</code> at line 9553. Line 9554 compares accumulator A against <code>MapValue</code> (<code>cmpa MapValue</code>). If <code>MapValue</code> is lower or same (<code>bls WGDC_CalculateWGDutyCycleVars</code> fails), execution falls into <code>WGDC_ClearWGDutyCycleVars</code> at line 9556, zeroing <code>CurrentWastegateDutyCycle</code> and <code>WastegateDutyCycleIncreaseFromKnock</code>. In <code>CalcWGDutyCycleT2</code> at line 9764, the same symbol is evaluated due to a firmware copy-paste bug.</p>
+<pre><code class="language-motorola6803">; --- CalcWGDutyCycleT1 (T-SMEC_v19.asm:9552-9556) ---
+L2858:	ldaa BaroPressure    ; load a with memory contents
+	adda MAPPT2_WastegateDutyCycleMapSwitchPoint2    ;  (data is 0a)
+	cmpa MapValue	    ; compare a with memory contents
+	bls  WGDC_CalculateWGDutyCycleVars	    ; branch if lower or same
+WGDC_ClearWGDutyCycleVars:</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Cross-Algorithm Impact</strong>: Referenced in both <code>CalcWGDutyCycleT1</code> (line 9553) and <code>CalcWGDutyCycleT2</code> (line 9764).</li>
+<li><strong>Clear Routine Behavior</strong>: When boost is below <code>MAPPT2</code>, <code>Timer_BoostTimer</code> is decremented by 1 count every 32 main loop passes.</li>
+<li><strong>Hysteresis Buffer</strong>: Keeps the wastegate actuator fully relaxed in vacuum, preventing heat buildup in the solenoid coil.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MAPPT2</code>
+        </footer>
+    </div>
+</body>
+</html>

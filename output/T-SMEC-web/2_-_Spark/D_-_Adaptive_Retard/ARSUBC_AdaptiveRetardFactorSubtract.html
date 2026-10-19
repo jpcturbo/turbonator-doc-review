@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARSUBC: AdaptiveRetardFactorSubtract | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x04D4</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>2 - Spark ➔ D - Adaptive Retard</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ARSUBC: AdaptiveRetardFactorSubtract</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ARSUBC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ARSUBC_AdaptiveRetardFactorSubtract</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>2_-_Spark\D_-_Adaptive_Retard\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x04D4</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">counts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x40                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1426-L1436"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L6972"><code>HandleFuelStartRunStartTransfer</code></a> in <a href="../../T-SMEC_v19.asm.html#L6986"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ARSUBC</code> defines the decay step size subtracted from the adaptive retard index (<code>AdaptiveRetardIndex</code>) every time the engine undergoes a successful start-to-run transition.</p>
+<p>Once adaptive retard has accumulated in response to knock, the controller needs a systematic method to decay the learned retard back toward zero as fresh, higher-octane fuel is introduced. Rather than clearing learned retard instantly when the ignition key is cycled, the controller decrements <code>AdaptiveRetardIndex</code> by <code>ARSUBC</code> on each engine start. In factory calibrations, <code>ARSUBC</code> is set to 64 counts, representing a 25% reduction in learned adaptive retard per engine restart.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>HandleFuelStartRunStartTransfer</code> (<code>T-SMEC_v19.asm:6985-6990</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Triggered when engine speed crosses above <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/RNFPRD_FuelStartRunTransferPointRpm.html"><code>RNFPRD_FuelStartRunTransferPointRpm</code></a> during cranking.</li>
+<li>Engine running flag must have been previously clear (<code>b54_FuelEngineNotRunning</code> set in <code>BitFlags_54</code>).</li>
+<li><strong>Subtraction &amp; Floor</strong>:</li>
+<li><code>AdaptiveRetardIndex</code> is loaded and <code>ARSUBC_AdaptiveRetardFactorSubtract</code> is subtracted.</li>
+<li>If result underflows (<code>bcc L1588</code> not taken), accumulator A is clamped to zero before storing.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Restart Decay Pacing</strong>:</li>
+<li>Factory setting of 64 counts clears learned adaptive retard in four consecutive key cycles if no further knock occurs.</li>
+<li><strong>Instant Reset on Restart</strong>:</li>
+<li>Setting <code>ARSUBC</code> to 255 clears all learned adaptive retard on every restart, providing a fresh baseline on each drive.</li>
+<li><strong>Extended Memory for Safety</strong>:</li>
+<li>Lowering <code>ARSUBC</code> to 16 or 32 counts retains learned retard across 8 to 16 restarts, providing safety if lower octane fuel is persistent.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>HandleFuelStartRunStartTransfer</code> at line 6985, <code>ldaa AdaptiveRetardIndex</code> loads the current learned retard index. Line 6986 executes <code>suba ARSUBC_AdaptiveRetardFactorSubtract</code>. If carry is clear (<code>bcc L1588</code>), the decremented result is valid; if carry is set (underflow below zero), line 6988 executes <code>clra</code> to clamp to zero. Line 6989 executes <code>staa AdaptiveRetardIndex</code>, updating the decay value in memory before proceeding to run mode dwell configuration.</p>
+<pre><code class="language-motorola6803">; --- HandleFuelStartRunStartTransfer (T-SMEC_v19.asm:6985-6991) ---
+	ldaa AdaptiveRetardIndex    ; load a with memory contents
+	suba ARSUBC_AdaptiveRetardFactorSubtract    ;  (data is 40)
+	bcc  L1588	    ; branch if greater or equal
+	clra		    ; a = 0
+L1588:	staa AdaptiveRetardIndex    ; store a into memory
+	bra  L1589	    ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Start-to-Run Decay Mechanism</strong>: Decrements learned retard strictly upon crossing from cranking into running mode.</li>
+<li><strong>Scaling</strong>: 1 count = 1/256 of full adaptive retard authority. Factory setting 0x40 = 64 counts = 25% decay per restart.</li>
+<li><strong>Zero Floor</strong>: Automatically clamps to zero when decremented below zero.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>ARSUBC</code>
+        </footer>
+    </div>
+</body>
+</html>

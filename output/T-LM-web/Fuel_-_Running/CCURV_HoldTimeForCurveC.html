@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCURV: HoldTimeForCurveC | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x08A8</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - Running</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CCURV: HoldTimeForCurveC</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CCURV</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CCURV_HoldTimeForCurveC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_Running\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x08A8</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">10 decimal, ~7.0 seconds</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x0A (10 decimal, ~7.0 seconds)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L2246-L2258"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L2829"><code>DealWithColdLoadEnrichment_MM</code></a> in <a href="../T-LMv13.asm.html#L2863"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CCURV_HoldTimeForCurveC</code> specifies the <strong>duration that intermediate cold enrichment (<a href="../Fuel_-_Running/CURVEC_FuelColdEnrichmentCurveC.html"><code>CURVEC</code></a>) is held at full strength before decay begins</strong>.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Condition:</strong> Evaluated inside <code>DealWithColdLoadEnrichment_MM</code> during phase 1 (while Curve C is active, prior to Curve A decay phase).</li>
+<li><strong>Hold Duration Formula:</strong></li>
+</ul>
+<p><code>Curve C Hold Time = CCURV × 0.704 seconds = 10 × 0.704 ≈ 7.04 seconds.</code></p>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Tuning Tip:</strong> Increasing <code>CCURV</code> extends the initial dwell of intermediate enrichment, helping smooth cold-start transitions on vehicles with large aftermarket intake manifolds or cold aluminum cylinder heads.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 2863–2876):</p>
+<pre><code class="language-motorola6803">LD56B:  cmpa CCURV_HoldTimeForCurveC    ; compare a with memory contents (data is 0a)
+           bcs  LD585          ; branch if lower
+           ldab DCYCC_DecayRateForCurveC    ; load b with memory contents (data is 0d)
+   LD573:  ldaa TimerOverflowsBetweenDistPulses    ; load a with memory contents
+           bne  LD585          ; branch if not equal (not zero)
+           ldaa Counter_MainLoop1    ; load a with memory contents
+           bita #0x1f          ;  -00011111-
+           bne  LD585          ; branch if not equal (not zero)
+           ldaa Factor_ACVDCY_CurveACurveCDecayAfterRunModeReached    ; load a with memory contents
+           sba                 ; subtract (a=a-b)
+           bcc  LD583          ; branch if greater or equal
+           clra                ; a = 0
+   LD583:  staa Factor_ACVDCY_CurveACurveCDecayAfterRunModeReached    ; store a into memory
+   LD585:  rts                 ; return from subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Coupled with <a href="../Fuel_-_Running/CURVEC_FuelColdEnrichmentCurveC.html"><code>CURVEC</code></a> and <a href="../Fuel_-_Running/DCYCC_DecayRateForCurveC.html"><code>DCYCC</code></a>:</strong> Once <code>KeyOnOrEngineRunningTime * 4 &gt;= CCURV</code>, the ECU begins subtracting <a href="../Fuel_-_Running/DCYCC_DecayRateForCurveC.html"><code>DCYCC</code></a> from <code>Factor_ACVDCY_CurveACurveCDecayAfterRunModeReached</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>CCURV</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T2MPFLOR: StopAdaptiveWhenMapIsThisCloseToBoostFloor | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1457</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ B - WG Control ➔ T2 WG Control ➔ T2 WGDC Adaptives</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>T2MPFLOR: StopAdaptiveWhenMapIsThisCloseToBoostFloor</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>T2MPFLOR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T2MPFLOR_StopAdaptiveWhenMapIsThisCloseToBoostFloor</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\B_-_WG_Control\T2_WG_Control\T2_WGDC_Adaptives\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1457</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi boost</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x00                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5397-L5408"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L9983"><code>T2WGDC_DecrementWGAdaptive</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L10000"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>T2MPFLOR</code> defines the adaptive deadband threshold above target boost where adaptive duty cycle decrementing is halted in T2 control.</p>
+<p>When actual boost is dropping back down toward the target, <code>T2MPFLOR</code> verifies whether manifold pressure has arrived within the calibrated tolerance band of the target ceiling. Once boost is within this margin, the controller terminates adaptive decrementing to prevent pulling duty cycle out of the baseline cells unnecessarily.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>T2WGDC_DecrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9999-10001</code>), called from <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9755-10040</code>).</li>
+<li><strong>Gating Conditions</strong>: Error timer must reach <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/DECPT_AdaptiveDecAfterThisTime.html"><code>DECPT</code></a>.</li>
+<li><strong>Deadband Comparison</strong>:</li>
+<li>Line 9999 loads <code>Temp1</code> (the boost error delta) into accumulator A.</li>
+<li>Line 10000 executes <code>cmpa T2MPFLOR_StopAdaptiveWhenMapIsThisCloseToBoostFloor</code>.</li>
+<li>If error is less than <code>T2MPFLOR</code> (<code>bcs</code>), execution branches to <code>T2WGDC_ClearBoostErrTimer</code> (line 10001), halting further decrements.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>T2 Adaptive Deadband Floor</strong>:</li>
+<li>Minimum error delta required to permit adaptive decrementing in T2 mode.</li>
+<li>Factory setting is 0 counts (0.0 psi in ASM, 2 counts / 0.23 psi in template).</li>
+<li><strong>Stabilizing Downward Trims</strong>:</li>
+<li>Prevents the controller from continually trimming duty cycle once boost has settled onto target ceiling.</li>
+<li><strong>Pairing with T2MPROOF</strong>:</li>
+<li><a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Adaptives/T2MPROOF_StopAdaptiveWhenMapIsThisCloseToBoostTarget.html"><code>T2MPROOF</code></a> bounds upward adaptation; <code>T2MPFLOR</code> bounds downward adaptation.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>T2WGDC_DecrementWGAdaptive</code> at line 9999, accumulator A loads <code>Temp1</code> (the boost error delta). Line 10000 executes <code>cmpa T2MPFLOR_StopAdaptiveWhenMapIsThisCloseToBoostFloor</code>. If carry is set (<code>bcs T2WGDC_ClearBoostErrTimer</code> at line 10001), actual boost is judged sufficiently close to the floor, clearing the error timer. If error delta meets or exceeds <code>T2MPFLOR</code>, execution proceeds to line 10002 to test lower limit <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/DECLIM_LowerLimitOnWastegateDutyCycleCorrection.html"><code>DECLIM</code></a>.</p>
+<pre><code class="language-motorola6803">; --- T2WGDC_DecrementWGAdaptive (T-SMEC_v19.asm:9999-10001) ---
+        ldaa Temp1        ; load a with memory contents
+        cmpa T2MPFLOR_StopAdaptiveWhenMapIsThisCloseToBoostFloor    ; compare a with memory contents (data is 00)
+        bcs  T2WGDC_ClearBoostErrTimer                     ; branch if lower</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Deadband Floor</strong>: Freezes downward adaptation when boost settles within <code>T2MPFLOR</code> of target.</li>
+<li><strong>Factory Value</strong>: 0x00 = 0 counts = 0.0 psi (ASM), 0x02 = 2 counts = approx 0.23 psi (template).</li>
+<li><strong>T1 vs. T2 Difference</strong>: In T1, <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MPFLOR_StopAdaptiveWGWhenDeltaMapIsLessThanThis.html"><code>MPFLOR</code></a> is a MAP stability noise gate; in T2, <code>T2MPFLOR</code> is a deadband threshold.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>T2MPFLOR</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAPPT: WastegateDutyCycleMapSwitchPoint | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x12FC</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ B - WG Control ➔ T1 WG Control ➔ T1 WGDC Adaptives</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MAPPT: WastegateDutyCycleMapSwitchPoint</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MAPPT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MAPPT_WastegateDutyCycleMapSwitchPoint</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\B_-_WG_Control\T1_WG_Control\T1_WGDC_Adaptives\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x12FC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi boost</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x44                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5050-L5061"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L9643"><code>WGDC_StoreWGDutyCycleFromKnock</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L9647"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MAPPT</code> sets the manifold gauge pressure switch point that divides low-load adaptive wastegate learning from high-load RPM-split adaptive learning in T1 control.</p>
+<p>In Chrysler's 5-cell adaptive wastegate architecture, Cell 1 handles boost levels below <code>MAPPT</code> across all engine speeds. Once target boost exceeds barometric pressure plus <code>MAPPT</code>, the controller switches into Cells 2 through 5, which are partitioned by engine speed. In factory calibrations, <code>MAPPT</code> is set to 68 counts (approximately 7.8 psi of boost).</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_StoreWGDutyCycleFromKnock</code> (<code>T-SMEC_v19.asm:9645-9653</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
+<li><strong>Switch Point Calculation</strong>:</li>
+<li>Line 9646 loads <code>BaroPressure</code> into accumulator B.</li>
+<li>Line 9647 executes <code>addb MAPPT_WastegateDutyCycleMapSwitchPoint</code>.</li>
+<li>Line 9648 checks carry; if overflow occurs, accumulator B clamps to 255 at line 9649.</li>
+<li><strong>Cell 1 Selection</strong>:</li>
+<li>In <code>WGDC_SelectAdaptiveWGCell</code> at line 9651, index X loads <code>#DCCOR1_AdaptiveWastegateCellBelowMAPPT</code>.</li>
+<li>Line 9652 compares target boost in accumulator A against accumulator B (<code>cba</code>).</li>
+<li>If target boost is below <code>BaroPressure + MAPPT</code> (<code>bcs</code>), Cell 1 is loaded (line 9653); if greater, execution advances to check RPM boundaries.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Adaptive Cell Switch Point</strong>:</li>
+<li>Boost threshold dividing low-load Cell 1 from RPM-split high-load Cells 2 through 5.</li>
+<li>Factory setting is 68 counts (approximately 7.8 psi boost above atmospheric pressure).</li>
+<li><strong>Positioning Relative to Spring Pressure</strong>:</li>
+<li>Set <code>MAPPT</code> 1 to 2 psi above mechanical wastegate spring pressure so low-load spooling stays in Cell 1.</li>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
+<li>When converting to a 3-bar MAP sensor, divide count value by approximately 1.5 to maintain proper physical psi switching.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>WGDC_StoreWGDutyCycleFromKnock</code> at line 9645, accumulator A loads <code>Temp3</code> (target boost) and accumulator B loads <code>BaroPressure</code>. Line 9647 executes <code>addb MAPPT_WastegateDutyCycleMapSwitchPoint</code>. In <code>WGDC_SelectAdaptiveWGCell</code> at line 9651, index register X is loaded with <code>#DCCOR1_AdaptiveWastegateCellBelowMAPPT</code>. Line 9652 executes <code>cba</code> to compare target boost against <code>BaroPressure + MAPPT</code>. If target boost is lower (<code>bcs WGDC_LoadAdaptiveWGCell</code> at line 9653), Cell 1 is selected. Otherwise, index X is incremented to evaluate RPM-split cells.</p>
+<pre><code class="language-motorola6803">; --- WGDC_StoreWGDutyCycleFromKnock (T-SMEC_v19.asm:9645-9653) ---
+L1869:	ldaa Temp3	    ; load a with memory contents
+	ldab BaroPressure    ; load b with memory contents
+	addb MAPPT_WastegateDutyCycleMapSwitchPoint    ;  (data is 2d) ~7.75psi boost
+	bcc  WGDC_SelectAdaptiveWGCell	  ; branch if greater or equal
+	ldab #0xff	    ; load b with value -11111111-
+WGDC_SelectAdaptiveWGCell:
+	ldx  #DCCOR1_AdaptiveWastegateCellBelowMAPPT    ; load index with value
+	cba		
+	bcs  WGDC_LoadAdaptiveWGCell	    ; branch if lower</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Grid Partition</strong>: Defines the gateway into the 4 RPM-partitioned high-boost adaptive cells.</li>
+<li><strong>Factory Value</strong>: 0x44 = 68 counts = approx 7.8 psi boost over barometric pressure.</li>
+<li><strong>T1 vs. T2 Separation</strong>: T1 uses <code>MAPPT</code>; T2 uses its dedicated constant <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Adaptives/T2MAPPT_WastegateDutyCycleMapSwitchPoint.html"><code>T2MAPPT</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MAPPT</code>
+        </footer>
+    </div>
+</body>
+</html>

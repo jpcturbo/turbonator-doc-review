@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTPWOF: PartThrottlePulsewidthOffset | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0xC1C2</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - Running</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PTPWOF: PartThrottlePulsewidthOffset</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PTPWOF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>PTPWOF_PartThrottlePulsewidthOffset</code> (Alias: <code>FPWUNK</code> / <code>FPWUNK_FuelPulsewidthFunctionUnknown</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_Running\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0xC1C2 (ROM .org origin 0xC1E2)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (Single Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Injector pulse width scaling (1 count ~ 1 microsecond / 0.001 ms, range 0 to 65.5 ms)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0x24EB                     ;Point 1 (9,451 counts ~ 9.45 ms full-scale slope)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L1771-L1784"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L4282"><code>CalculateInjectorPulsewidthForEngineRunning</code></a> in <a href="../T-LMv13.asm.html#L4320"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PTPWOF</code> is the <strong>boost-onset fuel rate adder</strong> for part-throttle driving. Think of it as a progressive power-valve spring and jet combo built into the computer's fuel injection logic.</p>
+<p>When you are cruising at light throttle, your engine runs on normal manifold vacuum, and the ECU delivers fuel strictly according to your base cruise fuel map (<a href="../Fuel_-_Running/MAPTBL_FuelPartThrottle.html"><code>MAPTBL_FuelPartThrottle</code></a>). But on a turbocharged engine, if you roll into the gas pedal to pass a car or pull up a grade on the highway, the turbo spools up and boosts the intake manifold—even though your foot has not mashed the gas pedal to the floor.</p>
+<p>As manifold pressure climbs past roughly 5 pounds of boost, air density shoots up rapidly. If the computer only looked at the vacuum cruise fuel map, the mixture would instantly go lean and cause dangerous detonation (spark knock) or a flat-spot stumble. </p>
+<p><code>PTPWOF</code> solves this by calculating how far your boost pressure is above that ~5 psi threshold and immediately multiplying that extra pressure by this calibration setting. It adds that extra squirt of fuel directly on top of your normal cruise pulse width, keeping air/fuel ratios safely rich while the turbo builds boost, all without washing down the cylinders during normal light-load vacuum cruise.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<p>This boost fuel adder kicks in only when specific real-world engine conditions are met:</p>
+<ol>
+<li><strong>Part Throttle (Cruising &amp; Passing):</strong>
+   - The throttle must be cracked open off idle, but <strong>not</strong> floored to wide-open throttle (WOT).
+   - Once you floor the gas pedal to 100% wide-open throttle, the computer immediately switches over to the dedicated full-throttle power fuel curve (<a href="../Fuel_-_Running/WOTTBL_FuelFullThrottle.html"><code>WOTTBL_FuelFullThrottle</code></a>), completely bypassing this part-throttle calculation.</li>
+<li><strong>Positive Boost / High Engine Load:</strong>
+   - Boost must rise above the boost transition threshold (roughly 4.9 to 5.0 psi of boost, set by <a href="../Fuel_-_Transient_Enrichment/OBCONST_OverboostConstant1.html"><code>OBCONST_OverboostConstant1</code></a>).
+   - In deep vacuum (idle, steady downhill cruise, light city driving), this boost adder stays completely dormant and adds zero fuel.</li>
+<li><strong>Timed Acceleration Enrichment:</strong>
+   - If you sustain aggressive acceleration long enough or rev high enough under load, the ECU automatically transitions to full open-loop power enrichment.</li>
+</ol>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Physical Effects of Raising vs. Lowering:</strong></li>
+<li><strong>Raising the Value (Richer Boost Spool):</strong> Delivers more extra fuel for every pound of boost you make under part-throttle acceleration. If your engine feels like it hesitates, surges, or pings as boost begins building at half-throttle, bumping this value up will richen the mixture and smooth out turbo spool-up.</li>
+<li><strong>Lowering the Value (Leaner Boost Spool):</strong> Decreases the extra fuel added per pound of boost. If the car stumbles, puffs black smoke, or feels sluggish and boggy when rolling into boost at partial throttle, lowering this value will clean up the transition.</li>
+<li><strong>Edge Cases:</strong></li>
+<li><strong>Setting to Zero:</strong> Completely disables the part-throttle boost adder. The engine will receive zero supplemental fuel as boost builds until either wide-open throttle is hit or the computer maxes out the base cruise table. This will cause a severe lean condition, backfiring through the intake, or piston-damaging detonation under part-throttle boost!</li>
+<li><strong>Setting to Maximum:</strong> Forces the boost-added pulse width to jump straight to the full-throttle ceiling (<a href="../Fuel_-_Running/WOTTBL_FuelFullThrottle.html"><code>WOTTBL</code></a>) the moment you cross the boost threshold (~5 psi). While fuel delivery will not exceed what the engine gets at wide-open throttle due to the safety clamp, having full WOT fueling at mere partial throttle will make the engine run excessively rich, causing sluggish spool-up, soggy acceleration, and black exhaust smoke.</li>
+<li><strong>Real-World Tuning Scenarios:</strong></li>
+<li><strong>Why Upgrading to a 3-Bar MAP Sensor Requires RAISING This Setting:</strong><ul>
+<li>A 2-bar MAP sensor reads from full vacuum up to ~14.7 psi of boost across its full voltage range. A 3-bar sensor squeezes double the boost range (up to ~29.4 psi) across that same voltage range.</li>
+<li>Because each unit of voltage on a 3-bar sensor represents 50% more pressure, the computer sees fewer counts per pound of boost (it counts 1.5 times slower).</li>
+<li>If you left this setting alone after swapping to a 3-bar sensor, the computer would only add about 67% of the extra fuel it used to add for every pound of boost, causing the engine to lean out during part-throttle spool-up!</li>
+<li><strong>Rule of thumb for 3-bar conversion:</strong> Multiply this setting by <strong>1.5</strong> (a 50% increase) to restore the factory fuel adder rate per pound of boost. (You will also lower <a href="../Fuel_-_Transient_Enrichment/OBCONST_OverboostConstant1.html"><code>OBCONST</code></a> from 170 down to 113 to keep the boost trigger at ~5 psi).</li>
+</ul>
+</li>
+<li><strong>Why Upgrading to Larger Injectors (+20%, +40%, etc.) Requires LOWERING This Setting:</strong><ul>
+<li>Larger injectors flow more fuel for every millisecond the nozzle is pulsed open.</li>
+<li>If you install +40% injectors (which flow ~1.4 times as much fuel), leaving this pulse width adder alone will squirt 40% too much fuel into the engine, causing it to bog and puff black smoke when the turbo spools at partial throttle.</li>
+<li><strong>Rule of thumb for injector changes:</strong> Divide this setting by your injector flow multiplier (e.g., divide by 1.20 for +20% injectors, or divide by 1.40 for +40% injectors).</li>
+</ul>
+</li>
+<li><strong>The Combined Real-World Math (3-Bar MAP + Bigger Injectors):</strong><ul>
+<li>Notice that upgrading to a 3-bar MAP pulls this setting <strong>UP</strong> (x 1.5), while bigger injectors pull this setting <strong>DOWN</strong> (/ 1.4).</li>
+<li>When you do both at the same time, the two changes partially cancel each other out:
+  <code>New Setting = Base Setting * 1.5 (for 3-bar) / Injector Multiplier</code></li>
+<li>For example, moving from a stock 2-bar setup with stock injectors (stock setting ~7,858) to a 3-bar setup with +20% to +40% injectors results in a net setting of ~9,451 (an overall increase of ~20%), exactly as configured in Stage IV calibrations!</li>
+</ul>
+</li>
+<li><strong>Bigger Turbochargers &amp; Aggressive Cams:</strong> Large aftermarket turbos often build boost later and hit harder. If your wideband O2 gauge shows a brief lean spike right as the turbo hits 5–10 psi under medium pedal travel, nudge this value up 5% to 10% to provide the necessary fuel cushion to keep combustion stable and exhaust gas temperatures safe.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 4306–4330):</p>
+<pre><code class="language-motorola6803">LDF2F:  ldaa MapValue       ; load a with memory contents
+           cmpa OBCONST_OverboostConstant1    ; compare a with memory contents (data is aa)
+           bcs  LDF39          ; branch if lower
+           tba                 ; a = b
+           bra  LDF43          ; branch
+
+   LDF39:  aba                 ; a=a+b
+           bcc  LDF3E          ; branch if greater or equal
+           ldaa #0xff          ; load a with value -11111111-
+   LDF3E:  suba OBCONST_OverboostConstant1    ;  (data is aa)
+           bls  LDF50          ; branch if lower or same
+   LDF43:  clrb                ; b = 0
+           stab Counter_PrimaryAndSecondaryRamp    ; store b into memory
+           staa Temp5          ; store a into memory
+           ldd  PTPWOF_PartThrottlePulsewidthOffset    ;  (data is 1eb2)
+           jsr  mul16bit
+           std  Temp7          ; store D to RAM
+   LDF50:  ldaa MapValue       ; load a with memory contents
+           ldx  #MAPTBL_FuelPartThrottle    ; load index with value
+   LDF55:  jsr  Lookup5ByteTable
+           addd Temp7          ; d = d + memory contents
+           std  Temp7          ; store D to RAM
+           subd FuelBaselineResult    ; d = d - memory contents
+           ldd  Temp7          ; load d (a&amp;b) with memory contents
+           bcs  LDF64          ; branch if lower</code></pre>
+<h3>Register Trace &amp; Mathematical Formulas:</h3>
+<ol>
+<li><strong>Load &amp; Test MAP against <a href="../Fuel_-_Transient_Enrichment/OBCONST_OverboostConstant1.html"><code>OBCONST</code></a>:</strong>
+   - Register <code>A</code> is loaded with <code>MapValue</code>. Register <code>B</code> holds <code>Timer_OpenLoopFraction</code>.
+   - <code>cmpa OBCONST_OverboostConstant1</code>: Tests if manifold pressure has crossed the boost threshold.
+   - If <code>MapValue &gt;= OBCONST</code>: <code>tba</code> copies <code>Timer_OpenLoopFraction</code> into <code>A</code> and branches to <code>LDF43</code>.
+   - If <code>MapValue &lt; OBCONST</code>: <code>aba</code> adds <code>Timer_OpenLoopFraction</code> to <code>MapValue</code>. If carry is set, accumulator <code>A</code> saturates at <code>0xFF</code>. Then <code>suba OBCONST_OverboostConstant1</code> subtracts the boost threshold. If the result is less than or equal to zero (<code>bls LDF50</code>), no offset is added (<code>Temp7</code> remains <code>0x0000</code>).</li>
+<li><strong>16-Bit Fixed-Point Multiplication (<code>mul16bit</code>):</strong>
+   - At <code>LDF43</code>, accumulator <code>A</code> contains the effective delta load factor, which is saved to RAM variable <code>Temp5</code>.
+   - Register <code>D</code> is loaded with the 16-bit word <code>PTPWOF_PartThrottlePulsewidthOffset</code> (<code>0x24EB</code>).
+   - The subroutine <code>mul16bit</code> computes:
+     <code>Result D = (Temp5 * PTPWOF) / 256</code>
+   - The resulting 16-bit pulsewidth offset is stored in RAM variable <code>Temp7</code>.</li>
+<li><strong>Table Blending &amp; Baseline Limiting:</strong>
+   - The base part-throttle pulsewidth is looked up from <a href="../Fuel_-_Running/MAPTBL_FuelPartThrottle.html"><code>MAPTBL_FuelPartThrottle</code></a> using <code>Lookup5ByteTable</code> and added to <code>Temp7</code>:
+     <code>Combined PW = MAPTBL(MapValue) + Temp7</code>
+   - The ECU then compares this sum against <code>FuelBaselineResult</code> (the full-throttle value previously looked up from <a href="../Fuel_-_Running/WOTTBL_FuelFullThrottle.html"><code>WOTTBL_FuelFullThrottle</code></a>):
+     <code>subd FuelBaselineResult</code>
+   - If <code>Combined PW &lt; FuelBaselineResult</code> (<code>bcs LDF64</code>), the blended part-throttle pulsewidth is kept; otherwise, it is clamped to <code>FuelBaselineResult</code> at <code>LDF62</code>.</li>
+</ol>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Codebase Origins &amp; Naming:</strong>
+  In the baseline A171 disassembly, this constant was labeled <a href="../Fuel_-_Running/PTPWOF_PartThrottlePulsewidthOffset.html"><code>FPWUNK</code></a> (<em>FuelPulsewidthFunctionUnknown</em>). In the Turbonator Stage IV code for this calibration, Rob Lloyd relabeled it <code>PTPWOF</code> (<em>PartThrottlePulsewidthOffset</em>). Both share the exact same <code>.org 0xc1e2</code> location in ROM.</li>
+<li><strong>Tied Directly to the Boost Fuel Threshold:</strong>
+  This parameter is completely inactive during normal vacuum cruise. It only starts spraying extra fuel once intake manifold boost passes the boost fuel threshold (set by <a href="../Fuel_-_Transient_Enrichment/OBCONST_OverboostConstant1.html"><code>OBCONST_OverboostConstant1</code></a>, typically around 5 pounds of boost).</li>
+<li><strong>Built-in Safety Ceiling:</strong>
+  The computer has a built-in safety clamp: no matter how high you set this part-throttle fuel adder, the total fuel delivered at partial throttle will never exceed what the engine would get at full wide-open throttle (<a href="../Fuel_-_Running/WOTTBL_FuelFullThrottle.html"><code>WOTTBL_FuelFullThrottle</code></a>) for that same boost level.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>PTPWOF</code>
+        </footer>
+    </div>
+</body>
+</html>

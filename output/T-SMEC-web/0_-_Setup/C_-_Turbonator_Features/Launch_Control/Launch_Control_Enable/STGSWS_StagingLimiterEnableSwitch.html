@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STGSWS: StagingLimiterEnableSwitch | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x182A</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ C - Turbonator Features ➔ Launch Control ➔ Launch Control Enable</strong> &nbsp;|&nbsp; Subsystem: <strong>Turbonator_Features</strong>
+        </div>
+        
+        <article class="content">
+            <h1>STGSWS: StagingLimiterEnableSwitch</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>STGSWS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>STGSWS_StagingLimiterEnableSwitch</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Turbonator_Features</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\C_-_Turbonator_Features\Launch_Control\Launch_Control_Enable\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x182A</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 5 (Bitfield / Configuration Mask)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Digital Input Switch Port Bitmask</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x00                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6376-L6387"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L10138"><code>LaunchControl_CheckSwitch</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L10140"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>STGSWS</code> defines the digital input switch bitmask used to arm the launch control staging limiter.</p>
+<p>Rather than requiring staging control to be permanently engaged at low vehicle speeds, this parameter allows the driver to trigger launch control via an external electrical switch, such as a clutch pedal switch, handbrake switch, steering wheel push-button, or cruise control switch.</p>
+<p>When set to zero (the factory default), no external switch is required; the engine controller automatically arms launch control whenever vehicle speed and throttle position meet the staging criteria.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Enclosed in subroutine <code>LaunchControl_CheckSwitch</code> at lines 10138-10146 of <code>cals/SMEC/T-SMEC_v19.asm</code> (invoked via <code>LaunchControl_MM</code> at line 7537 in the main engine loop).</li>
+<li>Evaluated only when custom option flag <code>opt_StageLim</code> is set in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2_CalCustomOptionConfigFlags2</code></a> (line 10134).</li>
+<li>If <code>STGSWS</code> is zero (<code>beq LaunchControl_CheckTPS</code> at line 10141), the switch check is bypassed and launch control relies purely on speed and throttle thresholds.</li>
+<li>If <code>STGSWS</code> is non-zero, instruction <code>bitb SwitchPortAccessReg</code> tests the input register (line 10144). If the bit is clear (<code>beq LaunchControl_Off</code>), launch control is aborted.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Clutch Interlock Wiring</strong>: Wire a clutch pedal switch to a digital input (such as Brake Switch or Cruise Control On/Off) and select that bitmask in <code>STGSWS</code> for seamless manual transmission staging.</li>
+<li><strong>Hands-Free Automatic Arming</strong>: Setting <code>STGSWS</code> to zero allows automatic arming whenever vehicle speed is below <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_Enable/STGSPD_StageLimiterCutoffSpeed.html"><code>STGSPD</code></a> and throttle exceeds <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_Entry_Conditions/STGTPS_StageLimiterMinTPS.html"><code>STGTPS</code></a>, requiring no external switches.</li>
+<li><strong>Diagnostic Verification</strong>: Datalog the staging flag in MPScan to confirm that the selected switch reliably engages and disengages launch control logic.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>LaunchControl_CheckSwitch</code> at line 10140, accumulator B loads <code>STGSWS_StagingLimiterEnableSwitch</code>. Line 10141 checks <code>beq LaunchControl_CheckTPS</code>; if <code>STGSWS</code> is zero, execution branches directly to throttle verification. If a non-zero bitmask is present, line 10144 executes <code>bitb SwitchPortAccessReg</code> to test the hardware digital switch register. If the selected bit evaluates to zero (inactive switch), <code>beq LaunchControl_Off</code> clears the staging flags and exits. Only if the selected bit is active does execution advance to <code>LaunchControl_CheckTPS</code>.</p>
+<pre><code class="language-motorola6803">; --- LaunchControl_CheckSwitch (T-SMEC_v19.asm:10138-10146) ---
+LaunchControl_CheckSwitch:
+        ; check to see if no switch is selected, if no switch, assume speed cutoff only
+        ldab  STGSWS_StagingLimiterEnableSwitch
+        beq   LaunchControl_CheckTPS ; branch if no switch bit is set
+
+        ; if there is a switch specified, check it against the switch port to see if it&#x27;s &#x27;on&#x27;
+	bitb  SwitchPortAccessReg
+        beq   LaunchControl_Off</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Default Setting (0x00)</strong>: Bypasses hardware switch testing, enabling automatic speed and throttle based launch control.</li>
+<li><strong>Digital Input Multiplexing</strong>: Shares physical port inputs with cruise control, brake, and air conditioning switches.</li>
+<li><strong>Required Option Flag</strong>: Requires <code>opt_StageLim</code> in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>STGSWS</code>
+        </footer>
+    </div>
+</body>
+</html>

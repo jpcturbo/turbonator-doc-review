@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SECRMP: SecondaryRamp | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0D3D</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ E - O2 Controller ➔ O2 Controller Ramps</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>SECRMP: SecondaryRamp</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>SECRMP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>SECRMP_SecondaryRamp</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\E_-_O2_Controller\O2_Controller_Ramps\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0D3D</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 11 (2D / 3D Grid Table - Ramp Configuration)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">22 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Engine Speed (0 to 8160 RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Manifold Absolute Pressure (-14.7 to 14.7 psi)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Counts vs RPM and MAP</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0x293F (22 words: 9 RPM/MAP cruise cells + 1 idle cell secondary ramp rates and limits)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3579-L3611"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_v19.asm.html#L3195"><code>WorkWithSecondaryRamp</code></a> in <a href="../../../T-SMEC_v19.asm.html#L3196"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>SECRMP</code> is a specialized 22-word secondary ramp rate table that functions as a closed-loop recovery failsafe when the oxygen sensor remains on one side (rich or lean) longer than expected.</p>
+<p>While <a href="../../../1_-_Fuel/E_-_O2_Controller/O2_Controller_Ramps/PRIRMP_PrimaryRamp.html"><code>PRIRMP</code></a> handles smooth incremental corrections during normal switching, <code>SECRMP</code> activates when <code>Timer_O2ToggleDuration</code> exceeds the calibrated cell timeout limit, applying aggressive secondary fuel kicks to rapidly drive the mixture back toward stoichiometric.</p>
+<p><code>SECRMP</code> defines the RPM and MAP grid boundaries, the secondary kick values (with lean corrections represented in two's complement format), and the duration limits for each operating cell.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>WorkWithSecondaryRamp</code> (<code>T-SMEC_v19.asm:3195-3212</code>), instruction line 3196.</li>
+<li><strong>Gating Conditions</strong>: Closed loop active (<code>b4f_O2Valid</code> set, <code>b50_StayOpenLoop</code> clear), and primary ramp has not toggled.</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Line 3196 loads index register X with <code>#SECRMP_SecondaryRamp</code>.</li>
+<li><code>DetermineRampCellFromRPMandMAP</code> selects the active cell.</li>
+<li>Line 3199 loads <code>Timer_O2ToggleDuration</code> into register A.</li>
+<li>Evaluates timeout limit; if timer expired (<code>bcc O2_SensorStuckOnOneSideTooLong</code>), secondary ramp kick is loaded and applied.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Mitigating Surging on Cammed Engines</strong>:</li>
+<li>Aggressive secondary kicks can cause harsh surging when an exhaust sensor is slow to respond. Softening kick values in <code>SECRMP</code> eliminates abrupt overcorrections.</li>
+<li><strong>Recovery Failsafe</strong>:</li>
+<li>Operates only when the oxygen sensor has failed to toggle across the stoichiometric threshold within the cell's duration limit.</li>
+<li><strong>Two's Complement Lean Kicks</strong>:</li>
+<li>Rich kicks are positive values; lean kicks are stored as negative two's complement signed values.</li>
+<li><strong>Companion Constants</strong>:</li>
+<li>Interacts with <a href="../../../7_-_Aux_Functions/EGR/SCRMP1_SecondaryRampSubtractor1.html"><code>SCRMP1</code></a> and <code>SCRMP2</code> subtractor constants during timer evaluation.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>WorkWithSecondaryRamp</code>, line 3196 loads index register X with <code>#SECRMP_SecondaryRamp</code>. Line 3197 calls <code>DetermineRampCellFromRPMandMAP</code> to index the table. At line 3199, <code>ldaa Timer_O2ToggleDuration</code> loads elapsed toggle time. Lines 3200-3204 subtract the cell timeout limit (and <a href="../../../7_-_Aux_Functions/EGR/SCRMP1_SecondaryRampSubtractor1.html"><code>SCRMP1</code></a> if EGR active). If carry is clear (<code>bcc O2_SensorStuckOnOneSideTooLong</code>), the timer has expired. Line 3210 resets <code>Timer_O2ToggleDuration</code>, line 3212 loads the secondary ramp step from <code>0x00,x</code>, and execution falls into <code>PriAndSecRamp_IncrementO2SensorFeedbackCount</code> at line 3213 to force fuel correction.</p>
+<pre><code class="language-motorola6803">; --- WorkWithSecondaryRamp (T-SMEC_v19.asm:3195-3212) ---
+WorkWithSecondaryRamp:
+	ldx  #SECRMP_SecondaryRamp    ; load index with value
+	bsr  DetermineRampCellFromRPMandMAP    ; call subroutine
+	sei		    ; disable interrupts
+	ldaa Timer_O2ToggleDuration    ; load a with memory contents
+	brclr *EGRVar2, #bit_bit7, L1226	; branch if bit(s) clear
+	suba SCRMP1_SecondaryRampSubtractor1	;  (data is 02)
+	bra  L1227	    ; branch
+
+L1226:	sba		    ; (Timer_O2Toggle - limit value)
+L1227:	bcc  O2_SensorStuckOnOneSideTooLong    ; branch if the timer is greater than the limit value, timer expired
+	cli		    ; enable interrupts
+	rts		    ; return from subroutine
+
+O2_SensorStuckOnOneSideTooLong:
+	staa Timer_O2ToggleDuration    ; store a into memory
+	cli		    ; enable interrupts
+	ldaa 0x00,x	    ; load a with ramp value</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Table Structure (Type 11)</strong>:</li>
+<li>Word 1: RPM Low / High boundary (0x293F).</li>
+<li>Word 2: MAP Low / High boundary (0x335E).</li>
+<li>Words 3-11: Cruise Cells 0-8 Secondary Ramp Steps (Rich high byte, Lean signed low byte).</li>
+<li>Word 12: Idle Cell Secondary Ramp Step.</li>
+<li>Words 13-21: Cruise Cells 0-8 Duration Timeout Limits.</li>
+<li>Word 22: Idle Cell Duration Timeout Limit.</li>
+<li><strong>Companion Parameters</strong>: Works with <a href="../../../7_-_Aux_Functions/EGR/SCRMP1_SecondaryRampSubtractor1.html"><code>SCRMP1</code></a> (secondary ramp subtractor) and <a href="../../../1_-_Fuel/E_-_O2_Controller/O2_Controller_Ramps/PRIRMP_PrimaryRamp.html"><code>PRIRMP</code></a>.</li>
+<li><strong>Persistence</strong>: Triggered dynamically by RAM timer <code>Timer_O2ToggleDuration</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>SECRMP</code>
+        </footer>
+    </div>
+</body>
+</html>

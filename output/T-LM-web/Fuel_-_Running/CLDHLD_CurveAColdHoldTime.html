@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLDHLD: CurveAColdHoldTime | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0881</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - Running</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CLDHLD: CurveAColdHoldTime</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CLDHLD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CLDHLD_CurveAColdHoldTime</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_Running\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0881</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">128 decimal, ~90 seconds</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x80 (128 decimal, ~90 seconds)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L2207-L2219"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L2829"><code>DealWithColdLoadEnrichment_MM</code></a> in <a href="../T-LMv13.asm.html#L2842"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CLDHLD_CurveAColdHoldTime</code> specifies the <strong>duration that post-start enrichment (<a href="../Fuel_-_Running/CURVEA_FuelColdEnrichmentCurveA.html"><code>CURVEA</code></a>) is held at 100% full strength before decay begins, following a cold engine start</strong>.</p>
+<p>On freezing mornings, starting the decay of post-start fuel immediately after startup causes the engine to lean out and stumble as soon as the driver puts the car in gear. <code>CLDHLD</code> locks Curve A at full enrichment for a solid ~90 seconds to allow combustion stability to establish.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Condition:</strong> Engine started cold (<code>CoolantTemp &gt;= TMPHLD</code> in inverse NTC A/D counts, i.e., colder than ~178°F).</li>
+<li><strong>Duration Formula:</strong></li>
+</ul>
+<p><code>Hold Time (Seconds) = CLDHLD × 0.704 seconds</code></p>
+<p><code>128 × 0.704 ≈ 90.1 seconds.</code></p>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Increasing the Value:</strong> Holds full cold after-start enrichment longer (e.g., 2+ minutes). Helpful for extreme sub-zero winter climates or E85 conversions.</li>
+<li><strong>Decreasing the Value:</strong> Begins decaying cold enrichment sooner.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 2838–2855):</p>
+<pre><code class="language-motorola6803">ldab HOTHLD_CurveAHotHoldTime    ; load b with memory contents (data is 15)
+           ldaa CoolantTemp    ; load a with memory contents
+           cmpa TMPHLD_TempSwitchPointForCurveAHoldDecay    ; compare a with memory contents (data is b2)
+           bcs  LD544          ; branch if lower
+           ldab CLDHLD_CurveAColdHoldTime    ; load b with memory contents (data is 80)
+   LD544:  stab Temp0          ; store b into memory
+           ldd  KeyOnOrEngineRunningTime    ; load d (a&amp;b) with memory contents
+           bita #0xc0          ;  -11000000-
+           bne  LD552          ; branch if not equal (not zero)
+           asld                ; shift left (d=d*2)
+           asld                ; shift left (d=d*2)
+           cmpa Temp0          ; compare a with memory contents
+           bcs  LD56B          ; branch if lower</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Coupled Parameters:</strong> Selected when <code>CoolantTemp</code> is colder than <a href="../Fuel_-_Running/TMPHLD_TempSwitchPointForCurveAHoldDecay.html"><code>TMPHLD</code></a> (<code>0xB2</code>). Once the <code>CLDHLD</code> window elapses, bit 1 of <code>BitFlags_84</code> is set and <a href="../Fuel_-_Running/CURVEA_FuelColdEnrichmentCurveA.html"><code>CURVEA</code></a> decays at the rate set by <a href="../Fuel_-_Running/DCYTMC_CurveAColdDecayTime.html"><code>DCYTMC</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>CLDHLD</code>
+        </footer>
+    </div>
+</body>
+</html>

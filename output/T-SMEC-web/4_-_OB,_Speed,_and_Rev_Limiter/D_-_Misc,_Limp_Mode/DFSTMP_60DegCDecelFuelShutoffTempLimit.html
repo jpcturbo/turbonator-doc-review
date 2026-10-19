@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFSTMP: 60DegCDecelFuelShutoffTempLimit | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1936</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>4 - OB, Speed, and Rev Limiter ➔ D - Misc, Limp Mode</strong> &nbsp;|&nbsp; Subsystem: <strong>Limiters_Limp</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DFSTMP: 60DegCDecelFuelShutoffTempLimit</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DFSTMP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DFSTMP_60DegCDecelFuelShutoffTempLimit</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Limiters_Limp</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>4_-_OB,_Speed,_and_Rev_Limiter\D_-_Misc,_Limp_Mode\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1936</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">degF</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0xC0 (192 counts ≈ 140 °F)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6644-L6654"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5713"><code>Cutout_CheckMPHLimitingValues</code></a> in <a href="../../T-SMEC_v19.asm.html#L5720"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DFSTMP</code> establishes the minimum engine coolant temperature required to permit secondary deceleration fuel shutoff.</p>
+<p>When an engine is cold or still warming up, cutting fuel injection completely on trailing throttle can cause intake runner fuel puddling to evaporate, leading to severe lean misfires, cylinder wall washing on fuel restoration, or engine stalling when the clutch is disengaged. In factory calibrations, <code>DFSTMP</code> is set to 192 counts, which corresponds to approximately 140 °F (60 degrees Celsius). Until engine coolant reaches this stable operating threshold, the controller inhibits deceleration fuel shutoff through this routine, ensuring smooth warmup drivability.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>Cutout_CheckMPHLimitingValues</code> (<code>T-SMEC_v19.asm:5713-5730</code>), line 5720.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Reached after <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/DFRPM2_2560RPM_DecelFuelShutoffUpperRpmLimit.html"><code>DFRPM2</code></a> (RPM) and <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/DFSMPH_20MPHDecelFuelShutoffSpeedLimit.html"><code>DFSMPH</code></a> (vehicle speed) conditions are satisfied.</li>
+<li><strong>Temperature Comparison</strong>:</li>
+<li>Engine coolant temperature <code>CoolantTemp</code> is compared against <code>DFSTMP</code> (<code>cmpa DFSTMP_60DegCDecelFuelShutoffTempLimit</code>).</li>
+<li>If <code>CoolantTemp &lt; DFSTMP</code> (<code>bcs R1487</code>), execution returns without cutting fuel.</li>
+<li>If <code>CoolantTemp &gt;= DFSTMP</code>, execution advances to check runtime timer <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/DFSTMR_3minuteDecelFuelShutoffTimeLimit.html"><code>DFSTMR</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Cold Drivability Protection</strong>:</li>
+<li>Inhibit decel fuel cut during warmup to prevent tip-in stumbling and stalling on large aftermarket injectors.</li>
+<li><strong>Elevating Warmup Threshold</strong>:</li>
+<li>Elevating <code>DFSTMP</code> to 200 counts (approx 160 °F) ensures the combustion chamber is thoroughly heat-soaked before fuel cuts engage.</li>
+<li><strong>Disabling Option</strong>:</li>
+<li>Setting <code>DFSTMP</code> to 255 counts locks out this deceleration branch across all temperatures.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>Cutout_CheckMPHLimitingValues</code> at lines 5719-5720, <code>ldaa CoolantTemp</code> loads current coolant temperature into accumulator A and executes <code>cmpa DFSTMP_60DegCDecelFuelShutoffTempLimit</code>. If carry is set (<code>bcs R1487</code>), the coolant is below 140 °F and the routine exits. If carry is clear, execution advances to line 5722.</p>
+<pre><code class="language-motorola6803">; --- Cutout_CheckMPHLimitingValues (T-SMEC_v19.asm:5719-5724) ---
+	ldaa CoolantTemp    ; load a with memory contents
+	cmpa DFSTMP_60DegCDecelFuelShutoffTempLimit    ; compare a with memory contents (data is c0)
+	bcs  R1487	    ; branch if lower
+	ldaa KeyOnOrEngineRunningTime	 ; load a with memory contents
+	cmpa DFSTMR_3minuteDecelFuelShutoffTimeLimit	; compare a with memory contents (data is 40)
+	bcs  R1487	    ; branch if lower</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Temperature Equivalence</strong>: 192 counts corresponds to 140 °F (equivalent to 60 °C, matching the label's '60DegC').</li>
+<li><strong>Multi-Condition Chain</strong>: Third filter in the gating chain (<a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/DFRPM2_2560RPM_DecelFuelShutoffUpperRpmLimit.html"><code>DFRPM2</code></a>, <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/DFSMPH_20MPHDecelFuelShutoffSpeedLimit.html"><code>DFSMPH</code></a>, <code>DFSTMP</code>, <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/DFSTMR_3minuteDecelFuelShutoffTimeLimit.html"><code>DFSTMR</code></a>).</li>
+<li><strong>Consistency Across Cals</strong>: Retained at 192 counts (140 °F) in both stock and Stage IV calibrations.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>DFSTMP</code>
+        </footer>
+    </div>
+</body>
+</html>

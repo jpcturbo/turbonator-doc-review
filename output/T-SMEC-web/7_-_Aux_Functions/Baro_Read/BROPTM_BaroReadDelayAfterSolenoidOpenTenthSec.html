@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BROPTM: BaroReadDelayAfterSolenoidOpenTenthSec | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x14A5</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Baro Read</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BROPTM: BaroReadDelayAfterSolenoidOpenTenthSec</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BROPTM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BROPTM_BaroReadDelayAfterSolenoidOpenTenthSec</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Baro_Read\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x14A5</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">seconds</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x09                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5475-L5485"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L1518"><code>THROTTLE_HASNTCHANGED_STILLNOTPRESSED</code></a> in <a href="../../T-SMEC_v19.asm.html#L1523"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BROPTM</code> defines the pneumatic stabilization delay after the barometric read solenoid is energized before the engine controller reads the manifold absolute pressure sensor voltage.</p>
+<p>When the baro solenoid is energized, it closes the port connecting the sensor to intake manifold vacuum and opens a vent to underhood atmospheric air. Because air must physically flow through the vacuum harness to fill the vacuum line and sensor cavity up to atmospheric pressure, an instantaneous reading would measure residual vacuum, falsely recording lower barometric pressure. In factory calibrations, <code>BROPTM</code> is set to 9 counts, providing approximately 0.10 seconds (100 milliseconds) of pressure equalization time before sampling.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ReadBaroIfPossible</code> / <code>THROTTLE_HASNTCHANGED_STILLNOTPRESSED</code> (<code>T-SMEC_v19.asm:1518-1529</code>), instruction line 1523.</li>
+<li><strong>State Context</strong>:</li>
+<li>Solenoid energized; waiting for pressure equalization.</li>
+<li><strong>Timer Comparison</strong>:</li>
+<li><code>Timer_BaroReadInterval</code> is incremented each pass.</li>
+<li>Compares timer against <code>BROPTM_BaroReadDelayAfterSolenoidOpenTenthSec</code> at line 1523.</li>
+<li>If timer is less than <code>BROPTM</code> (<code>bcs R1028</code>), branches to exit while air fills the sensor line.</li>
+<li>Once satisfied, sets <code>b51_BaroSolEnergized</code> and <code>b54_BaroOkEngineStopped</code> to trigger sensor read.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Long Vacuum Hose Routing</strong>:</li>
+<li>Raise <code>BROPTM</code> to 14 to 18 counts (150 to 200 ms) if relocated pressure sensors use extended vacuum lines.</li>
+<li><strong>Pneumatic Dampener Installations</strong>:</li>
+<li>Inline orifice restrictors or filters slow venting; increase <code>BROPTM</code> to allow complete atmospheric equalization.</li>
+<li><strong>Under-Reporting Prevention</strong>:</li>
+<li>Never set <code>BROPTM</code> below 6 counts (~60 ms) to avoid sampling lingering manifold vacuum.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>THROTTLE_HASNTCHANGED_STILLNOTPRESSED</code> at line 1519, <code>Timer_BaroReadInterval</code> is incremented. Line 1520 checks if the solenoid is already energized; if not, accumulator A loads <code>Timer_BaroReadInterval</code>. Line 1523 executes <code>cmpa BROPTM_BaroReadDelayAfterSolenoidOpenTenthSec</code>. If lower (<code>bcs</code>), it exits through <code>R1028</code>. When the delay expires, line 1525 loads the energized mask, sets <code>b54_BaroOkEngineStopped</code> in <code>BitFlags_54</code>, and updates <code>BitFlags_51</code> at line 1536.</p>
+<pre><code class="language-motorola6803">; --- THROTTLE_HASNTCHANGED_STILLNOTPRESSED (T-SMEC_v19.asm:1518-1528) ---
+THROTTLE_HASNTCHANGED_STILLNOTPRESSED:
+	inc  Timer_BaroReadInterval
+	bitb #b51_BaroSolEnergized	    ;  -00100000-
+	bne  L1025	    ; branch if not equal (not zero)
+	ldaa Timer_BaroReadInterval    ; load a with memory contents
+	cmpa BROPTM_BaroReadDelayAfterSolenoidOpenTenthSec    ; compare a with memory contents (data is 09)
+	bcs  R1028	    ; branch if lower
+	ldab #b51_BaroSolEnergized	    ; load b with value -00100000-
+	bset *BitFlags_54, #b54_BaroOkEngineStopped    ; set bits
+L1024:	orab BitFlags_51
+	bra  L1026	    ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Tenth-Second Timebase</strong>: Calibration counts are scaled in tenths of a second (9 counts ≈ 0.10 sec).</li>
+<li><strong>Companion Close Delay</strong>: Works with <a href="../../7_-_Aux_Functions/Baro_Read/BRCLTM_BaroReadDelayAfterSolenoidClosedTenthSec.html"><code>BRCLTM_BaroReadDelayAfterSolenoidClosedTenthSec</code></a> which handles the return to manifold vacuum.</li>
+<li><strong>Sampling Hand-Off</strong>: Once <code>BROPTM</code> elapses, the sensor A-to-D reading is passed to <code>SaveBaroPressure</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>BROPTM</code>
+        </footer>
+    </div>
+</body>
+</html>

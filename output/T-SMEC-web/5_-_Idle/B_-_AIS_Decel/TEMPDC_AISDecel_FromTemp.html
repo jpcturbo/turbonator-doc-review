@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEMPDC: DecelAis FromTemp | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0E89</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>TEMPDC: DecelAis FromTemp</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>TEMPDC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>TEMPDC_AISDecel_FromTemp</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0E89</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2D Table / Curve)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">4 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Coolant Temperature (-200 to 260 °F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Decel Airflow Temperature Offset (0 to 255 steps scale)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">scale vs. degF</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x04                       ;Number of points in table
+.byte 0x58, 0x44, 0xFF, 0x5C     ;Point 1
+.byte 0x8A, 0x24, 0xFF, 0x86     ;Point 2
+.byte 0xB4, 0x10, 0xFF, 0x8E     ;Point 3
+.byte 0xD8, 0x00                 ;Point 4</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3911-L3925"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L1859"><code>CalculateAisPosition_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L1885"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>TEMPDC</code> is a 2D calibration curve that adds a temperature-dependent offset to the deceleration control manifold pressure calculation.</p>
+<p>During closed-throttle deceleration on a cold engine, high viscous oil drag and lower cylinder wall temperatures produce rapid deceleration rates that can easily overwhelm the idle air controller. To counteract this cold friction, TEMPDC injects an additional manifold pressure offset into the decel control MAP calculation as a function of coolant temperature.</p>
+<p>A higher decel control MAP commands additional opening steps from the stepper motor via <a href="../../5_-_Idle/B_-_AIS_Decel/DAISOP_DecelAisOpenStepsFromNeg_FromDeltaMap.html"><code>DAISOP</code></a> during throttle lift-off.</p>
+<p>In factory calibrations, <code>TEMPDC</code> adds approximately 68 counts of offset at sub-zero temperatures, decreasing to 36 counts near freezing, 16 counts at mild warm-up, and tapering to zero once the coolant reaches 180 °F.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1996</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Fall-to-idle deceleration flag <code>b50_FallToIdle</code> must be set in <code>BitFlags_50</code> at line 1877.</li>
+<li>Loads <code>CoolantTemp</code> into accumulator A at line 1886.</li>
+<li>Indexes <code>TEMPDC</code> table at line 1885 via <code>jsr Lookup4ByteTable</code>.</li>
+<li>Adds returned offset to <code>Temp0</code> at line 1888, clamping at 255 counts if overflow occurs.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Cold Decel Stumble Prevention</strong>:</li>
+<li>Elevate intermediate temperature points (50 °F to 120 °F) by 5 to 10 counts if the car stumbles during deceleration while warming up.</li>
+<li><strong>Warm Engine Hand-Off</strong>:</li>
+<li>Maintain zero offset at full operating temperature (180 °F and above) to avoid hanging idle when hot.</li>
+<li><strong>Viscous Drag Compensation</strong>:</li>
+<li>Particularly beneficial when using heavier-weight engine oils (e.g., 20W-50) that create significant cold rotational drag.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateAisPosition_MM</code>, following the <a href="../../5_-_Idle/B_-_AIS_Decel/TIMEDC_AISDecelBaseAirflowCurveOffset.html"><code>TIMEDC</code></a> addition, line 1884 stores the running sum to <code>Temp0</code>. Line 1885 loads index X with <code>#TEMPDC_AISDecel_FromTemp</code>. Line 1886 loads <code>CoolantTemp</code> into accumulator A and line 1887 calls <code>jsr Lookup4ByteTable</code>. Line 1888 executes <code>adda Temp0</code>. If no overflow occurs (<code>bcc</code>), execution continues to check A/C clutch state; if overflow occurs, line 1893 saturates accumulator A to 255 counts (<code>ldaa #0xff</code>).</p>
+<pre><code class="language-motorola6803">; --- CalculateAisPosition_MM (T-SMEC_v19.asm:1884-1890) ---
+	staa Temp0	    ; store a into memory
+	ldx  #TEMPDC_AISDecel_FromTemp	 ; load index with value
+	ldaa CoolantTemp    ; load a with memory contents
+	jsr  Lookup4ByteTable	 ; call subroutine
+	adda Temp0	
+	bcs  L1064	    ; branch if lower
+	brset *StartupSwitchMirror2, #sw2_ACclutch, L1065    ; branch if bit(s) set</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameter</strong>: Summed directly with <a href="../../5_-_Idle/B_-_AIS_Decel/TIMEDC_AISDecelBaseAirflowCurveOffset.html"><code>TIMEDC</code></a> (time decay) and <a href="../../5_-_Idle/B_-_AIS_Decel/DAACF_ACFactorDeltaFromBase.html"><code>DAACF</code></a> (A/C offset).</li>
+<li><strong>Table Resolution</strong>: 4 points (-20 °F, 33 °F, 107 °F, 181 °F).</li>
+<li><strong>Factory Points</strong>: Ranges from 68 counts cold down to 0 counts hot.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>TEMPDC</code>
+        </footer>
+    </div>
+</body>
+</html>

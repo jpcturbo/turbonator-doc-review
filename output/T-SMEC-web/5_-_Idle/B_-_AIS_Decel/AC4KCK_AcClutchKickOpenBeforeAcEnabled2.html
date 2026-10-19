@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AC4KCK: AcClutchKickOpenBeforeAcEnabled2 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x10D2</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>AC4KCK: AcClutchKickOpenBeforeAcEnabled2</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>AC4KCK</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>AC4KCK_AcClutchKickOpenBeforeAcEnabled2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x10D2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">steps</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xF6                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4496-L4506"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L2170"><code>HandleAcCutout</code></a> in <a href="../../T-SMEC_v19.asm.html#L2297"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>AC4KCK</code> defines the secondary stepper motor opening kick offset applied before air conditioning clutch engagement under elevated intake manifold pressure conditions.</p>
+<p>If the engine is operating under higher manifold pressure (above the safety vacuum lockout threshold <a href="../../5_-_Idle/B_-_AIS_Decel/DCLMN2_NoAisControlIfMapAndControlMapBelowThis.html"><code>DCLMN2</code></a>) when the A/C clutch engagement sequence begins, intake manifold density is already elevated. Under these conditions, applying the standard sea-level kick opening would introduce too much air, causing an unwanted idle surge.</p>
+<p><code>AC4KCK</code> supplies a signed corrective offset that fine-tunes the pre-engagement stepper position for elevated manifold pressure conditions.</p>
+<p>In factory calibrations, <code>AC4KCK</code> is set to 250 counts, representing a signed negative trim of -6 steps.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2304</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Closed throttle confirmed at line 2293.</li>
+<li>Manifold pressure compared against <a href="../../5_-_Idle/B_-_AIS_Decel/DCLMN2_NoAisControlIfMapAndControlMapBelowThis.html"><code>DCLMN2</code></a> at line 2295: <code>cmpa DCLMN2_NoAisControlIfMapAndControlMapBelowThis</code>.</li>
+<li>If <code>MapValue</code> is greater than <a href="../../5_-_Idle/B_-_AIS_Decel/DCLMN2_NoAisControlIfMapAndControlMapBelowThis.html"><code>DCLMN2</code></a>, line 2297 executes <code>ldaa AC4KCK_AcClutchKickOpenBeforeAcEnabled2</code>.</li>
+<li>Branches to line 2302 to call <code>L1157</code> and <code>ClearAisTimer</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Elevated MAP Surge Suppression</strong>:</li>
+<li>Adjust <code>AC4KCK</code> to suppress idle surging when the A/C compressor cycles on while manifold pressure is elevated.</li>
+<li><strong>Signed Two's Complement</strong>:</li>
+<li>Stored as a signed byte (250 counts = -6 steps).</li>
+<li><strong>Gated by DCLMN2</strong>:</li>
+<li>Only applies when manifold absolute pressure is above <a href="../../5_-_Idle/B_-_AIS_Decel/DCLMN2_NoAisControlIfMapAndControlMapBelowThis.html"><code>DCLMN2</code></a>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>HandleAcCutout</code>, line 2294 loads <code>MapValue</code> into accumulator A. Line 2295 executes <code>cmpa DCLMN2_NoAisControlIfMapAndControlMapBelowThis</code>. If <code>MapValue</code> exceeds <a href="../../5_-_Idle/B_-_AIS_Decel/DCLMN2_NoAisControlIfMapAndControlMapBelowThis.html"><code>DCLMN2</code></a>, line 2297 executes <code>ldaa AC4KCK_AcClutchKickOpenBeforeAcEnabled2</code>. Line 2298 branches to <code>L1115</code>, where line 2302 calls helper <code>L1157</code> to multiply the signed step offset by altitude factor <code>Temp1</code> before calling <code>ClearAisTimer</code>.</p>
+<pre><code class="language-motorola6803">; --- HandleAcCutout (T-SMEC_v19.asm:2293-2304) ---
+	brset *BitFlags_4f, #b4f_OffIdle, L1116    ; branch if bit(s) set
+	ldaa MapValue	    ; load a with memory contents
+	cmpa DCLMN2_NoAisControlIfMapAndControlMapBelowThis    ; compare a with memory contents (data is 0d)
+	bls  L1114	    ; branch if lower or same
+	ldaa AC4KCK_AcClutchKickOpenBeforeAcEnabled2	; load a with memory contents (data is fa)
+	bra  L1115	    ; branch
+
+L1114:	ldaa ACOFFK_ClosedThrottleAcOffKick    ; load a with memory contents (data is 08)
+	nega		    ; negate a (set high bit)
+L1115:	jsr  L1157	    ; call subroutine
+	jsr  ClearAisTimer	    ; call subroutine
+	bra  L1117	    ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Signed Math</strong>: Stored in two's complement form (0xFA = -6 steps).</li>
+<li><strong>Companion Parameter</strong>: Directly paired with <a href="../../5_-_Idle/B_-_AIS_Decel/AC3KCK_AcClutchKickOpenAfterAcEnabled2.html"><code>AC3KCK</code></a> (post-engagement elevated MAP kick).</li>
+<li><strong>Factory Value</strong>: 0xFA (250 counts = -6 steps).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>AC4KCK</code>
+        </footer>
+    </div>
+</body>
+</html>

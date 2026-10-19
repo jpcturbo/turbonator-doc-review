@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPMPOS: AisPosition FromRpm | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0A7F</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>RPMPOS: AisPosition FromRpm</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>RPMPOS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>RPMPOS_AisPosition_FromRpm</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0A7F</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2D Table / Curve)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Stepper Motor Steps vs Engine RPM (EngineRpm_HB)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x03                       ;Number of points in table; .byte 0x1F, 0x00, 0x00, 0x30     ;Point 1; .byte 0x2F, 0x03, 0x00, 0x21     ;Point 2; .byte 0x46, 0x06                 ;Point 3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L2717-L2732"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L5003"><code>CalculateTargetIdleSpeedAndAisPosition_MM</code></a> in <a href="../T-LMv13.asm.html#L5227"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>RPMPOS</code> (AisPosition_FromRpm) establishes a minimum AIS stepper motor opening based purely on engine RPM (<code>EngineRpm_HB</code>).</p>
+<p>Even if the throttle is only cracked slightly, high engine RPM creates immense cylinder intake demand. If the throttle closes at 4,500 RPM in neutral or with the clutch depressed, manifold absolute pressure collapses instantly to near zero (extreme vacuum). <code>RPMPOS</code> ensures that at higher engine speeds, the idle air bypass is pre-emptively opened to a designated step count, preventing vacuum collapse and providing a progressive RPM coastdown curve.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated in <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at line 5227.</li>
+<li>Indexed by high byte of engine speed (<code>EngineRpm_HB</code>).</li>
+<li>Peak-selected against the cold baro-compensated idle term (<code>CLDPOS * BARAIS</code>).</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Decel Dip / Return-to-Idle Catching</strong>: If pressing the clutch at 4,000 RPM causes the tachometer needle to plummet like a rock and dip below target idle (or stall), increase the upper RPM steps in <code>RPMPOS</code>.</li>
+<li><strong>Engine Braking</strong>: Excessive values in <code>RPMPOS</code> diminish engine braking effect during off-throttle deceleration. Keep values moderate to maintain engine braking while preserving anti-stall protection.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateTargetIdleSpeedAndAisPosition_MM (T-LMv13.asm:5226-5231) ---
+        ldaa EngineRpm_HB                        ; Load engine speed high byte
+        ldx  #RPMPOS_AisPosition_FromRpm         ; Pointer to RPMPOS table ($0A7F)
+        jsr  Lookup4ByteTable                    ; Look up steps vs RPM
+        cmpa Temp0                               ; Compare against cold off-idle baseline
+        bcs  LE5D9                               ; If lower, keep Temp0
+        staa Temp0                               ; Else replace Temp0 with higher RPM step demand</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 5227</strong> (<code>CalculateTargetIdleSpeedAndAisPosition_MM</code>): <code>ldx  #RPMPOS_AisPosition_FromRpm    ; load index with value</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>High-Byte Scaling</strong>: The 6803 MCU indexes this table using <code>EngineRpm_HB</code> where each count represents 32 RPM. For example, 3,200 RPM is represented as 3200 / 32 = 100 ($0x64$).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>RPMPOS</code>
+        </footer>
+    </div>
+</body>
+</html>

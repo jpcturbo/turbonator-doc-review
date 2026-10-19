@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O2LIMH: O2RangeLimitHigh | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0CA1</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ E - O2 Controller</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>O2LIMH: O2RangeLimitHigh</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>O2LIMH</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>O2LIMH_O2RangeLimitHigh</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\E_-_O2_Controller\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0CA1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Signed Counts (approx +24.8% fuel trim maximum)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x7F (+127 counts ≈ +24.8% fuel trim)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3423-L3433"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L3213"><code>PriAndSecRamp_IncrementO2SensorFeedbackCount</code></a> in <a href="../../T-SMEC_v19.asm.html#L3214"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>O2LIMH</code> defines the absolute maximum positive fuel trim limit for short-term oxygen sensor feedback.</p>
+<p>During closed-loop operation, the feedback counter accumulates primary and secondary ramp kicks to correct for lean conditions. <code>O2LIMH</code> acts as a hard upper clamp, preventing the short-term feedback counter from adding more fuel than calibrated.</p>
+<p>In stock calibrations, <code>O2LIMH</code> is set to 127 counts, corresponding to approximately +24.8 percent maximum fuel enrichment above the current base and adaptive fueling calculation.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>PriAndSecRamp_IncrementO2SensorFeedbackCount</code> (<code>T-SMEC_v19.asm:3213-3237</code>), instruction line 3214.</li>
+<li><strong>Gating Conditions</strong>: Short-term ramp step added to <code>Counter_PrimaryAndSecondaryRamp</code>.</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Line 3214 loads <code>O2LIMH_O2RangeLimitHigh</code> into register B.</li>
+<li>Line 3215 adds <code>Counter_PrimaryAndSecondaryRamp</code> to accumulator A.</li>
+<li>Line 3222 executes <code>cba</code> (comparing register B = <code>O2LIMH</code> to sum in A).</li>
+<li>If <code>sum &gt;= O2LIMH</code> (<code>bge</code>), execution branches to <code>SetCounterToMaxMinValue</code> (line 3227), clamping accumulator A to <code>O2LIMH</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Capping Positive STFT</strong>:</li>
+<li>Clamping <code>O2LIMH</code> to 50-60 counts limits maximum short-term enrichment to +10% to +12%, protecting against plug fouling.</li>
+<li><strong>Large Injector Tuning</strong>:</li>
+<li>Large injectors deliver massive fuel volume per tick; reducing <code>O2LIMH</code> prevents over-enrichment during transient lean toggles.</li>
+<li><strong>Mathematical Authority</strong>:</li>
+<li>Factory 127 counts represents +24.8% maximum fuel enrichment (127 / 512).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>PriAndSecRamp_IncrementO2SensorFeedbackCount</code>, line 3214 loads <code>O2LIMH_O2RangeLimitHigh</code> into accumulator B. Line 3215 executes <code>adda Counter_PrimaryAndSecondaryRamp</code>. If signed overflow occurs (<code>bvs</code>), lines 3217-3219 branch to saturate. If no overflow occurs (<code>bvc DIDNT_2SCOMPLEMENT_OVERFLOW_UNDERFLOW1</code>), line 3222 executes <code>cba</code>. If accumulator A is greater than or equal to <code>O2LIMH</code>, <code>bge SetCounterToMaxMinValue</code> clamps accumulator A to <code>O2LIMH</code> before storing into <code>Counter_PrimaryAndSecondaryRamp</code> at line 3234.</p>
+<pre><code class="language-motorola6803">; --- PriAndSecRamp_IncrementO2SensorFeedbackCount (T-SMEC_v19.asm:3213-3223) ---
+PriAndSecRamp_IncrementO2SensorFeedbackCount:
+	ldab O2LIMH_O2RangeLimitHigh    ; load b with memory contents (data is 7f)
+	adda Counter_PrimaryAndSecondaryRamp
+	bvc  DIDNT_2SCOMPLEMENT_OVERFLOW_UNDERFLOW1    ; branch if overflow
+	brclr *Counter_PrimaryAndSecondaryRamp, #bit_bit7, SetCounterToMaxMinValue    ; branch if bit(s) clear
+	ldab O2LIML_O2RangeLimitLow    ; load b with memory contents (data is b3)
+	bra  SetCounterToMaxMinValue	; branch
+
+DIDNT_2SCOMPLEMENT_OVERFLOW_UNDERFLOW1:
+	cba		              ; b=O2LIMH, A=Counter_O2SensorFeedback+RampValue
+	bge  SetCounterToMaxMinValue  ; branch if Counter+Ramp is &gt; O2LIMH</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Counterpart to <a href="../../1_-_Fuel/E_-_O2_Controller/O2LIML_O2RangeLimitLow.html"><code>O2LIML</code></a> (lower STFT clamp) and mirrors <a href="../../1_-_Fuel/F_-_Adaptive_memory/AMLIMH_MaxMultiplierCannotBeAbove7F.html"><code>AMLIMH</code></a>.</li>
+<li><strong>Mathematical Authority</strong>: Clamps <code>Counter_PrimaryAndSecondaryRamp</code> to +127 counts (+24.8% fuel modifier).</li>
+<li><strong>Persistence</strong>: Evaluated on every O2 toggle; clamps RAM variable <code>Counter_PrimaryAndSecondaryRamp</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>O2LIMH</code>
+        </footer>
+    </div>
+</body>
+</html>

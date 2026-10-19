@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPDRPM2: EngineSpeedLowLimitToDisableOverspeed | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1977</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>4 - OB, Speed, and Rev Limiter ➔ D - Misc, Limp Mode</strong> &nbsp;|&nbsp; Subsystem: <strong>Limiters_Limp</strong>
+        </div>
+        
+        <article class="content">
+            <h1>SPDRPM2: EngineSpeedLowLimitToDisableOverspeed</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>SPDRPM2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>SPDRPM2_EngineSpeedLowLimitToDisableOverspeed</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Limiters_Limp</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>4_-_OB,_Speed,_and_Rev_Limiter\D_-_Misc,_Limp_Mode\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1977</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x77 (119 counts ≈ 3808 RPM)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6709-L6719"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5802"><code>CHECK_IFOVER_1850_2000_6167RPM</code></a> in <a href="../../T-SMEC_v19.asm.html#L5806"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>SPDRPM2</code> establishes the lower engine speed recovery threshold that disarms the overspeed fuel shutoff condition.</p>
+<p>If the vehicle speed limiter triggers fuel cutout at high speed, both vehicle speed and engine RPM begin to drop. While <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/C_-_Speed_Limiter/SPDLML_SpeedLimitFuelShutoffRestore253MPH.html"><code>SPDLML</code></a> provides the road speed recovery setpoint, <code>SPDRPM2</code> provides an alternate, engine-speed-based recovery path. If engine speed drops below <code>SPDRPM2</code> (119 counts, or approximately 3800 RPM in factory calibrations), the controller immediately restores fuel injection, even if road speed has not yet decelerated all the way down to <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/C_-_Speed_Limiter/SPDLML_SpeedLimitFuelShutoffRestore253MPH.html"><code>SPDLML</code></a>. This ensures that an upshift or sudden engine deceleration immediately restores power to maintain vehicle control.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CHECK_IFOVER_1850_2000_6167RPM</code> (<code>T-SMEC_v19.asm:5802-5812</code>), line 5806.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated when <code>Turbonator_MainFuelOff</code> is set and <code>EngineRpm_HB</code> has dropped below the active rev limit restore threshold.</li>
+<li><strong>Comparison &amp; Restoration</strong>:</li>
+<li><code>EngineRpm_HB</code> is compared against <code>SPDRPM2</code> (<code>cmpa SPDRPM2_EngineSpeedLowLimitToDisableOverspeed</code>).</li>
+<li>If <code>EngineRpm_HB &lt;= SPDRPM2</code> (<code>bls Cutout_TurnFuelBackOn</code>), fuel injection is restored immediately without waiting for road speed to fall below <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/C_-_Speed_Limiter/SPDLML_SpeedLimitFuelShutoffRestore253MPH.html"><code>SPDLML</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Overspeed Recovery Gap</strong>:</li>
+<li>Maintain a 150 to 200 RPM margin below <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/SPDRPM_EngineSpeedHighLimitToEnableOverspeed.html"><code>SPDRPM</code></a> to prevent hunting on high-speed deceleration.</li>
+<li><strong>Proportional Raising</strong>:</li>
+<li>If raising <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/SPDRPM_EngineSpeedHighLimitToEnableOverspeed.html"><code>SPDRPM</code></a>, elevate <code>SPDRPM2</code> equally to ensure the engine speed disarm point tracks properly.</li>
+<li><strong>Inversion Prevention</strong>:</li>
+<li>Never set <code>SPDRPM2</code> greater than or equal to <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/SPDRPM_EngineSpeedHighLimitToEnableOverspeed.html"><code>SPDRPM</code></a>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CHECK_IFOVER_1850_2000_6167RPM</code> at lines 5804-5807, <code>cmpa 0x00,x</code> verifies RPM is below the primary rev limit restore point. Line 5806 then executes <code>cmpa SPDRPM2_EngineSpeedLowLimitToDisableOverspeed</code>. If carry is set or zero flag is set (<code>bls</code>), engine speed is below 3808 RPM and execution branches directly to <code>Cutout_TurnFuelBackOn</code>, clearing <code>Turbonator_MainFuelOff</code>.</p>
+<pre><code class="language-motorola6803">; --- CHECK_IFOVER_1850_2000_6167RPM (T-SMEC_v19.asm:5803-5807) ---
+CHECK_IFOVER_1850_2000_6167RPM:
+	ldaa EngineRpm_HB    ; load a with memory contents
+	cmpa 0x00,x	    ; compare a with memory at index + value
+	bcc  R1493	    ; branch if greater or equal
+	cmpa SPDRPM2_EngineSpeedLowLimitToDisableOverspeed    ; compare a with memory contents (data is 77)
+	bls  Cutout_TurnFuelBackOn    ; branch if lower or same</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Hysteresis Pair</strong>: <code>SPDRPM2</code> (disarming limit, 3808 RPM) paired with <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/SPDRPM_EngineSpeedHighLimitToEnableOverspeed.html"><code>SPDRPM</code></a> (arming limit, 4000 RPM).</li>
+<li><strong>RPM Scaling</strong>: Scaled at 32 RPM per count ($8160 / 255$). 119 counts equals 119 × 32 = 3808 RPM.</li>
+<li><strong>Calibrations Comparison</strong>: Retained at 119 counts in both stock and Stage IV calibrations.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>SPDRPM2</code>
+        </footer>
+    </div>
+</body>
+</html>

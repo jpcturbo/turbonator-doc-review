@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPVACD: AllowMapToTestGoodThisNearBaro | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1D16</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MPVACD: AllowMapToTestGoodThisNearBaro</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MPVACD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MPVACD_AllowMapToTestGoodThisNearBaro</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1D16</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">inHg vacuum</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x1108 (High byte 0x11 = 17 counts ≈ 4.0 inHg; Low byte 0x08 = 8 counts ≈ 1.9 inHg)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7636-L7647"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L4893"><code>VerifyOperationOfMapSensor_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L4914"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MPVACD</code> defines the minimum intake manifold vacuum that the manifold absolute pressure sensor must indicate at closed-throttle idle to prove that it is physically connected to the intake manifold.</p>
+<p>If a vacuum line falls off, splits, or the sensor port clogs, the sensor will read atmospheric barometric pressure rather than intake vacuum while the engine is running. Stored as a two-byte word constant, the high byte establishes the minimum vacuum required at sea level, while the low byte establishes the relaxed vacuum required at high altitudes above the <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/BAROSW_CheckMapAtZeroSpeedAndThisBaroSwitch.html"><code>BAROSW</code></a> threshold.</p>
+<p>In factory calibrations, <code>MPVACD</code> is configured with two thresholds, representing 17 counts (approximately 4.0 inHg or 2.0 psi vacuum) for the high byte and 8 counts (approximately 1.9 inHg or 0.9 psi vacuum) for the low byte. If measured idle vacuum below atmospheric pressure is less than the active <code>MPVACD</code> threshold, the engine controller flags <strong>Fault Code 13</strong> and latches a stuck MAP failure.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>VerifyOperationOfMapSensor_MM</code> (<code>T-SMEC_v19.asm:4893-4946</code>), instruction at line 4914.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Checked every 8th main loop when stationary at closed-throttle idle within <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPRMPD_CheckMapAtZeroSpeedAndThisDeltaRpm.html"><code>MPRMPD</code></a> of target idle speed.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li>Delta vacuum computed as <code>BaroPressure - MapValue</code> in accumulator A at line 4912.</li>
+<li>Index register X loaded with <code>#MPVACD_AllowMapToTestGoodThisNearBaro</code> at line 4914.</li>
+<li>If barometric pressure is below <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/BAROSW_CheckMapAtZeroSpeedAndThisBaroSwitch.html"><code>BAROSW</code></a>, line 4917 increments X (<code>inx</code>), selecting the second threshold byte.</li>
+<li><code>cmpa 0x00,x</code> at line 4918 compares manifold vacuum against the selected byte.</li>
+<li>If vacuum is lower or if <code>suba</code> produced underflow, branches to <code>L1383</code> at line 4920, throwing error <code>0x2794</code> (Fault Code 13) and setting <code>b45_MapStuck</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Camshaft Idle Vacuum Accommodation</strong>:</li>
+<li>Performance camshafts produce low idle vacuum that frequently trips false Fault Code 13 codes.</li>
+<li>Lower the high byte of <code>MPVACD</code> from 17 counts (4.0 inHg) down to 8 to 10 counts (1.9 to 2.4 inHg) to accommodate low-vacuum cams.</li>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
+<li>Multiply both bytes by 0.667 when upgrading to a 3-bar MAP sensor (reducing 17 counts to 11 counts for sea level, and 8 counts to 5 counts for high altitude).</li>
+<li><strong>Pneumatic Diagnostics</strong>:</li>
+<li>If Fault Code 13 sets on a stock engine, inspect the small vacuum line connecting the intake manifold to the MAP sensor nipple for cracks or disconnects.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Setting both bytes of <code>MPVACD</code> to zero disables pneumatic vacuum monitoring entirely.</li>
+<li>Setting <code>MPVACD</code> higher than the engine's physical idle vacuum permanently locks the vehicle into Fault Code 13.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In routine <code>VerifyOperationOfMapSensor_MM</code> (lines 4893-4946), lines 4910-4912 compute <code>BaroPressure - MapValue</code> in accumulator A. If carry is set (MAP exceeds Baro), execution branches directly to <code>L1383</code>. Otherwise, line 4914 loads register X with <code>#MPVACD_AllowMapToTestGoodThisNearBaro</code>. Line 4915 compares <code>BaroPressure</code> in register B against <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/BAROSW_CheckMapAtZeroSpeedAndThisBaroSwitch.html"><code>BAROSW</code></a>. If below <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/BAROSW_CheckMapAtZeroSpeedAndThisBaroSwitch.html"><code>BAROSW</code></a>, line 4917 executes <code>inx</code>. Line 4918 executes <code>cmpa 0x00,x</code>. If vacuum in accumulator A is strictly less than the selected <code>MPVACD</code> byte, <code>bcc L1384</code> does not branch; line 4920 loads 0x2794 (Fault Code 13) into register D, line 4921 executes <code>ThrowNonCriticalError</code>, and line 4923 asserts bit <code>b45_MapStuck</code> in register <code>b45_IPL1</code>.</p>
+<pre><code class="language-motorola6803">; --- VerifyOperationOfMapSensor_MM (T-SMEC_v19.asm:4910-4924) ---
+	ldaa BaroPressure    ; load a with memory contents
+	tab		    ; b = a
+	suba MapValue	
+	bcs  L1383	    ; branch if lower
+	ldx  #MPVACD_AllowMapToTestGoodThisNearBaro    ; load index with value
+	cmpb BAROSW_CheckMapAtZeroSpeedAndThisBaroSwitch    ; compare b with memory contents (data is 41)
+	bcc  L1382	    ; branch if greater or equal
+	inx		    ; increment index (x=x+1)
+L1382:	cmpa 0x00,x	    ; compare a with memory at index + value
+	bcc  L1384	    ; branch if greater or equal
+L1383:	ldd  #0x2794	    ; load d (a&amp;b) with value -00100111 10010100-
+	jsr  ThrowNonCriticalError    ; call subroutine
+	bcc  L1384	    ; branch if greater or equal
+	bset *b45_IPL1, #b45_MapStuck    ; set bits
+L1384:	ldx  EngineRpm_HB
+</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/BAROSW_CheckMapAtZeroSpeedAndThisBaroSwitch.html"><code>BAROSW</code></a> (altitude switch) and <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPRMPD_CheckMapAtZeroSpeedAndThisDeltaRpm.html"><code>MPRMPD</code></a> (idle RPM gate).</li>
+<li><strong>Diagnostic Code</strong>: DRB-II Fault Code 13 (MAP sensor pneumatic failure / vacuum line leak).</li>
+<li><strong>Format</strong>: 16-bit word constant containing two independent 8-bit thresholds: high byte for sea level, low byte for high altitude.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MPVACD</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLDLMT: LimitForColdMapAtClosedThrottle | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0325</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>2 - Spark ➔ A - Normal Advance</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CLDLMT: LimitForColdMapAtClosedThrottle</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CLDLMT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CLDLMT_LimitForColdMapAtClosedThrottle</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>2_-_Spark\A_-_Normal_Advance\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0325</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">degrees BTDC</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x1E                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L995-L1005"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L7930"><code>CalculateSparkAdvance_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L7965"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CLDLMT</code> establishes the maximum allowable ignition advance ceiling that the cold manifold pressure spark curve (<a href="../../2_-_Spark/A_-_Normal_Advance/CLDMAP_AdvanceFromMAPCold.html"><code>CLDMAP</code></a>) can contribute while the engine is at closed throttle.</p>
+<p>During cold start-up and warm-up idle, manifold vacuum can fluctuate significantly due to high idle air bypass, cold mechanical friction, and temperature transitions. If the cold MAP curve were allowed to command unrestricted advance during closed-throttle coasting or idle, the engine could suffer from high idle speed flaring, erratic surging, or delayed deceleration recovery. In factory calibrations, <code>CLDLMT</code> is calibrated to 30 counts, enforcing a hard upper ceiling of 15.0 degrees BTDC on the cold MAP timing contribution when the throttle is closed.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateSparkAdvance_MM</code> (<code>T-SMEC_v19.asm:7964-7968</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Active only when <code>CoolantTemp</code> &lt; <a href="../../2_-_Spark/A_-_Normal_Advance/TMPSWP_EngTempSwitchPointForSparkAdvance.html"><code>TMPSWP_EngTempSwitchPointForSparkAdvance</code></a>.</li>
+<li>Evaluated only when bit <code>b4f_OffIdle</code> in <code>BitFlags_4f</code> is clear (closed throttle).</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Accumulator A holds output from <a href="../../2_-_Spark/A_-_Normal_Advance/CLDMAP_AdvanceFromMAPCold.html"><code>CLDMAP</code></a>.</li>
+<li><code>cmpa CLDLMT_LimitForColdMapAtClosedThrottle</code>: if accumulator A is less than <code>CLDLMT</code> (<code>blt L1661</code>), the raw table value is retained; otherwise, accumulator A is loaded directly with <code>CLDLMT</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Cold Idle Stabilization</strong>:</li>
+<li>Raising <code>CLDLMT</code> increases the closed-throttle cold timing cap, providing additional torque to support cold idle on engines with large camshafts or heavy accessory loads.</li>
+<li><strong>Preventing Idle Hang &amp; Surging</strong>:</li>
+<li>Setting <code>CLDLMT</code> too high allows excessive timing advance under deep overrun vacuum, causing cold idle speed to hang or surge.</li>
+<li><strong>Lowering &amp; Deceleration Recovery</strong>:</li>
+<li>Lowering <code>CLDLMT</code> ensures a stable, controlled deceleration drop, but setting it too low can cause the engine to undershoot target idle and stumble upon throttle release.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateSparkAdvance_MM</code> at line 7964, <code>brset *BitFlags_4f, #b4f_OffIdle, L1666</code> checks whether the throttle is open. If clear (closed throttle), the code executes <code>cmpa CLDLMT_LimitForColdMapAtClosedThrottle</code> at line 7965. If the advance in accumulator A is less than <code>CLDLMT</code>, it branches to line 7968 (<code>blt L1661</code>). Otherwise, <code>ldaa CLDLMT_LimitForColdMapAtClosedThrottle</code> replaces accumulator A with the calibrated ceiling before storing into <code>Temp0</code>.</p>
+<pre><code class="language-motorola6803">; --- CalculateSparkAdvance_MM (T-SMEC_v19.asm:7964-7968) ---
+	brset *BitFlags_4f, #b4f_OffIdle, L1666    ; branch if bit(s) set
+	cmpa CLDLMT_LimitForColdMapAtClosedThrottle    ; compare a with memory contents (data is 28)
+	blt  L1661	    ; branch if less
+	ldaa CLDLMT_LimitForColdMapAtClosedThrottle    ; load a with memory contents (data is 28)
+L1661:	staa Temp0	    ; store a into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Direct Companion</strong>: Functions as the closed-throttle clamp specifically paired with <a href="../../2_-_Spark/A_-_Normal_Advance/CLDMAP_AdvanceFromMAPCold.html"><code>CLDMAP_AdvanceFromMAPCold</code></a>.</li>
+<li><strong>Units &amp; Scaling</strong>: 1 count = 0.5 degrees. Factory setting 0x1E = 30 counts = +15.0 degrees BTDC.</li>
+<li><strong>Warm Engine Bypassed</strong>: Once coolant reaches <a href="../../2_-_Spark/A_-_Normal_Advance/TMPSWP_EngTempSwitchPointForSparkAdvance.html"><code>TMPSWP</code></a>, this entire routine branch is bypassed in favor of warm spark logic.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>CLDLMT</code>
+        </footer>
+    </div>
+</body>
+</html>

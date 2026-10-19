@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTUCNI: PTUCounterTimerIntervalForLoop | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x17E4</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ PTU Control ➔ Entry Conditions</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PTUCNI: PTUCounterTimerIntervalForLoop</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PTUCNI</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>PTUCNI_PTUCounterTimerIntervalForLoop</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\PTU_Control\Entry_Conditions\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x17E4</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">loop counts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x07                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6306-L6316"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_v19.asm.html#L10393"><code>PTU_Main</code></a> in <a href="../../../T-SMEC_v19.asm.html#L10397"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PTUCNI</code> defines the loop execution decimation bitmask for the Part Throttle Unlock control routine.</p>
+<p>To measure meaningful rates of manifold pressure change without being distorted by high-frequency cylinder intake pulsations, the controller samples baseline manifold pressure into RAM variable <code>PTU_MapTemp</code> at a decimated rate. In factory calibrations, <code>PTUCNI</code> is configured to 7 counts (binary 00000111). In each pass through the main program loop, <code>Counter_MainLoop</code> is bitwise AND-ed with <code>PTUCNI</code>. When the result is zero, the controller saves current <code>MapValue</code> into <code>PTU_MapTemp</code>, creating an evaluation timebase that executes every 8th main loop pass (approximately every 80 to 100 milliseconds).</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ControlPTU_MM</code> / <code>PTU_Main</code> (<code>T-SMEC_v19.asm:10393-10401</code>), instruction line 10397.</li>
+<li><strong>Masking Operation</strong>:</li>
+<li>Loads <code>Counter_MainLoop</code> into accumulator A at line 10396.</li>
+<li>Bitwise ANDs accumulator A with <code>PTUCNI_PTUCounterTimerIntervalForLoop</code> at line 10397.</li>
+<li>If non-zero (<code>bne PTU_CheckThrottleForLock</code>), bypasses baseline update.</li>
+<li>If zero, stores current <code>MapValue</code> into <code>PTU_MapTemp</code> at line 10400.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Execution Bitmask</strong>:</li>
+<li>7 counts represents binary mask <code>%00000111</code>, causing baseline MAP update on every 8th main loop pass.</li>
+<li><strong>Timebase Fidelity</strong>:</li>
+<li>Retain factory setting of 7 counts to ensure all pressure delta thresholds (<a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP1_PTUMAPThresholdForLock1.html"><code>PTUMP1</code></a>–<a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP3_PTUMAPThresholdForLock3.html"><code>PTUMP3</code></a>) operate on the intended timebase.</li>
+<li><strong>Distortion Warning</strong>:</li>
+<li>Altering <code>PTUCNI</code> scales apparent pressure change rate, requiring recalibration of all PTU threshold constants.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>PTU_Main</code> at line 10394, <code>PTU_MapTemp</code> is loaded into accumulator A and copied to <code>Temp0</code> at line 10395. Line 10396 loads <code>Counter_MainLoop</code>, and line 10397 executes <code>anda PTUCNI_PTUCounterTimerIntervalForLoop</code>. If the result is non-zero (<code>bne</code>), execution jumps directly to <code>PTU_CheckThrottleForLock</code>. If zero, line 10399 loads <code>MapValue</code> and line 10400 stores it into <code>PTU_MapTemp</code>, refreshing the reference baseline for delta calculations.</p>
+<pre><code class="language-motorola6803">; --- ControlPTU_MM (T-SMEC_v19.asm:10393-10401) ---
+PTU_Main:
+	ldaa PTU_MapTemp    ; load a with memory contents
+	staa Temp0          ; store a into memory
+	ldaa Counter_MainLoop    ; load a with memory contents
+	anda PTUCNI_PTUCounterTimerIntervalForLoop          ;  (data is 07)
+	bne  PTU_CheckThrottleForLock          ; branch if not equal (not zero)
+	ldaa MapValue       ; load a with memory contents
+	staa PTU_MapTemp    ; store a into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Bitmask Behavior</strong>: Must be set to a power-of-two minus one (e.g. 1, 3, 7, 15, 31) for clean binary modulo timing.</li>
+<li><strong>Main Loop Coupling</strong>: Clocked by <code>Counter_MainLoop</code> which increments once per foreground main loop pass.</li>
+<li><strong>Baseline Refresh</strong>: Directly manages <code>PTU_MapTemp</code> which feeds all subsequent rate-of-change checks.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>PTUCNI</code>
+        </footer>
+    </div>
+</body>
+</html>

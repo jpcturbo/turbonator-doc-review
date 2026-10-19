@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARMINT: AdaptiveRetardMinimumTemp | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x04FB</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>2 - Spark ➔ D - Adaptive Retard</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ARMINT: AdaptiveRetardMinimumTemp</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ARMINT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ARMINT_AdaptiveRetardMinimumTemp</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>2_-_Spark\D_-_Adaptive_Retard\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x04FB</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">degF</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xA6                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1465-L1475"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L9518"><code>WGDC_LookAtCylRetards</code></a> in <a href="../../T-SMEC_v19.asm.html#L9524"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ARMINT</code> defines the minimum coolant temperature threshold required for the engine controller to learn adaptive knock retard.</p>
+<p>During cold engine operation and initial warm-up, combustion chamber temperatures are uneven, forged pistons may exhibit piston slap chatter, and fuel atomization is imperfect. Allowing the controller to learn long-term adaptive knock retard while the engine is cold could result in false knock learning that inappropriately pulls timing after the engine reaches full operating temperature. In factory calibrations, <code>ARMINT</code> is set to 166 counts, corresponding to approximately 187 degF, locking out adaptive retard learning until the engine is thoroughly heat-soaked at normal operating temperature.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_LookAtCylRetards</code> (<code>T-SMEC_v19.asm:9523-9525</code>), called from <code>CalcWGDutyCycleT1</code>.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li><code>CoolantTemp</code> is loaded into accumulator A.</li>
+<li><code>cmpa ARMINT_AdaptiveRetardMinimumTemp</code> at line 9524.</li>
+<li>If <code>CoolantTemp</code> &lt;= <code>ARMINT</code> (<code>bls WGDC_Clear5psiBoostTimer</code>), branches to line 9548 to clear the boost knock timer to zero.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Thermostat Adaptation</strong>:</li>
+<li>If running a 160 degF thermostat, lower <code>ARMINT</code> from 187 degF down to approximately 165 degF (155 counts) to allow adaptive retard learning to function.</li>
+<li><strong>Cold False Knock Prevention</strong>:</li>
+<li>Keeping <code>ARMINT</code> above 175 degF prevents mechanical piston slap or cold valvetrain noise from falsely learning permanent retard.</li>
+<li><strong>Timer Clear on Cold</strong>:</li>
+<li>If coolant temperature is at or below <code>ARMINT</code>, the boost knock timer is instantly cleared to zero.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>WGDC_LookAtCylRetards</code> at line 9523, <code>ldaa CoolantTemp</code> loads coolant temperature into accumulator A. Line 9524 executes <code>cmpa ARMINT_AdaptiveRetardMinimumTemp</code>. If accumulator A is lower than or equal to <code>ARMINT</code> (<code>bls WGDC_Clear5psiBoostTimer</code>), it branches directly to line 9548, which clears accumulator A to zero and stores it into <code>Timer_Over5PsiBoostMaxFF</code>, completely resetting any accumulated boost knock history.</p>
+<pre><code class="language-motorola6803">; --- WGDC_LookAtCylRetards (T-SMEC_v19.asm:9523-9526) ---
+	ldaa CoolantTemp    ; load a with memory contents
+	cmpa ARMINT_AdaptiveRetardMinimumTemp	 ; compare a with memory contents (data is a6)
+	bls  WGDC_Clear5psiBoostTimer	    ; branch if lower or same
+	ldaa Timer_Over5PsiBoostMaxFF	 ; load a with memory contents</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Temperature Gate for Learning</strong>: Establishes the minimum coolant temperature required for <code>AdaptiveRetardIndex</code> to increment.</li>
+<li><strong>Factory Value</strong>: 0xA6 = 166 counts ≈ 187 degF on Chrysler's coolant sensor curve.</li>
+<li><strong>Active Knock Unaffected</strong>: Short-term per-cylinder knock retard (<a href="../../2_-_Spark/B_-_Knock_Retard/RTRDRT_KnockRetardRateNoBoost.html"><code>RTRDRT</code></a>/<a href="../../2_-_Spark/B_-_Knock_Retard/RTRDRT2_KnockRetardRateInBoost.html"><code>RTRDRT2</code></a>) remains fully active even when coolant is below <code>ARMINT</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>ARMINT</code>
+        </footer>
+    </div>
+</body>
+</html>

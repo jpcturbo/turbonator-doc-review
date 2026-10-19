@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AISFAN: AisKickWhenFanTurnsOnClosedThrottle | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x113A</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>6 - Fan Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>AISFAN: AisKickWhenFanTurnsOnClosedThrottle</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>AISFAN</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>AISFAN_AisKickWhenFanTurnsOnClosedThrottle</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>6_-_Fan_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x113A</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">steps</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x0A                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T-SMEC_25_ATX_A283_Stock.tpl.html#L4600-L4610"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SMEC_v19.asm.html#L1775"><code>TurnFanOn</code></a> in <a href="../T-SMEC_v19.asm.html#L1781"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>AISFAN</code> defines the number of proactive stepper motor steps added to the target idle air position whenever the radiator cooling fan is commanded on while the throttle is closed.</p>
+<p>High-output electric cooling fans draw substantial electrical current upon startup, placing an immediate mechanical torque load on the engine through the alternator. Without anticipatory idle compensation, this sudden rotational drag causes engine idle speed to dip or sag before closed-loop idle feedback can react. In factory calibrations, <code>AISFAN</code> is set to 10 steps. When the cooling fan relay energizes at idle, the controller instantly increases the desired automatic idle speed motor position by this calibrated step amount, admitting extra bypass airflow to support engine idle speed and prevent engine RPM instability.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>TurnFanOn</code> (<code>T-SMEC_v19.asm:1775-1792</code>), called from <code>ControlFan_MM</code> (<code>T-SMEC_v19.asm:1707-1774</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Engine running confirmed (<code>b51_SparkEngineNotRunning</code> clear in <code>BitFlags_51</code>).</li>
+<li>Fan relay previously inactive (<code>pia1abuf_FanRelay</code> set in <code>PIA1_A_Buffer</code>; active-low relay logic).</li>
+<li><strong>Execution Flow</strong>:</li>
+<li>Reloads <code>Timer_MinimumFanRun</code> with 91 counts (~1.0 second min run).</li>
+<li>Tests <code>AISFAN_AisKickWhenFanTurnsOnClosedThrottle</code> at line 1781.</li>
+<li>If non-zero, adds value to <code>DesiredNewAisPosition</code> and clamps to <a href="../5_-_Idle/B_-_AIS_Decel/AISHLM_AisHighLimitMaxOpenSteps.html"><code>AISHLM_AisHighLimitMaxOpenSteps</code></a>.</li>
+<li>Clears <code>Timer_AisChanges</code> to initiate immediate stepper motor movement.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Aftermarket Electric Fan Upgrades</strong>:</li>
+<li>High-flow cooling fans drawing substantial amperage impose heavy alternator drag; raise <code>AISFAN</code> to 15 to 20 steps to arrest idle droop.</li>
+<li><strong>Preventing Idle Flares</strong>:</li>
+<li>If the engine flares or surges upward when the fan turns on, lower <code>AISFAN</code> toward 4 to 6 steps.</li>
+<li><strong>Zeroing &amp; Edge Cases</strong>:</li>
+<li>Setting <code>AISFAN</code> to 0 disables proactive idle feedforward, causing noticeable RPM dips before closed-loop idle recovers.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In routine <code>TurnFanOn</code> at line 1775, after confirming the engine is running and the fan relay was previously off, accumulator A is loaded from <code>AISFAN_AisKickWhenFanTurnsOnClosedThrottle</code> at line 1781. If zero (<code>beq L1055</code>), the kick is bypassed. Otherwise, accumulator A is added to <code>DesiredNewAisPosition</code>, checked against <a href="../5_-_Idle/B_-_AIS_Decel/AISHLM_AisHighLimitMaxOpenSteps.html"><code>AISHLM_AisHighLimitMaxOpenSteps</code></a>, and stored back to RAM. <code>Timer_AisChanges</code> is then cleared to zero to force immediate stepper motor step delivery.</p>
+<pre><code class="language-motorola6803">; --- TurnFanOn (T-SMEC_v19.asm:1775-1792) ---
+TurnFanOn:
+	brset *BitFlags_51, #b51_SparkEngineNotRunning, R1056	 ; branch if bit(s) set
+	brclr *PIA1_A_Buffer, #pia1abuf_FanRelay, R1056    ; branch if bit(s) clear
+	andb #0xef	    ;  -11101111-
+	ldaa #0x5b	    ; load a with value -01011011-
+	staa Timer_MinimumFanRun    ; store a into memory
+	ldaa AISFAN_AisKickWhenFanTurnsOnClosedThrottle    ; load a with memory contents (data is 03)
+	beq  L1055	    ; branch if equal (zero)
+	adda DesiredNewAisPosition
+	bcs  L1053	    ; branch if lower
+	cmpa AISHLM_AisHighLimitMaxOpenSteps	; compare a with memory contents (data is a0)
+	bls  L1054	    ; branch if lower or same
+L1053:	ldaa AISHLM_AisHighLimitMaxOpenSteps	; load a with memory contents (data is a0)
+L1054:	staa DesiredNewAisPosition    ; store a into memory
+	clra		    ; a = 0
+	staa Timer_AisChanges	 ; store a into memory
+	bra  L1055	    ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameter</strong>: Works directly with <a href="../5_-_Idle/B_-_AIS_Decel/AISHLM_AisHighLimitMaxOpenSteps.html"><code>AISHLM_AisHighLimitMaxOpenSteps</code></a> which caps maximum permissible open steps.</li>
+<li><strong>Timer Refresh</strong>: Clearing <code>Timer_AisChanges</code> causes the AIS motor driver interrupt to step the motor immediately without waiting for nominal loop pacing.</li>
+<li><strong>Active-Low Relay Drive</strong>: The cooling fan relay is driven through PIA1 Port A bit 4 (<code>pia1abuf_FanRelay</code>), where bit = 0 energizes the relay.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>AISFAN</code>
+        </footer>
+    </div>
+</body>
+</html>

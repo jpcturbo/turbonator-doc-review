@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCYCC: DecayRateForCurveC | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x07EC</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ B - Running</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Base_Modifiers</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DCYCC: DecayRateForCurveC</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DCYCC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DCYCC_DecayRateForCurveC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Base_Modifiers</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\B_-_Running\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x07EC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">counts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x0B (11 counts per decay step)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L2218-L2228"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5992"><code>CalculateSumOfAllFuelModifiers_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L6022"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DCYCC</code> defines the decay rate subtraction constant for intermediate cold enrichment (Curve C).</p>
+<p>After intermediate hold time (<a href="../../1_-_Fuel/B_-_Running/CCURV_HoldTimeForCurveC.html"><code>CCURV</code></a>) expires, <code>DCYCC</code> is subtracted from the enrichment decay register every 32 main loop passes. This stepwise subtraction progressively reduces intermediate warm-up enrichment down to zero, ensuring a seamless transition into steady-state warm-up operation.</p>
+<p>In factory calibrations, <code>DCYCC</code> is set to 11 counts per step.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateSumOfAllFuelModifiers_MM</code> (<code>T-SMEC_v19.asm:6029-6036</code>), instruction line 6033.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Active when <code>b50_FuelCurveACToggle</code> is clear and intermediate hold <a href="../../1_-_Fuel/B_-_Running/CCURV_HoldTimeForCurveC.html"><code>CCURV</code></a> has elapsed.</li>
+<li><strong>Indexed Offset</strong>:</li>
+<li><code>0x03,x</code> from <a href="../../1_-_Fuel/B_-_Running/DCYTMC_CurveAColdDecayTime.html"><code>DCYTMC</code></a> evaluates <code>DCYTMC + 3</code> = <code>DCYCC</code>.</li>
+<li>Subtracted from <code>Factor_ACVDCY</code> when loop counter matches mask <code>#0x1F</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Accelerating Decay</strong>:</li>
+<li>Increasing <code>DCYCC</code> causes Curve C enrichment to decay faster, reducing rich idle dwell.</li>
+<li><strong>Cold Drivability Smoothing</strong>:</li>
+<li>Decreasing <code>DCYCC</code> provides a more gradual taper, preventing lean throttle sag during intermediate warm-up.</li>
+<li><strong>Stepwise Subtraction</strong>:</li>
+<li>Subtracted from <code>Factor_ACVDCY</code> every 32 loop passes until zero is reached.</li>
+<li><strong>Timing Parameter Clustering</strong>:</li>
+<li>Positioned alongside <a href="../../1_-_Fuel/B_-_Running/DCYTMC_CurveAColdDecayTime.html"><code>DCYTMC</code></a> and <a href="../../1_-_Fuel/B_-_Running/CCURV_HoldTimeForCurveC.html"><code>CCURV</code></a> to manage intermediate warmup decay rate.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateSumOfAllFuelModifiers_MM</code>, when <code>b50_FuelCurveACToggle</code> is clear and <a href="../../1_-_Fuel/B_-_Running/CCURV_HoldTimeForCurveC.html"><code>CCURV</code></a> has expired, execution reaches <code>L1515</code>. Line 6029 checks <code>brset *Counter_MainLoop, #$%00011111, L1516</code>. In <code>L1516</code>, line 6033 executes <code>subb 0x03,x</code>. Because register X points to <a href="../../1_-_Fuel/B_-_Running/DCYTMC_CurveAColdDecayTime.html"><code>DCYTMC</code></a>, <code>0x03,x</code> accesses <code>DCYTMC + 3</code> = <code>DCYCC</code>. Accumulator B is clamped to zero at line 6035 and saved back to <code>Factor_ACVDCY</code> at line 6036.</p>
+<pre><code class="language-motorola6803">; --- CalculateSumOfAllFuelModifiers_MM (T-SMEC_v19.asm:6032-6037) ---
+L1516:	ldab Factor_ACVDCY_CurveACurveCDecayAfterRunModeReached    ; load b with memory contents
+	subb 0x03,x	
+	bcc  L1517	    ; branch if greater or equal
+	clrb		    ; b = 0
+L1517:	stab Factor_ACVDCY_CurveACurveCDecayAfterRunModeReached    ; store b into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Indexed Group</strong>: Stored at ROM address <code>DCYTMC + 3</code> (0x82B6); accessed via <code>0x03,x</code>.</li>
+<li><strong>Step Interval</strong>: Executed once every 32 passes through the foreground engine calculation loop.</li>
+<li><strong>Factory Value</strong>: 11 counts per step produces a swift, controlled taper down to zero.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>DCYCC</code>
+        </footer>
+    </div>
+</body>
+</html>

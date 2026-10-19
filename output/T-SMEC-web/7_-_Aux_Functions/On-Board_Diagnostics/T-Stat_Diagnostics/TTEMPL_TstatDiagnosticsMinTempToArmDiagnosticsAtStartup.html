@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTEMPL: TstatDiagnosticsMinTempToArmDiagnosticsAtStartup | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1D3F</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ On-Board Diagnostics ➔ T-Stat Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>TTEMPL: TstatDiagnosticsMinTempToArmDiagnosticsAtStartup</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>TTEMPL</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>TTEMPL_TstatDiagnosticsMinTempToArmDiagnosticsAtStartup</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\On-Board_Diagnostics\T-Stat_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1D3F</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">deg F</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x63 (99 counts ≈ 40 deg F startup coolant temp)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7677-L7687"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_v19.asm.html#L7411"><code>ConvertCoolantRawReadingToTemperature</code></a> in <a href="../../../T-SMEC_v19.asm.html#L7421"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>TTEMPL</code> defines the minimum engine coolant temperature required at engine startup to arm the thermostat warm-up diagnostic monitor.</p>
+<p>The engine controller monitors how quickly the engine warms up to operating temperature to detect a stuck-open thermostat (<strong>Fault Code 17</strong>). However, during severe sub-freezing arctic cold starts, engine oil and coolant are extremely cold, and the engine takes substantially longer to warm up even with a perfectly functioning thermostat.</p>
+<p>In factory calibrations, <code>TTEMPL</code> is set to 99 counts, corresponding to approximately 40 deg F. If coolant temperature at key-on is colder than <code>TTEMPL</code>, the controller suspends arming of the thermostat diagnostic timer, preventing false fault codes in sub-freezing winter weather.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>ConvertCoolantRawReadingToTemperature</code> (<code>T-SMEC_v19.asm:7411-7425</code>), instruction at line 7421.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated once during engine startup after converting raw coolant voltage to temperature.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li><code>CoolantTemp</code> in accumulator A compared against <code>TTEMPL_TstatDiagnosticsMinTempToArmDiagnosticsAtStartup</code> (99 counts) at line 7421.</li>
+<li>If lower (<code>bcs</code>), branches to <code>L1616</code> at line 7422, bypassing timer increment.</li>
+<li>If higher or equal, checks against <a href="../../../7_-_Aux_Functions/On-Board_Diagnostics/T-Stat_Diagnostics/TTEMPH_TstatDiagnosticsMaxTempToArmDiagnosticsAtStartup.html"><code>TTEMPH</code></a>; if within window, increments <code>Timer_ThermostatDiagnostics</code> to arm the monitor.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Winter Climate Lockout</strong>:</li>
+<li>Factory setting of 40 deg F disables the thermostat warm-up test during freezing starts, preventing false stuck-open codes.</li>
+<li><strong>High-Efficiency Radiators</strong>:</li>
+<li>If an aftermarket aluminum radiator prolongs warm-up in cool weather, raise <code>TTEMPL</code> to 55-60 deg F.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Setting <code>TTEMPL</code> to zero forces the warm-up test on freezing starts, reliably triggering Fault Code 17 in winter.</li>
+<li>Setting <code>TTEMPL</code> higher than <a href="../../../7_-_Aux_Functions/On-Board_Diagnostics/T-Stat_Diagnostics/TTEMPH_TstatDiagnosticsMaxTempToArmDiagnosticsAtStartup.html"><code>TTEMPH</code></a> permanently disables thermostat diagnostics.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In routine <code>ConvertCoolantRawReadingToTemperature</code> (lines 7411-7425), after <code>Lookup4ByteTable</code> stores the initial temperature into <code>CoolantTemp</code>, line 7421 executes <code>cmpa TTEMPL_TstatDiagnosticsMinTempToArmDiagnosticsAtStartup</code> (0x63 = 99 counts, ~40 deg F). If accumulator A is strictly less than <code>TTEMPL</code>, <code>bcs L1616</code> branches to line 7426, leaving <code>Timer_ThermostatDiagnostics</code> at zero. If coolant temperature meets or exceeds <code>TTEMPL</code>, line 7423 compares against <a href="../../../7_-_Aux_Functions/On-Board_Diagnostics/T-Stat_Diagnostics/TTEMPH_TstatDiagnosticsMaxTempToArmDiagnosticsAtStartup.html"><code>TTEMPH</code></a>. Only if temperature falls between <code>TTEMPL</code> and <a href="../../../7_-_Aux_Functions/On-Board_Diagnostics/T-Stat_Diagnostics/TTEMPH_TstatDiagnosticsMaxTempToArmDiagnosticsAtStartup.html"><code>TTEMPH</code></a> does line 7425 execute <code>inc Timer_ThermostatDiagnostics</code> to arm the monitor.</p>
+<pre><code class="language-motorola6803">; --- ConvertCoolantRawReadingToTemperature (T-SMEC_v19.asm:7411-7426) ---
+ConvertCoolantRawReadingToTemperature:
+	jsr  Lookup4ByteTable	 ; call subroutine
+	staa CoolantTemp    ; store a into memory
+	ldab AmbientAirTempVolts    ; load b with memory contents
+	cmpa #0xa6	    ; compare a with value -10100110-
+	bcc  L1615	    ; branch if greater or equal
+	cmpb #0x99	    ;  -10011001-
+	bcs  L1615	    ; branch if lower
+	ldab #0x40	    ; load b with value -01000000-
+	stab Timer_RadSteamingCountdown    ; store b into memory
+L1615:	cmpa TTEMPL_TstatDiagnosticsMinTempToArmDiagnosticsAtStartup	; compare a with memory contents (data is 63)
+	bcs  L1616	    ; branch if lower
+	cmpa TTEMPH_TstatDiagnosticsMaxTempToArmDiagnosticsAtStartup	; compare a with memory contents (data is e4)
+	bcc  L1616	    ; branch if greater or equal
+	inc  Timer_ThermostatDiagnostics
+L1616:	ldx  #PRSHOT_KeyOnPrimePW    ; load index with value
+</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../../../7_-_Aux_Functions/On-Board_Diagnostics/T-Stat_Diagnostics/TTEMPH_TstatDiagnosticsMaxTempToArmDiagnosticsAtStartup.html"><code>TTEMPH</code></a> (warm restart lockout), <a href="../../../7_-_Aux_Functions/On-Board_Diagnostics/T-Stat_Diagnostics/TDAGTP_TstatDiagnosticsTemperatureGoalWithin_HOTIME.html"><code>TDAGTP</code></a> (target goal), and <a href="../../../7_-_Aux_Functions/On-Board_Diagnostics/T-Stat_Diagnostics/HOTIME_TstatDiagnosticsTimeToAchieveTemperatureGoal.html"><code>HOTIME</code></a> (time limit).</li>
+<li><strong>Diagnostic Code</strong>: DRB-II Fault Code 17 (engine running too cool / thermostat stuck open).</li>
+<li><strong>Arming Mechanism</strong>: Increments <code>Timer_ThermostatDiagnostics</code> from 0 to 1 at startup to begin the warm-up timer.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>TTEMPL</code>
+        </footer>
+    </div>
+</body>
+</html>

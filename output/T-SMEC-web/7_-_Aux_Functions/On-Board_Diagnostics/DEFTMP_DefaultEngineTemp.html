@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEFTMP: DefaultEngineTemp | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1BA4</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DEFTMP: DefaultEngineTemp</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DEFTMP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DEFTMP_DefaultEngineTemp</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1BA4</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">deg F</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x95 (149 counts ≈ 125 deg F default coolant temp)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7266-L7276"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L7698"><code>SubstituteChargeTempForCoolantTemp</code></a> in <a href="../../T-SMEC_v19.asm.html#L7699"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DEFTMP</code> specifies the fixed default engine coolant temperature value substituted into the engine controller's temperature calculation whenever the primary coolant sensor is faulted.</p>
+<p>If the coolant temperature sensor circuit suffers an open circuit or short to ground (<strong>Fault Code 22</strong>), the engine controller first attempts to substitute the charge air temperature sensor reading. However, if the vehicle is not equipped with a charge temperature sensor or if the charge temperature sensor is also faulted, the controller falls back to <code>DEFTMP</code>.</p>
+<p>In factory calibrations, <code>DEFTMP</code> is set to 149 counts, corresponding to approximately 125 deg F. This intermediate temperature represents a lukewarm, partially warmed-up engine, providing adequate fuel enrichment for drivability without severely flooding a warm engine.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>SubstituteChargeTempForCoolantTemp</code> (<code>T-SMEC_v19.asm:7698-7712</code>), instruction at line 7699.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Invoked when <code>b45_IPL1</code> bit <code>b45_BadCoolantTemp</code> is set.</li>
+<li>Substituted directly if <code>b45_BadChargeTemp</code> is set or if <code>cfg_CTS</code> bit in <a href="../../0_-_Setup/A_-_Cal_Configuration/CONFIG_ConfigurationFlags.html"><code>CONFIG_ConfigurationFlags</code></a> is clear.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li><code>ldab DEFTMP_DefaultEngineTemp</code> loads 149 counts at line 7699.</li>
+<li>Tested against <code>b45_BadChargeTemp</code> at line 7700. If set, jumps to <code>StoreCoolantTemp</code>.</li>
+<li>Tested against <code>cfg_CTS</code> at line 7703. If zero, jumps to <code>StoreCoolantTemp</code> storing register B into <code>CoolantTemp</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Failsafe Fueling Calibration</strong>:</li>
+<li>Factory setting of 125 deg F strikes a compromise between cold-start ability and warm-engine drivability.</li>
+<li>For warm summer climates or dedicated track cars, raising <code>DEFTMP</code> to 160 deg F avoids rich bogging if the coolant sensor fails.</li>
+<li><strong>Cold Climate Starting</strong>:</li>
+<li>In sub-freezing winter operation, lowering <code>DEFTMP</code> to 100 deg F provides sufficient fuel enrichment to start a cold engine under sensor failure.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Setting <code>DEFTMP</code> to 0 deg F causes severe spark plug flooding.</li>
+<li>Setting <code>DEFTMP</code> to 210 deg F causes lean backfiring and stalling during cold starting.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In routine <code>SubstituteChargeTempForCoolantTemp</code> (lines 7698-7712), register B is loaded with <code>DEFTMP_DefaultEngineTemp</code> (0x95 = 149 counts, ~125 deg F) at line 7699. At line 7700, <code>brset *b45_IPL1, #b45_BadChargeTemp, StoreCoolantTemp</code> checks if the charge temp sensor is also bad. If clear, line 7703 tests configuration bit <code>cfg_CTS</code>. If charge temperature is unavailable or bad, execution branches to <code>StoreCoolantTemp</code> at line 7710, writing register B directly into <code>CoolantTemp</code>.</p>
+<pre><code class="language-motorola6803">; --- SubstituteChargeTempForCoolantTemp (T-SMEC_v19.asm:7698-7712) ---
+SubstituteChargeTempForCoolantTemp:
+	ldab DEFTMP_DefaultEngineTemp	 ; load b with memory contents (data is 95)
+	brset *b45_IPL1, #b45_BadChargeTemp, StoreCoolantTemp    ; branch if bit(s) set
+
+	ldaa CONFIG_ConfigurationFlags
+	bita #cfg_CTS		          
+	beq  StoreCoolantTemp	                  ; branch if bit is not set
+
+	ldaa RawChargeTempVolts    ; load a with memory contents
+	ldx  #CHGTL1_TempForChargeTempA2D    ; load index with value
+	jsr  Lookup4ByteTable	 ; call subroutine
+
+StoreCoolantTemp:
+	stab CoolantTemp    ; store b into memory
+	rts		    ; return from subroutine
+</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/TMPHIG_OutOfRangeColdTooHighA2D.html"><code>TMPHIG</code></a> and <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/TMPLOW_OutOfRangeHotTooLowA2D.html"><code>TMPLOW</code></a> (bounds) and <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/DEFCHG_DefaultChargeTemp_Limpin.html"><code>DEFCHG</code></a> (charge temp failsafe).</li>
+<li><strong>Diagnostic Code</strong>: DRB-II Fault Code 22.</li>
+<li><strong>Dual-Sensor Hierarchy</strong>: If the coolant temp sensor faults but the charge temp sensor is healthy, the ECU uses charge temp; only if both fault does it fall back to <code>DEFTMP</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>DEFTMP</code>
+        </footer>
+    </div>
+</body>
+</html>

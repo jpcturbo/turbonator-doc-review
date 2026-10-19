@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O2TLML: LowLimitForDelayedSwitchToClosedLoop | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0D09</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ E - O2 Controller</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>O2TLML: LowLimitForDelayedSwitchToClosedLoop</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>O2TLML</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>O2TLML_LowLimitForDelayedSwitchToClosedLoop</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\E_-_O2_Controller\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0D09</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">volts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x0F (15 counts ≈ 0.29 volts)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3527-L3537"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L3019"><code>O2_InvalidSignal_InMiddleRange</code></a> in <a href="../../T-SMEC_v19.asm.html#L3023"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>O2TLML</code> defines the lower boundary of the delayed closed-loop entry voltage band.</p>
+<p>When the engine controller is evaluating whether the oxygen sensor has warmed up sufficiently to begin closed-loop operation, sensor voltage between <code>O2TLML</code> and <a href="../../1_-_Fuel/E_-_O2_Controller/O2TLMH_HighLimitForDelayedSwitchToClosedLoop.html"><code>O2TLMH</code></a> indicates the sensor is generating partial output. In stock calibrations, <code>O2TLML</code> is set to 15 counts, corresponding to approximately 0.29 volts. Signals falling inside this band initiate the delayed entry countdown rather than being rejected outright.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> / <code>O2_InvalidSignal_InMiddleRange</code> (<code>T-SMEC_v19.asm:3019-3038</code>), instruction line 3023.</li>
+<li><strong>Gating Conditions</strong>: Signal tested below <a href="../../1_-_Fuel/E_-_O2_Controller/O2TLMH_HighLimitForDelayedSwitchToClosedLoop.html"><code>O2TLMH</code></a>.</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Line 3023 executes <code>cmpb O2TLML_LowLimitForDelayedSwitchToClosedLoop</code>.</li>
+<li>If <code>O2SensorValue &gt;= O2TLML</code> (<code>bcc</code>), execution branches to <code>O2_StopUsingFeedback</code> (line 3024).</li>
+<li>If <code>O2SensorValue &lt; O2TLML</code>, execution falls through to line 3025 (<code>L1206</code>), setting bit 7 in <code>Timer_CLTIME_ClosedLoopTimer</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Warmup Window Lower Edge</strong>:</li>
+<li>Defines the lower limit of the delayed entry band (0.29V).</li>
+<li><strong>Heated Sensor Conversion</strong>:</li>
+<li>Modern heated sensors stabilize quickly, making factory 0.29V calibration ideal.</li>
+<li><strong>Interaction with O2LOW</strong>:</li>
+<li>Shares the same default numerical value (15 counts) in factory calibrations.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>O2_InvalidSignal_InMiddleRange</code>, after <a href="../../1_-_Fuel/E_-_O2_Controller/O2TLMH_HighLimitForDelayedSwitchToClosedLoop.html"><code>O2TLMH</code></a> check at line 3021, line 3023 executes <code>cmpb O2TLML_LowLimitForDelayedSwitchToClosedLoop</code>. If accumulator B is greater than or equal to <code>O2TLML</code> (15 counts ≈ 0.29V), <code>bcc O2_StopUsingFeedback</code> branches to line 3024, keeping fueling in open loop while the sensor warms up. If below <code>O2TLML</code>, line 3025 sets bit 7 of <code>Timer_CLTIME_ClosedLoopTimer</code> to arm the <a href="../../1_-_Fuel/E_-_O2_Controller/O2TIME_DelayTimeToClosedLoop.html"><code>O2TIME</code></a> counter.</p>
+<pre><code class="language-motorola6803">; --- O2_InvalidSignal_InMiddleRange (T-SMEC_v19.asm:3021-3026) ---
+	cmpb O2TLMH_HighLimitForDelayedSwitchToClosedLoop    ; compare b with memory contents (data is 1f)
+	bcc  L1206	    ; branch if greater or equal
+	cmpb O2TLML_LowLimitForDelayedSwitchToClosedLoop    ; compare b with memory contents (data is 0f)
+	bcc  O2_StopUsingFeedback    ; branch if greater or equal
+L1206:	bset *Timer_CLTIME_ClosedLoopTimer, #bit_bit7	 ; set bits
+L1207:	ldab Counter_MainLoop	  ; load b with memory contents</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Bounded above by <a href="../../1_-_Fuel/E_-_O2_Controller/O2TLMH_HighLimitForDelayedSwitchToClosedLoop.html"><code>O2TLMH</code></a> and triggers <a href="../../1_-_Fuel/E_-_O2_Controller/O2TIME_DelayTimeToClosedLoop.html"><code>O2TIME</code></a> countdown.</li>
+<li><strong>Voltage Conversion</strong>: 15 counts equals approximately 0.29 volts.</li>
+<li><strong>Persistence</strong>: Evaluated during warmup qualification.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>O2TLML</code>
+        </footer>
+    </div>
+</body>
+</html>

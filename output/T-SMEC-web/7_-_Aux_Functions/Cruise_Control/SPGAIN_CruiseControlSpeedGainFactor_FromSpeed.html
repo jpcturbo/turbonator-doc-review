@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPGAIN: CruiseControlSpeedGainFactor FromSpeed | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x163B</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Cruise Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Cruise_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>SPGAIN: CruiseControlSpeedGainFactor FromSpeed</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>SPGAIN</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>SPGAIN_CruiseControlSpeedGainFactor_FromSpeed</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Cruise_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Cruise_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x163B</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2D Table / Curve)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">2 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Vehicle Speed (0 to 127.5 MPH)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Gain Multiplier Scale Factor (0 to 255 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">MPH vs scale factor</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Number of points in table
+.byte 0x3C, 0x16, 0xFF, 0xEA     ;Point 1
+.byte 0x82, 0x10                 ;Point 2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5881-L5893"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8723"><code>CalculateVehicleSpeed</code></a> in <a href="../../T-SMEC_v19.asm.html#L8903"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>SPGAIN</code> establishes the vehicle road speed gain correction factor that scales cruise servo responsiveness as a function of road speed.</p>
+<p>Aerodynamic drag increases with the square of vehicle velocity: at 35 mph, a minor throttle adjustment produces a noticeable change in vehicle speed, whereas at 75 mph, substantial throttle movement is required to counter high wind resistance. <code>SPGAIN</code> implements speed-dependent gain scheduling, scaling vacuum servo pulse authority upward at higher speeds and downward at lower speeds to deliver uniform, predictable cruise holding behavior from 35 mph to 85 mph.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8903-8910</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated each cruise calculation pass while cruise is active.</li>
+<li>Uses 16-bit <code>VehicleSpeed_HB</code> shifted left to format speed for lookup.</li>
+<li><strong>Lookup &amp; Addition</strong>:</li>
+<li>Loads <code>#SPGAIN_CruiseControlSpeedGainFactor_FromSpeed</code> into index register X.</li>
+<li>Queries <code>Lookup4ByteTable</code> at line 8908.</li>
+<li>Adds result to <code>Temp4</code> (throttle gain) and stores combined sum in <code>Temp3</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>High-Speed Holding Authority</strong>:</li>
+<li>Aerodynamic resistance increases exponentially with speed; increase <code>SPGAIN</code> above 65 mph if highway cruising feels weak or lags on gentle inclines.</li>
+<li><strong>Low-Speed Surge Prevention</strong>:</li>
+<li>If cruise pulses or surges rhythmically at 35 to 40 mph, reduce the lower speed points of <code>SPGAIN</code> to soften low-speed servo authority.</li>
+<li><strong>Combined Gain Output</strong>:</li>
+<li>The looked-up <code>SPGAIN</code> value is added to <code>Temp4</code> (from <a href="../../7_-_Aux_Functions/Cruise_Control/THGAIN_CruiseControlThrottleGainFactor_FromThrottle.html"><code>THGAIN</code></a>) to establish final servo scaling multiplier <code>Temp3</code>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateVehicleSpeed</code> at line 8903, <code>#SPGAIN_CruiseControlSpeedGainFactor_FromSpeed</code> is loaded into index register X. Line 8904 loads 16-bit <code>VehicleSpeed_HB</code> into register D and shifts left three times (<code>asld; asld; asld</code>) to format velocity. Line 8908 calls <code>Lookup4ByteTable</code>. Line 8909 executes <code>adda Temp4</code>, combining road speed gain with throttle angle gain. Line 8910 stores the resulting sum into <code>Temp3</code>, which serves as the overall multiplier for final servo output calculations.</p>
+<pre><code class="language-motorola6803">; --- CalculateVehicleSpeed (T-SMEC_v19.asm:8903-8910) ---
+	ldx  #SPGAIN_CruiseControlSpeedGainFactor_FromSpeed    ; load index with value
+	ldd  VehicleSpeed_HB	; load d (a&amp;b) with memory contents
+	asld		    ; shift left (d=d*2)
+	asld		    ; shift left (d=d*2)
+	asld		    ; shift left (d=d*2)
+	jsr  Lookup4ByteTable	 ; call subroutine
+	adda Temp4
+	staa Temp3	    ; store a into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Aerodynamic Gain Compensation</strong>: Calibrated inversely to throttle authority: at 30 mph, scale factor is 22; at 65 mph, scale factor drops to 16 in stock 2-point curve.</li>
+<li><strong>Master Loop Gain</strong>: Added to <a href="../../7_-_Aux_Functions/Cruise_Control/THGAIN_CruiseControlThrottleGainFactor_FromThrottle.html"><code>THGAIN</code></a> output (<code>Temp4</code>) to form <code>Temp3</code>, which directly scales servo accumulation delta <code>CruiseControlVar2</code>.</li>
+<li><strong>X-Axis Speed Range</strong>: Inputs road speed across 0 to 127.5 mph in standard SMEC velocity scaling.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>SPGAIN</code>
+        </footer>
+    </div>
+</body>
+</html>

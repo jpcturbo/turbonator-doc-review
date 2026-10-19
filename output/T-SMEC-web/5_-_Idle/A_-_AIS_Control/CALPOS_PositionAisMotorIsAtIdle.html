@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CALPOS: PositionAisMotorIsAtIdle | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0E0D</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ A - AIS Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CALPOS: PositionAisMotorIsAtIdle</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CALPOS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CALPOS_PositionAisMotorIsAtIdle</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\A_-_AIS_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0E0D</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">steps</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x1A                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3787-L3797"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L1859"><code>CalculateAisPosition_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L1969"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CALPOS</code> defines the calibrated nominal step position where the electronic controller assumes the idle air stepper motor sits during normal warm closed-throttle idle.</p>
+<p>Because stepper motors operate without a physical position feedback potentiometer, the ECU tracks motor position by counting step pulses sent to the motor coils. During closed-throttle stationary idle, adaptive routines periodically nudge motor position toward <code>CALPOS</code> to maintain optimal dynamic control range. Additionally, <code>CALPOS</code> serves as the fundamental baseline offset added to startup positioning curves and cold idle tables.</p>
+<p>In factory calibrations, <code>CALPOS</code> is set to 26 counts, representing 26 open steps from the fully seated pintle position on a stock throttle body.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1977</code>), and <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> (<code>T-SMEC_v19.asm:2406, 2469</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>In <code>CalculateAisPosition_MM</code>, pacing mask <a href="../../5_-_Idle/A_-_AIS_Control/CALRAT_AisAdjustRate.html"><code>CALRAT</code></a> must clear at line 1952.</li>
+<li>Engine RPM error must be within 10 counts of target at line 1964.</li>
+<li>Desired position must equal current position (<code>DesiredNewAisPosition</code> == <code>CurrentAisPosition</code>) at line 1968.</li>
+<li>Compares <code>DesiredNewAisPosition</code> against <code>CALPOS</code> at line 1969; if not equal, steps the motor by 1 toward <code>CALPOS</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Aftermarket Throttle Bodies</strong>:</li>
+<li>Big-bore throttle bodies allow more air leakage; adjust <code>CALPOS</code> down to 10 to 18 steps to match the lower step counts observed in live datalogs.</li>
+<li><strong>Mechanical Stop Screw Adjustment</strong>:</li>
+<li>If you turn the base idle stop screw inward to provide more base air for a race camshaft, reduce <code>CALPOS</code> correspondingly to keep adaptive trim centered.</li>
+<li><strong>Centering Adaptive Trim</strong>:</li>
+<li>Setting <code>CALPOS</code> accurately gives the idle stepper motor equal dynamic range to step open or closed when loads change.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateAisPosition_MM</code>, lines 1966-1968 verify that the stepper motor has finished moving. At line 1969, <code>cmpa CALPOS_PositionAisMotorIsAtIdle</code> evaluates current position against <code>CALPOS</code>. If equal, the routine exits (<code>beq R1075</code>). If higher (<code>bhi L1074</code>), it decrements accumulator A; if lower, it increments accumulator A, nudging both <code>DesiredNewAisPosition</code> and <code>CurrentAisPosition</code> by one step toward <code>CALPOS</code> at lines 1975-1976. In <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at lines 2406 and 2469, <code>CALPOS</code> is also added as a base offset to cold positioning.</p>
+<pre><code class="language-motorola6803">; --- CalculateAisPosition_MM (T-SMEC_v19.asm:1966-1977) ---
+	ldaa DesiredNewAisPosition    ; load a with memory contents
+	cmpa CurrentAisPosition    ; compare a with memory contents
+	bne  R1075	    ; branch if not equal (not zero)
+	cmpa CALPOS_PositionAisMotorIsAtIdle	; compare a with memory contents (data is 1a)
+	beq  R1075	    ; branch if equal (zero)
+	bhi  L1074	    ; branch if higher
+	inca		    ; increment a
+	inca		    ; increment a
+L1074:	deca		    ; decrement a
+	staa DesiredNewAisPosition    ; store a into memory
+	staa CurrentAisPosition    ; store a into memory
+R1075:	rts		    ; return from subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Multi-Routine Role</strong>: Acts as an adaptive convergence target in <code>CalculateAisPosition_MM</code> and as a baseline adder in <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Companion Parameter</strong>: Works alongside <a href="../../5_-_Idle/A_-_AIS_Control/CALRAT_AisAdjustRate.html"><code>CALRAT</code></a>, which sets the update pacing mask for convergence to <code>CALPOS</code>.</li>
+<li><strong>Factory Setting</strong>: 0x1A (26 counts = 26 steps).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>CALPOS</code>
+        </footer>
+    </div>
+</body>
+</html>

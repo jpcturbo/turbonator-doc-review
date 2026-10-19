@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FACALC: AdaptiveRetardEnable | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x01CB</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Spark - Adaptive Retard</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>FACALC: AdaptiveRetardEnable</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>FACALC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>FACALC_AdaptiveRetardEnable</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Spark_-_Adaptive_Retard\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x01CB</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant / Mode Flag)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">-1 signed, bit 7 = 1</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0xFF (-1 signed, bit 7 = 1)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L489-L501"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L6556"><code>CalculateSparkAdvance_MM</code></a> in <a href="../T-LMv13.asm.html#L6621"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>FACALC_AdaptiveRetardEnable</code> is a mathematical mode-switch flag that dictates the arithmetic operation (subtraction versus addition) applied to the part-throttle boost blend timing calculation.</p>
+<p>When an engine transitions from vacuum to boost under part throttle, the ECU calculates a proportional timing delta (<code>Temp1</code>) based on <a href="../Spark_-_Adaptive_Retard/ARADVR_AdaptiveRetardAdvanceRatioFromMAP.html"><code>ARADVR</code></a>, boost pressure, and Part-Throttle Enrichment. <code>FACALC</code> determines whether this delta is <strong>subtracted from</strong> <a href="../Spark_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a> (reducing timing toward WOT levels) or <strong>added to</strong> [<a href="../Spark_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a>].</p>
+<p>In factory calibrations, <code>FACALC</code> is set to <code>0xFF</code> (signed negative), configuring the system to retard timing under part-throttle boost.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<p><code>FACALC</code> is evaluated on every part-throttle spark advance calculation:
+1. <strong>Engine Warm:</strong> Coolant temperature ≥ <a href="../Spark_-_Normal_Advance/TMPSWP_EngTempSwitchPointForSparkAdvance.html"><code>TMPSWP</code></a>.
+2. <strong>Part-Throttle Boost Transition:</strong> Throttle is off-idle, but not wide-open throttle (WOT).
+3. <strong>PTE / Boost Active:</strong> Part-throttle enrichment is active or MAP is approaching/exceeding <a href="../Fuel_-_Transient_Enrichment/OBCONST_OverboostConstant1.html"><code>OBCONST_OverboostConstant1</code></a>.</p>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<p>The CPU evaluates only the most significant bit (bit 7) of <code>FACALC</code> via the branch-if-minus (<code>bmi</code>) opcode:</p>
+<ul>
+<li><strong>Stock Setting (<code>0xFF</code> / Negative / Bit 7 = 1):</strong></li>
+<li><strong>Function:</strong> <strong>Subtractive Mode (Timing Retard).</strong></li>
+<li><strong>Effect on Total Timing:</strong> Subtracts the <a href="../Spark_-_Adaptive_Retard/ARADVR_AdaptiveRetardAdvanceRatioFromMAP.html"><code>ARADVR</code></a> calculation (<code>Temp1</code>) from <a href="../Spark_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a>. Total ignition timing drops progressively as boost builds at part throttle until clamped by <a href="../Spark_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP</code></a>.</li>
+<li>
+<p><strong>Tuning Recommendation:</strong> Standard for all turbocharged gasoline engines. Keeps the engine safe from part-throttle detonation during boost onset.</p>
+</li>
+<li>
+<p><strong>Non-Stock Setting (<code>0x00</code>–<code>0x7F</code> / Positive / Bit 7 = 0):</strong></p>
+</li>
+<li><strong>Function:</strong> <strong>Additive Mode (Timing Advance).</strong></li>
+<li><strong>Effect on Total Timing:</strong> <strong>Adds</strong> <code>Temp1</code> to <a href="../Spark_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a>, increasing part-throttle advance under load, and clamping from above against <a href="../Spark_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP</code></a>.</li>
+<li><strong>Tuning Recommendation:</strong> <strong>DANGEROUS on turbocharged gasoline engines.</strong> Adding advance under rising manifold boost can trigger instant severe detonation. Do not change this value to a positive number unless testing specialized naturally-aspirated or alternative-fuel strategies.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 6620–6631):</p>
+<pre><code class="language-motorola6803">jsr  Lookup4ByteTable              ; A = HOTMAP(MapValue)
+           ldab FACALC_AdaptiveRetardEnable   ; Load B with FACALC (0xFF)
+           bmi  LF01F                         ; If bit 7 = 1 (negative), branch to Subtraction Path
+
+           ; --- ADDITIVE PATH (Bit 7 = 0) ---
+           adda Temp1                         ; A = HOTMAP + Temp1
+           cmpa Temp0                         ; Compare against WOTMAP (Temp0)
+           bge  LF027                         ; If A &gt;= WOTMAP, branch
+           bra  LF025                         ; Else store into Temp0
+
+           ; --- SUBTRACTIVE PATH (Bit 7 = 1, Stock) ---
+   LF01F:  suba Temp1                         ; A = HOTMAP - Temp1
+           cmpa Temp0                         ; Compare against WOTMAP (Temp0)
+           ble  LF027                         ; If A &lt;= WOTMAP, branch (keep WOTMAP)
+   LF025:  staa Temp0                         ; Store (HOTMAP - Temp1) into Temp0
+   LF027:  ...</code></pre>
+<h3>Mathematical Logic:</h3>
+<p><code>Part-Throttle MAP Spark = \begincases \max(WOTMAP, HOTMAP - Temp1), &amp; if FACALC has bit 7 = 1 (Stock 0xFF) \\ \min(WOTMAP, HOTMAP + Temp1), &amp; if FACALC has bit 7 = 0 \endcases</code></p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<blockquote>
+<p>[!NOTE]
+<strong>Not an Adaptive Retard Knock Toggle:</strong><br />
+Like <a href="../Spark_-_Adaptive_Retard/ARADVR_AdaptiveRetardAdvanceRatioFromMAP.html"><code>ARADVR</code></a>, the label <code>FACALC_AdaptiveRetardEnable</code> is a legacy misnomer from early 1990s disassemblers. It does <strong>not</strong> enable or disable knock-sensor adaptive retard. Knock detection and retard logic operate independently in routines <code>KnockDetect_MM</code> and <code>HandleKnockRetard</code>.<br />
+<code>FACALC</code> is strictly an arithmetic sign control for the part-throttle boost blend timing routine.</p>
+</blockquote>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>FACALC</code>
+        </footer>
+    </div>
+</body>
+</html>

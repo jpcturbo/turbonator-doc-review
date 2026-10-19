@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INCPT: AdaptiveIncAfterThisTime | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x12C8</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ B - WG Control ➔ T1 WG Control ➔ T1 WGDC Adaptives</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>INCPT: AdaptiveIncAfterThisTime</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>INCPT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>INCPT_AdaptiveIncAfterThisTime</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\B_-_WG_Control\T1_WG_Control\T1_WGDC_Adaptives\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x12C8</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Loop Counts / Duration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x20                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4998-L5008"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L9698"><code>WGDC_IncrementWGAdaptive</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L9719"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>INCPT</code> specifies the dwell time threshold that an underboost condition must continuously persist before the controller increments the active adaptive wastegate cell in T1 control.</p>
+<p>When the throttle is initially opened, turbocharger spool lag naturally creates a temporary underboost condition. <code>INCPT</code> ensures that the error timer must accumulate a steady duration of underboost before the controller concludes that baseline duty cycle is truly insufficient, preventing transient spool-up lag from corrupting steady-state adaptive trims.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_IncrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9717-9720</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
+<li><strong>Gating Conditions</strong>: Underboost must satisfy <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MPROOF_StopAdaptiveWGWhenMapIsThisCloseToBoostTarget.html"><code>MPROOF</code></a>, <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/TPSLIM_UpdateAdaptiveWGTPSUpperLimit.html"><code>TPSLIM</code></a>, <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MPDEL2_IncCounterWhenDeltaMapBelowThis2.html"><code>MPDEL2</code></a>, zero knock penalty, and <code>EngineRpm_HB &gt;= DCRPML</code>.</li>
+<li><strong>Timer Comparison</strong>:</li>
+<li>Line 9717 loads <code>Timer_BoostErrTimer</code> and increments it (<code>inca</code>).</li>
+<li>Line 9719 executes <code>cmpa INCPT_AdaptiveIncAfterThisTime</code>.</li>
+<li>If timer is below <code>INCPT</code> (<code>bcs</code>), branches to <code>WGDC_StoreBoostErrTimer</code> (line 9720) to save timer state without updating memory.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Underboost Dwell Time Threshold</strong>:</li>
+<li>Number of consecutive error timer counts that underboost must persist before the adaptive cell is incremented.</li>
+<li>Factory setting is 32 counts (approximately 0.35 seconds).</li>
+<li><strong>Preventing Premature Adaptation on Lag</strong>:</li>
+<li>Higher values (40 to 60 counts, 0.45 to 0.7 seconds) prevent the ECU from adding duty cycle while a large turbo is naturally spooling.</li>
+<li><strong>Fast Convergence for Sluggish Spool</strong>:</li>
+<li>Lowering <code>INCPT</code> to 15 to 20 counts speeds up adaptive duty cycle additions if steady-state boost consistently falls short.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>WGDC_IncrementWGAdaptive</code> at line 9717, accumulator A loads <code>Timer_BoostErrTimer</code> and increments it (<code>inca</code>). Line 9719 executes <code>cmpa INCPT_AdaptiveIncAfterThisTime</code>. If accumulator A is less than <code>INCPT</code>, carry is set and line 9720 branches to <code>WGDC_StoreBoostErrTimer</code>. Once the timer reaches <code>INCPT</code>, accumulator B loads the cell byte, verifies it is below <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/INCLIM_UpperLimitOnWastegateDutyCycleCorrection.html"><code>INCLIM</code></a> at line 9721, and executes <code>incb</code> at line 9723 before writing the updated byte to adaptive memory.</p>
+<pre><code class="language-motorola6803">; --- WGDC_IncrementWGAdaptive (T-SMEC_v19.asm:9717-9720) ---
+	ldaa Timer_BoostErrTimer    ; load a with memory contents
+	inca		    ; increment a
+	cmpa INCPT_AdaptiveIncAfterThisTime    ; compare a with memory contents (data is 20)
+	bcs  WGDC_StoreBoostErrTimer	    ; branch if lower</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Loop Rate Dependency</strong>: Increments once per main loop pass while all underboost conditions are satisfied.</li>
+<li><strong>Symmetric Architecture</strong>: Acts as the exact upward counterpart to downward timer threshold <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/DECPT_AdaptiveDecAfterThisTime.html"><code>DECPT</code></a>.</li>
+<li><strong>Factory Value</strong>: 0x20 = 32 counts = approx 0.35 seconds dwell time.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>INCPT</code>
+        </footer>
+    </div>
+</body>
+</html>

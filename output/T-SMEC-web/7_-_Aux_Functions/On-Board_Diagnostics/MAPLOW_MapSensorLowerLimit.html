@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAPLOW: MapSensorLowerLimit | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1C84</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MAPLOW: MapSensorLowerLimit</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MAPLOW</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MAPLOW_MapSensorLowerLimit</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1C84</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">volts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x01 (1 count ≈ 0.02 volts / open or short to ground)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7490-L7500"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L4893"><code>VerifyOperationOfMapSensor_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L4935"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MAPLOW</code> defines the lower electrical voltage boundary for the manifold absolute pressure sensor analog input circuit.</p>
+<p>The manifold absolute pressure sensor translates intake manifold vacuum and boost pressure into an analog voltage signal ranging from approximately 0.25 volts at high vacuum up to 4.75 volts at full boost. If the sensor signal wire breaks, the connector comes unplugged, or the sensor circuit shorts directly to ground, the input voltage drops to zero.</p>
+<p>In factory calibrations, <code>MAPLOW</code> is set to 1 count, corresponding to approximately 0.02 volts. If sensor voltage drops below <code>MAPLOW</code>, the engine controller flags <strong>Fault Code 14</strong>, latches an electrical sensor failure, illuminates the check engine lamp, and activates throttle-based limp-home mode.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>VerifyOperationOfMapSensor_MM</code> (<code>T-SMEC_v19.asm:4893-4946</code>), instruction at line 4935.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Engine speed below 3000 RPM (<code>EngineRpm_HB &lt; 0x2EE0</code> at line 4925).</li>
+<li>Throttle opening below <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPLTHR_ThrottleLevelAbove_MINTHR_ToMatureMapLimpin.html"><code>MPLTHR</code></a> at line 4930.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li><code>CPU_A2DResults1</code> loaded into accumulator A at line 4932.</li>
+<li><code>cmpa MAPHIG_MapSensorUpperLimit</code> checked first at line 4933.</li>
+<li><code>cmpa MAPLOW_MapSensorLowerLimit</code> compares accumulator A against 1 count at line 4935.</li>
+<li>If lower (<code>bcs</code>), loads error code <code>0x2494</code> (Fault Code 14), sets <code>b45_IPL1</code> bit <code>b45_MapBadSignal</code>, and throws non-critical error.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Deceleration Vacuum Margin</strong>:</li>
+<li>Trailing-throttle deceleration from high engine speeds produces the deepest manifold vacuum, driving sensor voltage toward 0.30 volts.</li>
+<li><code>MAPLOW</code> must remain comfortably below this level (at 1 count / 0.02 volts) to avoid false fault codes on overrun.</li>
+<li><strong>Harness Diagnostics</strong>:</li>
+<li>If Fault Code 14 sets with 0.0 volts on the signal wire, check for an unplugged 3-pin MAP harness connector or broken wire.</li>
+<li><strong>Lowering &amp; Edge Cases</strong>:</li>
+<li>Zeroing <code>MAPLOW</code> disables open-circuit and short-to-ground fault detection.</li>
+<li>Setting <code>MAPLOW</code> higher than normal idle vacuum causes persistent limp-home operation.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In routine <code>VerifyOperationOfMapSensor_MM</code> (lines 4893-4946), after confirming engine speed is below 3000 RPM (0x2EE0) and throttle is below <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPLTHR_ThrottleLevelAbove_MINTHR_ToMatureMapLimpin.html"><code>MPLTHR</code></a>, the CPU loads <code>CPU_A2DResults1</code> at line 4932. If reading is below <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MAPHIG_MapSensorUpperLimit.html"><code>MAPHIG</code></a>, line 4935 executes <code>cmpa MAPLOW_MapSensorLowerLimit</code>. If accumulator A is strictly less than <code>MAPLOW</code> (0x01 = 1 count, 0.02 volts), <code>bcs</code> branches to load error code 0x2494 into register D at line 4937. If <code>b45_MapBadSignal</code> is clear, line 4942 calls <code>ThrowNonCriticalError</code> (Fault Code 14) and line 4944 sets bit <code>b45_MapBadSignal</code>.</p>
+<pre><code class="language-motorola6803">; --- VerifyOperationOfMapSensor_MM (T-SMEC_v19.asm:4924-4946) ---
+L1384:	ldx  EngineRpm_HB
+	cpx  #0x2ee0	    ;  -00101110 11100000-
+	bcc  R1380	    ; branch if greater or equal
+	ldab TpsVolts	    ; load b with memory contents
+	subb MINTHR_LowestSessionTPS	; b = b-memory contents
+	bcs  L1385	    ; branch if lower
+	cmpb MPLTHR_ThrottleLevelAbove_MINTHR_ToMatureMapLimpin    ; compare b with memory contents (data is 42)
+	bcc  R1380	    ; branch if greater or equal
+L1385:	ldaa CPU_A2DResults1	; load a with memory contents
+	cmpa MAPHIG_MapSensorUpperLimit    ; compare a with memory contents (data is ee)
+	bcc  L1386	    ; branch if greater or equal
+	cmpa MAPLOW_MapSensorLowerLimit    ; compare a with memory contents (data is 01)
+	bcc  L1389	    ; branch if greater or equal
+	ldd  #0x2494	    ; load d (a&amp;b) with value -00100100 10010100-
+	bra  L1387	    ; branch
+
+L1386:	ldd  #0x2594	    ; load d (a&amp;b) with value -00100101 10010100-
+L1387:	brset *b45_IPL1, #b45_MapBadSignal, R1388	; branch if bit(s) set
+	jsr  ThrowNonCriticalError    ; call subroutine
+	bcc  R1388	    ; branch if greater or equal
+	bset *b45_IPL1, #b45_MapBadSignal	; set bits
+R1388:	rts		    ; return from subroutine
+
+</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MAPHIG_MapSensorUpperLimit.html"><code>MAPHIG</code></a> (high voltage limit), <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPLTHR_ThrottleLevelAbove_MINTHR_ToMatureMapLimpin.html"><code>MPLTHR</code></a> (throttle gate), and <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/LMPINN_LimpinTableForMapFromThrottle.html"><code>LMPINN</code></a> (limp-in table).</li>
+<li><strong>Diagnostic Code</strong>: DRB-II Fault Code 14 (MAP sensor electrical voltage out of range low).</li>
+<li><strong>Failsafe Action</strong>: Latches <code>b45_MapBadSignal</code>, illuminating the check engine light and invoking <code>SimulateMapReadingFromTps</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MAPLOW</code>
+        </footer>
+    </div>
+</body>
+</html>

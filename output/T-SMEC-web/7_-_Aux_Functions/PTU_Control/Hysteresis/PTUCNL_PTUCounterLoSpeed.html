@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTUCNL: PTUCounterLoSpeed | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x17A5</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ PTU Control ➔ Hysteresis</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PTUCNL: PTUCounterLoSpeed</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PTUCNL</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>PTUCNL_PTUCounterLoSpeed</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\PTU_Control\Hysteresis\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x17A5</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">loop counts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x5D                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6243-L6253"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_v19.asm.html#L10478"><code>PTU_CheckVehicleSpeed</code></a> in <a href="../../../T-SMEC_v19.asm.html#L10486"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PTUCNL</code> defines the low-speed debounce counter reload value for Part Throttle Unlock state transitions.</p>
+<p>When the vehicle is operating below <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMSP_PTUMinLockSpeed.html"><code>PTUMSP</code></a> (city and suburban driving), stop-and-go conditions create frequent throttle modulations. When <code>Counter_PartThrottleUnlock</code> expires at low speed, the controller reloads the counter from <code>PTUCNL</code>. In factory calibrations, <code>PTUCNL</code> is configured to 93 counts. This sets the required dwell time before the torque converter clutch can toggle between locked and unlocked states in lower gears.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ControlPTU_MM</code> / <code>PTU_CheckVehicleSpeed</code> (<code>T-SMEC_v19.asm:10478-10488</code>), instruction line 10486.</li>
+<li><strong>Execution Trigger</strong>: <code>Counter_PartThrottleUnlock</code> decrements to zero.</li>
+<li><strong>Speed Branch</strong>:</li>
+<li>Evaluated when scaled speed is below <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMSP_PTUMinLockSpeed.html"><code>PTUMSP_PTUMinLockSpeed</code></a> (<code>bcc</code> not taken at line 10485).</li>
+<li>Loads <code>PTUCNL</code> into accumulator B at line 10486 and stores to <code>Counter_PartThrottleUnlock</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stop-and-Go Smoothing</strong>:</li>
+<li>Raise <code>PTUCNL</code> to 120 to 140 counts to reduce annoying converter cycling in heavy urban traffic.</li>
+<li><strong>Low-Speed Tip-In Response</strong>:</li>
+<li>Lower <code>PTUCNL</code> to 50 to 60 counts for faster torque multiplication when pulling away from low speeds.</li>
+<li><strong>Driveline Lash Prevention</strong>:</li>
+<li>Avoid setting <code>PTUCNL</code> below 30 counts to prevent converter clutch shudder.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>PTU_CheckVehicleSpeed</code> at line 10484, <code>cmpa PTUMSP_PTUMinLockSpeed</code> tests vehicle speed. If speed is less than <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMSP_PTUMinLockSpeed.html"><code>PTUMSP</code></a>, execution falls through to line 10486, executing <code>ldab PTUCNL_PTUCounterLoSpeed</code>. Line 10487 (<code>LD67B</code>) executes <code>stab Counter_PartThrottleUnlock</code>, initializing the counter for low-speed debounce.</p>
+<pre><code class="language-motorola6803">; --- PTU_CheckVehicleSpeed (T-SMEC_v19.asm:10484-10488) ---
+	cmpa PTUMSP_PTUMinLockSpeed          ; compare a with memory contents (data is 68)
+	bcc  LD67B          ; branch if greater or equal
+	ldab PTUCNL_PTUCounterLoSpeed          ; load b with memory contents (data is b5)
+LD67B:  stab Counter_PartThrottleUnlock    ; store b into memory
+	rts                 ; return from subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Low-Speed Companion</strong>: Companion to high-speed counter <a href="../../../7_-_Aux_Functions/PTU_Control/Hysteresis/PTUCNH_PTUCounterHiSpeed.html"><code>PTUCNH_PTUCounterHiSpeed</code></a>.</li>
+<li><strong>Speed Gate</strong>: Applied exclusively when vehicle speed is below <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMSP_PTUMinLockSpeed.html"><code>PTUMSP_PTUMinLockSpeed</code></a>.</li>
+<li><strong>Counter Decrement</strong>: Controlled by <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUCNI_PTUCounterTimerIntervalForLoop.html"><code>PTUCNI_PTUCounterTimerIntervalForLoop</code></a> decimation rate.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>PTUCNL</code>
+        </footer>
+    </div>
+</body>
+</html>

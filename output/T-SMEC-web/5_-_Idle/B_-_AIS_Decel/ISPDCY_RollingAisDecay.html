@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISPDCY: RollingAisDecay | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x100F</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ISPDCY: RollingAisDecay</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ISPDCY</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ISPDCY_RollingAisDecay</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x100F</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM decay</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x01                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4301-L4311"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L2080"><code>LoadDiagIdleSpeed</code></a> in <a href="../../T-SMEC_v19.asm.html#L2125"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ISPDCY</code> defines the RPM decrement step size subtracted from target idle speed during rolling idle decay.</p>
+<p>When a vehicle is operating in rolling idle mode, target idle speed is held at an elevated level. As the vehicle slows or steady rolling conditions continue, this elevated target speed must gently decay back down toward the baseline stationary idle target set in <a href="../../5_-_Idle/A_-_AIS_Control/AISPN_IdleSpeedParkNeutral_FromTemp.html"><code>AISPN</code></a> or <a href="../../5_-_Idle/A_-_AIS_Control/AISCLD_IdleSpeedDrive_FromTemp.html"><code>AISCLD</code></a>.</p>
+<p><code>ISPDCY</code> sets the step reduction in target engine speed applied on each decay interval paced by <a href="../../5_-_Idle/B_-_AIS_Decel/DECAIS_RollingAisUpdateRate_01_03_07_0f_1f_3f_7f_ff.html"><code>DECAIS</code></a>.</p>
+<p>In factory calibrations, <code>ISPDCY</code> is set to 4 counts, which decrements the target idle speed by approximately 32 RPM on each decay step until the base target is reached.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>LoadDiagIdleSpeed</code> (<code>T-SMEC_v19.asm:2080-2133</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Rolling idle mode flag <code>b50_IdleSpeedMode</code> must be set in <code>BitFlags_50</code> at line 2117.</li>
+<li>Pacing mask <a href="../../5_-_Idle/B_-_AIS_Decel/DECAIS_RollingAisUpdateRate_01_03_07_0f_1f_3f_7f_ff.html"><code>DECAIS</code></a> must clear to zero at line 2119.</li>
+<li>Subtracts <code>ISPDCY</code> from <code>TargetIdleSpeed_HB</code> at line 2125: <code>suba ISPDCY_RollingAisDecay</code>.</li>
+<li>Clamps the result so it does not drop below the base temperature curve in <code>Temp0</code> at line 2127.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Faster Rolling Idle Ramp-Down</strong>:</li>
+<li>Increase <code>ISPDCY</code> from 4 to 6 to 8 counts if elevated rolling idle lingers too long during coasting.</li>
+<li><strong>Smoother Idle Landing</strong>:</li>
+<li>Lower <code>ISPDCY</code> to 2 counts (16 RPM) to smooth out the step-down transition on sensitive drivetrains.</li>
+<li><strong>Companion Tuning</strong>:</li>
+<li>Adjust in concert with <a href="../../5_-_Idle/B_-_AIS_Decel/DECAIS_RollingAisUpdateRate_01_03_07_0f_1f_3f_7f_ff.html"><code>DECAIS</code></a>, which controls the time interval between these decay steps.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>, line 2117 checks <code>b50_IdleSpeedMode</code>. If set, line 2119 tests <code>Counter_MainLoop</code> against <a href="../../5_-_Idle/B_-_AIS_Decel/DECAIS_RollingAisUpdateRate_01_03_07_0f_1f_3f_7f_ff.html"><code>DECAIS</code></a>. When zero, line 2121 saves base target to <code>Temp0</code>. Lines 2122-2124 scale <code>TargetIdleSpeed_HB</code>, and line 2125 executes <code>suba ISPDCY_RollingAisDecay</code>. Line 2127 compares the decremented value against <code>Temp0</code>. If the decremented speed remains above <code>Temp0</code> (<code>bcc L1089</code>), it is retained; if lower, line 2129 restores <code>Temp0</code>, preventing the decay from ever falling below base idle.</p>
+<pre><code class="language-motorola6803">; --- LoadDiagIdleSpeed (T-SMEC_v19.asm:2117-2130) ---
+L1087:	brclr *BitFlags_50, #b50_IdleSpeedMode, L1089	 ; branch if bit(s) clear
+	ldab Counter_MainLoop	  ; load b with memory contents
+	andb DECAIS_RollingAisUpdateRate_01_03_07_0f_1f_3f_7f_ff    ;  (data is 7f)
+	bne  L1092	    ; branch if not equal (not zero)
+	staa Temp0	    ; store a into memory
+	ldd  TargetIdleSpeed_HB	; load d (a&amp;b) with memory contents
+	asld		    ; shift left (d=d*2)
+	asld		    ; shift left (d=d*2)
+	suba ISPDCY_RollingAisDecay    ;  (data is 04)
+	bcs  L1088	    ; branch if lower
+	cmpa Temp0	    ; compare a with memory contents
+	bcc  L1089	    ; branch if greater or equal
+L1088:	ldaa Temp0	    ; load a with memory contents
+L1089:	clrb		    ; b = 0</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Lower Clamp</strong>: The decay logic will never ramp target speed below the baseline temperature curve in <code>Temp0</code> (<a href="../../5_-_Idle/A_-_AIS_Control/AISPN_IdleSpeedParkNeutral_FromTemp.html"><code>AISPN</code></a>/<a href="../../5_-_Idle/A_-_AIS_Control/AISCLD_IdleSpeedDrive_FromTemp.html"><code>AISCLD</code></a>).</li>
+<li><strong>Companion Parameter</strong>: Direct decay partner to <a href="../../5_-_Idle/B_-_AIS_Decel/DECAIS_RollingAisUpdateRate_01_03_07_0f_1f_3f_7f_ff.html"><code>DECAIS</code></a>.</li>
+<li><strong>Factory Value</strong>: 0x04 (4 counts = 32 RPM decay step).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>ISPDCY</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RTRDRT: KnockRetardRateNoBoost | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0426</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>2 - Spark ➔ B - Knock Retard</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>RTRDRT: KnockRetardRateNoBoost</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>RTRDRT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>RTRDRT_KnockRetardRateNoBoost</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>2_-_Spark\B_-_Knock_Retard\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0426</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">degrees retard</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x06                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1252-L1262"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L6793"><code>CHECK_FOR_OVER5PSIBOOST</code></a> in <a href="../../T-SMEC_v19.asm.html#L6797"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>RTRDRT</code> defines the step-size of knock retard applied to a knocking cylinder when knock is detected out of boost (under vacuum or light load below <a href="../../2_-_Spark/B_-_Knock_Retard/KNKOFS_DeltaAboveBaroFor_RTRDRT_and_KNKCNT_and_KNKCOR_incremented.html"><code>KNKOFS</code></a>).</p>
+<p>When combustion knock occurs under light load or partial-throttle cruising, cylinder charge density is relatively low. Under these conditions, pulling a substantial, decisive step of ignition timing quickly extinguishes the knock without significantly disturbing vehicle momentum or causing driveline shudder. In factory calibrations, <code>RTRDRT</code> is set to 6 counts, corresponding to 3.0 degrees of retard applied to the active cylinder's individual retard variable upon knock detection.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CHECK_FOR_OVER5PSIBOOST</code> (<code>T-SMEC_v19.asm:6796-6802</code>), called from <code>CALC_SPARK_RETARD_BASED_ON_KNOCK_VOLT</code>.</li>
+<li><strong>Condition Tested</strong>:</li>
+<li>Active when <code>KnockVolts</code> &gt;= <code>KnockSensorThreshold</code> and <code>MapValue</code> &lt;= <code>BaroPressure + KNKOFS</code>.</li>
+<li><strong>Addition &amp; Clamp</strong>:</li>
+<li><code>RTRDRT</code> is added to the active cylinder's current retard (<code>aba</code> at line 6802).</li>
+<li>Sum is clamped to 0x3F (63 counts ≈ 31.5 degrees max) and compared against <code>MaxRetardFromMAP</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Decisive Knock Suppression</strong>:</li>
+<li>Factory setting of 3.0 degrees (6 counts) pulls enough timing on the first detection to snuff out light-load knock immediately.</li>
+<li><strong>Drivability vs. Response</strong>:</li>
+<li>Raising <code>RTRDRT</code> above 4.0 degrees can cause noticeable hesitation on tip-in ping; lowering below 2.0 degrees risks repeat pinging.</li>
+<li><strong>Per-Cylinder Application</strong>:</li>
+<li>Applied strictly to the specific cylinder that knocked, preserving full timing on the other three cylinders.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CHECK_FOR_OVER5PSIBOOST</code> at line 6797, <code>ldaa RTRDRT_KnockRetardRateNoBoost</code> pre-loads the non-boost retard increment into accumulator A. If <code>MapValue</code> is less than or equal to <code>BaroPressure + KNKOFS</code>, line 6798 executes <code>bcc SUM_ADDITIONAL_RETARD</code> to line 6801. At line 6802, <code>aba</code> adds accumulator A to accumulator B (the cylinder's existing retard). The sum is checked against 0x40 at line 6803; if higher, it is clamped to 0x3F before being limited by <code>MaxRetardFromMAP</code>.</p>
+<pre><code class="language-motorola6803">; --- CHECK_FOR_OVER5PSIBOOST (T-SMEC_v19.asm:6797-6812) ---
+	ldaa RTRDRT_KnockRetardRateNoBoost    ; load a with memory contents (data is 06)
+	bcc  SUM_ADDITIONAL_RETARD    ; branch if greater or equal
+	bset *BitFlags_55, #b55_BoostOver5psi	 ; set bits
+	ldaa RTRDRT2_KnockRetardRateInBoost	  ; load a with memory contents (data is 04)
+SUM_ADDITIONAL_RETARD:
+	aba		    ; a=a+b
+	cmpa #0x40	    ; compare a with value -01000000-
+	bcs  MAX_RETARD     ; branch if lower
+	ldaa #0x3f	    ; load a with value -00111111-
+MAX_RETARD:
+	ldab MaxRetardFromMAP	 ; load b with memory contents
+	cba		
+	bcs  STORE_SMALLEST_RETARD_VALUE    ; branch if lower
+	tba		    ; a = b
+STORE_SMALLEST_RETARD_VALUE:
+	staa 0x00,x</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Half-Degree Scaling</strong>: 1 count = 0.5 degrees. Factory setting 0x06 = 6 counts = 3.0 degrees retard per event.</li>
+<li><strong>Non-Boost Specific</strong>: Used strictly when manifold pressure is below the <a href="../../2_-_Spark/B_-_Knock_Retard/KNKOFS_DeltaAboveBaroFor_RTRDRT_and_KNKCNT_and_KNKCOR_incremented.html"><code>KNKOFS</code></a> threshold.</li>
+<li><strong>Decay Control</strong>: Recovered gradually in the background via <a href="../../2_-_Spark/B_-_Knock_Retard/INCSRT_KnockRetardIncreaseRate.html"><code>INCSRT</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>RTRDRT</code>
+        </footer>
+    </div>
+</body>
+</html>

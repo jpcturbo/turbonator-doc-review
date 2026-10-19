@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EGR18: ExhGasRecircConstLoLimit18 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x19FA</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ EGR</strong> &nbsp;|&nbsp; Subsystem: <strong>EGR_Emissions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>EGR18: ExhGasRecircConstLoLimit18</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>EGR18</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>EGR18_ExhGasRecircConstLoLimit</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">EGR_Emissions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\EGR\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x19FA</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">MAP ADC counts (0 to 255; factory 255 represents wide-open upper limit in 2-bar calibration)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xFF                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6840-L6850"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5389"><code>EGR_CheckForAutoTrans</code></a> in <a href="../../T-SMEC_v19.asm.html#L5429"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>EGR18</code> (ExhGasRecircConstLoLimit) establishes the lower manifold absolute pressure boundary for the Phase 1 Exhaust Gas Recirculation diagnostic sampling window.</p>
+<p>To measure baseline closed-loop oxygen sensor behavior with the EGR valve operating, the engine controller requires intake manifold pressure to fall within a bounded window. At line 5429, the controller points an index register to <code>EGR18</code> and calls the common boundary checking routine.</p>
+<p>In the factory calibration, <code>EGR18</code> is set to 255 counts (maximum scale, corresponding to full boost / wide open throttle). Because its companion upper limit is also set to 255, the factory calibration effectively disables the lower MAP window restriction during Phase 1, allowing baseline sampling at any manifold pressure where the other entry gates are satisfied.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5429.</li>
+<li><strong>Subroutine Called</strong>: <code>EGR_CheckHiLoLimits</code> at line 5462.</li>
+<li><strong>Input Variable</strong>: <code>MapValue</code> (RAM address 0x0017) loaded into accumulator A.</li>
+<li><strong>Register Pointer</strong>: Index register X loaded with address <code>#EGR18_ExhGasRecircConstLoLimit</code>.</li>
+<li><strong>Boundary Logic</strong>: Compares <code>MapValue</code> against <code>0x00,x</code> (<code>EGR18</code>) and <code>0x01,x</code> (<a href="../../7_-_Aux_Functions/EGR/EGR18a_ExhGasRecircConstHiLimit.html"><code>EGRR18A</code></a>). If <code>MapValue &lt; EGR18</code> (<code>bcs L1464</code>), pulls return address off stack and aborts via <code>EGR_ResetEGRVars</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Lowering EGR18</strong>: Establishes a real lower manifold pressure floor for Phase 1 baseline tracking. For example, setting 50 counts creates a requirement for at least moderate intake load before baseline sampling proceeds.</li>
+<li><strong>Stock Calibration (255 counts)</strong>: Acts as an open gate in stock firmware because <code>EGR18</code> and companion <a href="../../7_-_Aux_Functions/EGR/EGR18a_ExhGasRecircConstHiLimit.html"><code>EGRR18A</code></a> are both set to full scale (255), relying on <a href="../../7_-_Aux_Functions/EGR/EGR33_ExhGasRecircConstFromMAPBelowBaro.html"><code>EGR33</code></a> to enforce minimum manifold vacuum.</li>
+<li><strong>3-Bar MAP Sensor Conversions</strong>: If custom manifold pressure windows are defined, scale all MAP count thresholds by multiplying by 0.667 (two-thirds). This accounts for the expanded 3-bar pressure span (0 to 44.1 psi absolute vs 0 to 29.4 psi absolute).</li>
+<li><strong>EGR Delete Applications</strong>: Altering <code>EGR18</code> is not necessary when disabling EGR; use the configuration bit <code>cfg_EGR</code> or raise <a href="../../7_-_Aux_Functions/EGR/EGR1_ExhGasRecircConst.html"><code>EGR1</code></a> to 65535 instead.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>ExhGasRecirc_MM</code> at line 5428, <code>MapValue</code> is loaded into accumulator A. At line 5429, index register X is loaded with the address <code>#EGR18_ExhGasRecircConstLoLimit</code>, and <code>EGR_CheckHiLoLimits</code> is called via <code>bsr</code>. Inside <code>EGR_CheckHiLoLimits</code> (lines 5462–5467), the CPU compares accumulator A against offset 0 (<code>cmpa 0x00,x</code>). If accumulator A is lower (<code>bcs L1464</code>), the routine branches to line 5469, pulls the return address from the stack (<code>pulx</code>), and falls directly into <code>EGR_ResetEGRVars</code>, zeroing <code>EGRVar3</code> and resetting Phase 1. If A is greater than or equal to <code>EGR18</code>, it checks the upper limit at offset 1 (<code>cmpa 0x01,x</code>, which is <a href="../../7_-_Aux_Functions/EGR/EGR18a_ExhGasRecircConstHiLimit.html"><code>EGRR18A</code></a>).</p>
+<pre><code class="language-motorola6803">; --- ExhGasRecirc_MM (T-SMEC_v19.asm:5428-5435) ---
+	ldaa MapValue	    ; load a with memory contents
+	ldx  #EGR18_ExhGasRecircConstLoLimit	; load index with value
+	bsr  EGR_CheckHiLoLimits    ; call subroutine
+	ldaa TpsVolts	    ; load a with memory contents
+	suba MINTHR_LowestSessionTPS
+	bls  EGR_ResetEGRVars	 ; branch if lower or same
+	ldx  #EGR14_ExhGasRecircConstFromTPSVoltsLoLimit    ; load index with value
+	bsr  EGR_CheckHiLoLimits    ; call subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Paired Calibration Entry</strong>: Forms an indexed low/high limit pair with companion constant <a href="../../7_-_Aux_Functions/EGR/EGR18a_ExhGasRecircConstHiLimit.html"><code>EGRR18A</code></a> located at the adjacent byte (offset +1, ROM address 0x1A07 / 0x8822).</li>
+<li><strong>Subroutine Mechanics</strong>: Evaluated by <code>EGR_CheckHiLoLimits</code> using indexed addressing (<code>cmpa 0x00,x</code>).</li>
+<li><strong>Factory Bypass</strong>: Setting both <code>EGR18</code> and <a href="../../7_-_Aux_Functions/EGR/EGR18a_ExhGasRecircConstHiLimit.html"><code>EGRR18A</code></a> to 255 allows any MAP reading below baro (gated by <a href="../../7_-_Aux_Functions/EGR/EGR33_ExhGasRecircConstFromMAPBelowBaro.html"><code>EGR33</code></a>) to satisfy the Phase 1 window.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>EGR18</code>
+        </footer>
+    </div>
+</body>
+</html>

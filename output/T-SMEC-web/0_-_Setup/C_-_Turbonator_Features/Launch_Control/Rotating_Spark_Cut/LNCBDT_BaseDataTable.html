@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LNCBDT: BaseDataTable | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x055C</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ C - Turbonator Features ➔ Launch Control ➔ Rotating Spark Cut</strong> &nbsp;|&nbsp; Subsystem: <strong>Turbonator_Features</strong>
+        </div>
+        
+        <article class="content">
+            <h1>LNCBDT: BaseDataTable</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>LNCBDT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>LNCBDT_BaseDataTable</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Turbonator_Features</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\C_-_Turbonator_Features\Launch_Control\Rotating_Spark_Cut\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x055C</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 9 (Bitmask / Pattern Array)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Cylinder Event Cycle Counts (Base Counter Reload Value)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x03                       ;Point 1
+.byte 0x03                       ;Point 2
+.byte 0x05                       ;Point 3
+.byte 0x05                       ;Point 4
+.byte 0x07                       ;Point 5
+.byte 0x07                       ;Point 6
+.byte 0x07                       ;Point 7
+.byte 0x07                       ;Point 8</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1561-L1579"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L10279"><code>SetBaseandPattern</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L10281"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>LNCBDT</code> stores the counter initialization values that define the cycle length for each of the eight rotating spark cut patterns in launch control.</p>
+<p>Turbonator firmware cuts ignition events in a rotating sequence across cylinders to distribute thermal loading and prevent raw fuel accumulation in any single combustion chamber. Each pattern operates over a specific cycle length: 3 cylinder events for 1/3 and 2/3 cuts, 5 cylinder events for 3/5 and 4/5 cuts, and 7 cylinder events for 3/7 through 6/7 cuts.</p>
+<p><code>LNCBDT</code> provides the cycle length for each selectable ratio so the controller knows when to reset the counter and reload the bitmask pattern.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Enclosed in subroutine <code>SetBaseandPattern</code> at lines 10279-10289 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Evaluated when <code>Counter_SparkCut</code> decrements to zero (<code>beq SetBaseandPattern</code> at line 10252) while <code>Turbonator_Staging</code> and <code>Turbonator_SparkCut</code> are active.</li>
+<li>Offset lookup: <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Rotating_Spark_Cut/SPKFRC_SparkCutFraction.html"><code>SPKFRC_SparkCutFraction</code></a> is added to base address <code>#LNCBDT_BaseDataTable</code> in index register Y via instruction <code>aby</code> (line 10282).</li>
+<li>Bang-bang modification: If option flag <code>opt_BangBang</code> is set in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a>, instruction <code>decb</code> at line 10288 reduces the base counter by one before storing into <code>Counter_SparkCut</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Factory Calibration Matching</strong>: Standard calibrations use base values of 3, 3, 5, 5, 7, 7, 7, and 7 for pattern indices 0 through 7. These match the bit patterns in <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Rotating_Spark_Cut/LNCPDT_PatternDataTable.html"><code>LNCPDT</code></a>.</li>
+<li><strong>Bang-Bang Rev Limiter</strong>: When <code>opt_BangBang</code> is enabled in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a>, the firmware automatically decrements the selected base value by one, shortening the cycle and producing an aggressive staccato limiter sound.</li>
+<li><strong>Pattern Customization</strong>: Modifying these values is only required when authoring specialized firing sequences for alternative engine configurations.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: When <code>Counter_SparkCut</code> reaches zero during the per-cylinder ignition loop, subroutine <code>SetBaseandPattern</code> executes at line 10279. Accumulator B loads <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Rotating_Spark_Cut/SPKFRC_SparkCutFraction.html"><code>SPKFRC_SparkCutFraction</code></a> (an offset between 0 and 7). Index register Y points to <code>#LNCBDT_BaseDataTable</code> at line 10281, and <code>aby</code> adds accumulator B to register Y. The byte at that memory offset is read into accumulator B. At line 10287, the CPU inspects <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2_CalCustomOptionConfigFlags2</code></a> for <code>opt_BangBang</code>. If clear, it branches to <code>StoreSparkCutCounter</code>; if set, <code>decb</code> decrements the counter base by one. The value is then saved into <code>Counter_SparkCut</code> at line 10291.</p>
+<pre><code class="language-motorola6803">; --- SetBaseandPattern (T-SMEC_v19.asm:10279-10289) ---
+SetBaseandPattern:
+        ldab SPKFRC_SparkCutFraction ; this is now an offset value
+        ldy  #LNCBDT_BaseDataTable
+        aby
+        ldab 0x00, Y ; b now contains the base value
+
+        ;if the option for bang-bang is enabled, subtract 1 from B
+        ldx  #OPTN2_CalCustomOptionConfigFlags2
+        brclr 0x00, X, #opt_BangBang, StoreSparkCutCounter
+        decb</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Array Organization</strong>: Eight consecutive bytes corresponding to cut fraction choices 0 through 7 (1/3 Cut to 6/7 Cut).</li>
+<li><strong>Companion Array</strong>: Directly paired with pattern bitmask array <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Rotating_Spark_Cut/LNCPDT_PatternDataTable.html"><code>LNCPDT</code></a>.</li>
+<li><strong>Firmware Flag Interaction</strong>: Affected by <code>opt_BangBang</code> in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a>, which shortens the cycle length by one count.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>LNCBDT</code>
+        </footer>
+    </div>
+</body>
+</html>

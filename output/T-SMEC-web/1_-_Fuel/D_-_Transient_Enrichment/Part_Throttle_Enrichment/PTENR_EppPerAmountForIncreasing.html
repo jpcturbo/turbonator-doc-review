@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTENR: EppPerAmountForIncreasing | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0A3F</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ D - Transient Enrichment ➔ Part Throttle Enrichment</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PTENR: EppPerAmountForIncreasing</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PTENR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>PTENR_EppPerAmountForIncreasing</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\D_-_Transient_Enrichment\Part_Throttle_Enrichment\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0A3F</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Distributor Reference Pulse Count and Step Rate (16-bit word: high byte pulses, low byte increment)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0x3201                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L2813-L2823"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_v19.asm.html#L5840"><code>CalculatePartThrottleEnrichmentAndSparkScatterFuel_MM</code></a> in <a href="../../../T-SMEC_v19.asm.html#L5846"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PTENR</code> establishes the engine position pulse countdown interval and step size governing how rapidly part-throttle enrichment ramps upward when manifold pressure exceeds the <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/RPMMAP_SwitchPointForDownUp_FromRpm.html"><code>RPMMAP</code></a> boundary curve.</p>
+<p>Formatted as a 16-bit word, the high byte defines the number of distributor reference pulses that must elapse between enrichment steps, while the low byte defines the increment added to the open-loop enrichment fraction timer. This pulse countdown structure ensures that transient enrichment builds progressively with engine revolutions rather than jumping instantaneously, providing a smooth transition into boost.</p>
+<p>The factory setting of 50 pulses and 1 count increment ensures that enrichment builds smoothly over approximately 25 engine revolutions on a four-cylinder engine.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Enclosed in routine <code>CalculatePartThrottleEnrichmentAndSparkScatterFuel_MM</code> at lines 5840-5877 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Selected when <code>MapValue &gt; RPMMAP_SwitchPointForDownUp_FromRpm</code> (lines 5844-5848).</li>
+<li>At line 5866, instruction <code>ldab 0x00,x</code> loads the high byte (50 pulses) into accumulator B for countdown timer verification.</li>
+<li>At line 5877, instruction <code>addb 0x01,x</code> adds the low byte (1 count increment) to <code>Timer_OpenLoopFraction</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Faster Enrichment Ramp</strong>: Lowering the pulse countdown value in the high byte causes the enrichment multiplier to ramp upward faster, curing hesitation, lean air-fuel ratio spikes, or sluggish turbocharger spool-up when rolling into the throttle.</li>
+<li><strong>Gentler Ramp and Fuel Economy</strong>: Raising the pulse countdown value slows down the rate of enrichment buildup, creating a more conservative ramp that conserves fuel during brief transient accelerations.</li>
+<li><strong>Step Size Adjustment</strong>: Increasing the low byte step value increases the percentage added on each countdown expiration, producing a more aggressive step-up.</li>
+<li><strong>Injector Upgrades</strong>: When running very large injectors, ensure the ramp-in rate is not overly rapid to prevent transient rich bogging.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: When <code>MapValue</code> exceeds <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/RPMMAP_SwitchPointForDownUp_FromRpm.html"><code>RPMMAP</code></a>, index register X points to <code>#PTENR_EppPerAmountForIncreasing</code> at line 5846. Branch <code>bmi MAPAbove_RPMMAP</code> directs execution to line 5854. After updating <code>Temp0</code> and evaluating the falling-edge countdown flag in <code>Counter_FallingEdgeEPP_MaxFF</code>, line 5865 enters <code>Bit7_IsSet</code>. Line 5866 loads accumulator B with <code>0x00,x</code> (the high byte of <code>PTENR</code>). If the pulse countdown has elapsed, line 5875 reloads <code>Timer_OpenLoopFraction</code> into accumulator B, and line 5877 executes <code>addb 0x01,x</code>, adding the low byte of <code>PTENR</code> to the running enrichment multiplier.</p>
+<pre><code class="language-motorola6803">; --- CalculatePartThrottleEnrichmentAndSparkScatterFuel_MM (T-SMEC_v19.asm:5840-5863) ---
+CalculatePartThrottleEnrichmentAndSparkScatterFuel_MM:
+	ldx  #RPMMAP_SwitchPointForDownUp_FromRpm     ; load index with value
+	ldaa EngineRpm_HB    ; load a with memory contents
+	jsr  Lookup4ByteTable	 ; call subroutine
+	cmpa MapValue	    ; compare a with memory contents
+	rora ; after the rotate, the carry bit will be in bit 7, value in A will be MAP/2
+	ldx  #PTENR_EppPerAmountForIncreasing	 ; load index with value
+	anda #0x80	    ; AND a with value -10000000-  this clears out everything from A except for bit7
+	bmi  MAPAbove_RPMMAP	    ; branch if minus(hi bit 1) - this only happens when MAP is higher than the lookup value
+
+MAPBelow_RPMMAP:
+	inx
+	inx                 ; move X pointer to correct value
+
+MAPAbove_RPMMAP:
+        staa Temp0	    ; store a into memory - only bit 7 status
+	tab		    ; b = a
+	eorb Counter_FallingEdgeEPP_MaxFF  ; bit7 has special meaning?
+	bpl  Bit7_IsSet	    ; branch if plus (hi bit 0) - branch if bit7 is set in either Counter_EPP or from lookup, but not both
+
+Bit7_IsClear:
+        staa Counter_FallingEdgeEPP_MaxFF    ; store a into memory
+	ldab Timer_OpenLoopFraction    ; load b with memory contents
+	bra  L1506	    ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>16-Bit Word Organization</strong>: High byte stores distributor reference pulse countdown interval; low byte stores the fractional multiplier addition.</li>
+<li><strong>Indexed Sibling</strong>: Memory location 0x0A3F is directly followed by <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTENR2_EppPerAmountForDecreasingMultiplier.html"><code>PTENR2</code></a> at 0x0A4C and <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTENRD_AmountForDecreasingMultiplier_Negative.html"><code>PTENRD</code></a> at 0x0A59.</li>
+<li><strong>Ceiling Clamping</strong>: The running value in <code>Timer_OpenLoopFraction</code> is clamped against the maximum limit computed from <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTELMT_MultiplierMaxLimitFromRpm.html"><code>PTELMT</code></a> and <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTEADJ_EnrichAdjust_FromMap.html"><code>PTEADJ</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>PTENR</code>
+        </footer>
+    </div>
+</body>
+</html>

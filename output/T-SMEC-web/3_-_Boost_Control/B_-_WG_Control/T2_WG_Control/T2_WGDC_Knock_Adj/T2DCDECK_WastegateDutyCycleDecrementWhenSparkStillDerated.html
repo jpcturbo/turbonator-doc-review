@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T2DCDECK: WastegateDutyCycleDecrementWhenSparkStillDerated | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x140D</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ B - WG Control ➔ T2 WG Control ➔ T2 WGDC Knock Adj</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>T2DCDECK: WastegateDutyCycleDecrementWhenSparkStillDerated</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>T2DCDECK</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T2DCDECK_WastegateDutyCycleDecrementWhenSparkStillDerated</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\B_-_WG_Control\T2_WG_Control\T2_WGDC_Knock_Adj\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x140D</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">percent duty cycle</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5323-L5333"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L9905"><code>T2WGDC_LookAtCylRetards</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L9918"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>T2DCDECK</code> controls the rate at which wastegate duty cycle recovers toward normal operation after a detonation event has subsided in T2 control.</p>
+<p>While cylinders are recovering from knock retard, the controller steadily bleeds down the knock reduction penalty by <code>T2DCDECK</code> counts at intervals governed by <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2DECTIM_TimeScaleFor_DCDECK.html"><code>T2DECTIM</code></a>, smoothly restoring baseline wastegate duty cycle and boost pressure without causing sudden torque surges.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>T2WGDC_LookAtCylRetards</code> (<code>T-SMEC_v19.asm:9916-9921</code>), called from <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9755-10040</code>).</li>
+<li><strong>Gating Conditions</strong>: Triggered when <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2DECTIM_TimeScaleFor_DCDECK.html"><code>T2DECTIM</code></a> bitmask passes and cylinder retard exceeds <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2WGKNRD_MinimumKnockToReduceWGDC.html"><code>T2WGKNRD</code></a>.</li>
+<li><strong>Decrement Evaluation</strong>:</li>
+<li>Line 9917 loads <code>WastegateDutyCycleIncreaseFromKnock</code> into accumulator B.</li>
+<li>Line 9918 executes <code>subb T2DCDECK_WastegateDutyCycleDecrementWhenSparkStillDerated</code>.</li>
+<li>If carry is clear (no underflow), stores updated penalty count; if underflow occurs, accumulator B is cleared to zero at line 9920.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>T2 Knock Recovery Step Rate</strong>:</li>
+<li>Sets the duty cycle counts subtracted from the knock penalty per recovery interval.</li>
+<li>Factory setting is 2 counts (1.0 percent duty cycle recovery per step).</li>
+<li><strong>Balancing Recovery vs. Detonation Cycling</strong>:</li>
+<li>Increasing <code>T2DCDECK</code> to 4 counts speeds up boost return on high-octane fuel.</li>
+<li>Decreasing <code>T2DCDECK</code> to 1 count creates a gentle recovery that prevents secondary knock events.</li>
+<li><strong>Underflow Clamping</strong>:</li>
+<li>Automatically clamps at zero counts when knock penalty has fully cleared.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>T2WGDC_LookAtCylRetards</code> at line 9917, accumulator B loads <code>WastegateDutyCycleIncreaseFromKnock</code> and line 9918 executes <code>subb T2DCDECK_WastegateDutyCycleDecrementWhenSparkStillDerated</code>. If carry is clear (<code>bcc T2WGDC_StoreWGDutyCycleFromKnock</code>), the reduced penalty is written to memory at line 9923. If underflow occurs, execution branches to <code>L7762</code> at line 9920, executing <code>clrb</code> to reset the penalty to zero.</p>
+<pre><code class="language-motorola6803">; --- T2WGDC_LookAtCylRetards (T-SMEC_v19.asm:9916-9921) ---
+        bne  L7763                     ; branch if not equal (not zero)
+        ldab WastegateDutyCycleIncreaseFromKnock    ; load b with memory contents
+        subb T2DCDECK_WastegateDutyCycleDecrementWhenSparkStillDerated    ; subtract memory contents from b (data is 02)
+        bcc  T2WGDC_StoreWGDutyCycleFromKnock                     ; branch if greater or equal
+L7762:  clrb                           ; b = 0</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Step Size</strong>: 1 count = 0.5% duty cycle (2 counts = 1.0% duty cycle recovery per step).</li>
+<li><strong>Pacing Interlock</strong>: Works directly with prescaler bitmask <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2DECTIM_TimeScaleFor_DCDECK.html"><code>T2DECTIM</code></a>.</li>
+<li><strong>Factory Value</strong>: 0x02 = 2 counts = 1.0% duty cycle.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>T2DCDECK</code>
+        </footer>
+    </div>
+</body>
+</html>

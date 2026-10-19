@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrysler Turbo Calibration & Documentation Portal</title>
+    <script>
+        (function() {
+            function syncPortalTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t === 'light' || t === 'dark') {
+                        document.documentElement.setAttribute('data-theme', t);
+                        localStorage.setItem('mptune_theme', t);
+                        window.name = 'mptune_theme=' + t;
+                        var btn = document.getElementById('themeToggle');
+                        if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                    }
+                } catch (e) {}
+            }
+            syncPortalTheme();
+            window.addEventListener('pageshow', syncPortalTheme);
+            window.addEventListener('storage', syncPortalTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="portal.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="portal-header">
+        <div class="header-inner">
+            <div class="brand">
+                <div class="brand-title">Chrysler Turbo ECU Calibration Portal</div>
+                <div class="brand-subtitle">
+                    Automotive Calibration Documentation & Tools
+                    <span id="dbStatusBadge" class="db-badge">Loading DB...</span>
+                </div>
+            </div>
+
+            <button id="themeToggle" class="theme-toggle-btn" type="button" aria-label="Toggle Theme">
+                Light Theme
+            </button>
+        </div>
+    </header>
+
+    <div class="portal-container">
+
+        <!-- Welcome Hero -->
+        <section class="hero-card">
+            <h1>Chrysler Turbo Calibration Repository</h1>
+            <p>
+                Welcome to the central calibration and disassembly documentation portal for Chrysler 2.2L &amp; 2.5L Turbo vehicles. 
+                Use this portal to update table descriptions in your Turbonator (<code>.tpl</code>) calibration files, or browse detailed technical disassembly and calibration references across each ECU hardware family.
+            </p>
+        </section>
+
+        <!-- Section 1: Calibration Updater -->
+        <section class="portal-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="12" y1="18" x2="12" y2="12"></line>
+                        <line x1="9" y1="15" x2="15" y2="15"></line>
+                    </svg>
+                    Update a Calibration File (.tpl)
+                </h2>
+                <span class="section-desc">Injects comprehensive overview and tuner guide into your Turbonator cals</span>
+            </div>
+
+            <!-- Upload Dropzone -->
+            <div id="uploadBox" class="panel dropzone-panel" tabindex="0" role="button">
+                <input type="file" id="fileInput" accept=".tpl,.txt" style="display: none;">
+                <div class="drop-icon" aria-hidden="true">
+                    <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                </div>
+                <h3 class="drop-title">Select or Drop Your Calibration File</h3>
+                <p class="drop-subtitle">Drag and drop your <code>.tpl</code> file here, or click to browse</p>
+                <button type="button" id="browseBtn" class="btn btn-primary">
+                    Browse Calibration File
+                </button>
+            </div>
+
+            <!-- Ready & Download Card -->
+            <div id="readyBox" class="panel ready-panel hidden">
+                <div class="ready-icon-wrap" aria-hidden="true">
+                    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                </div>
+
+                <h3 class="ready-title">Calibration File Ready</h3>
+                <div id="loadedFileName" class="file-name-display">filename.tpl</div>
+
+                <!-- Detected ECM Display (Shown when auto-detected) -->
+                <div id="ecmDetectedBadge" class="ecm-detected-badge hidden">
+                    ECM Family: <strong id="ecmDetectedName">--</strong>
+                </div>
+
+                <!-- Fallback ECM Selector (Shown ONLY if ECM cannot be auto-detected) -->
+                <div id="ecmFallbackContainer" class="ecm-fallback-container hidden">
+                    <div class="ecm-fallback-alert">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <span>Could not auto-detect ECM family from file headers. Please select your ECM type:</span>
+                    </div>
+                    <div class="ecm-fallback-select-row">
+                        <select id="ecmFallbackSelect" class="ecm-select-dropdown">
+                            <option value="" disabled selected>-- Select ECM Type --</option>
+                        </select>
+                        <button id="ecmFallbackApplyBtn" type="button" class="btn btn-primary" disabled>
+                            Apply Descriptors
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Notification Box for pending or unavailable DBs -->
+                <div id="ecmNoticeBox" class="ecm-notice-box hidden"></div>
+
+                <!-- Update Summary Count -->
+                <div id="statUpdatedSummary" class="update-summary-text hidden"></div>
+
+                <div class="action-wrap">
+                    <button id="downloadBtn" type="button" class="btn btn-download">
+                        Save Updated Calibration (.tpl)
+                    </button>
+                    <p class="save-path-text">
+                        Will save as: <strong id="statOutputFile">filename-updated.tpl</strong>
+                    </p>
+                    <p id="savedStatusText" class="saved-success-text hidden">
+                        ✓ File saved successfully!
+                    </p>
+                </div>
+
+                <div class="reset-wrap">
+                    <button id="resetBtn" type="button" class="btn-link">
+                        &larr; Choose another file
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: ECM Family Documentation Navigation -->
+        <section class="portal-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                    ECM Family Documentation
+                </h2>
+                <span class="section-desc">Select an engine control module family to access complete calibration docs and guides</span>
+            </div>
+
+            <div class="ecm-grid">
+
+                <!-- 1. LM-87 -->
+                <button type="button" class="ecm-button" data-target="T-LM-web/index.html" data-name="LM-87" data-ready="true">
+                    <div class="ecm-btn-top">
+                        <span class="ecm-code">LM-87</span>
+                        <div class="ecm-title">Chrysler Logic Module</div>
+                    </div>
+                    <p class="ecm-desc">
+                        1985–1987 dual-board engine controller (Motorola 6803 MCU). Complete assembly routine maps, calibration tables, and tuning guide.
+                    </p>
+                    <div class="ecm-meta-row">
+                        <span>1985–1987 &bull; 6803 MCU</span>
+                        <span class="ecm-arrow">&rarr;</span>
+                    </div>
+                </button>
+
+                <!-- 2. SMEC -->
+                <button type="button" class="ecm-button" data-target="T-SMEC-web/index.html" data-name="SMEC" data-ready="true">
+                    <div class="ecm-btn-top">
+                        <span class="ecm-code">SMEC</span>
+                        <div class="ecm-title">Single Module Engine Controller</div>
+                    </div>
+                    <p class="ecm-desc">
+                        1988–1989 single-module architecture (Motorola 68HC11 MCU). Under-hood integration with improved sensor A/D resolution.
+                    </p>
+                    <div class="ecm-meta-row">
+                        <span>1988–1989 &bull; 68HC11 MCU</span>
+                        <span class="ecm-arrow">&rarr;</span>
+                    </div>
+                </button>
+
+                <!-- 3. SBEC -->
+                <button type="button" class="ecm-button" data-target="T-SBEC-web/index.html" data-name="SBEC" data-ready="false">
+                    <div class="ecm-btn-top">
+                        <span class="ecm-code">SBEC</span>
+                        <div class="ecm-title">Single Board Engine Controller</div>
+                    </div>
+                    <p class="ecm-desc">
+                        1990–1991 consolidated single-board controller (Motorola 68HC11 MCU). Streamlined boost management and expanded diagnostics.
+                    </p>
+                    <div class="ecm-meta-row">
+                        <span>1990–1991 &bull; 68HC11 MCU</span>
+                        <span class="ecm-arrow">&rarr;</span>
+                    </div>
+                </button>
+
+                <!-- 4. SBECII -->
+                <button type="button" class="ecm-button" data-target="T-SBECII-web/index.html" data-name="SBECII" data-ready="false">
+                    <div class="ecm-btn-top">
+                        <span class="ecm-code">SBECII</span>
+                        <div class="ecm-title">Single Board Engine Controller II</div>
+                    </div>
+                    <p class="ecm-desc">
+                        1992–1993 sequential fuel injection platform with CCD bus communication and expanded memory map.
+                    </p>
+                    <div class="ecm-meta-row">
+                        <span>1992–1993 &bull; Sequential EFI</span>
+                        <span class="ecm-arrow">&rarr;</span>
+                    </div>
+                </button>
+
+                <!-- 5. T3-I -->
+                <button type="button" class="ecm-button" data-target="T3-I-web/index.html" data-name="T3-I" data-ready="false">
+                    <div class="ecm-btn-top">
+                        <span class="ecm-code">T3-I</span>
+                        <div class="ecm-title">Turbo III (Gen 1) 16-Valve</div>
+                    </div>
+                    <p class="ecm-desc">
+                        1991–1992 Lotus-developed 16V DOHC DDIS platform (Daytona IROC R/T, Spirit R/T) with distributorless ignition.
+                    </p>
+                    <div class="ecm-meta-row">
+                        <span>1991–1992 &bull; 2.2L 16V Lotus</span>
+                        <span class="ecm-arrow">&rarr;</span>
+                    </div>
+                </button>
+
+                <!-- 6. T3-II -->
+                <button type="button" class="ecm-button" data-target="T3-II-web/index.html" data-name="T3-II" data-ready="false">
+                    <div class="ecm-btn-top">
+                        <span class="ecm-code">T3-II</span>
+                        <div class="ecm-title">Turbo III (Gen 2) 16-Valve</div>
+                    </div>
+                    <p class="ecm-desc">
+                        1992–1993 revised Turbo III platform with updated ignition sequence timing and secondary diagnostic tables.
+                    </p>
+                    <div class="ecm-meta-row">
+                        <span>1992–1993 &bull; 2.2L 16V Rev 2</span>
+                        <span class="ecm-arrow">&rarr;</span>
+                    </div>
+                </button>
+
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Notice Modal for in-progress ECMs -->
+    <div id="noticeModal" class="modal-overlay hidden" role="dialog" aria-modal="true">
+        <div class="modal-card">
+            <h3 id="modalTitle" class="modal-title">ECM Documentation</h3>
+            <p id="modalDesc" class="modal-desc"></p>
+            <button id="modalCloseBtn" type="button" class="btn btn-primary" style="width: 100%;">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <script src="portal.js"></script>
+</body>
+</html>

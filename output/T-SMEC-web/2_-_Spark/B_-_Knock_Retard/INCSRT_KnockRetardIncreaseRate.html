@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INCSRT: KnockRetardIncreaseRate | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0440</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>2 - Spark ➔ B - Knock Retard</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>INCSRT: KnockRetardIncreaseRate</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>INCSRT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>INCSRT_KnockRetardIncreaseRate</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>2_-_Spark\B_-_Knock_Retard\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0440</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">bitmask</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x1F                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1278-L1288"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8249"><code>StoreMaxAllowedRetard</code></a> in <a href="../../T-SMEC_v19.asm.html#L8256"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>INCSRT</code> controls the recovery and decay rate of ignition timing after a knock event has ended.</p>
+<p>When the engine controller detects detonation, it retards ignition timing immediately. Once detonation ceases, the controller must gradually return (decay) the timing back toward the base advance curve. If timing is restored too quickly, the engine will immediately re-detonate; if returned too slowly, the vehicle remains sluggish with elevated exhaust gas temperatures long after the knock event has passed. <code>INCSRT</code> acts as a loop counter bitmask: every time the main program loop counter matches this mask, the controller restores 0.5 degrees of timing to each cylinder until all per-cylinder knock retards reach zero. In factory calibrations, <code>INCSRT</code> is set to 31 counts (binary mask 31), triggering timing recovery once every 32 main loops (approximately 352 milliseconds, or 1.4 degrees per second).</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateKnockRetard_MM</code> (<code>T-SMEC_v19.asm:8255-8269</code>).</li>
+<li><strong>Bitmask Test</strong>:</li>
+<li><code>Counter_MainLoop</code> (RAM address 0x0080) is tested against <code>INCSRT_KnockRetardIncreaseRate</code> (<code>bita INCSRT</code>).</li>
+<li>If any masked bits are non-zero (<code>bne R1686</code>), decay is skipped for this loop pass.</li>
+<li><strong>Decay Execution</strong>:</li>
+<li>When masked bits equal zero, the routine iterates across <code>Cylinder2Retard</code> through <code>Cylinder4Retard</code> (RAM 0x00A1-0x00A4), decrementing each non-zero cylinder retard by 1 (0.5 degrees).</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Strict Bitmask Values</strong>:</li>
+<li><code>INCSRT</code> must strictly be set to binary power-of-two minus one masks: 0, 1, 3, 7, 15, 31, 63, 127, or 255. Non-mask values produce irregular decay pacing.</li>
+<li><strong>Slower Recovery for Safety</strong>:</li>
+<li>Setting <code>INCSRT</code> to 63 (decay every 64 loops / ~700 ms per half-degree) provides extended protection against repeat knock.</li>
+<li><strong>Faster Recovery for Track / Drag</strong>:</li>
+<li>Lowering <code>INCSRT</code> to 15 (decay every 16 loops / ~176 ms per half-degree) restores peak timing and power quickly after transient spikes.</li>
+<li><strong>Decay Asymmetry</strong>:</li>
+<li>Timing is pulled in instantly upon knock detection but returns slowly via <code>INCSRT</code>, creating a protective asymmetric hysteresis.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateKnockRetard_MM</code> at line 8255, <code>ldaa Counter_MainLoop</code> loads the background loop counter. Line 8256 executes <code>bita INCSRT_KnockRetardIncreaseRate</code>. If the bit test result is non-zero (<code>bne R1686</code>), execution exits subroutine. When the mask matches zero, line 8258 loads index register X with <code>#Cylinder2Retard</code>. The loop <code>ReduceAllRetardsByOne</code> (lines 8259-8268) disables interrupts (<code>sei</code>), checks if the cylinder retard is non-zero, decrements it by 1 (<code>deca</code>), enables interrupts (<code>cli</code>), increments X, and repeats until all four cylinder retard bytes (0x00A1 through 0x00A4) are decremented.</p>
+<pre><code class="language-motorola6803">; --- CalculateKnockRetard_MM (T-SMEC_v19.asm:8255-8269) ---
+	ldaa Counter_MainLoop	  ; load a with memory contents
+	bita INCSRT_KnockRetardIncreaseRate    ;  (data is 1f)
+	bne  R1686	    ; branch if not equal (not zero)
+	ldx  #Cylinder2Retard	 ; load index with value
+ReduceAllRetardsByOne:
+	sei		    ; disable interrupts
+	ldaa 0x00,x	    ; load a with memory at index + value
+	beq  L1685	    ; branch if equal (zero)
+	deca		    ; decrement a
+	staa 0x00,x	
+L1685:	cli		    ; enable interrupts
+	inx		    ; increment index (x=x+1)
+	cpx  #Cylinder4Retard	 ;  -00000000 10100100-
+	bls  ReduceAllRetardsByOne    ; branch if lower or same
+R1686:	rts		    ; return from subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Binary Mask Requirement</strong>: Must always be set to (2^N - 1) values: 0x00, 0x01, 0x03, 0x07, 0x0F, 0x1F, 0x3F, 0x7F, 0xFF.</li>
+<li><strong>Recovery Rate Formula</strong>: Timing recovers at 0.5 degrees every (INCSRT + 1) * 11 ms.</li>
+<li><strong>Multi-Cylinder Loop</strong>: A single match decrements all four individual cylinder retard bytes simultaneously.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>INCSRT</code>
+        </footer>
+    </div>
+</body>
+</html>

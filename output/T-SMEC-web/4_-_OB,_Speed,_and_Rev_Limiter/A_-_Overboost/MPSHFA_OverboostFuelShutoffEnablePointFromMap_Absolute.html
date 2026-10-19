@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPSHFA: OverboostFuelShutoffEnablePointFromMap Absolute | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x187E</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>4 - OB, Speed, and Rev Limiter ➔ A - Overboost</strong> &nbsp;|&nbsp; Subsystem: <strong>Limiters_Limp</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MPSHFA: OverboostFuelShutoffEnablePointFromMap Absolute</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MPSHFA</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MPSHFA_OverboostFuelShutoffEnablePointFromMap_Absolute</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Limiters_Limp</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>4_-_OB,_Speed,_and_Rev_Limiter\A_-_Overboost\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x187E</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi boost</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x99 (153 counts ≈ 17.6 psi boost)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6460-L6471"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5656"><code>Cutout_CheckNormalOB</code></a> in <a href="../../T-SMEC_v19.asm.html#L5659"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MPSHFA</code> defines the instantaneous or absolute overboost fuel cutout threshold in the Chrysler engine controller.</p>
+<p>While <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a> allows a temporary boost spike by decrementing a countdown timer, <code>MPSHFA</code> serves as an emergency upper boundary where fuel injection is cut immediately without waiting for any timer to expire. In factory 2.5L calibrations, <code>MPSHFA</code> is calibrated to 153 counts, representing approximately 17.6 psi of boost above atmospheric pressure. If severe turbocharger runaway occurs and boost shoots past this absolute ceiling, the controller bypasses all timer delays, stores non-critical diagnostic fault code 45, and shuts off fuel injection for the current engine rotation to protect pistons, head gasket, and valvetrain.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>Cutout_CheckNormalOB</code> (<code>T-SMEC_v19.asm:5656-5666</code>), called from <code>ControlEngineCutout_MM</code> (<code>T-SMEC_v19.asm:5607-5671</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Reached only after <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a> has been subtracted from gauge boost and carry is clear (<code>MapValue - BaroPressure &gt;= MPSHFT</code>).</li>
+<li>Wastegate solenoid fault flag <code>b46_WGSolFault</code> in <code>b46_IPL2</code> must be clear.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Compares remaining gauge boost delta against <code>MPSHFA</code> (<code>cmpa MPSHFA_OverboostFuelShutoffEnablePointFromMap_Absolute</code>).</li>
+<li>If higher (<code>bhi Cutout_SetOBCodeAndShutdown</code>), branches immediately to store fault code 0x0708 via <code>ThrowNonCriticalError</code> and cuts fuel for this rotation via <code>Cutout_ShutOffEngineForThisRotation</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Raising for High-Boost Tuning</strong>:</li>
+<li>When targeting 18+ psi boost, <code>MPSHFA</code> must be elevated above planned boost overshoot levels, or set to 255 counts to prevent instant fuel shutoff.</li>
+<li>Leaving <code>MPSHFA</code> at stock 17.6 psi on an upgraded turbo results in harsh, sudden fuel cuts on rapid spool.</li>
+<li><strong>3-Bar MAP Sensor Calibration</strong>:</li>
+<li>Rescale <code>MPSHFA</code> to reflect the 44.1 psi total sensor span when upgrading from the factory 2-bar MAP sensor.</li>
+<li><strong>Lowering &amp; Protection</strong>:</li>
+<li>Lowering <code>MPSHFA</code> provides an immediate cutoff ceiling for engine dyno testing or conservative safety configurations.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>Cutout_CheckNormalOB</code> at line 5659, accumulator A holds the excess boost after subtracting <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a>. The instruction <code>cmpa MPSHFA_OverboostFuelShutoffEnablePointFromMap_Absolute</code> compares this remaining delta against <code>MPSHFA</code>. If accumulator A is higher (<code>bhi</code>), the routine branches directly to <code>Cutout_SetOBCodeAndShutdown</code> at line 5667, loading <code>0x0708</code> into register D, calling <code>ThrowNonCriticalError</code>, and jumping to <code>Cutout_ShutOffEngineForThisRotation</code>.</p>
+<pre><code class="language-motorola6803">; --- Cutout_CheckNormalOB (T-SMEC_v19.asm:5656-5666) ---
+Cutout_CheckNormalOB:	
+    suba MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer    ;  (data is ff)
+	bcs  Cutout_ResetOverboostTimer              ; branch if lower
+	cmpa MPSHFA_OverboostFuelShutoffEnablePointFromMap_Absolute    ; compare a with memory contents (data is ff)
+	bhi  Cutout_SetOBCodeAndShutdown       ; branch if higher
+	ldaa Timer_OverboostCountdown	       ; load a with memory contents
+	beq  Cutout_SetOBCodeAndShutdown       ; branch if equal (zero)
+	deca		                       ; decrement a
+	staa Timer_OverboostCountdown	       ; store a into memory
+	bra  Cutout_CheckRevLimiters	       ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Second-Stage Mechanism</strong>: Evaluates the boost excess beyond <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a>. Because <code>suba MPSHFT</code> precedes <code>cmpa MPSHFA</code>, <code>MPSHFA</code> acts as an offset ceiling above <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a>.</li>
+<li><strong>Hysteresis Pair</strong>: Paired with <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a>. During fuel restoration in <code>Cutout_UseHysteresisToDetermineWhenToTurnFuelBackOn</code> (<code>T-SMEC_v19.asm:5765-5775</code>), <code>MPSHFA</code> is re-evaluated; if boost still exceeds <code>MPSHFA</code>, error 0x0708 is re-thrown and fuel remains off.</li>
+<li><strong>3-Bar Calibration</strong>: In Stage IV calibrations, <code>MPSHFA</code> is calibrated to 12 counts (approx 2.1 psi above <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a> on the 44.1 psi scale).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MPSHFA</code>
+        </footer>
+    </div>
+</body>
+</html>

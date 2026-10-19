@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTUMSP: PTUMinLockSpeed | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x178D</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ PTU Control ➔ Entry Conditions</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PTUMSP: PTUMinLockSpeed</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PTUMSP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>PTUMSP_PTUMinLockSpeed</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\PTU_Control\Entry_Conditions\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x178D</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">MPH</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x5A                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6219-L6229"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_v19.asm.html#L10402"><code>PTU_CheckThrottleForLock</code></a> in <a href="../../../T-SMEC_v19.asm.html#L10416"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PTUMSP</code> defines the vehicle speed boundary that splits the Part Throttle Unlock control logic between low-speed city operation and high-speed highway cruising.</p>
+<p>Automatic transmission torque converter lockup behavior must balance low-speed drivability against highway fuel efficiency. In factory calibrations, <code>PTUMSP</code> is set to 90 counts, corresponding to approximately 45 MPH on the 0 to 127.5 MPH scale. Below 45 MPH, the controller enforces manifold pressure delta checks (<a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP3_PTUMAPThresholdForLock3.html"><code>PTUMP3</code></a> and <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP1_PTUMAPThresholdForLock1.html"><code>PTUMP1</code></a>/<a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP2_PTUMAPThresholdForLock2.html"><code>PTUMP2</code></a>) to prevent torque converter slippage under load, and reloads low-speed counter <a href="../../../7_-_Aux_Functions/PTU_Control/Hysteresis/PTUCNL_PTUCounterLoSpeed.html"><code>PTUCNL</code></a>. Above 45 MPH, manifold pressure checks are bypassed and high-speed counter <a href="../../../7_-_Aux_Functions/PTU_Control/Hysteresis/PTUCNH_PTUCounterHiSpeed.html"><code>PTUCNH</code></a> governs unlock debounce timing.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ControlPTU_MM</code> / <code>PTU_CheckThrottleForLock</code> (<code>T-SMEC_v19.asm:10412-10417</code>) and <code>PTU_CheckVehicleSpeed</code> (<code>T-SMEC_v19.asm:10478-10488</code>), instruction lines 10416, 10484.</li>
+<li><strong>Speed Calculation</strong>: <code>VehicleSpeed_HB</code> shifted left 3 times (<code>asld; asld; asld</code>).</li>
+<li><strong>Comparison &amp; Decision</strong>:</li>
+<li>Line 10416: If speed <code>&gt;= PTUMSP</code> (<code>bcc PTU_CheckMAPThresholdsForLock</code>), bypasses low-speed <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP3_PTUMAPThresholdForLock3.html"><code>PTUMP3</code></a> check.</li>
+<li>Line 10484: If speed <code>&gt;= PTUMSP</code> (<code>bcc LD67B</code>), loads <a href="../../../7_-_Aux_Functions/PTU_Control/Hysteresis/PTUCNH_PTUCounterHiSpeed.html"><code>PTUCNH</code></a>; otherwise loads <a href="../../../7_-_Aux_Functions/PTU_Control/Hysteresis/PTUCNL_PTUCounterLoSpeed.html"><code>PTUCNL</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Suburban Drivability Tuning</strong>:</li>
+<li>Lower <code>PTUMSP</code> to 35 to 40 MPH to allow earlier converter unlocking for passing maneuvers without reaching highway speeds.</li>
+<li><strong>Highway Fuel Economy</strong>:</li>
+<li>Raise <code>PTUMSP</code> to 50 MPH to hold torque converter lockup tighter on rolling hills.</li>
+<li><strong>Counter Selection Interlock</strong>:</li>
+<li>Selects whether <a href="../../../7_-_Aux_Functions/PTU_Control/Hysteresis/PTUCNH_PTUCounterHiSpeed.html"><code>PTUCNH</code></a> or <a href="../../../7_-_Aux_Functions/PTU_Control/Hysteresis/PTUCNL_PTUCounterLoSpeed.html"><code>PTUCNL</code></a> reloads into <code>Counter_PartThrottleUnlock</code> when timer expires.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>PTU_CheckThrottleForLock</code> at line 10412, <code>VehicleSpeed_HB</code> is loaded and shifted left 3 times. Line 10416 executes <code>cmpa PTUMSP_PTUMinLockSpeed</code>. If vehicle speed is greater than or equal to the threshold (<code>bcc</code>), it branches past the <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP3_PTUMAPThresholdForLock3.html"><code>PTUMP3</code></a> check directly to <code>PTU_CheckMAPThresholdsForLock</code>. In <code>PTU_CheckVehicleSpeed</code> at line 10484, <code>cmpa PTUMSP_PTUMinLockSpeed</code> is evaluated again to choose between <a href="../../../7_-_Aux_Functions/PTU_Control/Hysteresis/PTUCNH_PTUCounterHiSpeed.html"><code>PTUCNH</code></a> (high speed) and <a href="../../../7_-_Aux_Functions/PTU_Control/Hysteresis/PTUCNL_PTUCounterLoSpeed.html"><code>PTUCNL</code></a> (low speed).</p>
+<pre><code class="language-motorola6803">; --- ControlPTU_MM (T-SMEC_v19.asm:10412-10417) ---
+	ldd  VehicleSpeed_HB    ; load d (a&amp;b) with memory contents
+	asld                ; shift left (d=d*2)
+	asld                ; shift left (d=d*2)
+	asld                ; shift left (d=d*2)
+	cmpa PTUMSP_PTUMinLockSpeed          ; compare a with memory contents (data is 68)
+	bcc  PTU_CheckMAPThresholdsForLock          ; branch if greater or equal</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Dual Role Constant</strong>: Serves as both the MAP check bypass gate and the debounce counter reload selector.</li>
+<li><strong>Shift Scaling</strong>: Scaled by shifting <code>VehicleSpeed_HB</code> left 3 times (multiplying by 8) to convert pulse period to speed.</li>
+<li><strong>Speed Scale</strong>: 90 counts corresponds to approximately 45 MPH on the 127.5 MPH full-scale display.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>PTUMSP</code>
+        </footer>
+    </div>
+</body>
+</html>

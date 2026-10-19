@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARCMSK: AdaptiveRetardCounterMask | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x04E1</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>2 - Spark ➔ D - Adaptive Retard</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ARCMSK: AdaptiveRetardCounterMask</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ARCMSK</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ARCMSK_AdaptiveRetardCounterMask</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>2_-_Spark\D_-_Adaptive_Retard\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x04E1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">bitmask</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x3F                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1439-L1449"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L9518"><code>WGDC_LookAtCylRetards</code></a> in <a href="../../T-SMEC_v19.asm.html#L9521"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ARCMSK</code> defines the background program loop counter bitmask controlling how frequently the engine controller samples cylinder knock retards during wastegate control and adaptive retard evaluation.</p>
+<p>Rather than evaluating adaptive retard on every single program loop pass, the controller executes a bitwise test against <code>Counter_MainLoop</code> using <code>ARCMSK</code>. In factory calibrations, <code>ARCMSK</code> is set to 63 counts (binary mask 63, or 00111111). When <code>Counter_MainLoop</code> matches this mask (once every 64 main loops, approximately every 704 milliseconds), the controller inspects all cylinder retard variables and increments the boost knock timer if knock is present.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_LookAtCylRetards</code> (<code>T-SMEC_v19.asm:9521-9523</code>), called from <code>CalcWGDutyCycleT1</code>.</li>
+<li><strong>Bitmask Test</strong>:</li>
+<li>Reached after confirming cylinder retard is non-zero (<code>ldab 0x00,x; beq L1856</code>).</li>
+<li><code>bita ARCMSK_AdaptiveRetardCounterMask</code> tests accumulator A (<code>Counter_MainLoop</code>).</li>
+<li>If masked bits are non-zero (<code>bne L2858</code>), execution skips adaptive retard timer increment.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Sampling Pacing</strong>:</li>
+<li>Factory setting of 63 samples cylinder knock retards once every 64 main loops (~704 ms), filtering out brief transient noise.</li>
+<li><strong>Strict Bitmask Configuration</strong>:</li>
+<li>Must strictly be set to 2^N - 1 values: 0, 1, 3, 7, 15, 31, 63, 127, or 255.</li>
+<li><strong>Faster Adaptation</strong>:</li>
+<li>Lowering <code>ARCMSK</code> to 31 (evaluating every ~352 ms) speeds up boost knock accumulation on high-boost race applications.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>WGDC_LookAtCylRetards</code> at line 9516, <code>ldaa Counter_MainLoop</code> loads the main loop counter. Line 9517 points index register X to <code>#Cylinder2Retard</code>. Line 9519 loads the cylinder retard byte; if non-zero, line 9521 executes <code>bita ARCMSK_AdaptiveRetardCounterMask</code>. If any masked bit is set (<code>bne L2858</code>), execution branches to line 9552 to skip timer accumulation. Only when all masked bits in <code>Counter_MainLoop</code> are zero does execution continue to line 9523 to evaluate coolant temperature.</p>
+<pre><code class="language-motorola6803">; --- WGDC_LookAtCylRetards (T-SMEC_v19.asm:9516-9523) ---
+	ldaa Counter_MainLoop	  ; load a with memory contents
+	ldx  #Cylinder2Retard	 ; load index with value
+WGDC_LookAtCylRetards:	
+        ldab 0x00,x	    ; load b with memory at index + value
+	beq  L1856    ; branch if equal (zero)
+	bita ARCMSK_AdaptiveRetardCounterMask	 ;  (data is 3f)
+	bne  L2858	    ; branch if not equal (not zero)
+	ldaa CoolantTemp    ; load a with memory contents</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Evaluation Cadence</strong>: Establishes the sampling interval for persistent boost knock accumulation.</li>
+<li><strong>Binary Mask</strong>: Factory setting 0x3F = 63 counts (evaluates once every 64 main loops).</li>
+<li><strong>Companion Parameters</strong>: Paces the incrementation of <code>Timer_Over5PsiBoostMaxFF</code> toward <a href="../../2_-_Spark/D_-_Adaptive_Retard/ARTM5P_AdaptiveRetardTimeOver5psiBoost.html"><code>ARTM5P</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>ARCMSK</code>
+        </footer>
+    </div>
+</body>
+</html>

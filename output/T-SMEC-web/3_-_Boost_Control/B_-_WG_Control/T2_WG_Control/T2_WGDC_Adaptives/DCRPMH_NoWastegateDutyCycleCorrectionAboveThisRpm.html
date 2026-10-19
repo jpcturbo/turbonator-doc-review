@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCRPMH: NoWastegateDutyCycleCorrectionAboveThisRpm | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1464</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ B - WG Control ➔ T2 WG Control ➔ T2 WGDC Adaptives</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DCRPMH: NoWastegateDutyCycleCorrectionAboveThisRpm</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DCRPMH</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DCRPMH_NoWastegateDutyCycleCorrectionAboveThisRpm</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\B_-_WG_Control\T2_WG_Control\T2_WGDC_Adaptives\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1464</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">rpm</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xBC                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5410-L5420"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L9983"><code>T2WGDC_DecrementWGAdaptive</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L9990"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DCRPMH</code> defines the upper engine speed threshold above which adaptive wastegate duty cycle learning is completely inhibited in T2 control.</p>
+<p>At high engine speeds approaching redline, exhaust gas pulsation and rapid changes in volumetric efficiency can introduce noise into closed-loop boost calculations. <code>DCRPMH</code> establishes an upper RPM boundary to freeze adaptive cell learning, ensuring that the controller relies on established feed-forward baseline tables and prevents high-RPM transients from corrupting learned adaptive trims.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>T2WGDC_DecrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9987-9991</code>), called from <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9755-10040</code>).</li>
+<li><strong>Gating Conditions</strong>: Full-throttle flag <code>b4f_FullThrottle</code> must be set and knock penalty must be zero (lines 9984-9986).</li>
+<li><strong>RPM Comparison</strong>:</li>
+<li>Line 9987 loads <code>EngineRpm_HB</code> (32 RPM per count) into accumulator A.</li>
+<li>Line 9988 verifies <code>EngineRpm_HB &gt;= DCRPML</code>.</li>
+<li>Line 9990 executes <code>cmpa DCRPMH_NoWastegateDutyCycleCorrectionAboveThisRpm</code>.</li>
+<li>If engine speed is higher than <code>DCRPMH</code> (<code>bhi</code>), execution branches to <code>T2WGDC_ClearBoostErrTimer</code> (line 9991), inhibiting adaptive learning.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>High-RPM Adaptive Lockout</strong>:</li>
+<li>Engine speed threshold above which adaptive wastegate cell learning is frozen.</li>
+<li>Factory setting is 188 counts (approximately 6016 RPM in template, 79 counts / 2528 RPM in legacy calibrations).</li>
+<li><strong>High-Revving Engines</strong>:</li>
+<li>For engines with upgraded valvetrain revving to 6800 to 7200 RPM, raise <code>DCRPMH</code> to 6400 to 6800 RPM to maintain closed-loop adaptation up to redline.</li>
+<li><strong>Freezing Adaptives on Dyno</strong>:</li>
+<li>Setting <code>DCRPMH</code> low locks out adaptive learning, allowing tuners to dial in open-loop base tables without adaptive interference.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>T2WGDC_DecrementWGAdaptive</code> at line 9987, accumulator A loads <code>EngineRpm_HB</code>. Line 9988 tests lower limit <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/DCRPML_NoWastegateDutyCycleCorrectionBelowThisRpm.html"><code>DCRPML</code></a>. If engine speed is greater or equal, line 9990 executes <code>cmpa DCRPMH_NoWastegateDutyCycleCorrectionAboveThisRpm</code>. If accumulator A is strictly higher than <code>DCRPMH</code> (<code>bhi T2WGDC_ClearBoostErrTimer</code> at line 9991), the error timer is cleared and adaptive cell updates are locked out. If engine speed is within the <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/DCRPML_NoWastegateDutyCycleCorrectionBelowThisRpm.html"><code>DCRPML</code></a> to <code>DCRPMH</code> window, execution proceeds to evaluate manifold stability via <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MPDEL2_IncCounterWhenDeltaMapBelowThis2.html"><code>MPDEL2</code></a>.</p>
+<pre><code class="language-motorola6803">; --- T2WGDC_DecrementWGAdaptive (T-SMEC_v19.asm:9987-9991) ---
+        ldaa EngineRpm_HB                ; load a with memory contents
+        cmpa DCRPML_NoWastegateDutyCycleCorrectionBelowThisRpm    ; compare a with memory contents (data is 54)
+        bcs  T2WGDC_ClearBoostErrTimer                     ; branch if lower
+        cmpa DCRPMH_NoWastegateDutyCycleCorrectionAboveThisRpm    ; compare a with memory contents (data is bc)
+        bhi  T2WGDC_ClearBoostErrTimer                     ; branch if higher</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>RPM Scaling</strong>: 32 RPM per count (188 counts = 6016 RPM).</li>
+<li><strong>RPM Window</strong>: Combines with <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/DCRPML_NoWastegateDutyCycleCorrectionBelowThisRpm.html"><code>DCRPML</code></a> to establish the complete RPM window (<a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/DCRPML_NoWastegateDutyCycleCorrectionBelowThisRpm.html"><code>DCRPML</code></a> to <code>DCRPMH</code>) for closed-loop adaptation in T2 mode.</li>
+<li><strong>Factory Evolution</strong>: Early factory calibrations used 0x4F (2528 RPM) to focus adaptives solely on spool-up; later Stage cals expanded this to 6016 RPM.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>DCRPMH</code>
+        </footer>
+    </div>
+</body>
+</html>

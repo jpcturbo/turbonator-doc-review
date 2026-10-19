@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTHRCL: NumberOfBitsAbove MINTHR ToDetermineOnThrottleTransition | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x19C6</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ E - Throttle Calibration</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MTHRCL: NumberOfBitsAbove MINTHR ToDetermineOnThrottleTransition</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MTHRCL</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MTHRCL_NumberOfBitsAbove_MINTHR_ToDetermineOnThrottleTransition</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\E_-_Throttle_Calibration\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x19C6</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Counts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6788-L6798"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L7818"><code>CheckThrottle_AtFullThrottle</code></a> in <a href="../../T-SMEC_v19.asm.html#L7840"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MTHRCL</code> defines the voltage deadband threshold above the learned minimum closed-throttle position required to declare an off-idle throttle transition.</p>
+<p>In Chrysler engine controllers, maintaining a small deadband above the learned minimum resting throttle voltage prevents engine vibrations, electrical ripple, and minor driver pedal flutter from accidentally knocking the controller out of closed-loop idle control. Factory calibrations configure <code>MTHRCL</code> to two counts, corresponding to approximately zero point zero three nine volts. When accelerator pedal movement raises sensor voltage above the learned minimum plus <code>MTHRCL</code>, the controller sets the off-idle flag, disabling idle air speed motor corrections and engaging acceleration fuel enrichment scheduling.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CheckThrottle_AtFullThrottle</code> (<code>T-SMEC_v19.asm:7818-7866</code>), instruction line 7840 (<code>ldaa MTHRCL_...</code>).</li>
+<li><strong>Selection Logic</strong>:</li>
+<li>Tested when the engine is currently at idle (<code>b4f_OffIdle</code> in <code>BitFlags_4f</code> is clear).</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Adds <code>MTHRCL_NumberOfBitsAbove_MINTHR_ToDetermineOnThrottleTransition</code> to <code>MINTHR_LowestSessionTPS</code>.</li>
+<li>Compares sum against <code>TpsVolts</code> (<code>cmpa TpsVolts</code>).</li>
+<li>If sum is greater or equal (<code>bcc CheckThrottle_AtIdle</code>), engine remains at idle.</li>
+<li>If <code>TpsVolts</code> exceeds the sum, sets <code>b4f_OffIdle</code> and engages acceleration transient logic.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Tip-In Sensitivity vs Idle Stability</strong>:</li>
+<li>Increasing <code>MTHRCL</code> to three or four counts (~0.059V to 0.078V) stabilizes idle on cars with stiff engine mounts or rough roads.</li>
+<li><strong>Hair-Trigger Response</strong>:</li>
+<li>Lowering <code>MTHRCL</code> to one count (~0.020V) sharpens off-idle throttle pickup but requires pristine sensor grounds.</li>
+<li><strong>Hysteresis Pair</strong>:</li>
+<li>Works with <a href="../../0_-_Setup/E_-_Throttle_Calibration/MTHROP_NumberOfBitsAbove_MINTHR_ToDetermineOffThrottleTransition.html"><code>MTHROP</code></a> to create an entry/exit deadband between idle mode and off-idle acceleration mode.</li>
+<li><strong>Factory Default</strong>:</li>
+<li>Set to two counts (~0.039 Volts) in factory calibrations.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CheckThrottle_AtFullThrottle</code> at lines 7840-7846, register B tests <code>b4f_OffIdle</code>. When at idle (<code>tstb; bpl L1648</code>), line 7840 loads <code>ldaa MTHRCL_NumberOfBitsAbove_MINTHR_ToDetermineOnThrottleTransition</code>. Line 7844 executes <code>adda MINTHR_LowestSessionTPS</code> and line 7845 executes <code>cmpa TpsVolts</code>. If carry is set (<code>bcc CheckThrottle_AtIdle</code>), idle status is maintained; if clear, execution falls through to line 7858 to inject <a href="../../0_-_Setup/E_-_Throttle_Calibration/OCTAE_FakeDeltaMapIncrease.html"><code>OCTAE</code></a> and set <code>b4f_OffIdle</code>.</p>
+<pre><code class="language-motorola6803">; --- CheckThrottle_AtFullThrottle (T-SMEC_v19.asm:7840-7847) ---
+	ldaa MTHRCL_NumberOfBitsAbove_MINTHR_ToDetermineOnThrottleTransition	; load a with memory contents (data is 02)
+	tstb
+	bpl  L1648	    ; branch if plus (hi bit 0)
+	ldaa MTHROP_NumberOfBitsAbove_MINTHR_ToDetermineOffThrottleTransition	 ; load a with memory contents (data is 01)
+L1648:	adda MINTHR_LowestSessionTPS
+	cmpa TpsVolts	    ; compare a with memory contents
+	bcc  CheckThrottle_AtIdle    ; branch if greater or equal</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Deadband Width</strong>: Must be calibrated greater than <a href="../../0_-_Setup/E_-_Throttle_Calibration/MTHROP_NumberOfBitsAbove_MINTHR_ToDetermineOffThrottleTransition.html"><code>MTHROP</code></a> to ensure proper directional hysteresis.</li>
+<li><strong>Voltage Equivalent</strong>: 2 counts equals approximately 0.0392 Volts.</li>
+<li><strong>Factory Standard</strong>: Set to 0x02 across Chrysler 2.2L and 2.5L calibrations.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MTHRCL</code>
+        </footer>
+    </div>
+</body>
+</html>

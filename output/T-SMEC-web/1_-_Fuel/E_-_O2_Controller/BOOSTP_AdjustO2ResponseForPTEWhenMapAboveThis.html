@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOOSTP: AdjustO2ResponseForPTEWhenMapAboveThis | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0A73</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ E - O2 Controller</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BOOSTP: AdjustO2ResponseForPTEWhenMapAboveThis</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BOOSTP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BOOSTP_AdjustO2ResponseForPTEWhenMapAboveThis</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\E_-_O2_Controller\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0A73</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi boost</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0xFF (255 counts ≈ 29.4 psia / 14.7 psi boost, disabled)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L2865-L2875"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L3062"><code>O2Signal_BelowToggle</code></a> in <a href="../../T-SMEC_v19.asm.html#L3090"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BOOSTP</code> defines the manifold absolute pressure threshold above which closed-loop oxygen sensor feedback is inhibited and the engine controller is forced into open-loop fueling.</p>
+<p>Under positive turbocharger boost pressure, the engine requires a rich air-fuel mixture to manage in-cylinder combustion temperatures and suppress knock. Standard closed-loop feedback attempts to oscillate fueling continuously around stoichiometric 14.7:1 air-fuel ratio, which is dangerously lean under positive boost.</p>
+<p>In factory stock calibrations, <code>BOOSTP</code> is configured to 255 counts, corresponding to approximately 29.4 psi absolute pressure or 14.7 psi gauge boost. Because 255 counts sits at the very top of the factory 2-bar sensor scale, this threshold acts as a secondary failsafe while throttle angle thresholds and power enrichment flags manage standard open-loop transitions.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> / <code>O2Signal_BelowToggle</code> (<code>T-SMEC_v19.asm:3088-3094</code>), instruction line 3090.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Closed-loop sensor validation flag confirmed (<code>BitFlags_4f</code> bit <code>b4f_O2Valid</code> set).</li>
+<li>Decel fuel cut and minimum MAP checks passed (<code>MapValue &gt; MAPDEC</code>).</li>
+<li>Engine speed within allowable closed-loop boundary (<code>EngineRpm_HB &lt;= RPMLIM</code>).</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li><code>MapValue</code> is loaded into register A and compared against <code>BOOSTP_AdjustO2ResponseForPTEWhenMapAboveThis</code> via <code>cmpa</code>.</li>
+<li>If <code>MapValue &gt;= BOOSTP</code> (<code>bcc</code>), execution branches to <code>SwitchOrStayOpenLoop</code> (line 3095), setting bit <code>b50_OpenLoop</code> in <code>BitFlags_50</code>.</li>
+<li>If <code>MapValue &lt; BOOSTP</code>, execution clears bit <code>b50_OpenLoop</code> via <code>bclr</code> and continues in closed loop.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Lowering the Threshold</strong>:</li>
+<li>Lowers the boost level where closed-loop feedback is terminated. Setting this value near barometric pressure (approximately 128 counts or 0 psi gauge) ensures immediate open-loop fueling as the turbocharger builds positive pressure during part-throttle operation.</li>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
+<li>Must be recalibrated when changing MAP sensor scaling. On a 3-bar sensor, 14.7 psi absolute sits at approximately 85 counts; failure to rescale leaves closed loop enabled deep into positive boost.</li>
+<li><strong>Raising the Threshold</strong>:</li>
+<li>Leaves closed loop active at higher manifold pressures. If set too high, the engine controller may attempt to command stoichiometric 14.7:1 fueling under mild boost conditions, causing high exhaust gas temperatures.</li>
+<li><strong>Open-Loop Verification</strong>:</li>
+<li>Works in concert with part-throttle enrichment flags and full-throttle detection to ensure positive cylinder enrichment under load.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>HandleO2Processing_MM</code>, after evaluating engine speed against <a href="../../1_-_Fuel/F_-_Adaptive_memory/RPMLIM_NoCellUpdateAboveThisRPMInRPMOver32.html"><code>RPMLIM</code></a> and verifying that transient enrichment timers (<code>Timer_OffThrottleFuelEnrich</code>, <code>Timer_OpenLoopFraction</code>, and <code>Timer_O2CNTR_CountdownFromAbove196FtoEnableClosedLoop</code>) are zero, the CPU loads <code>MapValue</code> into accumulator A at line 3089. Line 3090 executes <code>cmpa BOOSTP_AdjustO2ResponseForPTEWhenMapAboveThis</code>. If accumulator A is greater than or equal to <code>BOOSTP</code>, the carry flag is clear and <code>bcc SwitchOrStayOpenLoop</code> branches to line 3095, setting <code>b50_OpenLoop</code> in <code>BitFlags_50</code>. If manifold pressure remains below <code>BOOSTP</code>, line 3092 clears <code>b50_OpenLoop</code> via <code>bclr *BitFlags_50, #b50_OpenLoop</code> to allow closed-loop O2 feedback.</p>
+<pre><code class="language-motorola6803">; --- O2Signal_BelowToggle (T-SMEC_v19.asm:3088-3094) ---
+	bne  SwitchOrStayOpenLoop    ; branch if not equal (not zero)
+	ldaa MapValue	    ; load a with memory contents
+	cmpa BOOSTP_AdjustO2ResponseForPTEWhenMapAboveThis    ; compare a with memory contents (data is ff)
+	bcc  SwitchOrStayOpenLoop    ; branch if greater or equal
+	bclr *BitFlags_50, #b50_OpenLoop    ; clear bits
+	bra  SwitchOrStayClosedLoop    ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Interacts directly with <a href="../../1_-_Fuel/F_-_Adaptive_memory/MAPLIM_NoCellUpdateAboveThisMAP.html"><code>MAPLIM</code></a> (upper limit for adaptive cell updates) and <a href="../../1_-_Fuel/F_-_Adaptive_memory/MAPDEC_NoCellUpdateAndO2CNTRHeldBelowThisMap.html"><code>MAPDEC</code></a> (lower limit for closed loop and decel fuel cut).</li>
+<li><strong>Sensor Scaling</strong>: Factory value of 255 counts represents 29.4 psi absolute (14.7 psi boost) on a 2-bar sensor. On a 3-bar sensor, 255 counts represents 44.1 psi absolute (29.4 psi boost).</li>
+<li><strong>Persistence</strong>: Read dynamically each pass through the background loop; changes take effect immediately without clearing adaptive RAM.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>BOOSTP</code>
+        </footer>
+    </div>
+</body>
+</html>

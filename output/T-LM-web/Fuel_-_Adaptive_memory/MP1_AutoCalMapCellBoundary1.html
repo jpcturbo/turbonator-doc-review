@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MP1: AutoCalMapCellBoundary1 | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x056E</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - Adaptive memory</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MP1: AutoCalMapCellBoundary1</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MP1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MP1_AutoCalMapCellBoundary1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_Adaptive_memory\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x056E</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">MAP ADC counts ($1 \text{ count} \approx 0.115\text{ psi}$)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x24 (36 counts $\approx 4.1\text{ psia} \approx -10.6\text{ psig} / 21.6\text{ inHg vac}$)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L1420-L1433"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L3344"><code>AdaptiveMemory_DetermineWhichCellApplies_MM</code></a> in <a href="../T-LMv13.asm.html#L3360"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MP1_AutoCalMapCellBoundary1</code> defines the <strong>first manifold pressure load boundary</strong> separating Adaptive Fuel Memory Cell 0/1 from Cell 2/3.</p>
+<p>The Chrysler T-LM ECU divides off-idle part-throttle operation into a grid of <strong>12 adaptive fuel memory cells</strong> (6 MAP load bands × 2 RPM bands). <code>MP1</code> represents the lowest MAP transition point, dividing extreme high-vacuum decel/light-coast conditions from normal light-load cruise.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Cell Selection:</strong></li>
+<li>In <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code>, when the throttle is open, <code>MapValue</code> is compared sequentially against <code>MP1</code>, <a href="../Fuel_-_Adaptive_memory/MP2_AutoCalMapCellBoundary2.html"><code>MP2</code></a>, <a href="../Fuel_-_Adaptive_memory/MP3_AutoCalMapCellBoundary3.html"><code>MP3</code></a>, <a href="../Fuel_-_Adaptive_memory/MP4_AutoCalMapCellBoundary4.html"><code>MP4</code></a>, and <a href="../Fuel_-_Adaptive_memory/MP5_AutoCalMapCellBoundary5.html"><code>MP5</code></a>.</li>
+<li>If <code>MapValue &lt;= MP1</code>: Adaptive cells 0 (low RPM) or 1 (high RPM) are selected.</li>
+<li>If <code>MapValue &gt; MP1</code>: Cell pointer advances toward higher load cells.</li>
+<li><strong>Hysteresis:</strong> <a href="../Fuel_-_Adaptive_memory/DLTMAP_MapHysteresisAtMapCellBoundaries.html"><code>DLTMAP</code></a> is added to <code>MP1</code> when exiting the cell to prevent boundary chatter.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stock Value:</strong> <code>0x24</code> (≈ 21.6 inHg vacuum).</li>
+<li><strong>Engine Dynamics:</strong> Cell 0/1 covers very light throttle cruise or downhill overrun.</li>
+<li><strong>Altering Boundaries:</strong> When running higher-duration performance camshafts with reduced idle and decel vacuum, <code>MP1</code> may be adjusted higher to ensure light cruise does not bleed into the decel cell.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 3360â€“3371):</p>
+<pre><code class="language-motorola6803">LD86D:  ldx  #MP1_AutocalMapCellBoundary1    ; Point to array of 5 MAP boundaries
+LD870:  ldaa 0x00,x         ; Load boundary value
+        cmpb Temp0      
+        bcc  LD879          
+        adda DLTMAP_MapHysteresisAtMapCellBoundaries ; Add hysteresis if leaving
+LD879:  cmpa MapValue       ; Compare with current MAP
+        bcc  LD889          ; If Boundary &gt;= MapValue, stop! Cell determined!
+        inx                 ; Next boundary
+        inc  Temp0      
+        inc  Temp0          ; Step cell index by 2
+        cpx  #DLTMAP_MapHysteresisAtMapCellBoundaries
+        bne  LD870</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><code>MP1</code> through <a href="../Fuel_-_Adaptive_memory/MP5_AutoCalMapCellBoundary5.html"><code>MP5</code></a> must strictly maintain ascending order: MP1 &lt; MP2 &lt; MP3 &lt; MP4 &lt; MP5.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>MP1</code>
+        </footer>
+    </div>
+</body>
+</html>

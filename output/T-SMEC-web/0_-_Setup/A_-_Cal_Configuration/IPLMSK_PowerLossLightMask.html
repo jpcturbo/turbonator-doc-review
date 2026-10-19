@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPLMSK: PowerLossLightMask | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x02D9</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ A - Cal Configuration</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>IPLMSK: PowerLossLightMask</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>IPLMSK</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>IPLMSK_PowerLossLightMask</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\A_-_Cal_Configuration\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x02D9</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 5 (Bitfield / Configuration Mask)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Warning Lamp Mask 1</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xFE                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L919-L930"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L4631"><code>DetermineEngineRunningCELStatus</code></a> in <a href="../../T-SMEC_v19.asm.html#L4637"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>IPLMSK</code> defines the primary dashboard warning lamp illumination mask register for analog electronic sensor faults.</p>
+<p>In Chrysler engine controllers, sensor circuit diagnostics continuously update internal status flags in memory. Configured in factory calibrations to two hundred fifty-four counts, <code>IPLMSK</code> dictates which of these sensor faults command the dashboard power loss or check engine light to illuminate while the engine is running. The switches in <code>IPLMSK</code> govern warning light illumination for intake charge temperature sensor failures, engine coolant temperature sensor faults, charging system electrical failures, battery voltage sense faults, manifold absolute pressure electrical failures, throttle position sensor signal faults, and manifold pressure pneumatic tracking errors.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>DetermineEngineRunningCELStatus</code> (<code>T-SMEC_v19.asm:4631-4654</code>), instruction line 4637 (<code>bita IPLMSK_PowerLossLightMask</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Engine running confirmed (<code>KeyOnOrEngineRunningTime &gt; 3</code>).</li>
+<li>Checks RAM error byte <code>b45_IPL1</code> against <code>IPLMSK_PowerLossLightMask</code>.</li>
+<li><strong>Branch Execution</strong>:</li>
+<li>If any unmasked error bits are set (<code>bne L1346</code>), branches to clear register B, commanding the check engine light buffer on.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Sensor Warning Lamp Suppression</strong>:</li>
+<li>Clearing individual bits in <code>IPLMSK</code> prevents specific sensor failures from illuminating the dashboard check engine light.</li>
+<li><strong>Charge Temperature &amp; MAP Bypass</strong>:</li>
+<li>If running an engine conversion without a charge temperature sensor, clearing the charge temp bit stops warning light activation.</li>
+<li><strong>Retains Diagnostic Codes</strong>:</li>
+<li>Unlike <a href="../../0_-_Setup/A_-_Cal_Configuration/FLTMSK_ErrorBitsMask1.html"><code>FLTMSK</code></a>, clearing a bit in <code>IPLMSK</code> leaves diagnostic trouble code storage intact for scan tool retrieval while silencing the instrument cluster light.</li>
+<li><strong>Factory Default</strong>:</li>
+<li>Set to two hundred fifty-four counts, illuminating the lamp for all primary sensor faults.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>DetermineEngineRunningCELStatus</code> at line 4636, the CPU loads accumulator A with <code>b45_IPL1</code> (the primary sensor error register). Line 4637 executes <code>bita IPLMSK_PowerLossLightMask</code>. If any unmasked fault bits are set (<code>bne L1346</code>), execution branches to line 4647 (<code>clrb</code>), leaving the CEL bit cleared in the PIA buffer (which illuminates the lamp via active-low driver). If all masked bits are clear, execution proceeds to check <a href="../../0_-_Setup/A_-_Cal_Configuration/IPLMSK2_PowerLossLightMask2.html"><code>IPLMSK2</code></a>.</p>
+<pre><code class="language-motorola6803">; --- DetermineEngineRunningCELStatus (T-SMEC_v19.asm:4631-4648) ---
+DetermineEngineRunningCELStatus:	
+        ldx  KeyOnOrEngineRunningTime
+	cpx  #0x0003                     ;  -00000000 00000011-
+	bls  TurnCheckEngineLightOnAndOff	 ; branch if lower or same
+	brclr *PIA1_A_Buffer, #pia1abuf_CELight, R1347	  ; branch if bit(s) clear
+	ldaa b45_IPL1    ; load a with memory contents
+	bita IPLMSK_PowerLossLightMask	  ;  (data is fe)
+	bne  L1346	    ; branch if not equal (not zero)
+	ldx  #CONFIG_ConfigurationFlags    ; load index with value
+	ldaa b46_IPL2    ; load a with memory contents
+	bita #b46_InjectorFault 	 ;  -00010000-
+	bne  L1346	    ; branch if not equal (not zero)
+	brset  0, X, #cfg_EGR, L1345	; branch if bit(s) set
+	anda #~(b46_bit7 | b46_MajorFault)	    ; AND a with value -00111111-
+L1345:	bita IPLMSK2_PowerLossLightMask2    ;  (data is d8)
+	beq  TurnCheckEngineLightOnAndOff	 ; branch if equal (zero)
+L1346:	clrb		    ; b = 0</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Bit Allocations</strong>: Bit 7: MAP Pneumatic, Bit 6: TPS Signal, Bit 5: MAP Signal, Bit 4: Battery Volts, Bit 2: Charging System, Bit 1: Coolant Temp Sensor, Bit 0: Charge Temp Sensor.</li>
+<li><strong>Pairing</strong>: Directly paired with <a href="../../0_-_Setup/A_-_Cal_Configuration/IPLMSK2_PowerLossLightMask2.html"><code>IPLMSK2</code></a> to establish comprehensive dashboard warning criteria.</li>
+<li><strong>Active-Low Hardware</strong>: Check engine light hardware is active-low; clearing the buffer bit turns on the lamp.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>IPLMSK</code>
+        </footer>
+    </div>
+</body>
+</html>

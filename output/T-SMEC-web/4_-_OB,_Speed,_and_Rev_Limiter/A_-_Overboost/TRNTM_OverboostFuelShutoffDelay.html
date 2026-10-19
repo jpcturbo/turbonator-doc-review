@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRNTIM: OverboostFuelShutoffDuration | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x188C</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>4 - OB, Speed, and Rev Limiter ➔ A - Overboost</strong> &nbsp;|&nbsp; Subsystem: <strong>Limiters_Limp</strong>
+        </div>
+        
+        <article class="content">
+            <h1>TRNTIM: OverboostFuelShutoffDuration</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>TRNTIM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>TRNTM_OverboostFuelShutoffDelay</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Limiters_Limp</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>4_-_OB,_Speed,_and_Rev_Limiter\A_-_Overboost\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x188C</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">seconds</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x2D (45 counts ≈ 0.49 seconds)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6474-L6484"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5651"><code>Cutout_ResetOverboostTimer</code></a> in <a href="../../T-SMEC_v19.asm.html#L5652"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>TRNTIM</code> defines the duration of the countdown timer that delays overboost fuel shutoff when manifold pressure exceeds the primary timed overboost threshold (<a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a>).</p>
+<p>Turbochargers frequently produce transient pressure overshoots when the throttle snaps open or during quick gear shifts before the wastegate actuator can physically react and stabilize boost. In the factory calibration, <code>TRNTIM</code> is set to 45 counts, corresponding to approximately 0.49 seconds on a 0 to 2.8 second scale. As long as manifold boost drops back below <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a> within this half-second window, normal fueling continues uninterrupted. If boost persists above <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a> after the countdown expires, the controller cuts fuel injection to protect the engine.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>Cutout_ResetOverboostTimer</code> (<code>T-SMEC_v19.asm:5651-5655</code>), called from <code>ControlEngineCutout_MM</code> (<code>T-SMEC_v19.asm:5641, 5658</code>).</li>
+<li><strong>Reload Conditions</strong>:</li>
+<li>Reloaded into <code>Timer_OverboostCountdown</code> whenever gauge boost is negative (<code>MapValue &lt; BaroPressure</code>) or boost is below <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a>.</li>
+<li>Also reloaded in <code>Cutout_ResetOverboostTimerAgain</code> (<code>T-SMEC_v19.asm:5758-5761</code>) during hysteresis recovery.</li>
+<li><strong>Countdown Operation</strong>:</li>
+<li>Decremented once per main loop pass in <code>Cutout_CheckNormalOB</code> (<code>T-SMEC_v19.asm:5661-5664</code>) while boost exceeds <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a> but remains below <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFA_OverboostFuelShutoffEnablePointFromMap_Absolute.html"><code>MPSHFA</code></a>.</li>
+<li>When <code>Timer_OverboostCountdown</code> reaches zero (<code>beq Cutout_SetOBCodeAndShutdown</code>), fault code 0x0708 is recorded and fuel is shut off.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Extending for Transient Spikes</strong>:</li>
+<li>Increasing <code>TRNTIM</code> to 1.0 to 1.5 seconds (90 to 140 counts) allows brief boost overshoots during fast gear shifts or aggressive spool-up without triggering fuel cut.</li>
+<li><strong>Disabling or Maxing Out</strong>:</li>
+<li>Setting <code>TRNTIM</code> to 255 counts (approx 2.8 seconds) maximizes the delay window before timed fuel cut engages.</li>
+<li><strong>Lowering &amp; Hair-Trigger Cutout</strong>:</li>
+<li>Setting <code>TRNTIM</code> to low values (under 20 counts) produces instant fuel cuts on minor boost flutter, degrading drivability.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>Cutout_ResetOverboostTimer</code> at line 5652, the instruction <code>ldaa TRNTM_OverboostFuelShutoffDelay</code> loads the timer constant and stores it into RAM variable <code>Timer_OverboostCountdown</code>. In <code>Cutout_CheckNormalOB</code> at line 5661, <code>Timer_OverboostCountdown</code> is tested; if zero, it branches to <code>Cutout_SetOBCodeAndShutdown</code>. Otherwise, <code>deca</code> decrements the timer and <code>staa Timer_OverboostCountdown</code> updates RAM.</p>
+<pre><code class="language-motorola6803">; --- Cutout_ResetOverboostTimer (T-SMEC_v19.asm:5651-5655) ---
+Cutout_ResetOverboostTimer:
+	ldaa TRNTM_OverboostFuelShutoffDelay   ; load a with memory contents (data is ff)
+	staa Timer_OverboostCountdown	       ; store a into memory
+	bra  Cutout_CheckRevLimiters	       ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Label Spelling</strong>: The calibration template label is <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/TRNTM_OverboostFuelShutoffDelay.html"><code>TRNTM_OverboostFuelShutoffDelay</code></a>, while the MPTune calibration short name is <code>TRNTIM</code>.</li>
+<li><strong>Timer Rate</strong>: Decrements each pass through <code>ControlEngineCutout_MM</code> in the foreground main loop when overboost conditions persist.</li>
+<li><strong>Stage IV Setting</strong>: In Stage IV calibrations, <code>TRNTIM</code> is configured to 92 counts (approx 1.01 seconds) to provide extra buffer for large turbochargers.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>TRNTIM</code>
+        </footer>
+    </div>
+</body>
+</html>

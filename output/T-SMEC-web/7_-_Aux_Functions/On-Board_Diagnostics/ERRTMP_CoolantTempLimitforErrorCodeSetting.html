@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERRTMP: CoolantTempLimitforErrorCodeSetting | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1C34</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ERRTMP: CoolantTempLimitforErrorCodeSetting</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ERRTMP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ERRTMP_CoolantTempLimitforErrorCodeSetting</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1C34</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">deg F</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0xA0 (160 counts ≈ 140 deg F coolant temperature)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7410-L7420"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L4731"><code>CheckForErrorsAndSetCodes_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L4734"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ERRTMP</code> specifies the minimum engine coolant temperature required before the engine controller enables major system fault escalation and check engine lamp illumination.</p>
+<p>During cold engine warm-up, air-fuel mixtures are enriched, combustion stability is lower, and emissions systems have not reached operating temperature. To avoid setting premature trouble codes or alarming the driver during routine cold starts, the engine controller suppresses major fault confirmation until the engine reaches <code>ERRTMP</code>.</p>
+<p>In factory calibrations, <code>ERRTMP</code> is set to 160 counts, corresponding to approximately 140 deg F. If coolant temperature is below <code>ERRTMP</code>, the controller bypasses major fault setting, allowing the engine to warm up smoothly before enforcing strict diagnostic monitoring.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>CheckForErrorsAndSetCodes_MM</code> (<code>T-SMEC_v19.asm:4731-4763</code>), instruction at line 4734.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Engine running confirmed (<code>b54_FuelEngineNotRunning</code> clear at line 4732).</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li><code>CoolantTemp</code> loaded into accumulator A at line 4733.</li>
+<li><code>cmpa ERRTMP_CoolantTempLimitforErrorCodeSetting</code> at line 4734 compares against 160 counts.</li>
+<li>If lower (<code>bcs</code>), branches to <code>R1363</code> at line 4735, exiting immediately.</li>
+<li>If higher or equal, proceeds to check ATX in-gear status, running time, and RPM.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Cold Climate &amp; Low-Temp Thermostat Tuning</strong>:</li>
+<li>If running a 160 deg F thermostat in cold winter weather, lower <code>ERRTMP</code> from 140 deg F down to 125-130 deg F to ensure major fault diagnostics engage.</li>
+<li><strong>Warm-Up Suppression</strong>:</li>
+<li>Prevents cold-start fuel enrichment and cold-engine misfire blips from setting latched trouble codes.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Setting <code>ERRTMP</code> to zero enables major fault escalation on freezing cold starts.</li>
+<li>Setting <code>ERRTMP</code> to maximum (255 counts) permanently disables major error code latching.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In routine <code>CheckForErrorsAndSetCodes_MM</code> (lines 4731-4763), line 4732 verifies that the engine is running. At line 4733, <code>ldaa CoolantTemp</code> loads engine coolant temperature into accumulator A. Line 4734 executes <code>cmpa ERRTMP_CoolantTempLimitforErrorCodeSetting</code> (0xA0 = 160 counts, ~140 deg F). If accumulator A is strictly less than <code>ERRTMP</code>, <code>bcs R1363</code> branches to line 4763, completely skipping the remaining major fault confirmation logic.</p>
+<pre><code class="language-motorola6803">; --- CheckForErrorsAndSetCodes_MM (T-SMEC_v19.asm:4731-4739) ---
+CheckForErrorsAndSetCodes_MM:
+	brset *BitFlags_54, #b54_FuelEngineNotRunning, R1363	; branch if bit(s) set
+	ldaa CoolantTemp    ; load a with memory contents
+	cmpa ERRTMP_CoolantTempLimitforErrorCodeSetting	    ; compare a with memory contents (data is a0)
+	bcs  R1363	    ; branch if lower
+L1360:	ldaa CONFIG_ConfigurationFlags	  ; load a with memory contents (data is 02)
+	bita #cfg_ATX		;  -00100000-
+	beq  L1361	    ; branch if equal (zero)
+	brclr *BitFlags_AIS, #b0c_ATXInGear, R1363    ; branch if bit(s) clear
+</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/ERRRPM_RPMLimitforErrorCodeSetting.html"><code>ERRRPM</code></a> (RPM gate) and <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/ERRMAP_MAPLimitforErrorCodeSetting.html"><code>ERRMAP</code></a> (manifold vacuum gate).</li>
+<li><strong>Diagnostic Role</strong>: Primary temperature gatekeeper for turning pending error bits into latched <code>b46_MajorFault</code> status.</li>
+<li><strong>Thermostat Interaction</strong>: Should be set at least 20 to 30 deg F below the thermostat opening temperature.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>ERRTMP</code>
+        </footer>
+    </div>
+</body>
+</html>

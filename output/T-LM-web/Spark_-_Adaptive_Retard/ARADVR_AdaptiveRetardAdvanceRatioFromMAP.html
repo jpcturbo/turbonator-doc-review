@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARADVR: AdaptiveRetardAdvanceRatioFromMAP | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x01BE</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Spark - Adaptive Retard</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ARADVR: AdaptiveRetardAdvanceRatioFromMAP</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ARADVR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ARADVR_AdaptiveRetardAdvanceRatioFromMAP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Spark_-_Adaptive_Retard\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x01BE</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">MAP (-14.7 to 14.7 psi)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x1F (31 decimal)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L476-L488"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L6556"><code>CalculateSparkAdvance_MM</code></a> in <a href="../T-LMv13.asm.html#L6614"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p>In factory turbocharged Chrysler engine calibrations (such as the 1987 T1/T2 Logic Module), engines run significantly more ignition advance at <strong>part throttle</strong> (cruising and light load) for sharp throttle response and fuel economy than they do at <strong>wide-open throttle (WOT)</strong>, where elevated cylinder pressures and combustion temperatures demand lower, safer advance to avoid detonation.</p>
+<p>When a driver accelerates and begins building boost at part throttle without fully depressing the accelerator pedal to WOT, the ECU needs a method to safely transition ignition timing downward from the higher part-throttle timing table toward the more conservative full-throttle timing table.</p>
+<p><code>ARADVR_AdaptiveRetardAdvanceRatioFromMAP</code> acts as a <strong>part-throttle boost retard multiplier / scaling gain</strong>. It dictates how aggressively ignition advance is pulled out (retarded) as manifold boost and part-throttle fuel enrichment accumulate.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<p>This logic is active only when all of the following real-world conditions are met:</p>
+<ol>
+<li>
+<p><strong>Engine is Fully Warmed Up:</strong><br />
+   The coolant temperature is above the warm engine switch point (<a href="../Spark_-_Normal_Advance/TMPSWP_EngTempSwitchPointForSparkAdvance.html"><code>TMPSWP_EngTempSwitchPointForSparkAdvance</code></a>, typically ~166°F / 74°C). When the engine is cold, cold MAP timing tables (<a href="../Spark_-_Normal_Advance/CLDMAP_AdvanceFromMAPCold.html"><code>CLDMAP</code></a>) take precedence.</p>
+</li>
+<li>
+<p><strong>Part-Throttle Driving (Off-Idle, but Not WOT):</strong><br />
+   The driver's foot is on the gas pedal (throttle is open / off-idle), but has <strong>not</strong> reached Wide-Open Throttle.  </p>
+<blockquote>
+<p><em>Note:</em> The moment true WOT is triggered, the ECU bypasses this entire transitional calculation and switches directly to the dedicated full-throttle table (<a href="../Spark_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP_AdvanceFromMAPWarmFull</code></a>).</p>
+</blockquote>
+</li>
+<li>
+<p><strong>Approaching or Building Boost:</strong><br />
+   Manifold pressure (MAP) is entering moderate boost—specifically approaching or exceeding the threshold set by <a href="../Fuel_-_Transient_Enrichment/OBCONST_OverboostConstant1.html"><code>OBCONST_OverboostConstant1</code></a> (stock value <code>0xAA</code>, approximately 4.8 to 5.0 psi of boost on a 2-bar MAP sensor)—while the ECU is accumulating Part-Throttle Enrichment (PTE) via <code>Timer_OpenLoopFraction</code>.</p>
+</li>
+</ol>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<p>The result of this calculation is a retard offset that is subtracted from the warm part-throttle MAP advance table (<a href="../Spark_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP_AdvanceFromMAPWarmPart</code></a>), with the full-throttle table (<a href="../Spark_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP_AdvanceFromMAPWarmFull</code></a>) acting as a hard floor. The final MAP component is then added to the RPM advance curve (<a href="../Spark_-_Normal_Advance/GOVNER_AdvanceFromRPM.html"><code>GOVNER_AdvanceFromRPM</code></a>) to produce total ignition timing.</p>
+<ul>
+<li><strong>Increasing the Value (Larger Number):</strong></li>
+<li><strong>What it does:</strong> Increases the amount of timing pulled out under part-throttle boost.</li>
+<li><strong>Effect on Total Timing:</strong> <strong>Retards total ignition timing</strong> much faster, pulling total advance down to match the conservative WOT table sooner.</li>
+<li>
+<p><strong>Real-World Driving Feel:</strong> Produces a more conservative, knock-resistant tune under heavy mid-throttle load (e.g., pulling a grade or towing), though power delivery may feel slightly softer as boost builds.</p>
+</li>
+<li>
+<p><strong>Decreasing the Value (Smaller Number):</strong></p>
+</li>
+<li><strong>What it does:</strong> Decreases the amount of timing pulled out under part-throttle boost.</li>
+<li><strong>Effect on Total Timing:</strong> <strong>Advances total ignition timing</strong> during boost transitions, keeping ignition advance closer to the higher part-throttle curve.</li>
+<li>
+<p><strong>Real-World Driving Feel:</strong> Delivers sharper throttle response and stronger mid-range torque when rolling into boost, but increases the risk of spark knock if your base part-throttle timing table is too aggressive for the fuel octane.</p>
+</li>
+<li>
+<p><strong>Setting the Value to Zero (<code>0x00</code>):</strong></p>
+</li>
+<li><strong>What it does:</strong> Completely disables this transitional boost-retard mechanism.</li>
+<li><strong>Effect on Total Timing:</strong> The ECU will not pull any progressive timing based on boost at part throttle; it will run the raw part-throttle table until you either floor it to WOT or the table's values naturally dip below the WOT curve.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 6606–6631), the calculation proceeds as follows:</p>
+<pre><code class="language-motorola6803">LEFF1:  ldab MapValue
+        cmpb OBCONST_OverboostConstant1    ; Compare MAP against boost threshold (0xAA ~ 5 psi)
+        bcc  LF002                         ; If MAP &gt;= OBCONST, jump to multiply with A = Timer_OpenLoopFraction
+        aba                                ; A = Timer_OpenLoopFraction + MapValue
+        bcc  LEFFD
+        ldaa #0xff                         ; Clamp sum to 255
+LEFFD:  suba OBCONST_OverboostConstant1    ; A = (Timer_OpenLoopFraction + MapValue) - OBCONST
+        bls  LF00A                         ; If &lt;= 0, skip multiply (Temp1 stays 0)
+LF002:  ldab ARADVR_AdaptiveRetardAdvanceRatioFromMAP ; Load B with ARADVR (stock 0x1F)
+        mul                                ; D = A * ARADVR
+        adca #0x00                         ; Fixed-point round-up if bit 7 of B is set
+        staa Temp1                         ; Store retard amount into Temp1
+
+LF00A:  ldaa MapValue
+        ldx  #HOTMAP_AdvanceFromMAPWarmPart
+        jsr  Lookup4ByteTable              ; A = HOTMAP(MapValue)
+        ldab FACALC_AdaptiveRetardEnable   ; Stock is 0xFF (signed negative / bit 7 set)
+        bmi  LF01F                         ; Branches to subtract Temp1
+        ...
+LF01F:  suba Temp1                         ; A = HOTMAP - Temp1
+        cmpa Temp0                         ; Compare against WOTMAP floor (Temp0)
+        ble  LF027                         ; If (HOTMAP - Temp1) &lt;= WOTMAP, clamp to WOTMAP
+LF025:  staa Temp0                         ; Temp0 = HOTMAP - Temp1
+LF027:  ...</code></pre>
+<h3>Mathematical Summary:</h3>
+<ol>
+<li><strong>Input Delta ($A$):</strong>
+   - If MAP ≥ OBCONST, A = Timer_OpenLoopFraction.
+   - If MAP &lt; OBCONST, A = (Timer_OpenLoopFraction + MAP) - OBCONST. If A ≤ 0, retard is $0$.</li>
+<li><strong>Retard Offset:</strong></li>
+</ol>
+<p><code>Temp1 = round((A × ARADVR / 256))</code></p>
+<ol start="3">
+<li><strong>Clamping:</strong></li>
+</ol>
+<p><code>Base MAP Spark = \max(WOTMAP, HOTMAP - Temp1)</code></p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<blockquote>
+<p>[!NOTE]
+<strong>Not Knock-Sensor Adaptive Retard:</strong><br />
+Despite the historical label <code>ARADVR_AdaptiveRetardAdvanceRatioFromMAP</code> assigned during early disassembly efforts, <strong>this routine has absolutely nothing to do with knock-sensor adaptive retard.</strong><br />
+Real knock retard (both short-term per-cylinder retard and long-term learned adaptive retard from the knock sensor) is handled by dedicated knock detection routines elsewhere in the code (<code>KnockDetect_MM</code> and <code>HandleKnockRetard</code>). This constant functions purely as a <strong>part-throttle-to-full-throttle boost timing blend multiplier</strong>.</p>
+</blockquote>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>ARADVR</code>
+        </footer>
+    </div>
+</body>
+</html>

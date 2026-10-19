@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACTMP: Use ACCTBL WhenTempAboveThisElseUse ACPOS | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0FE8</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ACTMP: Use ACCTBL WhenTempAboveThisElseUse ACPOS</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ACTMP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ACTMP_Use_ACCTBL_WhenTempAboveThisElseUse_ACPOS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0FE8</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">degF</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x7F                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4262-L4272"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L2170"><code>HandleAcCutout</code></a> in <a href="../../T-SMEC_v19.asm.html#L2452"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ACTMP</code> defines the engine coolant temperature switch point separating cold fixed A/C compensation from warm speed-dependent A/C airflow compensation.</p>
+<p>When the air conditioning compressor engages on a cold engine, compressor oil is thick and the engine requires a fixed, generous step opening defined by <a href="../../5_-_Idle/A_-_AIS_Control/ACPOS_ACPositionWhenTempToCold.html"><code>ACPOS</code></a>. Once the engine warms up, compressor friction stabilizes and airflow requirements vary primarily with vehicle road speed rather than engine temperature.</p>
+<p>Above <code>ACTMP</code>, the controller switches from the fixed cold step adder (<a href="../../5_-_Idle/A_-_AIS_Control/ACPOS_ACPositionWhenTempToCold.html"><code>ACPOS</code></a>) to the dynamic, speed-dependent lookup table <a href="../../5_-_Idle/B_-_AIS_Decel/ACCTBL_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a>.</p>
+<p>In factory calibrations, <code>ACTMP</code> is set to 127 counts, corresponding to a temperature transition threshold of 77 °F.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2468</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Air conditioning clutch active and not in idle-only kick state.</li>
+<li>Loads <code>CoolantTemp</code> into accumulator A at line 2451.</li>
+<li>Compares accumulator A against <code>ACTMP</code> at line 2452: <code>cmpa ACTMP_Use_ACCTBL_WhenTempAboveThisElseUse_ACPOS</code>.</li>
+<li>If <code>CoolantTemp</code> &lt; <code>ACTMP</code> (<code>bcs L1147</code>), selects <a href="../../5_-_Idle/A_-_AIS_Control/ACPOS_ACPositionWhenTempToCold.html"><code>ACPOS</code></a>; if &gt;= <code>ACTMP</code>, advances to look up <a href="../../5_-_Idle/B_-_AIS_Decel/ACCTBL_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Extending Cold A/C Protection</strong>:</li>
+<li>Raise <code>ACTMP</code> to 100 °F to 120 °F in cold northern climates to ensure generous cold compressor compensation remains active throughout early warm-up.</li>
+<li><strong>Preventing Warm Flare</strong>:</li>
+<li>Keep <code>ACTMP</code> below 150 °F to ensure the ECU switches over to dynamic speed-based compensation (<a href="../../5_-_Idle/B_-_AIS_Decel/ACCTBL_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a>) once the engine is hot.</li>
+<li><strong>Factory Baseline</strong>:</li>
+<li>127 counts equals 77 °F on the Chrysler coolant temperature scale.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>, line 2450 saves the running position to <code>Temp4</code>. Line 2451 loads <code>CoolantTemp</code> into accumulator A. Line 2452 executes <code>cmpa ACTMP_Use_ACCTBL_WhenTempAboveThisElseUse_ACPOS</code>. If <code>CoolantTemp</code> is lower than <code>ACTMP</code> (<code>bcs L1147</code>), execution branches to <code>L1147</code>, retaining <a href="../../5_-_Idle/A_-_AIS_Control/ACPOS_ACPositionWhenTempToCold.html"><code>ACPOS</code></a> in accumulator B. If <code>CoolantTemp</code> is greater than or equal to <code>ACTMP</code>, lines 2454-2459 index <a href="../../5_-_Idle/B_-_AIS_Decel/ACCTBL_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a> using <code>VehicleSpeed_HB</code> to calculate dynamic speed-based A/C steps.</p>
+<pre><code class="language-motorola6803">; --- HandleAcCutout (T-SMEC_v19.asm:2450-2455) ---
+	staa Temp4	    ; store a into memory
+	ldaa CoolantTemp    ; load a with memory contents
+	cmpa ACTMP_Use_ACCTBL_WhenTempAboveThisElseUse_ACPOS	; compare a with memory contents (data is 7f)
+	bcs  L1147	    ; branch if lower
+	ldx  #ACCTBL_ACOffIdleDelta_FromSpeed	 ; load index with value
+	ldd  VehicleSpeed_HB	; load d (a&amp;b) with memory contents</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Decides whether to apply <a href="../../5_-_Idle/A_-_AIS_Control/ACPOS_ACPositionWhenTempToCold.html"><code>ACPOS</code></a> or <a href="../../5_-_Idle/B_-_AIS_Decel/ACCTBL_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a>.</li>
+<li><strong>Scaling</strong>: 1 count = approximately 0.72 °F (127 counts = 77 °F).</li>
+<li><strong>Factory Value</strong>: 0x7F (127 counts).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>ACTMP</code>
+        </footer>
+    </div>
+</body>
+</html>

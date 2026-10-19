@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EGR5: ExhGasRecircConst5 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1AA3</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ EGR</strong> &nbsp;|&nbsp; Subsystem: <strong>EGR_Emissions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>EGR5: ExhGasRecircConst5</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>EGR5</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>EGR5_ExhGasRecircConst</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">EGR_Emissions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\EGR\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1AA3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Trip retry counts (0 to 15; factory 0 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x00                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7009-L7019"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5470"><code>EGR_ResetEGRVars</code></a> in <a href="../../T-SMEC_v19.asm.html#L5532"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>EGR5</code> (ExhGasRecircConst) establishes the per-trip diagnostic retry limit before the engine controller inhibits further Exhaust Gas Recirculation flow verification attempts for the remainder of the current driving cycle.</p>
+<p>Following a Phase 2 timeout, the controller increments a retry counter stored in the low nibble of <code>EGRVar2</code>. At line 5532, this counter is compared against <code>EGR5</code>. If the count reaches or exceeds <code>EGR5</code>, the controller sets bit 6 of <code>EGRVar2</code>, which actively latches a test inhibit flag.</p>
+<p>Once bit 6 is set, the routine bypasses the diagnostic state machine on all subsequent execution loops until the ignition switch is cycled. The factory calibration of 0 counts causes the inhibit flag to latch after the initial sequence, preventing continuous diagnostic cycles during a single trip.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5532.</li>
+<li><strong>Trigger Site</strong>: <code>L1471</code> (line 5525), executed after failure counter check.</li>
+<li><strong>State Variable</strong>: Low nibble of <code>EGRVar2</code> (RAM address 0x009E), masked with <code>anda #bit_bothalf</code>.</li>
+<li><strong>Comparison</strong>: <code>cmpa EGR5_ExhGasRecircConst</code> at line 5532.</li>
+<li><strong>Inhibit Latch</strong>: If <code>EGRVar2_low &gt;= EGR5</code>, executes <code>orab #bit_bit6</code> at line 5534, latching the drive-cycle test inhibit flag in <code>EGRVar2</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Raising EGR5</strong>: Increases the number of diagnostic retry attempts permitted per ignition cycle. Helpful in urban driving where traffic interruptions frequently abort Phase 2 before completion.</li>
+<li><strong>Factory Setting (0 counts)</strong>: Sets bit 6 on the first diagnostic cycle, locking out further testing until the next ignition key cycle to maintain smooth cruising.</li>
+<li><strong>Low-Nibble Counter</strong>: Evaluated against the lower 4 bits of <code>EGRVar2</code>, limiting practical calibration values to between 0 and 15.</li>
+<li><strong>Trip Inhibit Interlock</strong>: Governs bit 6 of <code>EGRVar2</code>, which is checked at line 5409 upon every pass of <code>ExhGasRecirc_MM</code>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: At <code>L1471</code> (line 5525), accumulator B loads <code>EGRVar2</code> and clears bit 7 (<code>andb #~bit_bit7</code>) to exit Phase 2. Accumulator A receives B, increments via <code>inca</code>, and isolates the lower 4 bits via <code>anda #bit_bothalf</code> (0x0F) at line 5529. If zero, it branches to <code>L1472</code>. Otherwise, it increments B (<code>incb</code>) and executes <code>cmpa EGR5_ExhGasRecircConst</code> at line 5532. If accumulator A is less than <code>EGR5</code> (factory 0x00), <code>bcs L1473</code> branches around latching. If A meets or exceeds <code>EGR5</code>, line 5534 executes <code>orab #bit_bit6</code>, setting the trip inhibit flag in <code>EGRVar2</code>. Line 5535 stores B back to <code>EGRVar2</code> (<code>stab EGRVar2</code>). On subsequent passes, line 5409 tests bit 6 and branches to <code>EGR_ResetEGRVars</code>.</p>
+<pre><code class="language-motorola6803">; --- ExhGasRecirc_MM (T-SMEC_v19.asm:5525-5536) ---
+L1471:	ldab EGRVar2    ; load b with memory contents
+	andb #~bit_bit7	    ;  -01111111-
+	tba		    ; a = b
+	inca		    ; increment a
+	anda #bit_bothalf	    ; AND a with value -00001111-
+	beq  L1472	    ; branch if equal (zero)
+	incb		
+	cmpa EGR5_ExhGasRecircConst	; compare a with memory contents (data is 00)
+	bcs  L1473	    ; branch if lower
+L1472:	orab #bit_bit6	    ;  -01000000-
+L1473:	stab EGRVar2    ; store b into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Single-Byte Type 3 Constant</strong>: Located at calibration address 0x1AA3 (calculated ROM address 0x86E6 / template org 0x882E).</li>
+<li><strong>Drive Cycle Persistence</strong>: Bit 6 of <code>EGRVar2</code> remains set until engine shutoff clears unbacked zero-page RAM.</li>
+<li><strong>Inhibit Mechanism</strong>: When bit 6 is active, line 5409 branches directly to <code>EGR_ResetEGRVars</code>, keeping the EGR solenoid on while bypassing all diagnostic checks.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>EGR5</code>
+        </footer>
+    </div>
+</body>
+</html>

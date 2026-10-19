@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCLRFQ: TimeBetweenAisPulsesForDecelAis | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0B6C</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DCLRFQ: TimeBetweenAisPulsesForDecelAis</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DCLRFQ</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DCLRFQ_TimeBetweenAisPulsesForDecelAis</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0B6C</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Timer Ticks / Delay (0x3F = 63 ticks; approx 0.7 seconds)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x3F                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L2954-L2966"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L3503"><code>CalculateAisPosition_MM</code></a> in <a href="../T-LMv13.asm.html#L3655"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DCLRFQ</code> (TimeBetweenAisPulsesForDecelAis) establishes the pulse frequency / damping interval between consecutive stepper motor movements while in deceleration control mode.</p>
+<p>During deceleration, the ECU continually calculates required step corrections via <a href="../Idle_-_AIS_Decel/DAISOP_DecelAisOpenStepsFromNeg_FromDeltaMap.html"><code>DAISOP</code></a> and <a href="../Idle_-_AIS_Decel/DAISCL_DecelAisOpenStepsFromPos_FromDeltaMap.html"><code>DAISCL</code></a>. However, physical stepper motors require finite settling time to move their pintles, and manifold pressure requires time to equilibrate. If the ECU pulsed the motor on every program pass, the pintle would rapidly buzz, skip steps, and cause erratic pressure fluctuations. <code>DCLRFQ</code> enforces a calibrated delay timer (<code>Timer_AisChanges</code>) before the next step pulse can be dispatched.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside <code>CalculateAisPosition_MM</code> at line 3655.</li>
+<li>Compares <code>Timer_AisChanges</code> against <code>DCLRFQ</code>.</li>
+<li>If <code>Timer_AisChanges &lt; DCLRFQ</code>, the routine branches to <code>LDAB4</code> and exits without moving the motor.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stock Value</strong>: <code>0x3F</code> (63 timer ticks / ~0.7 seconds).</li>
+<li><strong>Faster Anti-Stall Response</strong>: Lowering <code>DCLRFQ</code> (e.g. to <code>0x20</code> or <code>0x18</code>) allows the ECU to step the AIS motor open more rapidly during rapid deceleration, which is beneficial for lightweight flywheels or quick-revving road race cars.</li>
+<li><strong>Motor Buzzing / Hunting</strong>: Setting <code>DCLRFQ</code> too low can cause the stepper motor to chatter or overshoot its intended step target.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateAisPosition_MM (T-LMv13.asm:3654-3656) ---
+        ldab Timer_AisChanges                    ; Load elapsed timer since last AIS movement
+        cmpb DCLRFQ_TimeBetweenAisPulsesForDecelAis ; Compare with delay threshold ($0B6C, data 0x3F)
+        bcs  LDAB4                               ; If timer &lt; threshold, exit subroutine</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 3655</strong> (<code>CalculateAisPosition_MM</code>): <code>cmpb DCLRFQ_TimeBetweenAisPulsesForDecelAis    ; compare b with memory contents (data is 3f)</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Reset Mechanism</strong>: Whenever a new step movement is commanded, <code>Timer_AisChanges</code> is cleared to zero at line 3673 (<code>clra; staa Timer_AisChanges</code>).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>DCLRFQ</code>
+        </footer>
+    </div>
+</body>
+</html>

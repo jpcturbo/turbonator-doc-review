@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AISMPH: RollingAisMaxSpeed | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0FF5</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>AISMPH: RollingAisMaxSpeed</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>AISMPH</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>AISMPH_RollingAisMaxSpeed</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0FF5</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">mph</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x00                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4275-L4285"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8407"><code>ControlCruiseServo1_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L8453"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>AISMPH</code> defines the maximum vehicle speed ceiling for active rolling idle mode on manual transmission Chrysler vehicles.</p>
+<p>When coasting in neutral with the clutch disengaged, maintaining a slightly elevated rolling idle speed prevents the engine from stalling, provides vacuum assist for power brakes, and facilitates smooth rev-matching when shifting back into gear. However, above moderate driving speeds, the vehicle is coasting at highway velocity and should operate under normal deceleration dashpot rules rather than holding an elevated rolling idle target.</p>
+<p><code>AISMPH</code> establishes this upper speed boundary.</p>
+<p>In factory calibrations, <code>AISMPH</code> is set to 0 counts (disabled in some automatic calibrations) or 16 counts (approximately 16 mph in manual variants), bounding rolling idle regulation to low-speed coasting.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>L1710</code> (<code>T-SMEC_v19.asm:8440-8472</code>) within <code>ControlCruiseServo1_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Vehicle speed must be above <a href="../../5_-_Idle/B_-_AIS_Decel/MPHREF_SwitchPointForDecelIdleAisControl.html"><code>MPHREF</code></a> at line 8448.</li>
+<li>Must be a manual transmission vehicle (<code>cfg_ATX</code> clear in <a href="../../0_-_Setup/A_-_Cal_Configuration/CONFIG_ConfigurationFlags.html"><code>CONFIG_ConfigurationFlags</code></a> at line 8451).</li>
+<li>Compares vehicle speed in accumulator A against <code>AISMPH</code> at line 8456.</li>
+<li>If speed exceeds <code>AISMPH</code> (<code>bhi L1714</code>), branches to set <code>b50_FallToIdle</code> and clear <code>b50_IdleSpeedMode</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Manual Transmission Coasting Stall Fix</strong>:</li>
+<li>Set <code>AISMPH</code> to 15 to 20 mph to keep rolling idle active when coasting in neutral, stabilizing power steering and brake assist.</li>
+<li><strong>Disabling Rolling Idle</strong>:</li>
+<li>Set <code>AISMPH</code> to 0 mph if you want engine RPM to drop immediately to base stationary idle whenever the throttle is released, regardless of road speed.</li>
+<li><strong>Manual Only</strong>:</li>
+<li>Bypassed on automatic transmission vehicles (<code>bitb #cfg_ATX</code> branch at line 8451).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>L1710</code> at line 8450, the CPU checks <a href="../../0_-_Setup/A_-_Cal_Configuration/CONFIG_ConfigurationFlags.html"><code>CONFIG_ConfigurationFlags</code></a>. If automatic transmission (<code>bitb #cfg_ATX</code>), line 8452 branches to <code>L1714</code> (setting decel mode). For manual cars, line 8453 loads <code>AISMPH_RollingAisMaxSpeed</code> into accumulator B. Line 8456 compares vehicle speed against accumulator B. If speed is higher than <code>AISMPH</code> (<code>bhi L1714</code>), it sets <code>b50_FallToIdle</code>. If speed is &lt;= <code>AISMPH</code> and RPM is within <code>TargetIdleSpeed_HB + RPMDLT</code>, line 8466 sets <code>b50_IdleSpeedMode</code>, engaging rolling idle.</p>
+<pre><code class="language-motorola6803">; --- ControlCruiseServo1_MM (T-SMEC_v19.asm:8450-8471) ---
+	ldab CONFIG_ConfigurationFlags	  ; load b with memory contents (data is 02)
+	bitb #cfg_ATX		;  -00100000-
+	bne  L1714	    ; branch if not equal (not zero)
+	ldab AISMPH_RollingAisMaxSpeed	  ; load b with memory contents (data is 10)
+	brclr *BitFlags_50, #b50_IdleSpeedMode, L1712	 ; branch if bit(s) clear
+	addb #0x03	    ;  -00000011-
+L1712:	cba
+	bhi  L1714	    ; branch if speed is higher than Rolling AIS MAx
+	ldd  TargetIdleSpeed_HB	; load d (a&amp;b) with memory contents
+	addd RPMDLT_RollingAisMinRpm	;  (data is 07)
+	cmpD EngineRpm_HB    ; compare D
+	bcs  L1714	    ; branch if lower
+	brset *BitFlags_50, #b50_IdleSpeedMode, L1713	 ; branch if bit(s) set
+	ldd  EngineRpm_HB    ; load d (a&amp;b) with memory contents
+	stD *TargetIdleSpeed_HB	; store D to RAM
+L1713:	bclr *BitFlags_50, #b50_FallToIdle    ; clear bits
+	bset *BitFlags_50, #b50_IdleSpeedMode	 ; set bits
+	rts		    ; return from subroutine
+
+L1714:	bset *BitFlags_50, #b50_FallToIdle    ; set bits
+	bclr *BitFlags_50, #b50_IdleSpeedMode	 ; clear bits
+	rts		    ; return from subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Manual Drivetrain Exclusivity</strong>: Gated by configuration bit <code>cfg_ATX</code>; has no effect on automatic calibrations.</li>
+<li><strong>Companion Parameter</strong>: Paired directly with <a href="../../5_-_Idle/B_-_AIS_Decel/RPMDLT_RollingAisMinRpm.html"><code>RPMDLT</code></a> (RPM boundary) and <a href="../../5_-_Idle/B_-_AIS_Decel/DECAIS_RollingAisUpdateRate_01_03_07_0f_1f_3f_7f_ff.html"><code>DECAIS</code></a>/<a href="../../5_-_Idle/B_-_AIS_Decel/ISPDCY_RollingAisDecay.html"><code>ISPDCY</code></a> (decay parameters).</li>
+<li><strong>Factory Value</strong>: 0x00 (0 mph in ATX cals; 16 mph in MTX cals).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>AISMPH</code>
+        </footer>
+    </div>
+</body>
+</html>

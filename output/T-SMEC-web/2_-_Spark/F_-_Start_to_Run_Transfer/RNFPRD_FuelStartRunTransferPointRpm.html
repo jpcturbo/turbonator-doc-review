@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RNFPRD: FuelStartRunTransferPointRpm | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0651</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>2 - Spark ➔ F - Start to Run Transfer</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>RNFPRD: FuelStartRunTransferPointRpm</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>RNFPRD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>RNFPRD_FuelStartRunTransferPointRpm</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>2_-_Spark\F_-_Start_to_Run_Transfer\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0651</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">period counts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x30                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1807-L1817"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L6972"><code>HandleFuelStartRunStartTransfer</code></a> in <a href="../../T-SMEC_v19.asm.html#L6974"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>RNFPRD</code> defines the fuel injection start-to-run transfer distributor pulse period threshold.</p>
+<p>During starter cranking, the engine controller delivers rich, fixed-duration cranking priming pulses to wet the intake manifold runners and spark ignition. Once the engine catches and spins past <code>RNFPRD</code>, the controller cuts off cranking enrichment pulses and initiates normal running speed-density fuel calculation. In period-based logic, smaller count values represent faster engine speeds. In factory calibrations, <code>RNFPRD</code> is set to 48 counts, corresponding to approximately 625 RPM. Grouped under the Start-to-Run Transfer category in calibration templates, <code>RNFPRD</code> synchronizes the fueling transition with the ignition transition.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>HandleFuelStartRunStartTransfer</code> (<code>T-SMEC_v19.asm:6972-6984</code>).</li>
+<li><strong>Input Variable</strong>: <code>DistributorFallingEdgePulsewidth_HB</code> (RAM address 0x0090).</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li><code>cmpb RNFPRD_FuelStartRunTransferPointRpm</code> at line 6974.</li>
+<li>If period &lt; <code>RNFPRD</code> (carry clear / <code>bcc RpmBelowStartRunTransfer</code> not taken), engine speed is above 625 RPM.</li>
+<li>Clears bits <code>b54_FuelEngineNotRunning</code> and <code>b54_JustStarted</code> in <code>BitFlags_54</code>, initialises running timers, and decrements <code>AdaptiveRetardIndex</code> by <a href="../../2_-_Spark/D_-_Adaptive_Retard/ARSUBC_AdaptiveRetardFactorSubtract.html"><code>ARSUBC</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Preventing Large Injector Flooding</strong>:</li>
+<li>When running large aftermarket injectors, raising <code>RNFPRD</code> cuts off rich cranking priming pulses earlier, preventing cylinder flooding on hot restarts.</li>
+<li><strong>Cold Start Flare Support</strong>:</li>
+<li>On alcohol or E85 conversions, lowering <code>RNFPRD</code> keeps rich cranking fuel active higher into the start flare to prevent cold die-out.</li>
+<li><strong>Period Scaling</strong>:</li>
+<li>Period is inversely related to RPM: RPM ≈ 30,000 / count. Factory setting 48 counts = 625 RPM.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>HandleFuelStartRunStartTransfer</code> at line 6973, <code>ldab DistributorFallingEdgePulsewidth_HB</code> loads the distributor falling edge period. Line 6974 executes <code>cmpb RNFPRD_FuelStartRunTransferPointRpm</code>. If accumulator B is less than <code>RNFPRD</code> (engine speed faster than ~625 RPM), carry is set and <code>bcc RpmBelowStartRunTransfer</code> is not taken. Lines 6976-6977 clear bits <code>b54_FuelEngineNotRunning</code> and <code>b54_JustStarted</code> in <code>BitFlags_54</code>. Lines 6978-6984 initialize running timers and line 6986 subtracts <a href="../../2_-_Spark/D_-_Adaptive_Retard/ARSUBC_AdaptiveRetardFactorSubtract.html"><code>ARSUBC</code></a> from <code>AdaptiveRetardIndex</code>.</p>
+<pre><code class="language-motorola6803">; --- HandleFuelStartRunStartTransfer (T-SMEC_v19.asm:6972-6985) ---
+HandleFuelStartRunStartTransfer:
+	ldab DistributorFallingEdgePulsewidth_HB    ; load b with memory contents
+	cmpb RNFPRD_FuelStartRunTransferPointRpm    ; compare b with memory contents (data is 30) --&gt; 625 rpm
+	bcc  RpmBelowStartRunTransfer	 ; branch if greater or equal
+	brclr *BitFlags_54, #b54_FuelEngineNotRunning, L1589	; branch if bit(s) clear
+	bclr *BitFlags_54, #b54_FuelEngineNotRunning | b54_JustStarted	  ; clear bits
+	staa KeyOnOrEngineRunningTime	 ; store a into memory
+	staa Counter_MainLoop	  ; store a into memory
+	staa Pulsewidth_PartThrottleEnrichment_HB    ; store a into memory
+	staa Pulsewidth_PartThrottleEnrichment_LB    ; store a into memory
+	staa ATMOffset	    ; store a into memory
+	ldaa AISDLY_DelayFromStartRunThatAisFeedbackDisabled	; load a with memory contents (data is 2d)
+	staa Timer_CountdownFromStartRunForAisFeedback	  ; store a into memory
+	ldaa AdaptiveRetardIndex    ; load a with memory contents</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Master Fuel Transfer Gate</strong>: Switches injection logic from cranking priming pulses to speed-density running calculations.</li>
+<li><strong>Scaling</strong>: 1 count represents period duration (RPM ≈ 30,000 / count). Factory setting 0x30 = 48 counts ≈ 625 RPM.</li>
+<li><strong>Synchronized with Spark</strong>: Closely matches spark transfer threshold <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/STRNTR_SparkStartRunTransferPointRpm.html"><code>STRNTR</code></a> (612 RPM).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>RNFPRD</code>
+        </footer>
+    </div>
+</body>
+</html>

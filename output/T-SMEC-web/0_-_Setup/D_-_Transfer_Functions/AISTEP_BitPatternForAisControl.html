@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AISTEP: BitPatternForAisControl | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1DDA</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ D - Transfer Functions</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>AISTEP: BitPatternForAisControl</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>AISTEP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>AISTEP_BitPatternForAisControl</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\D_-_Transfer_Functions\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1DDA</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 9 (Bitmask / Pattern Array)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Motor Coil Patterns</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x06                       ;Point 1
+.byte 0x05                       ;Point 2
+.byte 0x09                       ;Point 3
+.byte 0x0A                       ;Point 4</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7832-L7845"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L1369"><code>AisDriveRoutine</code></a> in <a href="../../T-SMEC_v19.asm.html#L1384"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>AISTEP</code> defines the four-byte electromagnetic commutation sequence that drives the bipolar stepper motor inside the automatic idle speed actuator.</p>
+<p>The Chrysler automatic idle speed motor uses two independent electrical coils to position the idle air pintle. To rotate the motor armature and extend or retract the pintle, the controller must energize and reverse the magnetic polarity of these coils in an exact sequential order. Stored in factory calibrations as the four consecutive pattern bytes zero-six, zero-five, zero-nine, and zero-A, <code>AISTEP</code> is read by the idle motor drive routine to step the motor armature forward or backward by one increment per cycle.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>AisDriveRoutine</code> (<code>T-SMEC_v19.asm:1369-1400</code>), instruction line 1384 (<code>ldx #AISTEP_...</code>). Also line 7328.</li>
+<li><strong>Sequencing Logic</strong>:</li>
+<li>Current step phase stored in the lower two bits of <code>BitFlags_2d</code> (0 to 3).</li>
+<li>If motor needs to advance, adds or subtracts 1 count to phase index.</li>
+<li><strong>Driver Output</strong>:</li>
+<li>The pattern byte is masked and written into the lower four bits of <code>PIA1_PortB_DataDirection</code> at lines 1397-1400.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Fixed Hardware Commutation Table</strong>:</li>
+<li>Never modify this table when using the standard Chrysler idle air stepper motor.</li>
+<li><strong>Phase Sequence Disruption</strong>:</li>
+<li>Altering any of the four bytes destroys the magnetic step sequence, preventing the stepper armature from rotating.</li>
+<li><strong>Drivability Impact</strong>:</li>
+<li>Corrupted commutation patterns cause the motor to freeze or vibrate, completely disabling idle speed regulation.</li>
+<li><strong>Factory Sequence</strong>:</li>
+<li>Four sequential coil states configured in calibration memory.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>AisDriveRoutine</code> at lines 1383-1400, index register X loads <code>#AISTEP_BitPatternForAisControl</code>. Line 1385 adds the lower two bits of <code>BitFlags_2d</code> (<code>andb #b2d_both</code>) to index register X via <code>abx</code>. Line 1397 reads <code>PIA1_PortB_DataDirection</code>, masks out the lower four bits (<code>anda #0xf0</code>), and logical-ORs the new coil pattern from <code>0x00,x</code> at line 1399 before writing back to <code>PIA1_PortB_DataDirection</code>.</p>
+<pre><code class="language-motorola6803">; --- AisDriveRoutine (T-SMEC_v19.asm:1383-1400) ---
+	tab		    ; b = a
+	ldx  #AISTEP_BitPatternForAisControl	; load index with value
+	addb BitFlags_2d    ; b=b+memory contents
+	andb #b2d_both	    ;  -00000011-
+	abx		    ; add b to index
+	sei		    ; disable interrupts
+	stab Temp7	    ; store b into memory
+	ldab BitFlags_2d    ; load b with memory contents
+	andb #~b2d_both     ;  -11111100-
+	orab Temp7	
+	cli		    ; enable interrupts
+	stab BitFlags_2d    ; store b into memory
+	adda CurrentAisPosition
+	staa CurrentAisPosition    ; store a into memory
+	ldaa PIA1_PortB_DataDirection	 ; load a with memory contents
+	anda #0xf0	    ; AND a with value -11110000-
+	oraa 0x00,x	
+	staa PIA1_PortB_DataDirection</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>4-Byte Pattern Array</strong>: Type 9 table at calibration address 0x1DDA.</li>
+<li><strong>Bipolar Commutation</strong>: Drives H-bridge driver transistors connected to the dual AIS motor coils.</li>
+<li><strong>Bidirectional Operation</strong>: Incrementing phase steps the motor open; decrementing phase steps the motor closed.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>AISTEP</code>
+        </footer>
+    </div>
+</body>
+</html>

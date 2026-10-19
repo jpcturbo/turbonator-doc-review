@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPKSET: ConstantSparkAdvanceWhenSettingBasicTiming | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0A9C</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ C - Special setup</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>SPKSET: ConstantSparkAdvanceWhenSettingBasicTiming</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>SPKSET</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>SPKSET_ConstantSparkAdvanceWhenSettingBasicTiming</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\C_-_Special_setup\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0A9C</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">degrees BTDC</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x0C                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L2906-L2916"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8041"><code>CheckMaxSparkAdvance</code></a> in <a href="../../T-SMEC_v19.asm.html#L8058"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>SPKSET</code> defines the fixed reference spark advance angle commanded by the engine controller when operating in mechanical basic timing mode.</p>
+<p>Under normal running conditions, the Chrysler SMEC constantly modulates ignition timing based on engine speed, manifold pressure, charge temperature, and knock feedback. However, during mechanical distributor installation or timing synchronization, electronic spark advance must be completely frozen so the technician can align the distributor housing with the engine timing pointer using a timing light.</p>
+<p>When the coolant temperature sensor is disconnected, setting the sensor fault flag, the controller bypasses all advance tables and locks ignition timing precisely to <code>SPKSET</code>.</p>
+<p>In factory calibrations, <code>SPKSET</code> is configured to 12 degrees BTDC, matching the physical timing marks stamped on the engine bellhousing window and flywheel rim.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CheckMaxSparkAdvance</code> (<code>T-SMEC_v19.asm:8041-8061</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Throttle must be closed (<code>BitFlags_4f</code> bit <code>b4f_OffIdle</code> clear at line 8051).</li>
+<li>Gear change flag <code>b0c_ATXChngGear</code> in <code>BitFlags_AIS</code> must be clear at line 8053.</li>
+<li>Startup delay timer <code>Timer_CountdownFromStartRunForAisFeedback</code> must be zero at line 8054.</li>
+<li>Decel fall-to-idle flag <code>b50_FallToIdle</code> in <code>BitFlags_50</code> must be clear at line 8056.</li>
+<li>Coolant temperature fault flag <code>b45_BadCoolantTemp</code> in <code>b45_IPL1</code> must be set at line 8057. When all conditions are met, the routine loads <code>SPKSET</code> at line 8058 and stores it into <code>CalculatedSparkAdvance</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Flywheel Mark Alignment</strong>:</li>
+<li>Keep <code>SPKSET</code> at 12 degrees BTDC to correspond exactly with the Chrysler factory timing pointer and flywheel scribed mark.</li>
+<li><strong>Custom Triggering &amp; Pointers</strong>:</li>
+<li>If utilizing custom degree rings or non-standard engine balance marks (such as 10 degrees BTDC), reconfigure <code>SPKSET</code> to match the physical pointer precisely.</li>
+<li><strong>Tuning Pitfall</strong>:</li>
+<li>Do not alter <code>SPKSET</code> in an attempt to add global ignition advance. Altering this value only distorts the calibration reference during distributor alignment, skewing all normal advance tables by that exact angular error.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CheckMaxSparkAdvance</code> at line 8041, the controller verifies idle stability. At line 8050, it checks <code>BitFlags_4f</code> for off-idle. At line 8052, it checks <code>BitFlags_AIS</code> for gear transition. At line 8054, it tests <code>Timer_CountdownFromStartRunForAisFeedback</code>. At line 8056, it checks <code>b50_FallToIdle</code>. At line 8057, <code>brclr *b45_IPL1, #b45_BadCoolantTemp, STORE_SPARK_ADV</code> verifies whether coolant sensor failure mode is present. If set, the CPU executes <code>ldaa SPKSET_ConstantSparkAdvanceWhenSettingBasicTiming</code> at line 8058 and branches directly to <code>STORE_SPARK_ADV</code> at line 8060, storing accumulator A into <code>CalculatedSparkAdvance</code>.</p>
+<pre><code class="language-motorola6803">; --- CheckMaxSparkAdvance (T-SMEC_v19.asm:8050-8061) ---
+	orab BitFlags_4f
+	bmi  STORE_SPARK_ADV	; branch if minus(hi bit 1)  - off-idle
+	ldab BitFlags_AIS    ; load b with memory contents
+	andb #b0c_ATXChngGear	       ;  -00000100-
+	orab Timer_CountdownFromStartRunForAisFeedback
+	bne  STORE_SPARK_ADV	; branch if not equal (not zero)
+	brset *BitFlags_50, #b50_FallToIdle, STORE_SPARK_ADV	; branch if bit(s) set
+	brclr *b45_IPL1, #b45_BadCoolantTemp, STORE_SPARK_ADV    ; branch if bit(s) clear
+	ldaa SPKSET_ConstantSparkAdvanceWhenSettingBasicTiming    ; load a with memory contents (data is 0c)
+STORE_SPARK_ADV:
+	staa CalculatedSparkAdvance    ; store a into memory
+	rts		    ; return from subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Fixed Advance Architecture</strong>: Setting timing via <code>SPKSET</code> bypasses all MAP advance lookups (<code>Lookup4ByteTable</code>), knock retard, coolant modifiers, and spark scatter.</li>
+<li><strong>Companion Parameter</strong>: Works alongside <a href="../../5_-_Idle/C_-_Special_setup/RICHSA_OpenLoopEnrichFactorWhenSettingBasicTiming.html"><code>RICHSA</code></a>, ensuring stable open-loop combustion while timing is physically verified.</li>
+<li><strong>Scale Factor</strong>: 1 count = 1.0 degree of crankshaft advance. Factory data value 0x0C equals 12 degrees BTDC.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>SPKSET</code>
+        </footer>
+    </div>
+</body>
+</html>

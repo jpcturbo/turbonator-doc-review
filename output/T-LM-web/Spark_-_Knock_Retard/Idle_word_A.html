@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDLWA: Idle word A | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x038A</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Spark - Knock Retard</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>IDLWA: Idle word A</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>IDLWA</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>Idle_word_A</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Spark_-_Knock_Retard\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x038A</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">5820 decimal</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x16BC (5820 decimal)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L936-L948"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L4759"><code>CalculateDwell</code></a> in <a href="../T-LMv13.asm.html#L4759"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><a href="../Spark_-_Knock_Retard/Idle_word_A.html"><code>Idle_word_A</code></a> (<code>IDLWA</code>) is an internal 2-byte parameter structure utilized by the ECU's closed-throttle idle spark scatter / stabilization routine when engine speed is above target idle (<code>EngineRpm_HB &gt;= TargetIdleSpeed_HB</code>).</p>
+<p>Together with <a href="../Spark_-_Knock_Retard/Idle_bytes_A.html"><code>Idle_bytes_A</code></a>, <a href="../Spark_-_Knock_Retard/Idle_word_B.html"><code>Idle_word_B</code></a>, and <a href="../Spark_-_Knock_Retard/Idle_bytes_B.html"><code>Idle_bytes_B</code></a>, it forms a 3-byte indexed lookup structure (<code>0x00,x</code> maximum clamp, <code>0x01,x</code> proportional slope multiplier, <code>0x02,x</code> base offset) used to calculate rapid idle spark timing corrections.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Active State:</strong> Engine at idle speed with throttle closed and <code>EngineRpm_HB &gt;= TargetIdleSpeed_HB</code>.</li>
+<li><strong>Firmware Access:</strong> Loaded via <code>ldx #Idle_word_A</code> at line 4821.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Tuning Recommendation:</strong> <strong>DO NOT MODIFY.</strong><br />
+  The high byte (<code>0x16</code> = 22 counts = 11.0° max retard) and low byte (<code>0xBC</code> = 188/256 slope) govern the proportional over-speed spark scatter curve at idle.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 4821–4843):</p>
+<pre><code class="language-motorola6803">ldx  #Idle_word_A    ; load index with value
+           ldaa #0x40          ; load a with value -01000000-
+           staa Temp6          ; store a into memory
+           ldd  EngineRpm_HB    ; load d (a&amp;b) with memory contents
+           subd TargetIdleSpeed_HB    ; d = d - memory contents
+           bcc  LE2D7          ; branch if greater or equal
+           asl  Temp6      
+           ldx  #Idle_word_B    ; load index with value
+           ldd  TargetIdleSpeed_HB    ; load d (a&amp;b) with memory contents
+           subd EngineRpm_HB    ; d = d - memory contents
+   LE2D7:  lsrd                ; shift right (d=d/2)
+           lsrd                ; shift right (d=d/2)
+           subd FWDARP_SubtractedFromRPMDuringIdleRoutine    ;  (data is 001e)
+           ldaa 0x00,x         ; load a with memory at index + value
+           bcc  LE2EA          ; branch if greater or equal
+           addb REVARP_AddedBackToRPMDuringIdleRoutine    ;  (data is 1e)
+           bmi  LE32C          ; branch if minus(hi bit 1)
+           ldaa 0x01,x         ; load a with memory at index + value
+           mul                 ; multiply (d=a*b)
+           adca 0x02,x</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Paired with <a href="../Spark_-_Knock_Retard/Idle_bytes_A.html"><code>Idle_bytes_A</code></a> and <a href="../Spark_-_Knock_Retard/Idle_word_B.html"><code>Idle_word_B</code></a>:</strong> <a href="../Spark_-_Knock_Retard/Idle_word_A.html"><code>Idle_word_A</code></a> (<code>0x16BC</code>) handles over-speed idle spark retard (<code>nega</code> at line 4843 remainders), while <a href="../Spark_-_Knock_Retard/Idle_word_B.html"><code>Idle_word_B</code></a> (<code>0x0B5E</code>) handles under-speed idle spark advance.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>IDLWA</code>
+        </footer>
+    </div>
+</body>
+</html>

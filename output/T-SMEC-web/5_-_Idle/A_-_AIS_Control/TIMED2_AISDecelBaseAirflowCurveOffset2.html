@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TIMED2: DecelAisBaseAirflowCurveOffset FromTime2 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0D95</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ A - AIS Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>TIMED2: DecelAisBaseAirflowCurveOffset FromTime2</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>TIMED2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>TIMED2_AISDecelBaseAirflowCurveOffset2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\A_-_AIS_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0D95</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2D Table / Curve)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">2 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Engine Running Time (0 to 255 seconds)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Target Idle RPM Offset (0 to 720 RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM vs. seconds</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Number of points in table
+.byte 0x13, 0x0D, 0xFD, 0xD5     ;Point 1
+.byte 0x19, 0x00                 ;Point 2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3667-L3679"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L2080"><code>LoadDiagIdleSpeed</code></a> in <a href="../../T-SMEC_v19.asm.html#L2112"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>TIMED2</code> is a 2D lookup curve that provides a time-decaying target idle speed adder following engine startup.</p>
+<p>When an engine first fires, extra intake air and elevated idle speed are beneficial to help clear fuel puddling, build oil pressure, and ensure smooth operation while initial combustion heat begins warming the cylinder walls. As engine run time accumulates, this elevated startup flare target must smoothly decay back down to the normal steady-state idle speed determined by coolant temperature.</p>
+<p><code>TIMED2</code> is indexed by engine running time in seconds and adds an RPM offset directly to the base target idle speed.</p>
+<p>In factory calibrations, <code>TIMED2</code> provides an initial boost of approximately 36 to 40 RPM that decays smoothly to 0 RPM over the first 25 seconds of continuous engine run time.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>LoadDiagIdleSpeed</code> (<code>T-SMEC_v19.asm:2080-2120</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Runs after base idle target is fetched from <a href="../../5_-_Idle/A_-_AIS_Control/AISPN_IdleSpeedParkNeutral_FromTemp.html"><code>AISPN</code></a> (line 2107) or <a href="../../5_-_Idle/A_-_AIS_Control/AISCLD_IdleSpeedDrive_FromTemp.html"><code>AISCLD</code></a> (line 2085).</li>
+<li>Base target is preserved in <code>Temp0</code> at line 2110.</li>
+<li>Loads <code>KeyOnOrEngineRunningTime</code> into accumulator A at line 2111.</li>
+<li>Indexes <code>TIMED2</code> table via <code>Lookup4ByteTable</code> at line 2113 and adds the returned offset to <code>Temp0</code> at line 2114, clamping at 255 counts (saturation).</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Post-Start Flare Shaping</strong>:</li>
+<li>Increase initial RPM offset points in <code>TIMED2</code> to 80 to 150 RPM if modified engines suffer from lean stumble or low vacuum in the first 15 seconds after firing.</li>
+<li><strong>Extended Warm-Up Drivability</strong>:</li>
+<li>Lengthening the decay time beyond 25 seconds provides a gentle, gradual ramp down to base idle, improving cold morning drivability.</li>
+<li><strong>Quick Idle Drop</strong>:</li>
+<li>Zeroing <code>TIMED2</code> causes the engine idle target to drop directly to base temperature-curve RPM immediately upon starting.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>, after fetching base target idle speed into accumulator A and storing into <code>Temp0</code>, the CPU loads <code>KeyOnOrEngineRunningTime</code> into accumulator A at line 2111. At line 2112, it loads index X with <code>#TIMED2_AISDecelBaseAirflowCurveOffset2</code> and calls <code>jsr Lookup4ByteTable</code> at line 2113. At line 2114, it executes <code>adda Temp0</code>. If addition does not overflow (<code>bcc L1087</code>), the summed RPM target is retained; if overflow occurs, accumulator A is saturated to 255 counts (<code>ldaa #0xff</code>).</p>
+<pre><code class="language-motorola6803">; --- LoadDiagIdleSpeed (T-SMEC_v19.asm:2108-2120) ---
+L1086:	ldaa CoolantTemp    ; load a with memory contents
+	jsr  Lookup4ByteTable	 ; call subroutine
+	staa Temp0	    ; store a into memory
+	ldaa KeyOnOrEngineRunningTime	 ; load a with memory contents
+	ldx  #TIMED2_AISDecelBaseAirflowCurveOffset2	; load index with value
+	jsr  Lookup4ByteTable	 ; call subroutine
+	adda Temp0	
+	bcc  L1087	    ; branch if greater or equal
+	ldaa #0xff	    ; load a with value -11111111-
+L1087:	brclr *BitFlags_50, #b50_IdleSpeedMode, L1089	 ; branch if bit(s) clear
+	ldab Counter_MainLoop	  ; load b with memory contents
+	andb DECAIS_RollingAisUpdateRate_01_03_07_0f_1f_3f_7f_ff    ;  (data is 7f)
+	bne  L1092	    ; branch if not equal (not zero)</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Dual Decay Architecture</strong>: Works in parallel with <a href="../../5_-_Idle/B_-_AIS_Decel/TIMEDC_AISDecelBaseAirflowCurveOffset.html"><code>TIMEDC</code></a>, but whereas <a href="../../5_-_Idle/B_-_AIS_Decel/TIMEDC_AISDecelBaseAirflowCurveOffset.html"><code>TIMEDC</code></a> adds decel airflow steps in <code>CalculateAisPosition_MM</code>, <code>TIMED2</code> directly raises the target idle RPM in <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Table Size</strong>: 2 points (time vs RPM offset).</li>
+<li><strong>Factory Points</strong>: Point 1 at 19 seconds (+36 RPM), Point 2 at 25 seconds (0 RPM).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>TIMED2</code>
+        </footer>
+    </div>
+</body>
+</html>

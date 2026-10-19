@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COILLO: LoLimitBatteryVoltsForCoilVerify | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1C69</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>COILLO: LoLimitBatteryVoltsForCoilVerify</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>COILLO</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>COILLO_LoLimitBatteryVoltsForCoilVerify</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1C69</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x05 (5 counts ≈ 0.58 psi MAP delta)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7463-L7474"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5150"><code>VerifyOperationOfIgnitionCoilDriver2_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L5179"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>COILLO</code> defines the minimum intake manifold pressure disturbance threshold evaluated during the secondary ignition coil driver verification routine.</p>
+<p>Although the parameter label mentions battery volts due to historical template naming, firmware reverse engineering proves that it evaluates the difference between instantaneous and filtered manifold pressure. During engine cranking and low battery voltage operation, every successful ignition firing produces a distinct intake valve depression and manifold pressure ripple.</p>
+<p>If the ignition coil driver fails to fire the primary winding, combustion ceases and the expected manifold pressure pulsation disappears.</p>
+<p>In factory calibrations, <code>COILLO</code> is configured to 5 counts, corresponding to approximately 0.58 psi of pressure difference. If battery voltage is in the low-voltage test window and the manifold pressure deviation equals or exceeds <code>COILLO</code>, the controller flags <strong>Fault Code 43</strong>.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>VerifyOperationOfIgnitionCoilDriver2_MM</code> (<code>T-SMEC_v19.asm:5150-5185</code>), instruction at line 5179.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Executed every 16 main loops with distributor sync established.</li>
+<li><code>BatteryVolts</code> between <code>0x41</code> (6.5V) and <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/COILHI_HiLimitBatteryVoltsForCoilVerify.html"><code>COILHI</code></a> (11.6V).</li>
+<li><code>MapValue</code> strictly greater than <code>MapVolts</code> at line 5178.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li>Difference <code>MapValue - MapVolts</code> computed in accumulator A at line 5177.</li>
+<li><code>cmpa COILLO_LoLimitBatteryVoltsForCoilVerify</code> at line 5179 compares delta against 5 counts.</li>
+<li>If lower (<code>bcs</code>), branches to <code>R1424</code> at line 5180, exiting without error.</li>
+<li>If higher or equal, throws non-critical error <code>0x2814</code> (Fault Code 43) at line 5182.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
+<li>Multiply <code>COILLO</code> by 0.667 (from 5 counts down to 3 counts) when converting from a 2-bar to a 3-bar MAP sensor.</li>
+<li><strong>Aggressive Camshaft Tuning</strong>:</li>
+<li>High-overlap performance camshafts generate erratic intake pressure pulses that can trigger false Fault Code 43 codes.</li>
+<li>Raise <code>COILLO</code> to 7 or 8 counts (0.80 to 0.92 psi delta) to filter out camshaft-induced pressure fluctuations.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Setting <code>COILLO</code> to zero flags Fault Code 43 on nearly every low-voltage cranking cycle.</li>
+<li>Setting <code>COILLO</code> to maximum (255 counts) disables this secondary ignition coil verification test.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In routine <code>VerifyOperationOfIgnitionCoilDriver2_MM</code> (lines 5150-5185), after confirming battery voltage is between 0x41 and <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/COILHI_HiLimitBatteryVoltsForCoilVerify.html"><code>COILHI</code></a>, line 5176 loads <code>MapValue</code> and line 5177 executes <code>suba MapVolts</code>. If accumulator A is non-zero, line 5179 executes <code>cmpa COILLO_LoLimitBatteryVoltsForCoilVerify</code> (0x05 = 5 counts, ~0.58 psi). If accumulator A is strictly less than <code>COILLO</code>, <code>bcs R1424</code> branches to exit. If the pressure difference is at or above <code>COILLO</code>, line 5181 loads error code 0x2814 into register D and line 5182 jumps to <code>ThrowNonCriticalError</code> (Fault Code 43).</p>
+<pre><code class="language-motorola6803">; --- VerifyOperationOfIgnitionCoilDriver2_MM (T-SMEC_v19.asm:5171-5185) ---
+	ldaa BatteryVolts    ; load a with memory contents
+	cmpa #0x41	    ; compare a with value -01000001-
+	bcs  R1424	    ; branch if lower
+	cmpa COILHI_HiLimitBatteryVoltsForCoilVerify	; compare a with memory contents (data is ba)
+	bcc  R1424	    ; branch if greater or equal
+	ldaa MapValue	    ; load a with memory contents
+	suba MapVolts	
+	bls  R1424	    ; branch if lower or same
+	cmpa COILLO_LoLimitBatteryVoltsForCoilVerify	; compare a with memory contents (data is 03)
+	bcs  R1424	    ; branch if lower
+	ldd  #0x2814	    ; load d (a&amp;b) with value -00101000 00010100-
+	jmp  ThrowNonCriticalError
+
+L1423:	bset *BitFlags_53, #b53_bit0	; set bits
+R1424:	rts		    ; return from subroutine
+</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/COILHI_HiLimitBatteryVoltsForCoilVerify.html"><code>COILHI</code></a> (battery voltage window ceiling).</li>
+<li><strong>Diagnostic Code</strong>: DRB-II Fault Code 43 (ignition coil control circuit).</li>
+<li><strong>3-Bar MAP Calibration</strong>: Requires 2/3 rescaling when changing pressure sensor calibration.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>COILLO</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R1: RPMCellBoundaryInRPMover32 | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x05C2</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - Adaptive memory</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel</strong>
+        </div>
+        
+        <article class="content">
+            <h1>R1: RPMCellBoundaryInRPMover32</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>R1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>R1_RPMCellBoundaryInRPMover32</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_Adaptive_memory\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x05C2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed in RPM/32 ($1 \text{ count} = 32\text{ RPM}$)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x1D (29 counts $\times 32 = 928\text{ RPM}$)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L1504-L1516"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L3344"><code>AdaptiveMemory_DetermineWhichCellApplies_MM</code></a> in <a href="../T-LMv13.asm.html#L3372"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>R1_RPMCellBoundaryInRPMover32</code> is the <strong>engine speed boundary</strong> that bifurcates each of the 6 MAP load regions into a <strong>Low-RPM Cell</strong> (even numbers: 0, 2, 4, 6, 8, 10) and a <strong>High-RPM Cell</strong> (odd numbers: 1, 3, 5, 7, 9, 11).</p>
+<p>Engines experience significantly different volumetric efficiencies and exhaust scavenging dynamics at low RPM (near idle / off-idle lugging) compared to higher cruising RPMs. <code>R1</code> provides the RPM split that allows the adaptive fuel trim system to learn separate fuel corrections for low-RPM lugging vs. mid/high-RPM cruising.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Cell Selection (Part Throttle):</strong></li>
+<li>Once the MAP load zone (0, 2, 4, 6, 8, 10) has been established by <a href="../Fuel_-_Adaptive_memory/MP1_AutoCalMapCellBoundary1.html"><code>MP1</code></a>â€“<a href="../Fuel_-_Adaptive_memory/MP5_AutoCalMapCellBoundary5.html"><code>MP5</code></a>:</li>
+<li>Current engine speed high-byte (<code>EngineRpm_HB</code>) is compared against <code>R1</code>.</li>
+<li>If <code>EngineRpm &lt;= R1</code>: The cell pointer remains at the base even cell index (Low RPM).</li>
+<li>If <code>EngineRpm &gt; R1</code>: The cell pointer is incremented by 1 to select the odd cell index (High RPM).</li>
+<li><strong>Hysteresis:</strong> Protected by <a href="../Fuel_-_Adaptive_memory/DLTRPM_DeltaRPMAtRPMBoundariesInRPMOver32.html"><code>DLTRPM</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stock Value:</strong> <code>0x1D</code> (29 × 32 = 928 RPM).</li>
+<li><strong>Raising <code>R1</code> (e.g., to <code>0x32</code> / 1600 RPM):</strong></li>
+<li><strong>Real-World Impact:</strong> In stock form, <code>R1</code> is set very low (928 RPM), meaning that almost all driving above 1000 RPM falls into the High-RPM cells (odd cells), while the even cells only capture off-idle crawl.</li>
+<li>Raising <code>R1</code> to 1500â€“1800 RPM divides low-speed city driving (under 1800 RPM) cleanly from highway cruising (above 1800 RPM), allowing much better adaptive fuel resolution.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 3372â€“3380):</p>
+<pre><code class="language-motorola6803">LD889:  ldaa R1_RPMCellBoundaryInRPMover32 ; Load 0x1D (928 RPM)
+        lsrb                ; Check previous cell parity
+        bcs  LD892          
+        adda DLTRPM_DeltaRPMAtRPMBoundariesInRPMOver32 ; Add RPM hysteresis
+LD892:  ldab Temp0          ; Load current base cell index (0, 2, 4, 6, 8, 10)
+        cmpa EngineRpm_HB    ; Compare threshold with current RPM
+        bcc  LD899          ; If R1 &gt;= EngineRpm, keep even cell!
+        incb                ; If EngineRpm &gt; R1, increment to odd cell!
+LD899:  cmpb PointerIntoAdaptiveMemory ; Check if cell changed</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li>Scaling formula:</li>
+</ul>
+<p><code>RPM Boundary = R1 × 32 RPM</code></p>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>R1</code>
+        </footer>
+    </div>
+</body>
+</html>

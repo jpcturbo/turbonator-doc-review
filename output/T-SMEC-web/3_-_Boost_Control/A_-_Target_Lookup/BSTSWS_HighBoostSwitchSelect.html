@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BSTSWS: HighBoostSwitchSelect | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1149</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ A - Target Lookup</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BSTSWS: HighBoostSwitchSelect</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BSTSWS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BSTSWS_HighBoostSwitchSelect</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\A_-_Target_Lookup\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1149</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 5 (Bitfield / Configuration Mask)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Digital Input Switch Port Bitmask</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4615-L4626"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L9483"><code>Polarity_Hi</code></a> in <a href="../../T-SMEC_v19.asm.html#L9484"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BSTSWS</code> defines the digital input pin bitmask on the switch input port used by the engine controller to read a driver-operated dual-boost selection switch.</p>
+<p>When switchable boost is enabled in the calibration option registers, the controller tests this bit against the hardware switch register during every main program loop pass. If the switch state indicates that low-boost mode is selected, the controller overrides the primary engine-speed boost target curve with the low-boost ceiling constant. This mechanism allows the driver to alternate between high-power boost and conservative low-boost settings on the fly for varying weather, traction, or fuel availability.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CheckBoostSwitch</code> (<code>T-SMEC_v19.asm:9469-9492</code>), called from <code>CalcTargetBoost_MM</code> (<code>T-SMEC_v19.asm:9423-9504</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Switchable boost option bit <code>opt_SwBoost</code> must be set in <a href="../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1_CalCustomOptionConfigFlags1</code></a> (line 9476).</li>
+<li>If <code>opt_SwBoost</code> is clear, execution branches directly to <code>StoreBoostTarget</code> (line 9477), bypassing the switch.</li>
+<li><strong>Polarity Evaluation</strong>:</li>
+<li>Polarity flag <code>opt_SwBstPol</code> in <a href="../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1</code></a> selects <code>Polarity_Hi</code> (line 9483) or <code>Polarity_Lo</code> (line 9488).</li>
+<li>Register B loads <code>SwitchPortAccessReg</code> and tests <code>bitb BSTSWS_HighBoostSwitchSelect</code> (lines 9484, 9489).</li>
+<li>If the test resolves to low-boost mode, execution branches to <code>LoadLoBoostAndLookup</code> (line 9493) to clamp boost target to <a href="../../3_-_Boost_Control/A_-_Target_Lookup/LOWBST_AllowedBoostLo.html"><code>LOWBST</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Switch Input Pin Configuration</strong>:</li>
+<li>Sets the digital input bitmask on the controller switch port corresponding to the physical boost switch.</li>
+<li>Factory calibrations default to bitmask 2 (bit 1) for the dedicated switch input circuit.</li>
+<li><strong>Polarity Coordination</strong>:</li>
+<li>Must be coordinated with <code>opt_SwBstPol</code> in <a href="../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1</code></a> to ensure switch toggle positions match high and low modes.</li>
+<li><strong>Disabling &amp; Bypassing</strong>:</li>
+<li>If switchable boost <code>opt_SwBoost</code> is disabled in <a href="../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1</code></a>, this switch bitmask is completely bypassed.</li>
+<li><strong>Hardware Integrity</strong>:</li>
+<li>Ensure clean wiring and debounced switch contacts to avoid rapid toggling between boost limits under road vibration.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CheckBoostSwitch</code>, the controller first reads <a href="../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1_CalCustomOptionConfigFlags1</code></a> and executes <code>bita #opt_SwBoost</code> at line 9476. If clear, it branches to <code>StoreBoostTarget</code>. If set, it loads <code>SwitchPortAccessReg</code> into accumulator B, checks polarity bit <code>opt_SwBstPol</code>, and branches to <code>Polarity_Hi</code> or <code>Polarity_Lo</code>. At lines 9484 and 9489, the instruction <code>bitb BSTSWS_HighBoostSwitchSelect</code> tests the configured bitmask against the physical switch port. Depending on polarity, if the switch is in the low-boost position, the routine branches to <code>LoadLoBoostAndLookup</code> at line 9493 to evaluate <a href="../../3_-_Boost_Control/A_-_Target_Lookup/LOWBST_AllowedBoostLo.html"><code>LOWBST_AllowedBoostLo</code></a>.</p>
+<pre><code class="language-motorola6803">; --- CheckBoostSwitch (T-SMEC_v19.asm:9483-9492) ---
+Polarity_Hi:
+	bitb BSTSWS_HighBoostSwitchSelect
+	beq  LoadLoBoostAndLookup	    ; branch if equal (zero)
+	bra  StoreBoostTarget
+
+Polarity_Lo:
+	bitb BSTSWS_HighBoostSwitchSelect
+	bne  LoadLoBoostAndLookup	    ; branch if not equal (not zero)
+	bra  StoreBoostTarget</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Option Flag Dependency</strong>: Requires <code>opt_SwBoost</code> (bit 4) to be enabled in <a href="../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1_CalCustomOptionConfigFlags1</code></a>.</li>
+<li><strong>Polarity Inversion</strong>: Paired directly with <code>opt_SwBstPol</code> (bit 5) in <a href="../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1</code></a>, allowing normal-open or normal-closed cockpit switches.</li>
+<li><strong>Target Clamping</strong>: When active, low-boost mode does not replace the primary table blindly; it passes <a href="../../3_-_Boost_Control/A_-_Target_Lookup/LOWBST_AllowedBoostLo.html"><code>LOWBST</code></a> into <code>KeepSmallerBoostGoal</code> to enforce the minimum.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>BSTSWS</code>
+        </footer>
+    </div>
+</body>
+</html>

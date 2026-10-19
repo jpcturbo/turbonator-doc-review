@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POSFUL: AisEnrichmentFuelPulse | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x09BA</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ D - Transient Enrichment ➔ PumpShot Calculation ➔ AIS PumpShot</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>POSFUL: AisEnrichmentFuelPulse</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>POSFUL</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>POSFUL_AisEnrichmentFuelPulse</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\D_-_Transient_Enrichment\PumpShot_Calculation\AIS_PumpShot\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x09BA</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Pulsewidth (0 to 65535 microseconds, 1 uSec / count)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0x015E                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L2680-L2691"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L6540"><code>TransFuel_StoreLeanOutFactor</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L6558"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>POSFUL</code> specifies the pulse width of the auxiliary acceleration enrichment pulse injected when the idle air stepper motor opens rapidly.</p>
+<p>When accessory loads like the air conditioning compressor or power steering pump place a sudden load on the idling engine, the controller commands the idle stepper motor open, admitting extra air into the plenum. <code>POSFUL</code> injects a fixed supplemental fuel pulse directly into the running part-throttle enrichment variable to match this bypass airflow and maintain an even idle speed.</p>
+<p>The factory setting provides 350 microseconds of supplemental fuel.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Enclosed in routine <code>TransFuel_StoreLeanOutFactor</code> at lines 6540-6565 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Evaluated when <code>b4f_OffIdle</code> is clear, <code>pia2b_OC1Toggle</code> is active, and the stepper motor opening delta meets or exceeds <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/AIS_PumpShot/POSTIG_MinAisPulseRequireToTriggerEnrichment.html"><code>POSTIG</code></a> (line 6556).</li>
+<li>Loaded into register D at line 6558: <code>ldd POSFUL_AisEnrichmentFuelPulse</code>.</li>
+<li>Stored directly into <code>Pulsewidth_PartThrottleEnrichment_HB</code> via <code>stD *Pulsewidth_PartThrottleEnrichment_HB</code> at line 6564, which adds directly to <code>InjectorPulsewidth_HB</code> at line 6891.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Large Injector Scaling</strong>: Scale <code>POSFUL</code> inversely when upgrading to larger fuel injectors so that the injected fuel mass remains matched to bypass airflow.</li>
+<li><strong>Curing A/C Engagement Dip</strong>: If the engine dips in RPM, shudders, or threatens to stall when the air conditioning kicks on, increase <code>POSFUL</code> to richen the idle transition.</li>
+<li><strong>Eliminating Rich Shifter Bog</strong>: If the engine puffs black smoke or bogs rich when shifting an automatic transmission into gear, reduce <code>POSFUL</code>.</li>
+<li><strong>Coordination with POSTIG</strong>: Must be calibrated alongside the activation threshold in <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/AIS_PumpShot/POSTIG_MinAisPulseRequireToTriggerEnrichment.html"><code>POSTIG</code></a>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: Within <code>TransFuel_StoreLeanOutFactor</code>, when the idle air motor opening delta meets or exceeds <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/AIS_PumpShot/POSTIG_MinAisPulseRequireToTriggerEnrichment.html"><code>POSTIG</code></a>, line 6558 loads 16-bit word constant <code>POSFUL_AisEnrichmentFuelPulse</code> into accumulator D. Line 6559 executes <code>bra TransFuel_UseAISPTEPW</code> jumping to line 6564, where instruction <code>stD *Pulsewidth_PartThrottleEnrichment_HB</code> overwrites the transient fuel variable with the <code>POSFUL</code> value. In <code>CalculateInjectorPulsewidthForEngineRunning</code> at line 6891, this pulse width is added directly to total injector open time.</p>
+<pre><code class="language-motorola6803">; --- TransFuel_StoreLeanOutFactor (T-SMEC_v19.asm:6540-6565) ---
+TransFuel_StoreLeanOutFactor:	
+        stab Factor_DecelLeanoutWhenThrottleDecreasing	  ; store b into memory
+L1559:	ldaa Counter_MainLoop	  ; load a with memory contents
+	bita #0x07	    ;  -00000111-
+	bne  L1560	    ; branch if not equal (not zero)
+	ldx  #Block_TPS    ; load index with value
+	sei		    ; disable interrupts
+	jsr  ProcessMapOrTpsBlockData	 ; call subroutine
+	cli		    ; enable interrupts
+L1560:	brset *BitFlags_4f, #b4f_OffIdle, TransFuel_UseRunningPTEPW	 ; branch if bit(s) set
+	ldaa PIA2_PortB_DataDirection	 ; load a with memory contents
+	bita #pia2b_OC1Toggle	    ;  -00001000-
+	beq  TransFuel_UseRunningPTEPW    ; branch if equal (zero)
+	ldaa DesiredNewAisPosition    ; load a with memory contents
+	suba CurrentAisPosition
+	bcs  TransFuel_UseRunningPTEPW    ; branch if lower
+	cmpa POSTIG_MinAisPulseRequireToTriggerEnrichment    ; compare a with memory contents (data is 0d)
+	bcs  TransFuel_UseRunningPTEPW    ; branch if lower
+	ldd  POSFUL_AisEnrichmentFuelPulse    ;  (data is 004c)
+	bra  TransFuel_UseAISPTEPW	; branch
+
+TransFuel_UseRunningPTEPW:
+	ldd  Temp2	    ; load d (a&amp;b) with memory contents
+TransFuel_UseAISPTEPW:
+	stD *Pulsewidth_PartThrottleEnrichment_HB    ; store D to RAM
+	rts		    ; return from subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>16-Bit Word Resolution</strong>: Stored as a 16-bit word with 1 microsecond per count resolution.</li>
+<li><strong>Bypasses Running PTE Calculation</strong>: When active, replaces <code>Temp2</code> (the running TPS/MAP transient calculation) directly in <code>Pulsewidth_PartThrottleEnrichment_HB</code>.</li>
+<li><strong>Companion Parameter</strong>: Triggered strictly by <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/AIS_PumpShot/POSTIG_MinAisPulseRequireToTriggerEnrichment.html"><code>POSTIG_MinAisPulseRequireToTriggerEnrichment</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>POSFUL</code>
+        </footer>
+    </div>
+</body>
+</html>

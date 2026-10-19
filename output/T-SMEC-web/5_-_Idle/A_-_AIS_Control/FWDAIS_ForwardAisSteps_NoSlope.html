@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FWDAIS: ForwardAisSteps NoSlope | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0E57</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ A - AIS Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>FWDAIS: ForwardAisSteps NoSlope</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>FWDAIS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>FWDAIS_ForwardAisSteps_NoSlope</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\A_-_AIS_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0E57</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 12 (No-Slope Step Lookup Table)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">4 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Underspeed RPM Error (0 to 2048 RPM below target)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">AIS Stepper Opening Steps (0 to 255 steps open)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">steps vs. RPM</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x04                       ;Number of points in table
+.byte 0x1E, 0x00                 ;Point 1
+.byte 0x32, 0x01                 ;Point 2
+.byte 0x64, 0x04                 ;Point 3
+.byte 0x78, 0x06                 ;Point 4</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3861-L3875"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L2170"><code>HandleAcCutout</code></a> in <a href="../../T-SMEC_v19.asm.html#L2373"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>FWDAIS</code> is the proportional correction lookup table that commands opening steps on the automatic idle speed stepper motor whenever engine speed falls below target idle.</p>
+<p>When electrical or mechanical loads suddenly engage, such as the radiator cooling fan turning on, alternator heavy charging, or power steering pump assist, engine speed sags. The SMEC continuously calculates the underspeed error delta by subtracting actual engine speed from target idle speed.</p>
+<p><code>FWDAIS</code> indexes this RPM error to determine how many opening steps to apply to catch the sagging engine speed.</p>
+<p>In factory calibrations, <code>FWDAIS</code> incorporates a deadband of approximately 30 RPM where 0 steps are commanded to prevent hunting, then adds 1 step at 50 RPM error, 4 steps at 100 RPM error, and 6 steps at 120 RPM error.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2401</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Startup feedback lockout timer <code>Timer_CountdownFromStartRunForAisFeedback</code> must be zero at line 2368.</li>
+<li>Stepper movement interval timer <code>Timer_AisChanges</code> must exceed <a href="../../5_-_Idle/B_-_AIS_Decel/AISFRQ_AisPeriodForRpmFeedback11ms.html"><code>AISFRQ</code></a> at line 2371.</li>
+<li>Actual engine speed must be lower than target idle speed: <code>subd EngineRpm_HB</code> from <code>TargetIdleSpeed_HB</code> yields a positive result (<code>bcc L1131</code> at line 2376).</li>
+<li>Indexes <code>FWDAIS</code> table at line 2373 using the shifted RPM error delta.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Curing Accessory Load Dips</strong>:</li>
+<li>If turning the steering wheel or activating the headlights causes engine speed to plunge, increase the opening steps in <code>FWDAIS</code> at 50 to 100 RPM error by 1 or 2 steps.</li>
+<li><strong>Lightweight Flywheel Recovery</strong>:</li>
+<li>Engines with reduced rotating mass decelerate rapidly; slightly larger opening steps help arrest the downward RPM spike before stalling.</li>
+<li><strong>Surging &amp; Hunting Prevention</strong>:</li>
+<li>If the engine rhythmically surges up and down at idle, reduce <code>FWDAIS</code> opening steps and broaden the zero-step deadband to stabilize the control loop.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at line 2370, <a href="../../5_-_Idle/B_-_AIS_Decel/AISFRQ_AisPeriodForRpmFeedback11ms.html"><code>AISFRQ</code></a> is compared against <code>Timer_AisChanges</code>. If the timer has elapsed, the CPU loads index X with <code>#FWDAIS_ForwardAisSteps_NoSlope</code> at line 2373. Lines 2374-2375 compute <code>ldd TargetIdleSpeed_HB; subd EngineRpm_HB</code>. If actual RPM is below target, execution branches to <code>L1131</code>. The error is shifted right twice (or three times if not in gear), tested against the error deadband, and the corresponding opening steps from <code>FWDAIS</code> are fetched at line 2398. Line 2400 calls <code>ClearAisTimer</code>, applying the positive step delta to <code>DesiredNewAisPosition</code>.</p>
+<pre><code class="language-motorola6803">; --- HandleAcCutout (T-SMEC_v19.asm:2370-2401) ---
+	ldab AISFRQ_AisPeriodForRpmFeedback11ms    ; load b with memory contents (data is 7f)
+	cmpb Timer_AisChanges
+	bcc  L1136	    ; branch if greater or equal
+	ldx  #FWDAIS_ForwardAisSteps_NoSlope	; load index with value
+	ldd  TargetIdleSpeed_HB	; load d (a&amp;b) with memory contents
+	subd EngineRpm_HB    ; d = d - memory contents
+	bcc  L1131	    ; branch if greater or equal
+	ldx  #REVAIS_ReverseAisSteps_NoSlope	; load index with value
+	coma		
+	comb		
+L1131:	lsrd		    ; shift right (d=d/2)
+	lsrd		    ; shift right (d=d/2)
+	brset *BitFlags_AIS, #b0c_ATXInGear, L1132    ; branch if bit(s) set
+	lsrd		    ; shift right (d=d/2)
+L1132:	tsta		    ; test a
+	beq  L1133	    ; branch if equal (zero)
+	ldab #0xff	    ; load b with value -11111111-
+L1133:	tba		    ; a = b
+	cmpa 0x01,x	    ; compare a with memory at index + value
+	bcs  L1136	    ; branch if lower
+	ldab 0x00,x	    ; load b with memory at index + value
+	beq  L1136	    ; branch if equal (zero)
+L1134:	inx		    ; increment index (x=x+1)
+	inx		    ; increment index (x=x+1)
+	decb		
+	beq  L1135	    ; branch if equal (zero)
+	cmpa 0x01,x	    ; compare a with memory at index + value
+	bcc  L1134	    ; branch if greater or equal
+L1135:	ldaa 0x00,x	    ; load a with memory at index + value
+	beq  L1136	    ; branch if equal (zero)
+	jsr  ClearAisTimer	    ; call subroutine
+L1136:	brclr *BitFlags_50, #b50_IdleSpeedMode, R1142	 ; branch if bit(s) clear</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameter</strong>: Works directly with <a href="../../5_-_Idle/A_-_AIS_Control/REVAIS_ReverseAisSteps_NoSlope.html"><code>REVAIS</code></a> (overspeed correction table) and <a href="../../5_-_Idle/B_-_AIS_Decel/AISFRQ_AisPeriodForRpmFeedback11ms.html"><code>AISFRQ</code></a> (feedback loop sample period).</li>
+<li><strong>Deadband Architecture</strong>: Incorporates an inherent zero-step deadband for small RPM errors to prevent continuous stepper dithering at steady idle.</li>
+<li><strong>Table Type</strong>: Type 12 (Lookup table with discrete error thresholds and step values).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>FWDAIS</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOTHLD: CurveAHotHoldTime | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x07B8</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ B - Running</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Base_Modifiers</strong>
+        </div>
+        
+        <article class="content">
+            <h1>HOTHLD: CurveAHotHoldTime</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>HOTHLD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>HOTHLD_CurveAHotHoldTime</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Base_Modifiers</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\B_-_Running\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x07B8</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">seconds</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x25 (37 counts ≈ 26.0 seconds)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L2166-L2176"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5992"><code>CalculateSumOfAllFuelModifiers_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L6008"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>HOTHLD</code> specifies the duration that after-start enrichment (Curve A) is held at full strength following a hot restart.</p>
+<p>When restarting an engine that has heat-soaked above <a href="../../1_-_Fuel/B_-_Running/TMPHLD_TempSwitchPointForCurveAHoldDecay.html"><code>TMPHLD</code></a>, fuel within the fuel rail and injector bodies may have experienced partial vaporization or vapor bubbles. <code>HOTHLD</code> maintains after-start enrichment for a calibrated dwell period, clearing fuel rail vapor lock and stabilizing cylinder combustion before enrichment decays.</p>
+<p>In factory calibrations, <code>HOTHLD</code> is set to 37 counts, representing approximately 26.0 seconds of hold time.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateSumOfAllFuelModifiers_MM</code> (<code>T-SMEC_v19.asm:6012-6021</code>), instruction line 6020.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Active when <code>CoolantTemp &gt;= TMPHLD</code> (hot restart).</li>
+<li>Evaluated against <code>KeyOnOrEngineRunningTime</code> shifted left twice.</li>
+<li><strong>Pointer Offset</strong>:</li>
+<li>Because <code>CoolantTemp &gt;= TMPHLD</code>, line 6012 executes <code>inx</code>.</li>
+<li><code>0x01,x</code> at line 6020 reads address <code>TMPHLD + 1 + 1</code> = <code>HOTHLD</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Hot Soak Vapor Mitigation</strong>:</li>
+<li>Increasing <code>HOTHLD</code> extends enrichment dwell, purging fuel rail bubbles and stabilizing hot restarts after brief engine stops.</li>
+<li><strong>Aftermarket Injector Tuning</strong>:</li>
+<li>Large injectors often supply sufficient fuel without prolonged hot enrichment; lowering <code>HOTHLD</code> eliminates dark smoke on warm starts.</li>
+<li><strong>Hold Duration Scaling</strong>:</li>
+<li>Hold time equals counts multiplied by 0.704 seconds (37 counts = 26.0 seconds).</li>
+<li><strong>Companion Hold Parameters</strong>:</li>
+<li>Evaluated as the hot-start hold counterpart to cold-start hold constant <a href="../../1_-_Fuel/B_-_Running/CLDHLD_CurveAColdHoldTime.html"><code>CLDHLD</code></a>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateSumOfAllFuelModifiers_MM</code>, when <code>CoolantTemp &gt;= TMPHLD</code>, line 6011 fails the <code>bcs</code> branch. Line 6012 executes <code>inx</code>, shifting register X to point at <a href="../../1_-_Fuel/B_-_Running/CLDHLD_CurveAColdHoldTime.html"><code>CLDHLD</code></a>. At line 6015, <code>KeyOnOrEngineRunningTime</code> is shifted left twice. At line 6020, <code>cmpa 0x01,x</code> compares elapsed running time against <code>0x01,x</code>, which now points to <code>HOTHLD</code> (address offset +2 from <a href="../../1_-_Fuel/B_-_Running/TMPHLD_TempSwitchPointForCurveAHoldDecay.html"><code>TMPHLD</code></a>). When running time reaches <code>HOTHLD</code>, carry is clear (<code>bcc L1514</code>), terminating hold mode and triggering decay.</p>
+<pre><code class="language-motorola6803">; --- CalculateSumOfAllFuelModifiers_MM (T-SMEC_v19.asm:6011-6021) ---
+	bcs  L1513	    ; branch if lower
+	inx		    ; increment index (x=x+1)
+L1513:	brset *BitFlags_50, #b50_FuelCurveACToggle, L1515	; branch if bit(s) set
+	brset *BitFlags_4f, #b4f_O2Valid, L1514    ; branch if bit(s) set
+	ldd  KeyOnOrEngineRunningTime	 ; load d (a&amp;b) with memory contents
+	asld		    ; shift left (d=d*2)
+	bcs  L1514	    ; branch if lower
+	asld		    ; shift left (d=d*2)
+	bcs  L1514	    ; branch if lower
+	cmpa 0x01,x	    ; compare a with memory at index + value
+	bcc  L1514	    ; branch if greater or equal</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Dual-Offset Pairing</strong>: Paired with <a href="../../1_-_Fuel/B_-_Running/CLDHLD_CurveAColdHoldTime.html"><code>CLDHLD</code></a> in ROM (<a href="../../1_-_Fuel/B_-_Running/TMPHLD_TempSwitchPointForCurveAHoldDecay.html"><code>TMPHLD</code></a> + 1 = <a href="../../1_-_Fuel/B_-_Running/CLDHLD_CurveAColdHoldTime.html"><code>CLDHLD</code></a>, <a href="../../1_-_Fuel/B_-_Running/TMPHLD_TempSwitchPointForCurveAHoldDecay.html"><code>TMPHLD</code></a> + 2 = <code>HOTHLD</code>).</li>
+<li><strong>Hot Hold Duration</strong>: Stock 37 counts produces a 26.0 second hold window, substantially longer than cold hold to account for manifold heat soak.</li>
+<li><strong>O2 Sensor Override</strong>: If closed-loop oxygen sensor control activates (<code>b4f_O2Valid</code>), hold mode aborts immediately.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>HOTHLD</code>
+        </footer>
+    </div>
+</body>
+</html>

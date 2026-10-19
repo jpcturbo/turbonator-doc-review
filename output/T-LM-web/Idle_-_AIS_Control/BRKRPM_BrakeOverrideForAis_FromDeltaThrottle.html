@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRKRPM: BrakeOverrideForAis FromDeltaThrottle | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0AD0</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BRKRPM: BrakeOverrideForAis FromDeltaThrottle</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BRKRPM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BRKRPM_BrakeOverrideForAis_FromDeltaThrottle</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0AD0</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2D Table / Curve)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine RPM Threshold (EngineRpm_HB) vs TPS Delta (TpsVolts - MINTHR)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x01                       ;Number of points in table; .byte 0xFF, 0x3F                 ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L2798-L2811"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L5003"><code>CalculateTargetIdleSpeedAndAisPosition_MM</code></a> in <a href="../T-LMv13.asm.html#L5122"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BRKRPM</code> (BrakeOverrideForAis_FromDeltaThrottle) is a 2D calibration lookup table that defines an engine RPM threshold indexed by throttle opening above closed-throttle baseline (<code>TpsVolts - MINTHR_LowestSessionTPS</code>).</p>
+<p>When the driver is operating the throttle or applying the brakes off-idle, closed-loop idle speed regulation must be temporarily suspended so the ECU does not attempt to fight the driver's throttle inputs or fight brake booster vacuum surges. If engine RPM is below the looked-up threshold in <code>BRKRPM</code>, closed-loop idle control is bypassed and the stepper motor enters dashpot / tracking mode. Once engine RPM and throttle drop into valid idle conditions, closed-loop regulation is restored.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at line 5122.</li>
+<li>Indexed by throttle delta above learned minimum: <code>ldaa TpsVolts; suba MINTHR_LowestSessionTPS</code>.</li>
+<li>Compares looked-up value against <code>EngineRpm_HB</code>. If RPM is lower, branches to <code>LE51C</code> to execute closed-loop idle feedback.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Hanging Idle Off-Throttle</strong>: If the engine hangs at elevated RPM after light throttle blips or when braking into a corner, lowering <code>BRKRPM</code> allows the ECU to resume closed-loop idle control sooner.</li>
+<li><strong>Surging While Creeping in Traffic</strong>: If the car surges or 'bucks' at very low speeds with light throttle application, the ECU may be toggling in and out of closed-loop idle control prematurely. Raising <code>BRKRPM</code> widens the deadband to prevent premature closed-loop entry.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateTargetIdleSpeedAndAisPosition_MM (T-LMv13.asm:5120-5128) ---
+        bitb #0x10                               ; Test brake/throttle status flag
+        beq  LE519                               ; If clear, bypass closed-loop idle
+        ldx  #BRKRPM_BrakeOverrideForAis_FromDeltaThrottle ; Pointer to BRKRPM table ($0AD0)
+        ldaa TpsVolts                            ; Load live TPS voltage
+        suba MINTHR_LowestSessionTPS             ; Subtract baseline closed throttle
+        jsr  Lookup4ByteTable                    ; Interpolate RPM cutoff threshold
+        cmpb EngineRpm_HB                        ; Compare threshold against current engine RPM
+        bcs  LE51C                               ; If Engine RPM &gt; threshold, enter closed loop
+LE519:  jmp  LE5A8                               ; Else skip closed loop idle logic</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 5122</strong> (<code>CalculateTargetIdleSpeedAndAisPosition_MM</code>): <code>ldx  #BRKRPM_BrakeOverrideForAis_FromDeltaThrottle    ; load index with value</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Table Structure</strong>: In stock calibrations, this is a 1-point / 2D table establishing a fixed RPM cutoff ceiling across throttle movement.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>BRKRPM</code>
+        </footer>
+    </div>
+</body>
+</html>

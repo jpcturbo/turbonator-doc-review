@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARCMS2: AdaptiveRetardCounterMask2 00 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0508</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>2 - Spark ➔ D - Adaptive Retard</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ARCMS2: AdaptiveRetardCounterMask2 00</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ARCMS2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ARCMS2_AdaptiveRetardCounterMask2_00</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>2_-_Spark\D_-_Adaptive_Retard\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0508</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">bitmask</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x00                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1478-L1488"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L9518"><code>WGDC_LookAtCylRetards</code></a> in <a href="../../T-SMEC_v19.asm.html#L9543"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ARCMS2</code> defines a loop counter bitmask evaluated when all four cylinders have zero active knock retard during wastegate duty cycle processing.</p>
+<p>When combustion is clean and no cylinders are knocking, the engine controller evaluates <code>Counter_MainLoop</code> against <code>ARCMS2</code> before decaying the boost knock persistence timer (<code>Timer_Over5PsiBoostMaxFF</code>). In factory calibrations, <code>ARCMS2</code> is set to 0 counts (binary mask 0), ensuring that the bit test passes unconditionally on every loop pass so that the boost knock timer is immediately cleared once knock ceases.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_LookAtCylRetards</code> (<code>T-SMEC_v19.asm:9542-9544</code>), called from <code>CalcWGDutyCycleT1</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Reached after checking all cylinders (from <code>Cylinder2Retard</code> to <code>Cylinder4Retard</code>) and finding zero active retard.</li>
+<li><strong>Bitmask Test</strong>:</li>
+<li><code>bita ARCMS2_AdaptiveRetardCounterMask2_00</code> tests <code>Counter_MainLoop</code>.</li>
+<li>If masked bits are non-zero (<code>bne L2858</code>), branches to skip timer decay.</li>
+<li>If zero, falls through to line 9545 to decay the timer using <a href="../../2_-_Spark/D_-_Adaptive_Retard/ARCMS3_AdaptiveRetardCounterMask3_FF.html"><code>ARCMS3</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Factory Setting Retention</strong>:</li>
+<li>Leave <code>ARCMS2</code> at 0 to ensure prompt, immediate evaluation of timer decay when knock ceases.</li>
+<li><strong>Bitmask Behavior</strong>:</li>
+<li>If altered, must be configured as a valid 2^N - 1 bitmask.</li>
+<li><strong>Decay Gate</strong>:</li>
+<li>Works in tandem with <a href="../../2_-_Spark/D_-_Adaptive_Retard/ARCMS3_AdaptiveRetardCounterMask3_FF.html"><code>ARCMS3</code></a> to clear <code>Timer_Over5PsiBoostMaxFF</code>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>WGDC_LookAtCylRetards</code>, after looping through all four cylinder retard variables and finding zero retard, line 9541 compares index register X to <code>#Cylinder4Retard</code>. Once past the last cylinder, line 9543 executes <code>bita ARCMS2_AdaptiveRetardCounterMask2_00</code>. If any masked bit in <code>Counter_MainLoop</code> is set (<code>bne L2858</code>), execution skips decay. With <code>ARCMS2</code> set to 0, the branch is never taken, allowing immediate execution of line 9545.</p>
+<pre><code class="language-motorola6803">; --- WGDC_LookAtCylRetards (T-SMEC_v19.asm:9540-9545) ---
+	inx		    ; increment index (x=x+1)
+	cpx  #Cylinder4Retard	 ;  -00000000 10100100-
+	bls  WGDC_LookAtCylRetards	    ; branch if lower or same
+	bita ARCMS2_AdaptiveRetardCounterMask2_00    ;	(data is 00)
+	bne  L2858	    ; branch if not equal (not zero)
+	ldaa Timer_Over5PsiBoostMaxFF	 ; load a with memory contents</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Zero-Knock Gate</strong>: Evaluated exclusively when all four cylinder knock retard bytes are zero.</li>
+<li><strong>Factory Setting</strong>: 0x00 = 0 counts (tests every loop pass without delay).</li>
+<li><strong>Companion Parameter</strong>: Direct predecessor to <a href="../../2_-_Spark/D_-_Adaptive_Retard/ARCMS3_AdaptiveRetardCounterMask3_FF.html"><code>ARCMS3_AdaptiveRetardCounterMask3_FF</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>ARCMS2</code>
+        </footer>
+    </div>
+</body>
+</html>

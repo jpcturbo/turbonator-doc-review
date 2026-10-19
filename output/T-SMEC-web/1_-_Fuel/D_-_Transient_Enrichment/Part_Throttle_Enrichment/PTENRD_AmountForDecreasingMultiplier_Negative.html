@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTENRD: AmountForDecreasingMultiplier Negative | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0A59</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ D - Transient Enrichment ➔ Part Throttle Enrichment</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PTENRD: AmountForDecreasingMultiplier Negative</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PTENRD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>PTENRD_AmountForDecreasingMultiplier_Negative</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\D_-_Transient_Enrichment\Part_Throttle_Enrichment\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0A59</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Enrichment Multiplier Decrement Step (Signed 8-bit, -128 to +127 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xFF                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L2839-L2849"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_v19.asm.html#L5865"><code>Bit7_IsSet</code></a> in <a href="../../../T-SMEC_v19.asm.html#L5904"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PTENRD</code> specifies the signed step decrement added to the open-loop fraction timer on each decay interval when manifold pressure falls below the <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/RPMMAP_SwitchPointForDownUp_FromRpm.html"><code>RPMMAP</code></a> boundary curve.</p>
+<p>Stored as an 8-bit two's complement negative integer, the factory setting of 255 counts represents minus one count, subtracting one fractional increment from the enrichment multiplier every <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTENR2_EppPerAmountForDecreasingMultiplier.html"><code>PTENR2</code></a> pulse interval.</p>
+<p>Furthermore, <code>PTENRD</code> is used in the hysteresis math that clears the maximum part-throttle enrichment status flag, ensuring that spark timing returns smoothly to normal advance schedules after boost enrichment ends.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Enclosed in routine <code>Bit7_IsSet</code> at lines 5865-5925 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Applied during decay loop via <code>addb 0x01,x</code> at line 5877 when index register X points to <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTENR2_EppPerAmountForDecreasingMultiplier.html"><code>PTENR2</code></a>.</li>
+<li>Hysteresis evaluation at line 5904: <code>ldaa PTENRD_AmountForDecreasingMultiplier_Negative</code>.</li>
+<li>Line 5906 executes <code>nega</code> to invert the negative count into a positive magnitude before multiplying by <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTENUM_NumberToReturnToHOTMAP.html"><code>PTENUM</code></a>.</li>
+<li>If the decay delta from maximum enrichment exceeds <code>PTENRD * PTENUM</code>, <code>bclr *BitFlags_4f, #b4f_PTEisMaxed</code> clears the flag at line 5914.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Decay Step Magnitude</strong>: Setting <code>PTENRD</code> to more negative values such as minus two or minus three counts accelerates enrichment decay, rapidly leaning out the mixture to save fuel.</li>
+<li><strong>Factory Smoothness</strong>: The factory setting of minus one provides the smoothest and most imperceptible transition back to baseline fueling.</li>
+<li><strong>Spark Hysteresis Interaction</strong>: Because <code>PTENRD</code> is also multiplied by <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTENUM_NumberToReturnToHOTMAP.html"><code>PTENUM</code></a> in the spark advance hysteresis check, changing this value alters the decay window required to clear the maximum enrichment spark status flag.</li>
+<li><strong>Decay Verification</strong>: Verify that wideband air-fuel ratio traces taper cleanly without abrupt lean steps when lifting out of boost.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: Within <code>Bit7_IsSet</code>, index register X points to <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTENR2_EppPerAmountForDecreasingMultiplier.html"><code>PTENR2</code></a> during decreasing enrichment. Line 5877 executes <code>addb 0x01,x</code>, adding <code>PTENRD</code> (value 0xFF = -1) to accumulator B containing <code>Timer_OpenLoopFraction</code>. At line 5904, the CPU evaluates whether to clear <code>b4f_PTEisMaxed</code>. Line 5904 loads <code>PTENRD</code> into accumulator A. If non-zero, line 5906 executes <code>nega</code>, converting -1 to +1. Line 5907 loads <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTENUM_NumberToReturnToHOTMAP.html"><code>PTENUM_NumberToReturnToHOTMAP</code></a> into accumulator B, and line 5908 executes <code>mul</code>. The resulting product in accumulator B is compared against the enrichment drop in <code>Temp1</code>. If the drop exceeds the product, line 5914 executes <code>bclr *BitFlags_4f, #b4f_PTEisMaxed</code>.</p>
+<pre><code class="language-motorola6803">; --- Bit7_IsSet (T-SMEC_v19.asm:5865-5925) ---
+Bit7_IsSet:
+	ldab 0x00,x	    ; load b with PTENR_EppPerAmountForIncreasing (1 or 2)
+	sei		    ; disable interrupts
+	eora Counter_FallingEdgeEPP_MaxFF
+	cba		
+	bcs  L1499	    ; branch if lower
+	sba		    ; subtract (a=a-b) B = constant value, A =
+L1499:	oraa Temp0	    ; OR a with memory contents - only bit7 status
+	staa Counter_FallingEdgeEPP_MaxFF    ; store a into memory
+	cli		    ; enable interrupts
+	ldab Timer_OpenLoopFraction    ; load b with memory contents
+	bcs  L1506	    ; branch if lower
+	addb 0x01,x	    ; add memory at index + value to b
+	bpl  L1500	    ; branch if plus (hi bit 0)
+	clrb		    ; b = 0
+	tsta		    ; test a
+	bpl  L1500	    ; branch if plus (hi bit 0)
+	ldab #0x7f	    ; load b with value -01111111-
+L1500:	stab Temp0	    ; store b into memory
+	ldx  #PTELMT_MultiplierMaxLimitFromRpm	  ; load index with value
+	ldaa EngineRpm_HB    ; load a with memory contents
+	jsr  Lookup4ByteTable	 ; call subroutine
+	staa Temp4	    ; store a into memory
+	ldx  #PTEADJ_EnrichAdjust_FromMap    ; load index with value
+	ldaa MapValue	    ; load a with memory contents
+	jsr  Lookup4ByteTable	 ; call subroutine
+	ldaa Temp4	    ; load a with memory contents
+	tstb		
+	beq  L1501	    ; branch if equal (zero)
+	mul		    ; multiply (d=a*b)
+	adca #0x00	    ;  -00000000-
+L1501:	tab		    ; b = a
+	cmpb Temp0
+	bls  SetPTEMaxFlag	    ; branch if lower or same
+	brclr *BitFlags_4f, #b4f_PTEisMaxed, StoreTemp0_ToOpenLoopFractionTimer    ; branch if bit(s) clear
+	ldab Timer_OpenLoopFraction    ; load b with memory contents
+	beq  ClearPTEMaxFlag	    ; branch if equal (zero)
+	sba		    ; subtract (a=a-b)
+	staa Temp1	    ; store a into memory
+	ldaa PTENRD_AmountForDecreasingMultiplier_Negative    ; load a with memory contents (data is ff)
+	beq  StoreTemp0_ToOpenLoopFractionTimer	    ; branch if equal (zero)
+	nega		    ; negate a (set high bit)
+	ldab PTENUM_NumberToReturnToHOTMAP    ; load b with memory contents (data is 0f)
+	mul		    ; multiply (d=a*b)
+	tsta		    ; test a
+	bne  StoreTemp0_ToOpenLoopFractionTimer	    ; branch if not equal (not zero)
+	cmpb Temp1	
+	bcc  StoreTemp0_ToOpenLoopFractionTimer	    ; branch if greater or equal
+ClearPTEMaxFlag:
+	bclr *BitFlags_4f, #b4f_PTEisMaxed    ; clear bits
+
+StoreTemp0_ToOpenLoopFractionTimer:
+	ldab Temp0	    ; load b with memory contents
+	bra  StoreOpenLoopFractionTimer	    ; branch
+
+SetPTEMaxFlag:
+	bset *BitFlags_4f, #b4f_PTEisMaxed    ; set bits
+
+StoreOpenLoopFractionTimer:
+	stab Timer_OpenLoopFraction    ; store b into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Signed Value Encoding</strong>: Value 0xFF in calibration editors represents signed -1 count.</li>
+<li><strong>Dual Operational Roles</strong>: Acts as the fractional decay step size and serves as the scale factor in spark timing hysteresis calculations.</li>
+<li><strong>Companion Parameters</strong>: Directly paired with <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTENR2_EppPerAmountForDecreasingMultiplier.html"><code>PTENR2</code></a> and <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTENUM_NumberToReturnToHOTMAP.html"><code>PTENUM</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>PTENRD</code>
+        </footer>
+    </div>
+</body>
+</html>

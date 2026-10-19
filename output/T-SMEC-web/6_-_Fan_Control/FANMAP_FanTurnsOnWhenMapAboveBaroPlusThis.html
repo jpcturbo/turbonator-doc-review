@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FANMAP: FanTurnsOnWhenMapAboveBaroPlusThis | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x151D</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>6 - Fan Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>FANMAP: FanTurnsOnWhenMapAboveBaroPlusThis</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>FANMAP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>FANMAP_FanTurnsOnWhenMapAboveBaroPlusThis</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>6_-_Fan_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x151D</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi boost</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xFF                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T-SMEC_25_ATX_A283_Stock.tpl.html#L5595-L5606"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SMEC_v19.asm.html#L1742"><code>Below44MPH</code></a> in <a href="../T-SMEC_v19.asm.html#L1757"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>FANMAP</code> defines the turbocharger boost pressure threshold relative to barometric pressure that turns on the radiator and intercooler cooling fan.</p>
+<p>In factory turbocharged vehicles where the radiator and intercooler share the forward front-end airflow duct, sustained turbo boost generates localized charge air heating and underhood thermal stress. When manifold pressure exceeds barometric pressure by <code>FANMAP</code>, the engine controller energizes the cooling fan regardless of coolant temperature, drawing extra airflow through the intercooler core. In factory 2.5L ATX calibrations, <code>FANMAP</code> is configured to 255 counts (29.4 psi boost), effectively disabling this boost-activated fan feature for conservative commuter driving.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ControlFan_MM</code> / <code>PreventRadSteaming</code> (<code>T-SMEC_v19.asm:1756-1765</code>), instruction line 1757.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated only when coolant temperature is below the primary fan threshold.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li>Adds <code>FANMAP_FanTurnsOnWhenMapAboveBaroPlusThis</code> to <code>BaroPressure</code> at line 1757.</li>
+<li>If fan is already running, adds 2 counts hysteresis (<code>adda #0x02</code> at line 1761).</li>
+<li>Compares sum against <code>MapValue</code> (<code>cmpa MapValue</code> at line 1764).</li>
+<li>If <code>MapValue &lt;= BaroPressure + FANMAP</code>, branches to <code>TurnFanOffByTimer</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Intercooler Heat Soak Prevention</strong>:</li>
+<li>Lower <code>FANMAP</code> to 2.0 to 4.0 psi boost (17 to 35 counts) to spool the fan upon turbo boost onset.</li>
+<li><strong>3-Bar MAP Scaling</strong>:</li>
+<li>Rescale <code>FANMAP</code> for 3-bar conversions to account for the wider 0 to 44.1 psi absolute sensor calibration.</li>
+<li><strong>Disabling Boost-Triggered Fan</strong>:</li>
+<li>Set <code>FANMAP</code> to 255 counts (factory setting) to prevent boost from activating the radiator fan.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>PreventRadSteaming</code> at line 1756, accumulator A is loaded with <code>BaroPressure</code>. Line 1757 executes <code>adda FANMAP_FanTurnsOnWhenMapAboveBaroPlusThis</code>. If the addition overflows (<code>bcs</code>), it branches to turn the fan off. If the fan is already running, line 1761 adds 2 counts of hysteresis. At line 1764, <code>cmpa MapValue</code> compares the threshold against <code>MapValue</code>. If <code>MapValue</code> is greater, the fan-off branch is bypassed and the routine proceeds to check battery temperature before turning the fan on.</p>
+<pre><code class="language-motorola6803">; --- PreventRadSteaming (T-SMEC_v19.asm:1756-1766) ---
+	ldaa BaroPressure    ; load a with memory contents
+	adda FANMAP_FanTurnsOnWhenMapAboveBaroPlusThis	  ;  (data is ff)
+	bcs  TurnFanOffByTimer	  ; branch if lower
+	bitb #pia1abuf_FanRelay	    ;  -00010000-
+	beq  CheckFor_FANMAP	; branch if equal (zero)
+	adda #0x02	    ;  -00000010-
+	bcs  TurnFanOffByTimer	  ; branch if lower
+CheckFor_FANMAP:
+	cmpa MapValue	    ; compare a with memory contents
+	bcc  TurnFanOffByTimer	  ; branch if greater or equal</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Hysteresis Deadband</strong>: Firmware automatically adds 2 counts (~0.23 psi on 2-bar) of hysteresis when the fan is already active.</li>
+<li><strong>3-Bar MAP Scaling</strong>: On a 3-bar sensor, 255 counts represents 44.1 psi absolute; a 2.0 psi boost threshold requires ~12 counts.</li>
+<li><strong>Overflow Protection</strong>: If <code>BaroPressure + FANMAP</code> overflows beyond 255 counts, carry is set and the logic safely defaults to turning the fan off.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>FANMAP</code>
+        </footer>
+    </div>
+</body>
+</html>

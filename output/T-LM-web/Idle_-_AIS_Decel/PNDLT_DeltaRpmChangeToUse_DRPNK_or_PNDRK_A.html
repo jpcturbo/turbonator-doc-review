@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PNDLT: DeltaRpmChangeToUse DRPNK or PNDRK A | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0C24</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PNDLT: DeltaRpmChangeToUse DRPNK or PNDRK A</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PNDLT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>PNDLTN_DeltaRpmChangeToUse_DRPNK_or_PNDRK</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0C24</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM Delta (16-bit word; 0x00C8 = 200 RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0x00C8                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L3138-L3150"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L5003"><code>CalculateTargetIdleSpeedAndAisPosition_MM</code></a> in <a href="../T-LMv13.asm.html#L5156"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PNDLT</code> (PNDLTN_DeltaRpmChangeToUse_DRPNK_or_PNDRK) is a 16-bit threshold defining the minimum RPM deviation that must occur during a transmission gear selector shift before the ECU will execute the <a href="../Idle_-_AIS_Decel/DRPNK_DriveToParkNeutralKicks_FromTemp.html"><code>DRPNK</code></a> or <a href="../Idle_-_AIS_Decel/PNDRK_ParkNeutralToDriveKicks_FromTemp.html"><code>PNDRK</code></a> step kick tables.</p>
+<p>During minor gear lever vibrations or noisy switch contacts, the ECU prevents spurious AIS kicks by verifying that a significant physical RPM perturbation (|Target - Actual| ≥ PNDLT) has occurred as a result of torque converter coupling. In stock calibrations, <code>PNDLT</code> is set to <code>0x00C8</code> (200 RPM).</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated in <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at line 5156.</li>
+<li>Subtracts <code>PNDLT</code> from <code>|TargetIdleSpeed - EngineRpm|</code>.</li>
+<li>If the result causes a borrow/carry (<code>bcs LE565</code>), the shift kick is aborted.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stock Value</strong>: <code>0x00C8</code> (200 RPM).</li>
+<li><strong>Tight Torque Converters</strong>: If an aftermarket torque converter has high stall or very tight lockup that creates a sudden 150 RPM dip that fails to trigger <a href="../Idle_-_AIS_Decel/PNDRK_ParkNeutralToDriveKicks_FromTemp.html"><code>PNDRK</code></a>, lower <code>PNDLT</code> to <code>0x0064</code> (100 RPM) so the kick triggers reliably.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateTargetIdleSpeedAndAisPosition_MM (T-LMv13.asm:5153-5157) ---
+        ldd  EngineRpm_HB                        ; Load engine RPM
+        subd TargetIdleSpeed_HB                  ; Calculate deviation
+        bcs  LE565                               ; If no drop, skip
+        subd PNDLTN_DeltaRpmChangeToUse_DRPNK_or_PNDRK ; Subtract threshold ($0C24, data 0x00C8 = 200 RPM)
+        bcs  LE565                               ; If deviation &lt; 200 RPM, abort shift kick</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 5156</strong> (<code>CalculateTargetIdleSpeedAndAisPosition_MM</code>): <code>subd PNDLTN_DeltaRpmChangeToUse_DRPNK_or_PNDRK    ;  (data is 00c8)</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>16-bit Word</strong>: This parameter is stored as a 2-byte word (<code>.word 0x00C8</code>) in ROM.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>PNDLT</code>
+        </footer>
+    </div>
+</body>
+</html>

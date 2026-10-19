@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRSVAR: CruiseControlVariableAdd | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x16E6</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Cruise Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Cruise_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CRSVAR: CruiseControlVariableAdd</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CRSVAR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CRSVAR_CruiseControlVariableAdd</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Cruise_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Cruise_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x16E6</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">counts variable add</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x03 (3 counts)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6052-L6062"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8626"><code>CruiseBumpUpSpeedBy2Mph</code></a> in <a href="../../T-SMEC_v19.asm.html#L8630"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CRSVAR</code> defines the variable feedforward addition value applied during tap-up speed adjustment.</p>
+<p>When the driver taps the resume switch while cruise control is actively engaged, the engine controller increases the stored target speed by 2 miles per hour (4 counts). To overcome throttle cable compliance and mechanical linkage friction, <code>CRSVAR</code> loads an immediate feedforward bump into the cruise calculation while asserting the accelerated cruise flag, ensuring the vehicle responds promptly to the driver tap-up command.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CruiseBumpUpSpeedBy2Mph</code> (<code>T-SMEC_v19.asm:8627-8633</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Resume switch tapped while cruise is active and engaged.</li>
+<li><code>CruiseSpeedSetpoint</code> incremented by 4 counts (2 mph).</li>
+<li><strong>Application</strong>:</li>
+<li>Loads <code>CRSVAR</code> into accumulator A at line 8630.</li>
+<li>Sets accelerated cruise bit 6 in <code>CruiseStatus</code> at line 8632.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Tap-Up Responsiveness</strong>:</li>
+<li>Provides feedforward torque when incrementing cruise speed via resume switch taps.</li>
+<li>Increasing <code>CRSVAR</code> delivers a crisper throttle response when stepping speed upward.</li>
+<li><strong>Smoothness Calibration</strong>:</li>
+<li>Lowering <code>CRSVAR</code> creates gentler 2 mph transitions for luxury vehicle applications.</li>
+<li><strong>Factory Value</strong>:</li>
+<li>Set to 3 counts in production calibrations.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CruiseBumpUpSpeedBy2Mph</code> at line 8627, <code>CruiseSpeedSetpoint</code> is incremented by 4 counts via <code>adda #0x04</code> (representing a 2 mph step). At line 8630, <code>ldaa CRSVAR_CruiseControlVariableAdd</code> loads the feedforward constant. Line 8632 executes <code>orab #0x40</code> on <code>CruiseStatus</code> to activate accelerated cruise mode, directing subsequent calculations to use high-gain curve <a href="../../7_-_Aux_Functions/Cruise_Control/VACACC_CruiseControlVacAcceleratedGainCurve_FromDeltaSpeed.html"><code>VACACC</code></a>.</p>
+<pre><code class="language-motorola6803">; --- CruiseBumpUpSpeedBy2Mph (T-SMEC_v19.asm:8627-8633) ---
+	ldaa CruiseSpeedSetpoint    ; load a with memory contents
+	adda #0x04	    ;  -00000100-
+	staa CruiseSpeedSetpoint    ; store a into memory
+	ldaa CRSVAR_CruiseControlVariableAdd	; load a with memory contents (data is 03)
+	ldab CruiseStatus    ; load b with memory contents
+	orab #0x40	    ;  -01000000-
+	andb #0xfc	    ;  -11111100-</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Tap-Up Magnitude</strong>: Coordinates with 4-count (2.0 mph) setpoint increment in <code>CruiseBumpUpSpeedBy2Mph</code>.</li>
+<li><strong>Flag Assertion</strong>: Sets bit 6 (<code>b2f_bit6</code>) in <code>CruiseStatus</code>, enabling accelerated cruise tracking.</li>
+<li><strong>Companion Curves</strong>: Coordinates with <a href="../../7_-_Aux_Functions/Cruise_Control/VACACC_CruiseControlVacAcceleratedGainCurve_FromDeltaSpeed.html"><code>VACACC</code></a> and <a href="../../7_-_Aux_Functions/Cruise_Control/RESTBL2_CruiseControlAdditionalSetupPulseForResume_FromSpeedDifference2.html"><code>RESTBL2</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>CRSVAR</code>
+        </footer>
+    </div>
+</body>
+</html>

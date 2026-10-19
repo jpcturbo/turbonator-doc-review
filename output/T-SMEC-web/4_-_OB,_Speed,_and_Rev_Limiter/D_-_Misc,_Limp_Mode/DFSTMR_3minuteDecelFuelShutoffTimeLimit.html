@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFSTMR: 3minuteDecelFuelShutoffTimeLimit | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1943</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>4 - OB, Speed, and Rev Limiter ➔ D - Misc, Limp Mode</strong> &nbsp;|&nbsp; Subsystem: <strong>Limiters_Limp</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DFSTMR: 3minuteDecelFuelShutoffTimeLimit</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DFSTMR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DFSTMR_3minuteDecelFuelShutoffTimeLimit</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Limiters_Limp</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>4_-_OB,_Speed,_and_Rev_Limiter\D_-_Misc,_Limp_Mode\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1943</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">seconds</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x40 (64 counts ≈ 180 seconds / 3 minutes)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6657-L6667"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5713"><code>Cutout_CheckMPHLimitingValues</code></a> in <a href="../../T-SMEC_v19.asm.html#L5723"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DFSTMR</code> defines the minimum operating time required after engine start before secondary deceleration fuel shutoff can be activated.</p>
+<p>Even if an engine is restarted while already warm, a brief stabilization window is required for fuel pressure to normalize, intake manifold temperatures to stabilize, and oxygen sensor feedback to establish steady operation. In factory calibrations, <code>DFSTMR</code> is set to 64 counts, which represents approximately 180 seconds (3 minutes) of cumulative runtime recorded by the engine controller. Deceleration fuel shutoff through this routine is locked out until this timer has fully expired.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>Cutout_CheckMPHLimitingValues</code> (<code>T-SMEC_v19.asm:5713-5730</code>), line 5723.</li>
+<li><strong>Gating Chain</strong>:</li>
+<li>Final check in the four-part qualification chain (<a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/DFRPM2_2560RPM_DecelFuelShutoffUpperRpmLimit.html"><code>DFRPM2</code></a>, <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/DFSMPH_20MPHDecelFuelShutoffSpeedLimit.html"><code>DFSMPH</code></a>, <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/DFSTMP_60DegCDecelFuelShutoffTempLimit.html"><code>DFSTMP</code></a>, <code>DFSTMR</code>).</li>
+<li><strong>Comparison &amp; Fuel Cut</strong>:</li>
+<li><code>KeyOnOrEngineRunningTime</code> is compared against <code>DFSTMR</code> (<code>cmpa DFSTMR_3minuteDecelFuelShutoffTimeLimit</code>).</li>
+<li>If <code>KeyOnOrEngineRunningTime &lt; DFSTMR</code> (<code>bcs R1487</code>), execution returns without cutting fuel.</li>
+<li>If elapsed time is greater or equal, lines 5725-5728 set <code>Turbonator_OverRev</code> and <code>Turbonator_MainFuelOff</code> to cut fuel, and clear <code>Counter_PrimaryAndSecondaryRamp</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Warm Restart Delay Reduction</strong>:</li>
+<li>Lower <code>DFSTMR</code> on competition vehicles to avoid a 3-minute waiting period before normal deceleration fuel cut engages.</li>
+<li><strong>Stage IV Quick Arming</strong>:</li>
+<li>Stage IV calibrations set <code>DFSTMR</code> to 1 count (approx 2.8 seconds) for instantaneous performance readiness.</li>
+<li><strong>Post-Start Stabilization</strong>:</li>
+<li>The factory 3-minute delay allows closed-loop oxygen sensor adaptives to stabilize before introducing fuel cut transients.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>Cutout_CheckMPHLimitingValues</code> at lines 5722-5723, <code>ldaa KeyOnOrEngineRunningTime</code> loads runtime into accumulator A and executes <code>cmpa DFSTMR_3minuteDecelFuelShutoffTimeLimit</code>. If carry is clear, lines 5725-5726 check <code>Turbonator_OverRev</code> and execute <code>bset *Turbonator_Flags, #Turbonator_OverRev | Turbonator_MainFuelOff</code>. Line 5727 clears accumulator A and stores zero into <code>Counter_PrimaryAndSecondaryRamp</code>.</p>
+<pre><code class="language-motorola6803">; --- Cutout_CheckMPHLimitingValues (T-SMEC_v19.asm:5722-5729) ---
+	ldaa KeyOnOrEngineRunningTime	 ; load a with memory contents
+	cmpa DFSTMR_3minuteDecelFuelShutoffTimeLimit	; compare a with memory contents (data is 40)
+	bcs  R1487	    ; branch if lower
+	brset *Turbonator_Flags, #Turbonator_OverRev, R1487    ; branch if bit(s) set
+	bset *Turbonator_Flags, #Turbonator_OverRev | Turbonator_MainFuelOff	 ; set bits
+L1486:	clra		    ; a = 0
+	staa Counter_PrimaryAndSecondaryRamp    ; store a into memory
+R1487:	rts		    ; return from subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Timer Scaling</strong>: Increments at approximately 2.8 seconds per count. 64 counts equals approx 180 seconds (3 minutes, matching the label's '3minute').</li>
+<li><strong>Stage IV Calibrations</strong>: Configured to 1 count for nearly immediate readiness after engine cranking.</li>
+<li><strong>O2 Integrator Reset</strong>: When fuel cut occurs via this branch, <code>Counter_PrimaryAndSecondaryRamp</code> is cleared to prevent adaptive fuel error accumulation during coast-down.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>DFSTMR</code>
+        </footer>
+    </div>
+</body>
+</html>

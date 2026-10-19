@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ENDITM: ECU ID | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x00EB</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ B - Cal ID</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ENDITM: ECU ID</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ENDITM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ENDITM_ECUID</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\B_-_Cal_ID\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x00EB</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Calibration ID Word</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0xA283                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L418-L428"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L4141"><code>CaculateChecksum</code></a> in <a href="../../T-SMEC_v19.asm.html#L4172"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ENDITM</code> defines the primary electronic calibration identifier word within the engine controller ROM header.</p>
+<p>In production vehicles, this numerical identifier differentiates specific powertrain calibrations across model years, engine displacements, turbocharger packages, and transmission configurations, such as calibration A283 for the nineteen eighty-nine two-point-five-liter turbo automatic. Handheld diagnostic scan tools read <code>ENDITM</code> during the initial communication handshake to automatically identify the vehicle calibration. Crucially, the low-order byte of <code>ENDITM</code> also serves as the expected target value for the internal memory checksum verification algorithm, which verifies calibration ROM integrity during startup.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CaculateChecksum</code> (<code>T-SMEC_v19.asm:4141-4178</code>), instruction line 4172 (<code>cmpa ENDITM_ECUID+1</code>), and <code>SendECUIDToSCI</code> (<code>T-SMEC_v19.asm:3829-3841</code>).</li>
+<li><strong>Checksum Comparison</strong>:</li>
+<li>Accumulator A sums all calibration ROM bytes between <code>#ENDIT1_PNPrefix</code> and <code>#0xB600</code> / <code>#0xB800</code>.</li>
+<li>Line 4172 executes <code>cmpa ENDITM_ECUID+1</code>.</li>
+<li>If not equal (<code>bne L1291</code>), the controller loads register D with error code <code>0x0201</code> and branches to <code>ThrowNonCriticalError</code> (Error 53).</li>
+<li><strong>Diagnostic Output</strong>:</li>
+<li>Sent across the serial interface as bytes 2 and 3 of the ECU ID sequence in <code>SendECUIDToSCI</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Scan Tool Recognition</strong>:</li>
+<li>Factory scan tools query <code>ENDITM</code> to identify vehicle powertrain calibration; altering this word may require manual vehicle selection on legacy diagnostic equipment.</li>
+<li><strong>Hardware Checksum Target</strong>:</li>
+<li>The low-order byte (<code>ENDITM_ECUID+1</code>, 131 counts in stock A283) is the exact target compared against the calculated memory checksum in <code>CaculateChecksum</code>.</li>
+<li><strong>Calibration Integrity</strong>:</li>
+<li>Whenever calibration constants or tables are edited, <a href="../../0_-_Setup/B_-_Cal_ID/CHKFIX_ChecksumFixupValue.html"><code>CHKFIX</code></a> must be adjusted so the total byte sum matches the target byte in <code>ENDITM</code>, preventing error code 53.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CaculateChecksum</code> at lines 4141-4174, the processor computes an 8-bit sum across the calibration ROM space. At line 4172, instruction <code>cmpa ENDITM_ECUID+1</code> compares the accumulated sum against the second byte of <code>ENDITM_ECUID</code>. If the sum does not match (<code>bne L1291</code>), lines 4176-4177 execute <code>ldd #0x0201</code> and <code>jmp ThrowNonCriticalError</code>, setting diagnostic fault 53. In <code>SendECUIDToSCI</code>, <code>ENDITM</code> is transmitted at index offset +2 from <a href="../../0_-_Setup/B_-_Cal_ID/ENDIT1_PNPrefix.html"><code>ENDIT1_PNPrefix</code></a>.</p>
+<pre><code class="language-motorola6803">; --- CaculateChecksum (T-SMEC_v19.asm:4171-4178) ---
+L1290:	cmpa ENDITM_ECUID+1    ; compare a with memory contents (data is ff)
+	bne  L1291	    ; branch if not equal (not zero)
+	rts		    ; return from subroutine
+
+L1291:	ldd  #0x0201	    ; load d (a&amp;b) with value -00000010 00000001-
+	jmp  ThrowNonCriticalError</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Dual Role</strong>: Functions as both the external diagnostic calibration identifier and the internal hardware checksum target.</li>
+<li><strong>Firmware Anomaly</strong>: The comparison instruction specifically references <code>ENDITM_ECUID+1</code>, evaluating only the low byte.</li>
+<li><strong>Pairing</strong>: Directly paired with <a href="../../0_-_Setup/B_-_Cal_ID/CHKFIX_ChecksumFixupValue.html"><code>CHKFIX</code></a>, which is tuned so the entire ROM sum matches <code>ENDITM_ECUID+1</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>ENDITM</code>
+        </footer>
+    </div>
+</body>
+</html>

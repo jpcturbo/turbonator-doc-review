@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CONFIG: ConfigurationFlags | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x01DF</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ A - Cal Configuration</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CONFIG: ConfigurationFlags</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CONFIG</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CONFIG_ConfigurationFlags</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\A_-_Cal_Configuration\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x01DF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 5 (Bitfield / Configuration Mask)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Configuration Bitfield</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xA2                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L669-L680"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L1742"><code>Below44MPH</code></a> in <a href="../../T-SMEC_v19.asm.html#L1744"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CONFIG</code> serves as the master factory vehicle hardware configuration register for the engine controller.</p>
+<p>Configured in factory calibrations to one hundred sixty-two counts, <code>CONFIG</code> uses individual binary bits to declare the presence or absence of core vehicle hardware systems. These include whether the vehicle is equipped with air conditioning, exhaust gas recirculation, an automatic or manual transmission, an intake manifold air charge temperature sensor, a part throttle unlock solenoid, and throttle-position-based transient fueling. By reading <code>CONFIG</code> during initialization and main control loops, the controller enables or disables entire branches of control logic and diagnostic error tracking to match the physical powertrain hardware.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: Evaluated across multiple subroutines in <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>, including <code>Below44MPH</code> (<code>T-SMEC_v19.asm:1742-1755</code>, line 1744), <code>ExhGasRecirc_MM</code> (line 5384), <code>CalculateSumOfAllFuelModifiers_MM</code> (lines 6413, 6443), <code>SubstituteChargeTempForCoolantTemp</code> (line 7702), and <code>DetectParkNeutral_MM</code> (line 9034).</li>
+<li><strong>Bitmask Decoding</strong>:</li>
+<li>Bit 7 (<code>cfg_AC</code>, 0x80): Air conditioning installed.</li>
+<li>Bit 6 (<code>cfg_EGR</code>, 0x40): Exhaust gas recirculation installed.</li>
+<li>Bit 5 (<code>cfg_ATX</code>, 0x20): Automatic transmission installed.</li>
+<li>Bit 4 (<code>cfg_CTS</code>, 0x10): Charge temperature sensor installed.</li>
+<li>Bit 3 (<code>cfg_PTU</code>, 0x08): Part throttle unlock enabled.</li>
+<li>Bit 0 (<code>cfg_TransTPS</code>, 0x01): Transient fuel throttle position sensor modifier enabled.</li>
+<li><strong>Branch Polarity</strong>:</li>
+<li>Tested using <code>bita</code> / <code>beq</code> / <code>bne</code> or <code>brset</code> / <code>brclr</code> to conditionally branch around inactive subsystem code.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Automatic to Manual Drivetrain Swaps</strong>:</li>
+<li>Clearing the automatic transmission switch (Bit 5) transitions the controller from automatic to manual idle dashpot decay rates, park/neutral switch logic, and target idle speed curves.</li>
+<li><strong>Air Conditioning &amp; EGR Deletion</strong>:</li>
+<li>Clearing the air conditioning switch (Bit 7) or exhaust gas recirculation switch (Bit 6) disables diagnostic circuit testing and suppresses fault codes 32 and 33 when emissions or comfort equipment is removed.</li>
+<li><strong>Charge Temperature Sensor Bypass</strong>:</li>
+<li>Clearing the charge temperature sensor switch (Bit 4) directs the firmware to substitute engine coolant temperature directly into intake charge fueling equations if no intake air thermistor is installed.</li>
+<li><strong>Transient Fuel TPS Enable</strong>:</li>
+<li>Bit 0 toggles throttle-based transient fuel enrichment modifiers to tailor tip-in response.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>Below44MPH</code> at line 1744, <code>ldaa CONFIG_ConfigurationFlags</code> loads the configuration byte and tests for air conditioning via <code>bita #cfg_AC</code>. If clear (<code>beq L1050</code>), A/C fan engagement logic is bypassed. In <code>SubstituteChargeTempForCoolantTemp</code> at line 7702, <code>bita #cfg_CTS</code> checks for the charge temperature sensor; if clear, execution branches to <code>StoreCoolantTemp</code> without querying <a href="../../0_-_Setup/D_-_Transfer_Functions/CHGTL1_TempForChargeTempA2D.html"><code>CHGTL1</code></a>. In <code>DetectParkNeutral_MM</code> at line 9034, <code>bita #cfg_ATX</code> gates automatic park/neutral switch processing.</p>
+<pre><code class="language-motorola6803">; --- Below44MPH (T-SMEC_v19.asm:1742-1755) ---
+Below44MPH:
+	bset *BitFlags_51, #b51_SpeedUnder40    ; set bits
+L1049:	ldaa CONFIG_ConfigurationFlags	  ; load a with memory contents (data is 02)
+	bita #cfg_AC		;  -10000000-
+	beq  L1050	    ; branch if equal (zero)
+	brset *BitFlags_54, #b54_FuelEngineNotRunning, L1050	; branch if bit(s) set
+	bitb #pia1abuf_ACRelay	    ;  -00001000-
+	beq  TurnFanOn	    ; branch if equal (zero)
+L1050:	bitb #pia1abuf_FanRelay	    ;  -00010000-
+	bne  L1051	    ; branch if not equal (not zero)
+	inx		    ; increment index (x=x+1)
+L1051:	ldaa 0x00,x	    ; load a with memory at index + value
+	cmpa CoolantTemp    ; compare a with memory contents
+	bcs  TurnFanOn	    ; branch if coolant temp is higher than setpoint</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Factory Default</strong>: Configured to 0xA2 (162 counts) in stock 2.5L Turbo I automatic calibrations (A/C, EGR, ATX enabled).</li>
+<li><strong>Cross-System Impact</strong>: Directly influences fueling modifiers, cooling fan schedules, idle air steps, and diagnostics.</li>
+<li><strong>Diagnostic Mask Pairing</strong>: Works with <a href="../../0_-_Setup/A_-_Cal_Configuration/PIAMSK_PIA1ADDRMask.html"><code>PIAMSK</code></a> and <a href="../../0_-_Setup/A_-_Cal_Configuration/PIBMSK_PIA1BDDRMask.html"><code>PIBMSK</code></a> to govern output driver error logging.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>CONFIG</code>
+        </footer>
+    </div>
+</body>
+</html>

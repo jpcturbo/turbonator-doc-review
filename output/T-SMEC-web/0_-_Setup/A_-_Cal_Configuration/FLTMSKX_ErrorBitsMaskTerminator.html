@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FLTMSKX: ErrorBitsMaskTerminator | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x02CC</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ A - Cal Configuration</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>FLTMSKX: ErrorBitsMaskTerminator</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>FLTMSKX</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>FLTMSKX_ErrorBitsMaskTerminator</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\A_-_Cal_Configuration\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x02CC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">List Terminator Byte</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x00                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L906-L916"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L4440"><code>ThrowNonCriticalError</code></a> in <a href="../../T-SMEC_v19.asm.html#L4441"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>FLTMSKX</code> is the mandatory end-of-list terminator byte for the diagnostic error suppression array.</p>
+<p>Positioned at index offset seven immediately following <a href="../../0_-_Setup/A_-_Cal_Configuration/FLTMSK7_ErrorBitsMask7.html"><code>FLTMSK7</code></a>, <code>FLTMSKX</code> must strictly remain zero counts in all calibrations. In the error evaluation routine, the search loop tests each byte in the suppression table sequentially; when a zero byte is encountered, the controller recognizes that the end of the suppression list has been reached and exits the search to process the active diagnostic fault.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ThrowNonCriticalError</code> (<code>T-SMEC_v19.asm:4440-4475</code>), evaluated at line 4442 via indexed offset +7 from <a href="../../0_-_Setup/A_-_Cal_Configuration/FLTMSK_ErrorBitsMask1.html"><code>FLTMSK_ErrorBitsMask1</code></a>.</li>
+<li><strong>Terminator Check</strong>:</li>
+<li><code>brclr 0, X, #$%11111111, L1321</code> tests if the byte at index register X is zero.</li>
+<li>When X reaches <code>FLTMSKX_ErrorBitsMaskTerminator</code>, the zero byte forces an immediate branch to <code>L1321</code> to conclude search.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Strictly Mandatory Zero Terminator</strong>:</li>
+<li><code>FLTMSKX</code> must remain zero counts under all circumstances.</li>
+<li><strong>Buffer Overrun Prevention</strong>:</li>
+<li>Setting a non-zero value causes the MCU to scan past the end of the suppression list into adjacent calibration tables.</li>
+<li><strong>Unpredictable Masking</strong>:</li>
+<li>Corrupted terminator values cause arbitrary calibration bytes to be treated as error suppression masks.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>ThrowNonCriticalError</code>, if the error code has not matched any of the previous slots (<a href="../../0_-_Setup/A_-_Cal_Configuration/FLTMSK_ErrorBitsMask1.html"><code>FLTMSK</code></a> through <a href="../../0_-_Setup/A_-_Cal_Configuration/FLTMSK7_ErrorBitsMask7.html"><code>FLTMSK7</code></a>), line 4445 increments index register X to point to <code>FLTMSKX_ErrorBitsMaskTerminator</code> (calibration address 0x02CC). At line 4442, <code>brclr 0, X, #$%11111111, L1321</code> evaluates the byte; because it is zero, the CPU branches immediately to <code>L1321</code> to proceed with normal fault code recording.</p>
+<pre><code class="language-motorola6803">; --- ThrowNonCriticalError (T-SMEC_v19.asm:4440-4447) ---
+ThrowNonCriticalError:
+	ldx  #FLTMSK_ErrorBitsMask1    ; load index with value
+L1320:	brclr  0, X, #$%11111111, L1321    ; branch if bit(s) clear
+	cmpa 0x00,x	    ; compare a with memory at index + value
+	beq  L1323	    ; branch if equal (zero)
+	inx		    ; increment index (x=x+1)
+	bra  L1320	    ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Mandatory Constant</strong>: Must always be set to 0x00 in all calibration binary files.</li>
+<li><strong>Memory Guard</strong>: Protects subsequent calibration ROM tables from being evaluated by the diagnostic search loop.</li>
+<li><strong>Fixed Size</strong>: Preserves the 8-byte structure of the error mask block.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>FLTMSKX</code>
+        </footer>
+    </div>
+</body>
+</html>

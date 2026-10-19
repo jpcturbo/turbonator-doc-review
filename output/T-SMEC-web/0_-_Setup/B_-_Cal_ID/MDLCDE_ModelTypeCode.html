@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MDLCDE: ModelTypeCode | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0108</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ B - Cal ID</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MDLCDE: ModelTypeCode</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MDLCDE</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MDLCDE_ModelTypeCode</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\B_-_Cal_ID\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0108</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Model Code Word</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0x9901                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L447-L457"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L3829"><code>SendECUIDToSCI</code></a> in <a href="../../T-SMEC_v19.asm.html#L3830"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MDLCDE</code> defines the vehicle model year, engine architecture, and transmission configuration in the calibration header.</p>
+<p>Arranged as a sixteen-bit word, the first byte encodes the model year (such as ninety-nine for nineteen eighty-nine, zero-zero for nineteen ninety, or zero-one for nineteen ninety-one), while the second byte encodes the powertrain configuration (such as zero-one for a two-point-five-liter turbo automatic, ten for a two-point-two-liter turbo four, or forty-one for a manual transmission). Diagnostic scan tools query <code>MDLCDE</code> to configure data display menus, sensor ranges, and diagnostic trouble code tables for the specific vehicle.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>SendECUIDToSCI</code> (<code>T-SMEC_v19.asm:3829-3841</code>), accessed via indexed offset +6 from <a href="../../0_-_Setup/B_-_Cal_ID/ENDIT1_PNPrefix.html"><code>ENDIT1_PNPrefix</code></a>.</li>
+<li><strong>Serial Transmission</strong>:</li>
+<li>Transmitted across the SCI data link when DRB command 0x16 requests ECU identification.</li>
+<li><strong>Encoding Scheme</strong>:</li>
+<li>High byte (0x8006): Model Year (0x99 = 1989, 0x00 = 1990, 0x01 = 1991, 0x02 = 1992, 0x03 = 1993).</li>
+<li>Low byte (0x8007): Powertrain (0x01 = 2.5L T1, 0x10 = 2.2L T4, 0x21 = 2.5L Van ATX, 0x40 = 2.2L VNT MTX, 0x41 = 2.5L T1 MTX).</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Scan Tool Model Identification</strong>:</li>
+<li>Modifying <code>MDLCDE</code> allows diagnostic scan tools to correctly report vehicle model year, engine displacement, and transmission type.</li>
+<li><strong>Transmission &amp; Engine Swaps</strong>:</li>
+<li>Updating the low byte when swapping powertrains (e.g., automatic to manual) keeps diagnostic reporting consistent.</li>
+<li><strong>No Engine Control Impact</strong>:</li>
+<li>Actual powertrain behavior is governed by <a href="../../0_-_Setup/A_-_Cal_Configuration/CONFIG_ConfigurationFlags.html"><code>CONFIG</code></a> and calibration tables, not <code>MDLCDE</code>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: <code>MDLCDE_ModelTypeCode</code> is located at ROM address 0x8006 (offset +6 from <a href="../../0_-_Setup/B_-_Cal_ID/ENDIT1_PNPrefix.html"><code>ENDIT1_PNPrefix</code></a>). In <code>SendECUIDToSCI</code>, when <code>DRBPointer2</code> reaches index 6 and 7, accumulator A loads the model year and powertrain bytes and transmits them via <code>SerialOutput1a</code>. In <code>CaculateChecksum</code>, these bytes are included in the cumulative ROM summation.</p>
+<pre><code class="language-motorola6803">; --- SendECUIDToSCI (T-SMEC_v19.asm:3829-3841) ---
+SendECUIDToSCI:
+	ldx  #ENDIT1_PNPrefix	 ; Point to ECU ID string in ROM
+	ldab DRBPointer2    ; Load requested string character index
+	bpl  L1269	    
+	lslb		    
+	lslb		    
+	stab DRBPointer2    
+L1269:	abx		    ; Add index to base pointer
+	ldaa 0x00,x	    ; Load ASCII character
+	inc  DRBPointer2    ; Increment for next request
+	brclr *DRBPointer2, #$%00000011, L1270	  ; Branch logic for checksum
+	bra  SerialOutput1a ; Transmit character</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Template Options</strong>: Defined with <code>;mpmodelyr</code> and <code>;mpengtran</code> enumerations in MPTune templates.</li>
+<li><strong>Informational Role</strong>: Strictly an informational and scan tool configuration parameter.</li>
+<li><strong>Checksum Inclusion</strong>: Part of the 8-bit checksum span verified by <code>CaculateChecksum</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MDLCDE</code>
+        </footer>
+    </div>
+</body>
+</html>

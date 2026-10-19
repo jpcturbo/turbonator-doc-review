@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CALRAT: AisAdjustRate | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0AC3</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CALRAT: AisAdjustRate</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CALRAT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CALRAT_AisAdjustRate</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0AC3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Bitmask / Loop Period Rate (0x0E; period = (CALRAT + 1) * 11ms)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x0E                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L2785-L2797"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L5003"><code>CalculateTargetIdleSpeedAndAisPosition_MM</code></a> in <a href="../T-LMv13.asm.html#L5292"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CALRAT</code> (AisAdjustRate) is a timing bitmask applied against the ECU's master loop counter (<code>Counter_MainLoop1</code>) that governs how rapidly the AIS stepper motor is permitted to step downward (close) when returning to target idle.</p>
+<p>Stepper motors have mechanical inertia and physical response times. If the ECU decremented the stepper motor pintle every single 11-millisecond program loop when engine speed is above target, the valve would close too rapidly, causing the engine to undershoot target idle and stumble. <code>CALRAT</code> forces the downward step decrement logic to only execute periodically (governed by the bitmask test), creating a smooth, stable, damped return to curb idle without RPM hunting or oscillating.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated in <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at line 5292.</li>
+<li>Active when desired AIS position is greater than target position (<code>cmpa DesiredNewAisPosition; bcc LE65B</code>).</li>
+<li>Tested via bitwise AND: <code>bitb CALRAT_AisAdjustRate</code>. If bits match, downward decrement is inhibited for that loop pass.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Permissible Values</strong>: Must be power-of-two minus one bitmasks or specific bit combinations (<code>0x01</code>, <code>0x03</code>, <code>0x07</code>, <code>0x0E</code>, <code>0x0F</code>, <code>0x1F</code>, <code>0x3F</code>). Stock calibration uses <code>0x0E</code>.</li>
+<li><strong>Faster Idle Return</strong>: Lowering the mask density allows more frequent decrements, making the idle drop faster after revving the engine. However, setting this too fast will induce RPM undershoot and stalling.</li>
+<li><strong>Solving RPM Dip / Stall on Decel</strong>: If the engine surges downward and almost stalls when returning to idle, slowing the decrement rate (higher bitmask or higher bit count) prevents the AIS from closing faster than the engine airflow can stabilize.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateTargetIdleSpeedAndAisPosition_MM (T-LMv13.asm:5289-5296) ---
+LE64D:  cmpa DesiredNewAisPosition               ; Compare target position with current desired
+        bcc  LE65B                               ; If target &gt;= current, skip decrement logic
+        ldab Counter_MainLoop1                   ; Read master 11ms loop counter
+        bitb CALRAT_AisAdjustRate                ; Bitwise test against adjust rate mask ($0AC3, data 0x0E)
+        bne  LE65D                               ; If non-zero, bypass decrement (rate limit)
+        ldaa DesiredNewAisPosition               ; Load desired position
+        deca                                     ; Decrement position by 1 step
+        staa DesiredNewAisPosition               ; Save updated step count</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 5292</strong> (<code>CalculateTargetIdleSpeedAndAisPosition_MM</code>): <code>bitb CALRAT_AisAdjustRate    ;  (data is 0e)</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Bitmask Operation</strong>: A value of <code>0x0E</code> binary is <code>00001110</code>. The <code>bitb</code> instruction tests if any of those bits are high; only when the counter bits line up to yield zero does the <code>deca</code> execute.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>CALRAT</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCNVHI: CruiseControlForBrakeFlagManualTransmissionClutchDisable Hi | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x16BF</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Cruise Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Cruise_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>SCNVHI: CruiseControlForBrakeFlagManualTransmissionClutchDisable Hi</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>SCNVHI</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>SCNVHI_CruiseControlForBrakeFlagManualTransmissionClutchDisable</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Cruise_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Cruise_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x16BF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">counts speed-to-engine period ratio</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0xF1 (241 counts gear ratio upper limit)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6013-L6023"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8486"><code>CruiseResumeSwitchPressed</code></a> in <a href="../../T-SMEC_v19.asm.html#L8530"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>SCNVHI</code> defines the upper gear ratio threshold for manual transmission clutch pedal disengagement and clutch slip detection.</p>
+<p>On manual transmission vehicles, depressing the clutch pedal or suffering clutch slippage disconnects engine speed from wheel speed, allowing the engine to free-rev if the cruise servo continues pulling the throttle open. The engine controller monitors the ratio of vehicle road speed to distributor pulse period. When the clutch is engaged in high gear, this product remains within a defined mechanical gear ratio window. If the clutch pedal is pressed or the clutch slips, engine RPM flares, causing the calculated product to spike past <code>SCNVHI</code> and instantly disengaging cruise control.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CruiseResumeSwitchPressed</code> (<code>T-SMEC_v19.asm:8530-8531</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Manual transmission vehicle (<a href="../../0_-_Setup/A_-_Cal_Configuration/CONFIG_ConfigurationFlags.html"><code>CONFIG_ConfigurationFlags</code></a> bit <code>cfg_ATX</code> clear at line 8498).</li>
+<li>Engine running with no distributor pulse timer overflows.</li>
+<li><strong>Math &amp; Branch</strong>:</li>
+<li>Multiplies vehicle speed <code>Temp0</code> by distributor pulse period <code>DistributorFallingEdgePulsewidth_HB</code>.</li>
+<li>Scales product by 17 via <code>ScaleYbyA</code> at line 8525.</li>
+<li>Compares product against <code>SCNVHI</code> at line 8530; if higher or equal (<code>bcc DropOutOfCruise</code>), execution jumps to disengage cruise.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Clutch Slip &amp; Shift Protection</strong>:</li>
+<li>Automatically drops out of cruise control when driver presses the clutch pedal or if clutch disc slips under boost.</li>
+<li>Prevents engine free-revving flare when clutch is disengaged without brake pedal touch.</li>
+<li><strong>Gear Ratio / Tire Changes</strong>:</li>
+<li>After changing transmission final drive or tire diameter, verify top gear ratio product remains below <code>SCNVHI</code>.</li>
+<li><strong>Stage IV Calibration Setting</strong>:</li>
+<li>Factory 2.5L calibration uses 241 counts; Stage IV calibrations set <code>SCNVHI</code> to 255 counts for maximum ratio tolerance.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CruiseResumeSwitchPressed</code>, manual transmission vehicles branch to line 8517. Vehicle speed <code>Temp0</code> is multiplied by distributor period <code>DistributorFallingEdgePulsewidth_HB</code> at line 8521. Line 8525 calls <code>ScaleYbyA</code> with constant 17. The resulting scaled gear ratio is loaded into accumulator B at line 8529. At line 8530, <code>cmpb SCNVHI_CruiseControlForBrakeFlagManualTransmissionClutchDisable</code> tests the ratio. If carry is clear (<code>bcc DropOutOfCruise</code>), indicating the ratio meets or exceeds <code>SCNVHI</code>, cruise disengages immediately.</p>
+<pre><code class="language-motorola6803">; --- CruiseResumeSwitchPressed (T-SMEC_v19.asm:8527-8533) ---
+	tsta		    ; test a
+	beq  L1719	    ; branch if equal (zero)
+	ldab #0xff	    ; load b with value -11111111-
+L1719:	cmpb SCNVHI_CruiseControlForBrakeFlagManualTransmissionClutchDisable	; compare b with memory contents (data is ff)
+	bcc  DropOutOfCruise	; branch if greater or equal
+	cmpb SCNVLO_CruiseControlForBrakeFlagManualTransmissionClutchDisable	; compare b with memory contents (data is 52)
+	bcs  DropOutOfCruise	; branch if lower</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Speed-to-Period Ratio</strong>: Evaluates <code>VehicleSpeed * Pulsewidth</code>, which is proportional to <code>MPH / RPM</code> (effective overall gear ratio).</li>
+<li><strong>MTX Exclusive</strong>: Completely bypassed on automatic transmission vehicles (<code>cfg_ATX</code> set), which instead check the Park/Neutral switch and an engine RPM ceiling.</li>
+<li><strong>Companion Boundary</strong>: Paired directly with lower gear ratio boundary <a href="../../7_-_Aux_Functions/Cruise_Control/SCNVLO_CruiseControlForBrakeFlagManualTransmissionClutchDisable.html"><code>SCNVLO_CruiseControlForBrakeFlagManualTransmissionClutchDisable</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>SCNVHI</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BATOFF: FuelBatteryOffset | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0738</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ B - Running</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Base_Modifiers</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BATOFF: FuelBatteryOffset</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BATOFF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BATOFF_FuelBatteryOffset</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Base_Modifiers</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\B_-_Running\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0738</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2D Table / Curve)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">4 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Battery Voltage (0 to 16.2 Volts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Pulse Width Offset (0 to 4096 microseconds)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Pulse Width Offset (0 to 4096 microseconds) vs. Battery Voltage (0 to 16.2 Volts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x04 (4 points: 5.7V: 1715 us, 8.2V: 957 us, 12.3V: 504 us, 15.9V: 307 us)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L2038-L2052"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5936"><code>LookupInjectorLatency</code></a> in <a href="../../T-SMEC_v19.asm.html#L5940"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BATOFF</code> defines the fuel injector dead time latency offset curve indexed against electrical system battery voltage.</p>
+<p>Electromagnetic fuel injectors require a measurable time interval (dead time, typically 0.6 to 1.5 milliseconds) for the solenoid coil to build magnetic flux and pull the pintle off its seat before fuel begins spraying. As battery voltage decreases, solenoid opening velocity slows down significantly.</p>
+<p><code>BATOFF</code> adds an offset pulsewidth that grows larger as system voltage sags, ensuring that effective fuel delivery remains constant regardless of alternator output or electrical accessories cycling on.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>LookupInjectorLatency</code> (<code>T-SMEC_v19.asm:5936-5942</code>), instruction line 5940.</li>
+<li><strong>Fault Flag Check</strong>:</li>
+<li>Evaluates <code>b45_Bad_BatVolts</code> in <code>b45_IPL1</code> at line 5938.</li>
+<li>If battery voltage fault is set, loads default 14.1 Volts (0xE2 counts).</li>
+<li>If voltage is valid, reads live <code>BatteryVolts</code> sensor channel.</li>
+<li><strong>Storage</strong>:</li>
+<li>Resulting latency byte is stored into <code>InjectorLatency</code> to be added into total injector pulsewidth.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Aftermarket Injector Characterization</strong>:</li>
+<li>Populate <code>BATOFF</code> with manufacturer-supplied voltage offset data when upgrading injectors to ensure stable air-fuel ratios.</li>
+<li><strong>Electrical Load Cycling Diagnosis</strong>:</li>
+<li>If idle air-fuel ratio dips rich or spikes lean when cooling fans cycle on, adjust <code>BATOFF</code> at the 12.0 to 13.5 Volt region.</li>
+<li><strong>Low-Pulsewidth Linearity</strong>:</li>
+<li>At idle and low load, dead time represents a large percentage of total pulsewidth; precise <code>BATOFF</code> calibration is vital for idle stability.</li>
+<li><strong>Failsafe Voltage Backup</strong>:</li>
+<li>If battery voltage reading is flagged faulty, the ECU automatically falls back to a 14.1 Volt default calibration index.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>LookupInjectorLatency</code>, the controller loads default value 0xE2 into accumulator A at line 5937. Line 5938 executes <code>brset *b45_IPL1, #b45_Bad_BatVolts, L1510</code> to check for battery sensor failure. If voltage is valid, <code>ldaa BatteryVolts</code> loads current system voltage at line 5939. At line 5940, <code>ldx #BATOFF_FuelBatteryOffset</code> loads table pointer and <code>Lookup4ByteTable</code> executes. The returned latency is stored into <code>InjectorLatency</code> at line 5942, and subsequently added to pulsewidth in <code>AddBatteryOffsetToInjectorPulsewidth</code>.</p>
+<pre><code class="language-motorola6803">; --- LookupInjectorLatency (T-SMEC_v19.asm:5936-5942) ---
+LookupInjectorLatency:
+	ldaa #0xe2	    ; load a with value -11100010-
+	brset *b45_IPL1, #b45_Bad_BatVolts, L1510	; branch if bit(s) set
+	ldaa BatteryVolts    ; load a with memory contents
+L1510:	ldx  #BATOFF_FuelBatteryOffset	  ; load index with value
+	jsr  Lookup4ByteTable	 ; call subroutine
+	staa InjectorLatency	; store a into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Additive Offset</strong>: Directly added to the final calculated pulsewidth in microseconds, functioning as an additive rather than multiplicative term.</li>
+<li><strong>Cranking and Running Shared</strong>: Used across both cranking (<code>CallAndReturn1</code>) and running modes (<code>AddBatteryOffsetToInjectorPulsewidth</code>).</li>
+<li><strong>Factory Scale</strong>: Calibrated from 0.0 Volts to 16.2 Volts across 4 interpolation points.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>BATOFF</code>
+        </footer>
+    </div>
+</body>
+</html>

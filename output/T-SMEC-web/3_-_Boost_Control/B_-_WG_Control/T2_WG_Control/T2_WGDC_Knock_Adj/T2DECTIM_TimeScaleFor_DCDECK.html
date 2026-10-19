@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T2DECTIM: TimeScaleFor DCDECK | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1401</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ B - WG Control ➔ T2 WG Control ➔ T2 WGDC Knock Adj</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>T2DECTIM: TimeScaleFor DCDECK</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>T2DECTIM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T2DECTIM_TimeScaleFor_DCDECK</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\B_-_WG_Control\T2_WG_Control\T2_WGDC_Knock_Adj\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1401</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Bitmask / Loop Counts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x07                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5311-L5321"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L9905"><code>T2WGDC_LookAtCylRetards</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L9915"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>T2DECTIM</code> sets the timing prescaler bitmask that governs how frequently the knock duty cycle recovery decrement (<a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2DCDECK_WastegateDutyCycleDecrementWhenSparkStillDerated.html"><code>T2DCDECK</code></a>) is executed in T2 control.</p>
+<p>The controller checks this bitmask against the main program loop counter; only when the masked bits equal zero does the routine decrement the knock reduction penalty. Pacing the recovery rate ensures that boost returns smoothly and gradually as cylinder knock retard subsides.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>T2WGDC_LookAtCylRetards</code> (<code>T-SMEC_v19.asm:9914-9916</code>), called from <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9755-10040</code>).</li>
+<li><strong>Gating Conditions</strong>: At least one cylinder must have knock retard exceeding <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2WGKNRD_MinimumKnockToReduceWGDC.html"><code>T2WGKNRD</code></a>.</li>
+<li><strong>Prescaler Masking</strong>:</li>
+<li>Line 9914 loads <code>Counter_MainLoop</code> into accumulator B.</li>
+<li>Line 9915 executes <code>bitb T2DECTIM_TimeScaleFor_DCDECK</code>.</li>
+<li>If non-zero (<code>bne L7763</code>), execution branches past the decrement routine for this loop pass.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>T2 Recovery Interval Prescaler</strong>:</li>
+<li>Bitmask applied against <code>Counter_MainLoop</code> to control how often <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2DCDECK_WastegateDutyCycleDecrementWhenSparkStillDerated.html"><code>T2DCDECK</code></a> is subtracted from knock penalty.</li>
+<li>Factory setting is 7 (executes every 8th main loop pass, approximately every 88 milliseconds).</li>
+<li><strong>Preventing Knock Re-Triggering</strong>:</li>
+<li>An 88 ms interval provides a cautious, stable recovery that prevents cycling back into detonation.</li>
+<li><strong>Fast Track Recovery</strong>:</li>
+<li>Lowering bitmask to 3 (every 4th pass) or 1 (every 2nd pass) restores boost faster on race fuel.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>T2WGDC_LookAtCylRetards</code> at line 9914, accumulator B loads <code>Counter_MainLoop</code> and line 9915 executes <code>bitb T2DECTIM_TimeScaleFor_DCDECK</code>. If the bitwise AND is non-zero, execution branches to <code>L7763</code> at line 9924, bypassing the knock penalty decrement. When the masked bits equal zero (every 8th loop with factory bitmask 0x07), execution continues to line 9917 to subtract <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2DCDECK_WastegateDutyCycleDecrementWhenSparkStillDerated.html"><code>T2DCDECK</code></a>.</p>
+<pre><code class="language-motorola6803">; --- T2WGDC_LookAtCylRetards (T-SMEC_v19.asm:9914-9916) ---
+        ldab Counter_MainLoop         ; load b with memory contents
+        bitb T2DECTIM_TimeScaleFor_DCDECK    ;  (data is 07)
+        bne  L7763                     ; branch if not equal (not zero)</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Standard Bitmask</strong>: 0x07 = every 8th loop pass (approx 88 ms assuming 11 ms main loop rate).</li>
+<li><strong>T1 Comparison</strong>: T1 uses bitmask 0x01 (every 2nd pass); T2 is four times slower to ensure stable recovery.</li>
+<li><strong>Synchronized Decay</strong>: Synchronized with individual cylinder spark retard decay logic.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>T2DECTIM</code>
+        </footer>
+    </div>
+</body>
+</html>

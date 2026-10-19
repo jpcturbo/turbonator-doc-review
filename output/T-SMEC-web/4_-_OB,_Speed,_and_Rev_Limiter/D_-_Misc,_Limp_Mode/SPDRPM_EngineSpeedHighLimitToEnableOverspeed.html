@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPDRPM: EngineSpeedHighLimitToEnableOverspeed | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x196A</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>4 - OB, Speed, and Rev Limiter ➔ D - Misc, Limp Mode</strong> &nbsp;|&nbsp; Subsystem: <strong>Limiters_Limp</strong>
+        </div>
+        
+        <article class="content">
+            <h1>SPDRPM: EngineSpeedHighLimitToEnableOverspeed</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>SPDRPM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>SPDRPM_EngineSpeedHighLimitToEnableOverspeed</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Limiters_Limp</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>4_-_OB,_Speed,_and_Rev_Limiter\D_-_Misc,_Limp_Mode\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x196A</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x7D (125 counts ≈ 4000 RPM)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6696-L6706"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5700"><code>Cutout_CheckRevLimitingValues</code></a> in <a href="../../T-SMEC_v19.asm.html#L5704"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>SPDRPM</code> defines the engine speed arming threshold that gates the vehicle road speed limiter.</p>
+<p>In Chrysler engine management architecture, the vehicle speed limiter (<a href="../../4_-_OB,_Speed,_and_Rev_Limiter/C_-_Speed_Limiter/SPDLMH_SpeedLimitFuelShutoff254MPH.html"><code>SPDLMH</code></a>) is not continuously active across all operating conditions; rather, it is only evaluated when engine speed is at or above <code>SPDRPM</code>. In factory calibrations, <code>SPDRPM</code> is set to 125 counts, corresponding to 4000 RPM. If the vehicle is traveling at high speed in neutral, coasting down a mountain grade, or driving in top gear below 4000 RPM, the vehicle speed fuel cut will not trigger. This prevents unexpected engine fuel cutouts during low-RPM highway cruising.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>Cutout_CheckRevLimitingValues</code> (<code>T-SMEC_v19.asm:5700-5712</code>), line 5704.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Reached after passing the active rev limiter check (<code>EngineRpm_HB &lt; 0x00,x</code>).</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li><code>EngineRpm_HB</code> is compared against <code>SPDRPM</code> (<code>cmpa SPDRPM_EngineSpeedHighLimitToEnableOverspeed</code>).</li>
+<li>If <code>EngineRpm_HB &lt; SPDRPM</code> (<code>bcs L1485</code>), the vehicle speed check is bypassed entirely.</li>
+<li>If <code>EngineRpm_HB &gt;= SPDRPM</code>, execution continues to evaluate <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/C_-_Speed_Limiter/SPDLMH_SpeedLimitFuelShutoff254MPH.html"><code>SPDLMH</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Speed Limiter Arming Ceiling</strong>:</li>
+<li>Raising <code>SPDRPM</code> to 5500+ RPM delays vehicle speed limit evaluation until top-end RPM is reached.</li>
+<li><strong>Tall Final-Drive Ratios</strong>:</li>
+<li>On vehicles with tall overdrive ratios that cruise at high MPH with low RPM, ensure <code>SPDRPM</code> is set appropriately if speed governing is desired.</li>
+<li><strong>Disabling Alternative</strong>:</li>
+<li>Setting <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/C_-_Speed_Limiter/SPDLMH_SpeedLimitFuelShutoff254MPH.html"><code>SPDLMH</code></a> to 255 counts is the standard method for disabling top speed cut, making <code>SPDRPM</code> inactive in practice.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>Cutout_CheckRevLimitingValues</code> at lines 5701-5705, <code>EngineRpm_HB</code> is loaded into accumulator A and compared against <code>SPDRPM_EngineSpeedHighLimitToEnableOverspeed</code>. If carry is set (<code>bcs L1485</code>), RPM is below 4000 RPM and execution skips the speed limit check, advancing to line 5709 to inspect <code>b50_FallToIdle</code>. Only if RPM is at or above <code>SPDRPM</code> does the routine evaluate <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/C_-_Speed_Limiter/SPDLMH_SpeedLimitFuelShutoff254MPH.html"><code>SPDLMH</code></a>.</p>
+<pre><code class="language-motorola6803">; --- Cutout_CheckRevLimitingValues (T-SMEC_v19.asm:5701-5708) ---
+Cutout_CheckRevLimitingValues:
+	ldaa EngineRpm_HB    ; load a with memory contents
+	cmpa 0x00,x	    ; compare a with memory at index + value
+	bcc  Cutout_ShutOffEngineForThisRotation    ; branch if greater or equal
+	cmpa SPDRPM_EngineSpeedHighLimitToEnableOverspeed    ; compare a with memory contents (data is 7d)
+	bcs  L1485	    ; branch if lower
+	ldab Temp1	    ; load b with memory contents
+	cmpb SPDLMH_SpeedLimitFuelShutoff254mph    ; compare b with memory contents (data is 76)
+	bcc  Cutout_ShutOffEngineForThisRotation    ; branch if greater or equal</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Hysteresis Pair</strong>: <code>SPDRPM</code> (arming limit, 4000 RPM) paired with <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/SPDRPM2_EngineSpeedLowLimitToDisableOverspeed.html"><code>SPDRPM2</code></a> (disarming limit, 3808 RPM).</li>
+<li><strong>RPM Scaling</strong>: Scaled at 32 RPM per count ($8160 / 255$). 125 counts equals 125 × 32 = 4000 RPM.</li>
+<li><strong>Stage IV Calibrations</strong>: Set to 120 counts (3840 RPM).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>SPDRPM</code>
+        </footer>
+    </div>
+</body>
+</html>

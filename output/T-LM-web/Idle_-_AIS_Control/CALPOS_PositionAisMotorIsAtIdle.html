@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CALPOS: PositionAisMotorIsAtIdle | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0AB6</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CALPOS: PositionAisMotorIsAtIdle</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CALPOS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CALPOS_PositionAisMotorIsAtIdle</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0AB6</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Stepper Motor Steps (0 - 255; 0x1A = 26 steps)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x1A                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L2772-L2784"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L3503"><code>CalculateAisPosition_MM</code></a> in <a href="../T-LMv13.asm.html#L3636"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CALPOS</code> (PositionAisMotorIsAtIdle) represents the electrical baseline step count of the AIS stepper motor during steady-state, fully warmed-up curb idle.</p>
+<p>In the Chrysler idle control architecture, closed-loop idle trims and deceleration dashpot adders are computed as delta offsets relative to a baseline reference. <code>CALPOS</code> provides this nominal base (calibrated at 26 steps / <code>0x1A</code>). It is added to desired position calculations and is also utilized in <code>CalculateAisPosition_MM</code> to enforce minimum limits and initialize the idle motor tracking register.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated in <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at line 5277 and <code>CalculateAisPosition_MM</code> at line 3636.</li>
+<li>Added to cumulative step demand when closed-loop idle control is stable (<code>adda CALPOS_PositionAisMotorIsAtIdle</code>).</li>
+<li>Checked in <code>CalculateAisPosition_MM</code> to clamp minimum position.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Base Throttle Minimum Airflow Setup</strong>: The factory service manual instructs setting the mechanical throttle plate minimum stop screw (with AIS motor disconnected or fully closed) so that warm idle runs ~700 RPM. When reconnecting the AIS, the ECU operates around <code>CALPOS</code> (~20 to 30 steps) to achieve 850 RPM target idle.</li>
+<li><strong>Aftermarket Throttle Bodies</strong>: If you install a larger throttle body or bore out the throttle body, the engine may idle at 1,100 RPM even with the AIS fully seated. After adjusting the mechanical throttle stop screw to bring baseline air down, verify that warm idle step counts in scan tools (or DRB) float close to <code>CALPOS</code> (20-30 steps).</li>
+<li><strong>Modifying CALPOS</strong>: Adjusting <code>CALPOS</code> shifts the entire baseline operating window of the idle stepper motor.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateTargetIdleSpeedAndAisPosition_MM (T-LMv13.asm:5274-5278) ---
+        ldab BitFlags_85                         ; Check status flags
+        bitb #0x10                               
+        bne  LE639                               
+        adda CALPOS_PositionAisMotorIsAtIdle     ; Add nominal idle step baseline ($0AB6, data 0x1A = 26 steps)
+        bcs  LE63E                               ; Clamp on overflow</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 3636</strong> (<code>CalculateAisPosition_MM</code>): <code>cmpa CALPOS_PositionAisMotorIsAtIdle    ; compare a with memory contents (data is 1a)</code></li>
+<li><strong>Line 5277</strong> (<code>CalculateTargetIdleSpeedAndAisPosition_MM</code>): <code>adda CALPOS_PositionAisMotorIsAtIdle    ;  (data is 1a)</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Terminology</strong>: Often referred to in factory engineering memos as the 'nominal calibrated idle step baseline'.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>CALPOS</code>
+        </footer>
+    </div>
+</body>
+</html>

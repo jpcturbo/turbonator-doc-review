@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTVAIS: MinVoltageForAis | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1113</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BTVAIS: MinVoltageForAis</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BTVAIS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BTVAIS_MinVoltageForAis</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1113</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Volts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x71                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4561-L4571"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L1347"><code>TurnAlternatorOff</code></a> in <a href="../../T-SMEC_v19.asm.html#L1355"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BTVAIS</code> defines the minimum electrical system battery voltage required before the controller allows actuation of the automatic idle speed stepper motor.</p>
+<p>The 4-wire stepper motor actuator relies on electromagnetic coils to overcome internal friction, spring pressure, and intake manifold vacuum force to move the pintle. If battery voltage sags significantly, coil current is insufficient to overcome these mechanical forces, leading to weak torque, skipped steps, and permanent loss of motor position calibration.</p>
+<p><code>BTVAIS</code> establishes a protective voltage floor: whenever battery voltage is below <code>BTVAIS</code>, stepper motor stepping pulses are completely inhibited.</p>
+<p>In factory calibrations, <code>BTVAIS</code> is set to 113 counts, corresponding to a battery voltage floor of approximately 11.3 Volts.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>TurnAlternatorOff</code> / <code>AisDriveRoutine</code> (<code>T-SMEC_v19.asm:1347-1358</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated before every stepper motor coil firing sequence.</li>
+<li>Loads <code>BatteryVolts</code> into accumulator A at line 1354.</li>
+<li>Compares accumulator A against <code>BTVAIS</code> at line 1355: <code>cmpa BTVAIS_MinVoltageForAis</code>.</li>
+<li>If battery voltage is less than <code>BTVAIS</code> (<code>bcs XmitRequestedRamLocation</code>), stepper pulse drive is bypassed.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Lightweight Battery Dip Accommodation</strong>:</li>
+<li>Lower <code>BTVAIS</code> to 10.5 to 10.8 Volts if high-draw electric water pumps or fuel pumps pull system voltage below 11.3 Volts at hot idle.</li>
+<li><strong>Skipped Step Hazard</strong>:</li>
+<li>Do not lower <code>BTVAIS</code> below 9.5 Volts, as weak coil magnetism at low voltage causes the stepper motor to miscount steps and lose physical calibration.</li>
+<li><strong>Factory Safety Margin</strong>:</li>
+<li>Factory setting of 113 counts (11.3 Volts) ensures robust coil stepping torque under all factory operating conditions.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>TurnAlternatorOff</code>, line 1351 checks <code>BitFlags_AIS</code> bit <code>b0c_UseAIS</code>. Line 1354 loads <code>BatteryVolts</code> into accumulator A. Line 1355 executes <code>cmpa BTVAIS_MinVoltageForAis</code>. If <code>BatteryVolts</code> is lower than <code>BTVAIS</code> (<code>bcs XmitRequestedRamLocation</code>), the routine aborts to the SCI handler without energizing the PIA1 port B stepper output lines, preventing incomplete or weak step pulses.</p>
+<pre><code class="language-motorola6803">; --- TurnAlternatorOff (T-SMEC_v19.asm:1351-1358) ---
+L1013:	brset *BitFlags_AIS, #b0c_UseAIS, L1014    ; branch if bit(s) set
+	lsra		
+	bcs  L1010	    ; branch if lower
+L1014:	ldaa BatteryVolts    ; load a with memory contents
+	cmpa BTVAIS_MinVoltageForAis	; compare a with memory contents (data is 71)
+	bcs  XmitRequestedRamLocation	 ; branch if lower
+	brset *BitFlags_2e, #b2e_bit3, XmitRequestedRamLocation    ; branch if bit(s) set</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Actuator Hardware Safety</strong>: Protects the 4-coil bipolar stepper motor driver from low-voltage brownout errors.</li>
+<li><strong>Scaling</strong>: 1 count = 0.10 Volts (113 counts = 11.3 Volts).</li>
+<li><strong>Factory Value</strong>: 0x71 (113 counts).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>BTVAIS</code>
+        </footer>
+    </div>
+</body>
+</html>

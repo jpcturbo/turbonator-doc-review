@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAPMULT: ScaleMAPVoltsToPresMultiplyConst | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x137C</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Setup - Transfer Functions</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MAPMULT: ScaleMAPVoltsToPresMultiplyConst</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MAPMULT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MAPMULT_ScaleMAPVoltsToPresMultiplyConst</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Setup_-_Transfer_Functions\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x137C</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 8 (3D Table / MPTune)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Mathematical Multiplier / Slope Scalar (0x07 = Mopar 2-Bar; 0x09 = S60 3-Bar)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x07                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L5018-L5032"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L1198"><code>ConvertMAPVoltsToValue</code></a> in <a href="../T-LMv13.asm.html#L1200"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MAPMULT</code> (ScaleMAPVoltsToPresMultiplyConst) is the foundational slope multiplier in the mathematical transfer function that converts analog MAP sensor voltage (<code>MapVolts</code>) into calibrated internal pressure units (<code>MapValue</code>).</p>
+<p>In the factory Chrysler 6803 assembly routine <code>ConvertMAPVoltsToValue</code>, the ECU executes:</p>
+<p><code>Pressure = (MAPVolts × MAPMULT) + MAPVolts + MAPADD</code></p>
+<ul>
+<li><strong>Stock Mopar 2-Bar Sensor</strong>: Calibrated to <code>0x07</code>. With a 2-Bar sensor, a 5.0V span corresponds to 0 - 208 kPa (~14.7 psi boost).</li>
+<li><strong>Mopar Super 60 / 3-Bar Sensor</strong>: When upgrading to a 3-Bar sensor (measuring up to 300 kPa / ~29 psi boost), the sensor output slope is shallower (1.5× more pressure per volt). Setting <code>MAPMULT</code> to <code>0x09</code> (in conjunction with <a href="../Setup_-_Transfer_Functions/MAPADD_ScaleMAPVoltsToPresAddConst.html"><code>MAPADD</code></a> = <code>0x0700</code>) recalibrates the entire ECU to read 3-Bar boost accurately without altering underlying table fuel/spark axes!</li>
+</ul>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside subroutine <code>ConvertMAPVoltsToValue</code> at line 1200.</li>
+<li>Executed on every single analog-to-digital MAP conversion pass.</li>
+<li>Directly determines the scaling of all fuel, spark, boost, and overboost tables.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>3-Bar MAP Sensor Conversion Guide</strong>:</li>
+<li>For <strong>Mopar 2-Bar (Stock)</strong>: Set <code>MAPMULT</code> = <code>0x07</code>, <a href="../Setup_-_Transfer_Functions/MAPADD_ScaleMAPVoltsToPresAddConst.html"><code>MAPADD</code></a> = <code>0x0361</code>.</li>
+<li>For <strong>Mopar Super 60 3-Bar</strong>: Set <code>MAPMULT</code> = <code>0x09</code>, <a href="../Setup_-_Transfer_Functions/MAPADD_ScaleMAPVoltsToPresAddConst.html"><code>MAPADD</code></a> = <code>0x0700</code>.</li>
+<li>For <strong>GM / MSD 3-Bar (12223861 / 16040749)</strong>: May require fine-tuning <a href="../Setup_-_Transfer_Functions/MAPADD_ScaleMAPVoltsToPresAddConst.html"><code>MAPADD</code></a> to <code>0x06C0</code> - <code>0x0720</code> depending on sensor manufacturer offset tolerances.</li>
+<li><strong>MPTuning Integration</strong>: In MPTune, selecting the '3-Bar MAP' option automatically updates <code>MAPMULT</code> and <a href="../Setup_-_Transfer_Functions/MAPADD_ScaleMAPVoltsToPresAddConst.html"><code>MAPADD</code></a> to their correct values.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- ConvertMAPVoltsToValue (T-LMv13.asm:1198-1207) ---
+ConvertMAPVoltsToValue:
+        staa Temp5                               ; Store raw MAP ADC voltage
+        ldab MAPMULT_ScaleMAPVoltsToPresMultiplyConst ; Load slope multiplier ($137C, data 0x07)
+        bpl  LC9F3                               
+        clr  Temp5                               
+LC9F3:  mul                                      ; Multiply: D = MAPVolts * MAPMULT
+        adda Temp5                               ; Add MAPVolts (D = MAPVolts * (MAPMULT + 1))
+        bcc  LC9FA                               
+        ldaa #0xff                               ; Clamp on overflow
+LC9FA:  addd MAPADD_ScaleMAPVoltsToPresAddConst  ; Add offset constant ($138B, data 0x0361)
+        bcc  LCA01                               
+        ldaa #0xff                               ; Clamp to 255 maximum
+LCA01:  rts                                      ; Return calibrated MapValue!</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 1200</strong> (<code>ConvertMAPVoltsToValue</code>): <code>ldab MAPMULT_ScaleMAPVoltsToPresMultiplyConst    ; load b with memory contents (data is 07)</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>The Holy Grail of 3-Bar Tuning</strong>: This single multiplier enables 30 psi boost tuning on classic Chrysler turbo hardware.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>MAPMULT</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BARTIM: BaroReadMinTimeBetweenReadings179sec | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1498</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Baro Read</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BARTIM: BaroReadMinTimeBetweenReadings179sec</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BARTIM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BARTIM_BaroReadMinTimeBetweenReadings179sec</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Baro_Read\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1498</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">seconds</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x40                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5462-L5472"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L1495"><code>ReadBaroIfPossible</code></a> in <a href="../../T-SMEC_v19.asm.html#L1510"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BARTIM</code> defines the minimum time interval required between successive in-flight barometric pressure updates.</p>
+<p>Atmospheric weather barometric pressure changes slowly over hours, and vehicular altitude changes occur over minutes. To prevent the barometric read solenoid from repeatedly cycling during frequent stop-and-go driving or repetitive throttle-lift cycles, <code>BARTIM</code> enforces a mandatory rest period between readings. In factory calibrations, <code>BARTIM</code> is set to 64 counts, representing approximately 179 seconds (approximately 3 minutes). Once an in-flight reading is taken, the controller locks out further baro reads until this 3-minute timer elapses.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ReadBaroIfPossible</code> (<code>T-SMEC_v19.asm:1509-1514</code>), instruction line 1510.</li>
+<li><strong>Prequisite Gates</strong>:</li>
+<li><a href="../../7_-_Aux_Functions/Baro_Read/BRDLAY_BaroReadDelayAfterThrottleClosed2sec.html"><code>BRDLAY</code></a> delay must be satisfied.</li>
+<li>Baro solenoid not currently energized (<code>b51_BaroSolEnergized</code> clear).</li>
+<li><strong>Interval Check</strong>:</li>
+<li>Compares <code>Timer_BaroReadInterval</code> against <code>BARTIM_BaroReadMinTimeBetweenReadings179sec</code> at line 1510.</li>
+<li>If interval is below <code>BARTIM</code> (<code>bcs R1028</code>), exits without triggering solenoid.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Mountain Hill-Climb Racing</strong>:</li>
+<li>Lower <code>BARTIM</code> to 60 to 90 seconds to adapt fueling quickly to rapid altitude ascents.</li>
+<li><strong>Preventing Excessive Solenoid Wear</strong>:</li>
+<li>Do not set <code>BARTIM</code> below 30 seconds to avoid relentless cycling of the pneumatic solenoid.</li>
+<li><strong>Key-On Reliance</strong>:</li>
+<li>Setting <code>BARTIM</code> to 255 counts effectively locks barometric pressure to the initial engine startup reading.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>ReadBaroIfPossible</code> at line 1509, accumulator A loads <code>Timer_BaroReadInterval</code>. Line 1510 executes <code>cmpa BARTIM_BaroReadMinTimeBetweenReadings179sec</code>. If the timer is less than the calibration constant (<code>bcs</code>), execution branches to <code>R1028</code>. If the timer meets or exceeds <code>BARTIM</code>, line 1512 tests if the solenoid is already active. If not active, line 1514 clears <code>b2d_ReadBaroRequired</code> and sets up the transition into solenoid energization.</p>
+<pre><code class="language-motorola6803">; --- ReadBaroIfPossible (T-SMEC_v19.asm:1509-1516) ---
+L1023:	ldaa Timer_BaroReadInterval    ; load a with memory contents
+	cmpa BARTIM_BaroReadMinTimeBetweenReadings179sec    ; compare a with memory contents (data is 40)
+	bcs  R1028	    ; branch if lower
+	bitb #b51_BaroSolEnergized	    ;  -00100000-
+	bne  R1028	    ; branch if not equal (not zero)
+	bclr *BitFlags_2d, #b2d_ReadBaroRequired    ; clear bits
+	ldab #b51_SparkEngineNotRunning	    ; load b with value -10000000-
+	bra  L1024	    ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Timer Clocking</strong>: Clocked via prescaled timer loop; 64 counts represents approximately 179 seconds.</li>
+<li><strong>Key-On Initial Reading</strong>: The initial baro reading is taken immediately at key-on before the engine starts, bypassing <code>BARTIM</code>.</li>
+<li><strong>Status Flags</strong>: Uses <code>b51_BaroSolEnergized</code> in <code>BitFlags_51</code> to track active solenoid status.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>BARTIM</code>
+        </footer>
+    </div>
+</body>
+</html>

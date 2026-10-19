@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R1: RPMCellBoundaryInRPMover32 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0B6C</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ F - Adaptive memory</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>R1: RPMCellBoundaryInRPMover32</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>R1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>R1_RPMCellBoundaryInRPMover32</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\F_-_Adaptive_memory\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0B6C</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x3A (58 counts ≈ 1856 RPM)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3114-L3124"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L3374"><code>ONTHROTTLE_OR_RPMTOOHIGHFORIDLE</code></a> in <a href="../../T-SMEC_v19.asm.html#L3380"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>R1</code> defines the primary engine speed boundary separating the lower engine speed adaptive memory cells from the upper engine speed cells across all six manifold pressure columns.</p>
+<p>The 12 off-idle cells are organized as 6 load columns split into low-RPM even cells (0, 2, 4, 6, 8, 10) and high-RPM odd cells (1, 3, 5, 7, 9, 11).</p>
+<p>In stock calibrations, <code>R1</code> is set to 58 counts in the high-byte RPM scaling (where each count equals 32 RPM), establishing the boundary at approximately 1856 RPM. This splits low-speed city driving from high-speed highway cruising.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code> / <code>ONTHROTTLE_OR_RPMTOOHIGHFORIDLE</code> (<code>T-SMEC_v19.asm:3374-3393</code>), instruction line 3380.</li>
+<li><strong>Gating Conditions</strong>: Throttle open (<code>BitFlags_4f</code> bit <code>b4f_OffIdle</code> set) and MAP column selection completed.</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Line 3380 loads <code>R1_RPMCellBoundaryInRPMover32</code> into register A.</li>
+<li>Line 3385 compares register A against <code>EngineRpm_HB</code> via <code>cmpa EngineRpm_HB</code>.</li>
+<li>If <code>R1 &lt; EngineRpm_HB</code> (<code>bcs</code>), execution branches to <code>L1249</code> (line 3388), selecting the upper (odd) RPM cell.</li>
+<li>If <code>R1 &gt;= EngineRpm_HB</code>, line 3387 decrements <code>Temp0</code> by 1 via <code>decb</code>, selecting the lower (even) RPM cell.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Gearing and Transmission Alignment</strong>:</li>
+<li>Adjust <code>R1</code> based on axle ratio and highway cruising speed. Raising <code>R1</code> to 2000-2200 RPM fits manual transmissions, while 1600-1850 RPM fits automatic overdrive setups.</li>
+<li><strong>City vs Highway Segmentation</strong>:</li>
+<li>Segregates stop-and-go transient city driving (even cells) from steady-state highway cruising (odd cells).</li>
+<li><strong>RPM Scaling</strong>:</li>
+<li>Each count represents 32 RPM; 58 counts equals 1856 RPM.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code>, once the MAP column is chosen, execution reaches <code>L1247</code> at line 3380. The microcontroller loads <code>R1_RPMCellBoundaryInRPMover32</code> into accumulator A. Line 3381 executes <code>lsrb</code> to check if the previous cell pointer was even or odd; if carry is clear, line 3383 adds <a href="../../1_-_Fuel/F_-_Adaptive_memory/DLTRPM_DeltaRPMAtRPMBoundariesInRPMOver32.html"><code>DLTRPM</code></a> hysteresis. Line 3385 executes <code>cmpa EngineRpm_HB</code>. If <code>EngineRpm_HB &gt; boundary</code>, carry is set and <code>bcs L1249</code> branches to line 3388, retaining the upper cell index. If <code>EngineRpm_HB &lt;= boundary</code>, line 3387 decrements register B to select the lower cell.</p>
+<pre><code class="language-motorola6803">; --- ONTHROTTLE_OR_RPMTOOHIGHFORIDLE (T-SMEC_v19.asm:3380-3388) ---
+L1247:	ldaa R1_RPMCellBoundaryInRPMover32    ; load a with memory contents (data is 32) (RPM Threshold separating low/high RPM cells)
+	lsrb		    ; logical shift right b
+	bcs  L1248	    ; branch if lower
+	adda DLTRPM_DeltaRPMAtRPMBoundariesInRPMOver32	  ;  (data is 02) (Add RPM hysteresis)
+L1248:	ldab Temp0	    ; load b with memory contents
+	cmpa EngineRpm_HB    ; compare a with memory contents
+	bcs  L1249	    ; branch if lower (If RPM &gt; threshold, we stay on the upper cell of this MAP band)
+	decb		         ; If RPM &lt; threshold, drop cell index by 1 to hit the lower RPM cell in this band
+L1249:	decb             ; Drop one more to compensate for over-incrementing in the loop</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Works with <a href="../../1_-_Fuel/F_-_Adaptive_memory/DLTRPM_DeltaRPMAtRPMBoundariesInRPMOver32.html"><code>DLTRPM</code></a> (RPM hysteresis) and divides columns set by <a href="../../1_-_Fuel/F_-_Adaptive_memory/MP1_AutoCalMapCellBoundary1.html"><code>MP1</code></a>-<a href="../../1_-_Fuel/F_-_Adaptive_memory/MP5_AutoCalMapCellBoundary5.html"><code>MP5</code></a>.</li>
+<li><strong>Units</strong>: High-byte engine speed scaling where 1 count = 32 RPM.</li>
+<li><strong>Persistence</strong>: Read on every main loop pass; written to <code>PointerIntoAdaptiveMemory</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>R1</code>
+        </footer>
+    </div>
+</body>
+</html>

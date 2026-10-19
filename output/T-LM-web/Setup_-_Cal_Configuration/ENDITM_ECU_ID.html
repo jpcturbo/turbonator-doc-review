@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ENDITM: ECU ID | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0092</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Setup - Cal Configuration</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ENDITM: ECU ID</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ENDITM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ENDITM_ECUID</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Setup_-_Cal_Configuration\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0092</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Hexadecimal Word (0xA171 = Cal Part Number / ECU ID)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0xA171                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L127-L139"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L667"><code>ResetStartup</code></a> in <a href="../T-LMv13.asm.html#L688"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ENDITM</code> (ECU_ID) is a critical 16-bit calibration identifier placed at the very beginning of the calibration ROM table structure (address <code>$C000</code>, offset <code>$0092</code>). </p>
+<p>This 2-byte word represents the engineering calibration release ID (in this stock binary, <code>0xA171</code>). When a factory Chrysler diagnostic readout box (DRB-II) or modern scan tool queries the ECU over the serial communications interface (SCI), the diagnostic subroutine <code>DRB_SendROMSerial_MM</code> transmits <code>ENDITM</code> to identify the engine displacement, transmission type, model year, and emissions calibration family. Furthermore, the ECU's power-on self-test routine <code>ResetStartup</code> uses <code>ENDITM</code> to verify ROM integrity by calculating an 8-bit additive checksum of the entire calibration table space.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Accessed during system reset in <code>ResetStartup</code> (line 688) and <code>ChecksumLoop</code> (line 694).</li>
+<li>Queried during serial diagnostic sessions in <code>DRB_SendROMSerial_MM</code> (line 2501).</li>
+<li>Permanent ROM constant stored at <code>$C000</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Tuning Usage</strong>: When modifying custom calibrations in MPTune, updating or modifying this identifier is typically handled automatically or left intact. Changing this identifier alters what model number displays on scan tools (e.g. Snap-on MT2500 or DRB-II).</li>
+<li><strong>Checksum Verification</strong>: During power-on boot, the ECU adds all calibration bytes and subtracts the second byte of <code>ENDITM</code> (<code>subb ENDITM_ECUID+1</code>). If the calculated sum does not equal zero, the ECU flags a memory checksum fault (<code>ThrowNonCriticalError</code>), storing Fault Code 53 / 8-bit error flag in <code>ErrorBitRegisterStored0</code>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- ResetStartup &amp; ChecksumLoop (T-LMv13.asm:688-698) ---
+        ldx  #ENDITM_ECUID                       ; Point index X to start of calibration ROM ($C000)
+        clrb                                     ; Clear accumulator B for sum accumulator
+ChecksumLoop:
+        addb 0x00,x                              ; Add byte at X to B
+        inx                                      ; Advance pointer
+        bne  ChecksumLoop                        ; Loop across entire 64KB address boundary
+        subb ENDITM_ECUID+1                      ; Subtract checksum compensation byte (data 0x71)
+        beq  ChecksumFinished                    ; If zero, checksum matches perfectly!
+        ldx  #ErrorBitRegister0                  ; Else log ROM Checksum Failure
+        ldab #0x02                               
+        jsr  ThrowNonCriticalError               ; Set non-critical diagnostic fault flag</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 688</strong> (<code>ResetStartup</code>): <code>ldx  #ENDITM_ECUID    ; load index with value</code></li>
+<li><strong>Line 694</strong> (<code>ChecksumLoop</code>): <code>subb ENDITM_ECUID+1    ; subtract memory contents from b (data is 71)</code></li>
+<li><strong>Line 2501</strong> (<code>DRB_SendROMSerial_MM</code>): <code>ldx  #ENDITM_ECUID    ; load index with value</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Checksum Byte</strong>: In classic Chrysler 6803 binaries, the second byte of <code>ENDITM</code> acts as the checksum balance byte to ensure the modulo-256 sum of all calibration ROM bytes zeroes out.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>ENDITM</code>
+        </footer>
+    </div>
+</body>
+</html>

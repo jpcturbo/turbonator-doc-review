@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRCLTM: BaroReadDelayAfterSolenoidClosedTenthSec | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0FB5</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Baro Read</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BRCLTM: BaroReadDelayAfterSolenoidClosedTenthSec</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BRCLTM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BRCLTM_BaroReadDelayAfterSolenoidClosedTenthSec</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Baro_Read\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0FB5</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Tenths of a Second (0x05 = 5 tenths = 0.50 seconds)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x05                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L4051-L4063"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L1665"><code>HandleBaroReadRequirement_MM</code></a> in <a href="../T-LMv13.asm.html#L1745"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BRCLTM</code> (BaroReadDelayAfterSolenoidClosedTenthSec) defines the required pneumatic recovery delay (stock calibration = 5 tenths of a second / 0.50 sec) following the de-energization (closure) of the barometric read solenoid.</p>
+<p>During an in-flight baro reading, the solenoid vents the MAP sensor chamber to atmospheric air. Once the reading is captured into RAM, the solenoid de-energizes, reconnecting the sensor port to the intake manifold vacuum runner. Because the sensor chamber was filled with atmospheric air, several hundred milliseconds are required for manifold vacuum to evacuate the vacuum line and pull the sensor diaphragm back down to live manifold depression. <code>BRCLTM</code> enforces a 0.5-second settling window before manifold pressure tracking resumes, preventing false transient acceleration enrichments or boost error flags.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside subroutine <code>HandleBaroReadRequirement_MM</code> at line 1745.</li>
+<li>Triggered immediately after the baro read sequence concludes and the solenoid is turned off.</li>
+<li>Compares <code>Counter_BaroReadTime</code> against <code>BRCLTM</code> before re-enabling normal MAP A/D updates.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stock Value</strong>: <code>0x05</code> (0.50 seconds).</li>
+<li><strong>Extended Vacuum Routing</strong>: If the MAP sensor is installed far from the intake plenum with long rubber/silicone hoses, increasing <code>BRCLTM</code> to <code>0x07</code> or <code>0x08</code> gives the intake vacuum additional time to evacuate the line before fuel and spark calculations read the sensor.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- HandleBaroReadRequirement_MM (T-LMv13.asm:1744-1748) ---
+        ldaa Counter_BaroReadTime                ; Read post-close elapsed timer
+        cmpa BRCLTM_BaroReadDelayAfterSolenoidClosedTenthSec ; Compare against settling delay ($0FB5, data 0x05)
+        bcs  LCDAE                               ; If timer &lt; BRCLTM, wait before restoring MAP tracking
+        ; Else restore standard manifold pressure tracking!</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 1745</strong> (<code>HandleBaroReadRequirement_MM</code>): <code>cmpa BRCLTM_BaroReadDelayAfterSolenoidClosedTenthSec    ; compare a with memory contents (data is 05)</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Pneumatic Protection</strong>: Symmetrical companion to <a href="../Baro_Read/BROPTM_BaroReadDelayAfterSolenoidOpenTenthSec.html"><code>BROPTM</code></a> (which handles the opening delay).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>BRCLTM</code>
+        </footer>
+    </div>
+</body>
+</html>

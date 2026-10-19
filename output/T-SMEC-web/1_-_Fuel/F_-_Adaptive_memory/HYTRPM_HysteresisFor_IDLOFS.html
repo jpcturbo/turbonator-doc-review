@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HYTRPM: HysteresisFor IDLOFS | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0B93</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ F - Adaptive memory</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>HYTRPM: HysteresisFor IDLOFS</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>HYTRPM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>HYTRPM_HysteresisFor_IDLOFS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\F_-_Adaptive_memory\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0B93</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x02 (2 counts ≈ 64 RPM)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3153-L3163"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L3350"><code>AdaptiveMemory_DetermineWhichCellApplies_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L3362"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>HYTRPM</code> provides extra engine speed hysteresis added to the idle cell qualification threshold once the engine is already operating inside Cell 12.</p>
+<p>If the engine is currently in Cell 12, the controller adds <code>HYTRPM</code> on top of <a href="../../1_-_Fuel/F_-_Adaptive_memory/IDLOFS_DeltaForIdleRPMForClosedThrottleCell.html"><code>IDLOFS</code></a> before comparing actual engine speed against the ceiling.</p>
+<p>In factory calibrations, <code>HYTRPM</code> is set to 2 counts, providing an additional 64 RPM of headroom. This prevents electrical loads (such as radiator cooling fan engagement or air conditioning compressor cycling) from momentarily kicking the engine out of Cell 12 during minor idle flares.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code> (<code>T-SMEC_v19.asm:3350-3373</code>), instruction line 3362.</li>
+<li><strong>Gating Conditions</strong>: Closed throttle confirmed and current cell in <code>PointerIntoAdaptiveMemory</code> is already Cell 12 (<code>0x0C</code>).</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Line 3360 compares register B (holding 12) against <code>PointerIntoAdaptiveMemory</code>.</li>
+<li>If equal (<code>beq</code>), line 3362 executes <code>adda HYTRPM_HysteresisFor_IDLOFS</code>.</li>
+<li>Sum (<code>TargetIdleSpeed + IDLOFS + HYTRPM</code>) is compared against <code>EngineRpm_HB</code> at line 3363.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Idle Cell Retention</strong>:</li>
+<li>Adds extra RPM tolerance while already operating in Cell 12 to absorb accessory load surges.</li>
+<li><strong>Preventing Hunting</strong>:</li>
+<li>Higher values (3-4 counts / 96-128 RPM) prevent lopey performance cams from repeatedly toggling between Cell 12 and Cell 0.</li>
+<li><strong>Lowering Hysteresis</strong>:</li>
+<li>Makes the exit from Cell 12 sharper upon throttle tip-in, but setting too low causes idle oscillation.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code>, after loading <code>TargetIdleSpeed_HB</code> and adding <a href="../../1_-_Fuel/F_-_Adaptive_memory/IDLOFS_DeltaForIdleRPMForClosedThrottleCell.html"><code>IDLOFS</code></a>, line 3360 executes <code>cmpb PointerIntoAdaptiveMemory</code> where register B is 12 (<code>0x0C</code>). If the current active cell is already Cell 12, the zero flag is set. Line 3361 branches if not equal (<code>bne L1244</code>); because it is equal, line 3362 executes <code>adda HYTRPM_HysteresisFor_IDLOFS</code>, adding 64 RPM of hysteresis before comparing accumulator A to <code>EngineRpm_HB</code> at line 3363.</p>
+<pre><code class="language-motorola6803">; --- AdaptiveMemory_DetermineWhichCellApplies_MM (T-SMEC_v19.asm:3359-3365) ---
+	adda IDLOFS_DeltaForIdleRPMForClosedThrottleCell    ;  (data is 04)
+	cmpb PointerIntoAdaptiveMemory
+	bne  L1244	    ; branch if not equal (not zero) (If already in Cell 12, add hysteresis)
+	adda HYTRPM_HysteresisFor_IDLOFS    ;  (data is 02)
+L1244:	cmpa EngineRpm_HB    ; compare a with memory contents (Check if RPM is below threshold for idle cell)
+	bcs  ONTHROTTLE_OR_RPMTOOHIGHFORIDLE	; branch if lower (If RPM is too high, it&#x27;s not idle, use run cells)
+	bra  L1250	    ; branch (RPM is low enough, set cell to 12)</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Directly extends <a href="../../1_-_Fuel/F_-_Adaptive_memory/IDLOFS_DeltaForIdleRPMForClosedThrottleCell.html"><code>IDLOFS</code></a> threshold when inside Cell 12.</li>
+<li><strong>Units</strong>: High-byte engine speed scaling (1 count = 32 RPM; 2 counts = 64 RPM).</li>
+<li><strong>Persistence</strong>: Read on every main loop pass; dynamically added in RAM.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>HYTRPM</code>
+        </footer>
+    </div>
+</body>
+</html>

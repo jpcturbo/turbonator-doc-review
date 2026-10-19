@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCLRF2: TimeBetweenAisPulsesForDecelAis2 | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0CBE</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DCLRF2: TimeBetweenAisPulsesForDecelAis2</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DCLRF2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DCLRF2_TimeBetweenAisPulsesForDecelAis2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0CBE</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Timer Ticks / Delay (0x3F = 63 ticks; approx 0.7 seconds)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x3F                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L3292-L3304"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L5003"><code>CalculateTargetIdleSpeedAndAisPosition_MM</code></a> in <a href="../T-LMv13.asm.html#L5166"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DCLRF2</code> (TimeBetweenAisPulsesForDecelAis2) establishes the settling time interval between successive stepper motor corrections while operating in closed-loop idle speed control.</p>
+<p>Once the ECU enters closed-loop idle feedback, it evaluates whether actual engine RPM matches target idle speed. If an error exists, the ECU commands forward (<a href="../Idle_-_AIS_Control/FWDAIS_ForwardAisSteps_NoSlope.html"><code>FWDAIS</code></a>) or reverse (<a href="../Idle_-_AIS_Control/REVAIS_ReverseAisSteps_NoSlope.html"><code>REVAIS</code></a>) steps. However, engine speed takes several engine revolutions to respond to a change in bypass air mass. <code>DCLRF2</code> ensures that <code>Timer_AisChanges</code> must exceed this threshold (stock calibration = 63 ticks / ~0.7 seconds) before another step pulse can be issued, preventing severe closed-loop hunting, surging, or overshoot.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside subroutine <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at line 5166.</li>
+<li>Compares <code>Timer_AisChanges</code> against <code>DCLRF2</code>.</li>
+<li>If <code>Timer_AisChanges &lt;= DCLRF2</code> (<code>bcc LE5A7</code>), closed-loop step corrections are bypassed for that loop cycle.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Idle Hunting / Cyclic Surging</strong>: If the engine surges up and down rhythmically at idle (750 RPM -&gt; 1,100 RPM -&gt; 750 RPM every 1-2 seconds), the idle control loop is reacting too fast. Increasing <code>DCLRF2</code> dampens the closed-loop response.</li>
+<li><strong>Sluggish Idle Catching</strong>: If the idle takes too long to respond to electrical loads (headlights, blower motor), slightly reducing <code>DCLRF2</code> (e.g. to <code>0x28</code> / ~0.45 sec) makes closed-loop idle recovery more agile.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateTargetIdleSpeedAndAisPosition_MM (T-LMv13.asm:5166-5168) ---
+LE565:  ldab DCLRF2_TimeBetweenAisPulsesForDecelAis2 ; Load delay threshold ($0CBE, data 0x3F)
+        cmpb Timer_AisChanges                    ; Compare with timer since last AIS movement
+        bcc  LE5A7                               ; If Timer &lt;= DCLRF2, branch to exit (rate limit)
+        ldaa BitFlags_AIS                        ; Else proceed to FWDAIS / REVAIS step routines</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 5166</strong> (<code>CalculateTargetIdleSpeedAndAisPosition_MM</code>): <code>LE565:  ldab DCLRF2_TimeBetweenAisPulsesForDecelAis2    ; load b with memory contents (data is 3f)</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Reset Mechanism</strong>: Whenever a step is executed, <code>Timer_AisChanges</code> is reset to zero.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>DCLRF2</code>
+        </footer>
+    </div>
+</body>
+</html>

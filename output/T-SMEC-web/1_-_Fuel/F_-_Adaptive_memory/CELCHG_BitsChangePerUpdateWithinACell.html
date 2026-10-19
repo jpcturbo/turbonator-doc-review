@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CELCHG: BitsChangePerUpdateWithinACell | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0BA0</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ F - Adaptive memory</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CELCHG: BitsChangePerUpdateWithinACell</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CELCHG</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CELCHG_BitsChangePerUpdateWithinACell</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\F_-_Adaptive_memory\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0BA0</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Bits (approx 0.195% fuel trim per bit)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x01 (1 count ≈ 1 bit / 0.1953% fuel trim)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3166-L3176"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L3300"><code>UpdateAdaptive_OffIdle</code></a> in <a href="../../T-SMEC_v19.asm.html#L3314"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CELCHG</code> defines the incremental step size in bits by which an active adaptive fuel memory cell is adjusted whenever an update event occurs.</p>
+<p>The SMEC applies long-term fuel trim using a signed mathematical modifier where one unit in an AutoCal cell represents approximately 0.1953 percent (about 0.2 percent) of base fuel delivery.</p>
+<p>In stock calibrations, <code>CELCHG</code> is set to 1 count (1 bit). When the update timer expires and short-term trim indicates a rich or lean bias, the active cell is stepped by exactly <code>CELCHG</code> toward stoichiometric balance, ensuring gradual and stable long-term learning without sudden fueling jumps.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>AdaptiveMemory_UpdateCellIfRequired_MM</code> / <code>UpdateAdaptive_OffIdle</code> (<code>T-SMEC_v19.asm:3291-3349</code>), instruction line 3314.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Closed loop confirmed (<code>BitFlags_50</code> bit <code>b50_OpenLoop</code> clear).</li>
+<li>Pulsewidth check passed (<code>InjectorPulsewidth + PartThrottleEnrichment &gt;= PWMIN</code>).</li>
+<li>Update timer satisfied (<code>AdaptiveCellUpdateTimer &gt;= AMUPDT</code> or <a href="../../1_-_Fuel/F_-_Adaptive_memory/AMUPDI_EPPsBetweenCalChangeUpdateClosedThrottle.html"><code>AMUPDI</code></a>).</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Line 3314 loads <code>CELCHG_BitsChangePerUpdateWithinACell</code> into register A.</li>
+<li>Line 3315 loads <code>Counter_PrimaryAndSecondaryRamp</code> (STFT) into register B.</li>
+<li>If STFT is negative (<code>bpl L1241</code> branch not taken), line 3317 negates register A via <code>nega</code> to step the cell leaner.</li>
+<li>If STFT is positive, register A remains positive to step the cell richer.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Adaptation Speed</strong>:</li>
+<li>Higher values (2-3 counts) speed up the rate at which adaptive cells correct for fuel delivery errors, useful when testing new calibrations.</li>
+<li><strong>Fuel Trim Stability</strong>:</li>
+<li>The factory setting of 1 count ensures very smooth, non-intrusive adaptation (approx 0.2% per update).</li>
+<li><strong>Freezing Adaptive Memory</strong>:</li>
+<li>Setting <code>CELCHG</code> to 0 freezes all 13 adaptive cells in their current state, preventing further updates while retaining existing trim offsets.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>AdaptiveMemory_UpdateCellIfRequired_MM</code>, once the update timer in <code>AdaptiveCellUpdateTimer_IncrementedEveryDistRisingEdge</code> exceeds <a href="../../1_-_Fuel/F_-_Adaptive_memory/AMUPDT_EPPsBetweenCalChangeUpdateOpenThrottle.html"><code>AMUPDT</code></a> or <a href="../../1_-_Fuel/F_-_Adaptive_memory/AMUPDI_EPPsBetweenCalChangeUpdateClosedThrottle.html"><code>AMUPDI</code></a>, the controller executes <code>cli</code> and loads <code>CELCHG_BitsChangePerUpdateWithinACell</code> into accumulator A at line 3314. Line 3315 loads <code>Counter_PrimaryAndSecondaryRamp</code> into accumulator B. If STFT is positive (engine running lean), <code>bpl L1241</code> branches to line 3318. If STFT is negative (engine running rich), line 3317 executes <code>nega</code> to invert the step. Line 3319 executes <code>adda 0x00,x</code>, adding the signed step directly to the active EEPROM <code>AutoCalCell</code>.</p>
+<pre><code class="language-motorola6803">; --- UpdateAdaptive_OffIdle (T-SMEC_v19.asm:3312-3320) ---
+	staa AdaptiveCellUpdateTimer_IncrementedEveryDistRisingEdge    ; store a into memory (Reset/Decrement timer)
+	cli		    ; enable interrupts
+	ldaa CELCHG_BitsChangePerUpdateWithinACell    ; load a with memory contents (data is 01) (How much to shift LTFT per update)
+	ldab Counter_PrimaryAndSecondaryRamp    ; load b with memory contents (Read the Short Term Fuel Trim value)
+	bpl  L1241	    ; branch if plus (hi bit 0) (If STFT is positive, meaning engine is running lean, need to increase LTFT)
+	nega		    ; negate a (set high bit) (If STFT is negative, meaning engine is running rich, negate step to decrease LTFT)
+L1241:	ldab AMLIMH_MaxMultiplierCannotBeAbove7F    ; load b with memory contents (data is 7f)
+	adda 0x00,x	    ; Add step to current AutoCalCell value
+	bvc  Adaptive_Overflowed    ; branch if overflow</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Works with <a href="../../1_-_Fuel/F_-_Adaptive_memory/AMUPDT_EPPsBetweenCalChangeUpdateOpenThrottle.html"><code>AMUPDT</code></a>/<a href="../../1_-_Fuel/F_-_Adaptive_memory/AMUPDI_EPPsBetweenCalChangeUpdateClosedThrottle.html"><code>AMUPDI</code></a> (update frequency) and <a href="../../1_-_Fuel/F_-_Adaptive_memory/AMLIMH_MaxMultiplierCannotBeAbove7F.html"><code>AMLIMH</code></a>/<a href="../../1_-_Fuel/F_-_Adaptive_memory/AMLIML_MinMultiplierCannotBeBelow80.html"><code>AMLIML</code></a> (clamping limits).</li>
+<li><strong>Mathematical Impact</strong>: 1 count = 1 bit = 1/512 = 0.001953 (approx 0.1953% fuel trim per update).</li>
+<li><strong>Persistence</strong>: Persisted directly into EEPROM cell array <code>AutoCalCell0</code> through <code>AutoCalCell12</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>CELCHG</code>
+        </footer>
+    </div>
+</body>
+</html>

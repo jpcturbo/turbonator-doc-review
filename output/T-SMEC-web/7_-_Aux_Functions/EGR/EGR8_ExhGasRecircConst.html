@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EGR8: ExhGasRecircConst8 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1AF1</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ EGR</strong> &nbsp;|&nbsp; Subsystem: <strong>EGR_Emissions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>EGR8: ExhGasRecircConst8</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>EGR8</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>EGR8_ExhGasRecircConst</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">EGR_Emissions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\EGR\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1AF1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Filter weighting counts (0 to 255; factory 13 counts = ~5.1% weighting per pass)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x0D                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7087-L7097"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5389"><code>EGR_CheckForAutoTrans</code></a> in <a href="../../T-SMEC_v19.asm.html#L5445"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>EGR8</code> (ExhGasRecircConst) establishes the exponential smoothing filter coefficient for the Phase 1 baseline oxygen sensor fuel trim calculation.</p>
+<p>While operating steadily within the Phase 1 diagnostic window with the EGR valve open, the engine controller continuously samples the closed-loop fuel trim integrator (<code>Counter_PrimaryAndSecondaryRamp</code>). Because individual oxygen sensor switching transitions cause instantaneous fuel trim oscillations, the controller applies a first-order digital lag filter to establish a steady, reliable baseline (<code>EGRVar5</code>).</p>
+<p>At line 5445, <code>EGR8</code> is loaded as the multiplier for the filter delta. The factory calibration setting of 13 counts applies approximately 5.1 percent weighting per background loop iteration, providing smooth and stable baseline tracking.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5445.</li>
+<li><strong>Execution Path</strong>: Phase 1 active (<code>EGRVar2</code> bit 7 clear) and all window checks (<a href="../../7_-_Aux_Functions/EGR/EGR18_ExhGasRecircConstLoLimit.html"><code>EGR18</code></a>, <a href="../../7_-_Aux_Functions/EGR/EGR14_ExhGasRecircConstFromTPSVoltsLoLimit.html"><code>EGR14</code></a>, <a href="../../7_-_Aux_Functions/EGR/EGR15_ExhGasRecircConstFromRPMLoLimit.html"><code>EGR15</code></a>, <a href="../../7_-_Aux_Functions/EGR/EGR3_ExhGasRecircConst.html"><code>EGR3</code></a>) satisfied.</li>
+<li><strong>Filter Input</strong>: <code>Counter_PrimaryAndSecondaryRamp</code> evaluated against baseline accumulator <code>EGRVar5</code> (RAM address 0x009F).</li>
+<li><strong>Filter Output</strong>: Updated <code>EGRVar5</code> stored at line 5454.</li>
+<li><strong>Return Target</strong>: Branches via <code>bra L1465</code> to jump to <code>EGR_SetEGRtoOn</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Raising EGR8</strong>: Increases filter responsiveness, allowing <code>EGRVar5</code> to track the closed-loop integrator more rapidly during Phase 1. Helpful if <a href="../../7_-_Aux_Functions/EGR/EGR1_ExhGasRecircConst.html"><code>EGR1</code></a> has been reduced to shorten test duration.</li>
+<li><strong>Lowering EGR8</strong>: Increases baseline smoothing, heavily filtering out transient closed-loop oscillations. Requires longer cruising periods to reach a true steady-state baseline.</li>
+<li><strong>Filter Formula</strong>: <code>EGRVar5_new = EGRVar5_old + ((Ramp - EGRVar5_old) * EGR8) / 256</code>.</li>
+<li><strong>Factory Calibration</strong>: 13 counts (approx 5.1 percent weighting per loop pass) delivers excellent noise rejection.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>ExhGasRecirc_MM</code>, after passing line 5440 (<code>cmpa EGR3_ExhGasRecircConst</code>), the CPU increments <code>EGRVar3</code> at lines 5442–5444. At line 5445, <code>EGR8_ExhGasRecircConst</code> is loaded into accumulator B. Accumulator A holds <code>Counter_PrimaryAndSecondaryRamp</code>, and line 5446 subtracts <code>EGRVar5</code> (<code>suba EGRVar5</code>), computing the tracking error. Lines 5447–5452 perform signed 8x8 fractional multiplication: the error is multiplied by <code>EGR8</code>, divided by 256, and added back to <code>EGRVar5</code> at line 5453 (<code>adda EGRVar5</code>). Line 5454 stores the smoothed result back to memory (<code>staa EGRVar5</code>). Line 5455 executes <code>bra L1465</code>, which jumps to <code>EGR_SetEGRtoOn</code>.</p>
+<pre><code class="language-motorola6803">; --- ExhGasRecirc_MM (T-SMEC_v19.asm:5442-5454) ---
+	ldx  EGRVar3
+	inx		    ; increment index (x=x+1)
+	stx  EGRVar3    ; store index into memory
+	ldab EGR8_ExhGasRecircConst	; load b with memory contents (data is 81)
+	suba EGRVar5
+	bvc  L1462	    ; branch if overflow
+	bmi  L1463	    ; branch if minus(hi bit 1)
+L1460:	nega		    ; negate a (set high bit)
+	mul		    ; multiply (d=a*b)
+	adca #0x00	    ;  -00000000-
+	nega		    ; negate a (set high bit)
+L1461:	adda EGRVar5
+	staa EGRVar5    ; store a into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Single-Byte Type 3 Constant</strong>: Located at calibration address 0x1AF1 (calculated ROM address 0x86EC / template org 0x8834).</li>
+<li><strong>Data Value Note</strong>: In template <a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a>, factory data is 0x0D (13 decimal); in assembly comments, original reference was 0x81 (129 decimal).</li>
+<li><strong>Digital Filter Design</strong>: Standard first-order infinite impulse response lag filter.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>EGR8</code>
+        </footer>
+    </div>
+</body>
+</html>

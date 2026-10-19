@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCELTM: O2CNTRInhibitAfterLeanoutDone | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x09A0</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ D - Transient Enrichment ➔ Decel Lean-out ➔ Decreasing MAP LO</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DCELTM: O2CNTRInhibitAfterLeanoutDone</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DCELTM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DCELTM_O2CNTRInhibitAfterLeanoutDone</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\D_-_Transient_Enrichment\Decel_Lean-out\Decreasing_MAP_LO\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x09A0</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Timer Duration (0 to 2805 ms, 11 ms / count)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x00                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L2654-L2664"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L6435"><code>TransFuel_CalculateDecreasingMAPTransientFuel</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L6460"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DCELTM</code> defines the duration for which closed-loop oxygen sensor feedback is inhibited following maximum deceleration lean-out.</p>
+<p>When an engine decelerates with leaned-out fuel delivery, the exhaust gas stream temporarily goes very lean. If closed-loop feedback remains active, the oxygen sensor would detect this excess oxygen and command large rich fuel trim corrections, causing the engine to surge rich upon re-opening the throttle. <code>DCELTM</code> freezes oxygen sensor feedback integration during and immediately following deceleration.</p>
+<p>The factory setting is 0 counts in this calibration, but performance calibrations often incorporate a hold timer.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Enclosed in routine <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> at lines 6435-6476 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Loaded when manifold pressure drop meets or exceeds <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DTRG2_DeltaMapTriggerForMaxLeanout.html"><code>DTRG2</code></a> (line 6458).</li>
+<li>Stored into RAM variable <code>Timer_O2InhibitSwitchingRichIdleToClosedLoop</code> via lines 6460-6461.</li>
+<li>Decremented every loop pass in <code>CalculatePartThrottleTransientFuel_MM</code> at lines 6399-6402 until reaching zero.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Preventing False Rich Trims</strong>: Increase <code>DCELTM</code> to 10 to 30 counts (approximately 110 to 330 milliseconds) if wideband data logging shows rich overshooting or fuel trim distortion immediately after deceleration events.</li>
+<li><strong>Exhaust Scavenging Interval</strong>: Inhibiting closed-loop feedback gives the exhaust system time to scavenge fresh air and return to normal stoichiometric conditions before the controller resumes adaptive learning.</li>
+<li><strong>Fuel Economy Considerations</strong>: Setting this timer excessively high keeps the engine in open-loop mode longer than necessary, slightly reducing fuel economy.</li>
+<li><strong>Timing Resolution</strong>: Each count provides 11 milliseconds of inhibit delay.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: Within <code>TransFuel_CalculateDecreasingMAPTransientFuel</code>, if the pressure drop exceeds <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DTRG2_DeltaMapTriggerForMaxLeanout.html"><code>DTRG2</code></a> at line 6458, line 6460 loads <code>DCELTM_O2CNTRInhibitAfterLeanoutDone</code> into accumulator A. Line 6461 stores accumulator A into <code>Timer_O2InhibitSwitchingRichIdleToClosedLoop</code>. In <code>CalculatePartThrottleTransientFuel_MM</code> at lines 6399-6402, this timer is tested on every pass: if non-zero, instruction <code>deca</code> decrements the count and saves it back to memory, blocking closed-loop adaptive fuel trim updates until it expires.</p>
+<pre><code class="language-motorola6803">; --- TransFuel_CalculateDecreasingMAPTransientFuel (T-SMEC_v19.asm:6435-6476) ---
+TransFuel_CalculateDecreasingMAPTransientFuel:
+	ldx  #LMAPTC_TimeConstant	 ; load index with value
+	jsr  Lookup4ByteTable	 ; call subroutine
+	staa Factor_LeanoutOrEnrichTime_MAP    ; store a into memory
+	brset *BitFlags_4f, #b4f_FullThrottle, ClearDecelLOMAPFactor	; branch if bit(s) set
+	ldaa EngineRpm_HB    ; load a with memory contents
+	cmpa LOTRPM_MinRpmForMapLeanout    ; compare a with memory contents (data is 3e)
+	bcs  ClearDecelLOMAPFactor	    ; branch if lower
+	ldaa CONFIG_ConfigurationFlags	  ; load a with memory contents (data is 02)
+	bita #cfg_ATX		;  -00100000-
+	beq  L1548	    ; branch if equal (zero)
+	brclr *BitFlags_AIS, #b0c_ATXInGear, ClearDecelLOMAPFactor    ; branch if bit(s) clear
+L1548:	brclr *KeyOnOrEngineRunningTime, #$%11111111, ClearDecelLOMAPFactor    ; branch if bit(s) clear
+	ldd  VehicleSpeed_HB	; load d (a&amp;b) with memory contents
+	cmpD #0x0080    ; compare D -00000000 10000000-
+	bcs  ClearDecelLOMAPFactor	    ; branch if lower
+	ldaa Temp0	    ; load a with memory contents
+	nega		    ; negate a (set high bit)
+	ldab Factor_DecelLeanoutWhenMAPDecreasing    ; load b with memory contents
+	beq  L1549	    ; branch if equal (zero)
+	adda DECHYS_DeltaMapHysteresisonTriggerLevels	 ;  (data is 01)
+L1549:	cmpa DECTRG_DeltaMapTriggerForNoIncrementalLeanout    ; compare a with memory contents (data is 02)
+	bcs  ClearDecelLOMAPFactor	    ; branch if lower
+	cmpa DTRG2_DeltaMapTriggerForMaxLeanout    ; compare a with memory contents (data is 05)
+	bcs  IncrementDecelLOMAPFactor	    ; branch if lower
+	ldaa DCELTM_O2CNTRInhibitAfterLeanoutDone    ; load a with memory contents (data is 00)
+	staa Timer_O2InhibitSwitchingRichIdleToClosedLoop    ; store a into memory
+	ldaa CoolantTemp    ; load a with memory contents
+	ldx  #DECEL_DecelLeanoutFactorMAP	 ; load index with value
+	jsr  Lookup4ByteTable	 ; call subroutine
+	bra  StoreDecelLOMAPFactor	    ; branch
+
+IncrementDecelLOMAPFactor:
+	tstb
+	beq  L1553	    ; branch if equal (zero)
+	incb		
+	bra  StoreDecelLOMAPFactor	    ; branch
+
+ClearDecelLOMAPFactor:
+	clrb		    ; b = 0
+StoreDecelLOMAPFactor:
+	stab Factor_DecelLeanoutWhenMAPDecreasing    ; store b into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Timer Scaling</strong>: Scaled at 11 milliseconds per count (e.g. 10 counts = 110 ms, 30 counts = 330 ms).</li>
+<li><strong>Closed-Loop Protection</strong>: Prevents post-deceleration rich bogging caused by false lean oxygen sensor readings during decel.</li>
+<li><strong>Companion Parameters</strong>: Triggered by <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DTRG2_DeltaMapTriggerForMaxLeanout.html"><code>DTRG2</code></a> alongside <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DECEL_DecelLeanoutFactorMAP.html"><code>DECEL_DecelLeanoutFactorMAP</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>DCELTM</code>
+        </footer>
+    </div>
+</body>
+</html>

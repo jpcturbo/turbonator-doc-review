@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STGSPD: StageLimiterCutoffSpeed | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x183F</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ C - Turbonator Features ➔ Launch Control ➔ Launch Control Enable</strong> &nbsp;|&nbsp; Subsystem: <strong>Turbonator_Features</strong>
+        </div>
+        
+        <article class="content">
+            <h1>STGSPD: StageLimiterCutoffSpeed</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>STGSPD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>STGSPD_StageLimiterCutoffSpeed</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Turbonator_Features</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\C_-_Turbonator_Features\Launch_Control\Launch_Control_Enable\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x183F</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Vehicle Speed (mph, 1 mph / count)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x0A                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6397-L6407"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L10154"><code>LaunchControl_CheckSpeed</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L10158"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>STGSPD</code> defines the vehicle speed cutoff threshold above which launch control is completely disengaged.</p>
+<p>When launching from the starting line, the staging rev limiter must release the instant the car begins rolling forward so the engine can rev freely through first gear. Once the speed sensor registers a vehicle speed equal to or greater than <code>STGSPD</code>, the controller disables staging spark and fuel cuts, returning full engine power to the drive wheels.</p>
+<p>The factory setting of 10 mph ensures positive launch disengagement without interfering with stationary staging.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Enclosed in subroutine <code>LaunchControl_CheckSpeed</code> at lines 10154-10160 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Evaluated during <code>LaunchControl_MM</code> after switch and throttle checks have passed.</li>
+<li>16-bit <code>VehicleSpeed_HB</code> is loaded and shifted left twice (<code>asld; asld</code>) to align integer speed in miles per hour in accumulator A (lines 10155-10157).</li>
+<li>Speed comparison: <code>cmpa STGSPD_StageLimiterCutoffSpeed</code> (line 10158).</li>
+<li>If vehicle speed is greater than or equal to <code>STGSPD</code>, <code>bcc LaunchControl_Off</code> executes, clearing launch control flags and restoring full engine power.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Recommended Cutoff Range</strong>: Set between 5 mph and 10 mph for drag racing to ensure the staging limiter drops out immediately upon vehicle movement.</li>
+<li><strong>Excessive Cutoff Warning</strong>: Setting above 20 mph can cause the staging limiter to remain active during wheelspin out of the hole, cutting engine acceleration in first gear.</li>
+<li><strong>Disabling Feature</strong>: Setting <code>STGSPD</code> to 0 mph prevents launch control from engaging under any circumstance.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: At line 10155 within <code>LaunchControl_CheckSpeed</code>, 16-bit register D loads <code>VehicleSpeed_HB</code>. Two consecutive <code>asld</code> instructions shift the binary speed reading left twice, placing scaled vehicle speed in miles per hour into accumulator A. Line 10158 executes <code>cmpa STGSPD_StageLimiterCutoffSpeed</code>. If accumulator A is greater than or equal to the calibrated constant, branch instruction <code>bcc LaunchControl_Off</code> branches to line 10165, clearing <code>Counter_SparkCut</code>, restoring <code>Pattern_SparkCut</code> to all ones, and clearing flag <code>Turbonator_Staging</code>.</p>
+<pre><code class="language-motorola6803">; --- LaunchControl_CheckSpeed (T-SMEC_v19.asm:10154-10160) ---
+LaunchControl_CheckSpeed:
+	ldd   VehicleSpeed_HB	               ; load d (a&amp;b) with memory contents
+	asld		                       ; shift right (d=d*2)
+	asld		                       ; shift right (d=d*2)
+	cmpa  STGSPD_StageLimiterCutoffSpeed    ; compare a with memory contents (data is 0a)
+	bcc   LaunchControl_Off		       ; branch if the vehicle speed is greater than the cutoff speed</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Vehicle Speed Scaling</strong>: Evaluated in integer miles per hour (1 mph per count). Factory setting of 10 counts equals 10 mph.</li>
+<li><strong>Wheel Speed Sensor Requirement</strong>: Accurate vehicle speed sensing via distance sensor input is required for automatic disengagement.</li>
+<li><strong>Option Dependency</strong>: Governed by option flag <code>opt_StageLim</code> in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>STGSPD</code>
+        </footer>
+    </div>
+</body>
+</html>

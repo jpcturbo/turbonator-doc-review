@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MP2: AutoCalMapCellBoundary2 | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x057C</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - Adaptive memory</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MP2: AutoCalMapCellBoundary2</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MP2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MP2_AutoCalMapCellBoundary2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_Adaptive_memory\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x057C</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">MAP ADC counts ($1 \text{ count} \approx 0.115\text{ psi}$)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x37 (55 counts $\approx 6.3\text{ psia} \approx -8.4\text{ psig} / 17.1\text{ inHg vac}$)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L1434-L1447"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L3344"><code>AdaptiveMemory_DetermineWhichCellApplies_MM</code></a> in <a href="../T-LMv13.asm.html#L3360"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MP2_AutoCalMapCellBoundary2</code> defines the <strong>second manifold pressure load boundary</strong> separating Adaptive Fuel Memory Cells 2/3 from Cells 4/5.</p>
+<p>This transition point isolates low-speed neighborhood cruising (17â€“21 inHg vacuum) from moderate flat-highway cruising loads (12â€“17 inHg vacuum).</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Cell Assignment:</strong></li>
+<li>Active during part-throttle closed-loop running.</li>
+<li>If <code>MP1 &lt; MapValue &lt;= MP2</code>: Selects Cell 2 (below RPM limit <a href="../Fuel_-_Adaptive_memory/R1_RPMCellBoundaryInRPMover32.html"><code>R1</code></a>) or Cell 3 (above <a href="../Fuel_-_Adaptive_memory/R1_RPMCellBoundaryInRPMover32.html"><code>R1</code></a>).</li>
+<li><strong>Hysteresis:</strong> Protected by <a href="../Fuel_-_Adaptive_memory/DLTMAP_MapHysteresisAtMapCellBoundaries.html"><code>DLTMAP</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stock Setting:</strong> <code>0x37</code> (≈ 17 inHg vacuum).</li>
+<li><strong>Tuning Impact:</strong> If a car exhibits distinct fueling errors between city 30 mph cruise and flat highway 55 mph cruise, moving <code>MP2</code> shifts where the ECU bifurcates its learned long-term fuel trim corrections.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Contained in the sequential contiguous boundary array:
+* Array address: <code>0x056E</code> (<a href="../Fuel_-_Adaptive_memory/MP1_AutoCalMapCellBoundary1.html"><code>MP1</code></a>), <code>0x057C</code> (<code>MP2</code>), <code>0x058A</code> (<a href="../Fuel_-_Adaptive_memory/MP3_AutoCalMapCellBoundary3.html"><code>MP3</code></a>), <code>0x0598</code> (<a href="../Fuel_-_Adaptive_memory/MP4_AutoCalMapCellBoundary4.html"><code>MP4</code></a>), <code>0x05A6</code> (<a href="../Fuel_-_Adaptive_memory/MP5_AutoCalMapCellBoundary5.html"><code>MP5</code></a>).
+* Indexed via register X in <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code>.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li>Adaptive trims learned in Cells 2 and 3 apply primarily during steady-state suburban and secondary road cruising.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>MP2</code>
+        </footer>
+    </div>
+</body>
+</html>

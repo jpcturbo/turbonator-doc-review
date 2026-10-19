@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TPSLIM: UpdateAdaptiveWGTPSUpperLimit | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x12EF</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ B - WG Control ➔ T1 WG Control ➔ T1 WGDC Adaptives</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>TPSLIM: UpdateAdaptiveWGTPSUpperLimit</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>TPSLIM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>TPSLIM_UpdateAdaptiveWGTPSUpperLimit</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\B_-_WG_Control\T1_WG_Control\T1_WGDC_Adaptives\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x12EF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Volts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x70                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5037-L5047"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L9698"><code>WGDC_IncrementWGAdaptive</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L9704"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>TPSLIM</code> defines the minimum throttle position sensor delta voltage above idle required to permit adaptive wastegate duty cycle incrementing in T1 control.</p>
+<p>Adaptive duty cycle learning is designed to calibrate wide-open and heavy-throttle wastegate operation. At light to moderate throttle openings, the throttle blade restricts airflow, making target boost unattainable. <code>TPSLIM</code> prevents the controller from attempting to adapt duty cycle upward unless the accelerator pedal is pressed beyond this calibrated throttle threshold.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_IncrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9701-9705</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
+<li><strong>Throttle Delta Evaluation</strong>:</li>
+<li>Line 9701 loads <code>TpsVolts</code> and subtracts <code>MINTHR_LowestSessionTPS</code> at line 9702.</li>
+<li>If delta is zero or negative (<code>bls</code>), branches to <code>WGDC_ClearBoostErrTimer</code> at line 9703.</li>
+<li>Line 9704 compares delta against <code>TPSLIM_UpdateAdaptiveWGTPSUpperLimit</code> (<code>cmpa TPSLIM</code>).</li>
+<li>If delta is below <code>TPSLIM</code> (<code>bcs</code>), branches to <code>WGDC_ClearBoostErrTimer</code> (line 9705), inhibiting adaptive increment.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Throttle Gating for Adaptive Incrementing</strong>:</li>
+<li>Minimum TPS voltage above idle required to permit adaptive duty cycle increases.</li>
+<li>Factory setting is 112 counts (approximately 2.2 Volts above session minimum TPS).</li>
+<li><strong>Preventing Part-Throttle Corruption</strong>:</li>
+<li>Prevents the controller from adding duty cycle when throttle is only partially open and airflow is throttled.</li>
+<li><strong>Heavy Throttle Lockout</strong>:</li>
+<li>Raising <code>TPSLIM</code> to 3.0 to 3.5 Volts above idle restricts adaptive learning exclusively to wide-open throttle pulls.</li>
+<li><strong>T1-Specific Architecture</strong>:</li>
+<li>Gated exclusively within the T1 adaptive increment routine (<code>WGDC_IncrementWGAdaptive</code>).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>WGDC_IncrementWGAdaptive</code> at line 9701, accumulator A loads <code>TpsVolts</code> and line 9702 executes <code>suba MINTHR_LowestSessionTPS</code>. If lower or same (<code>bls WGDC_ClearBoostErrTimer</code>), the timer is reset. Line 9704 executes <code>cmpa TPSLIM_UpdateAdaptiveWGTPSUpperLimit</code>. If carry is set (<code>bcs WGDC_ClearBoostErrTimer</code> at line 9705), the throttle position is below the threshold and adaptive incrementing is blocked. If throttle delta meets or exceeds <code>TPSLIM</code>, execution proceeds to check manifold pressure stability via <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MPDEL2_IncCounterWhenDeltaMapBelowThis2.html"><code>MPDEL2</code></a>.</p>
+<pre><code class="language-motorola6803">; --- WGDC_IncrementWGAdaptive (T-SMEC_v19.asm:9701-9705) ---
+	ldaa TpsVolts	    ; load a with memory contents
+	suba MINTHR_LowestSessionTPS
+	bls  WGDC_ClearBoostErrTimer	    ; branch if lower or same
+	cmpa TPSLIM_UpdateAdaptiveWGTPSUpperLimit    ; compare a with memory contents (data is 66)
+	bcs  WGDC_ClearBoostErrTimer	    ; branch if lower</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Delta Scaling</strong>: Approximately 0.0196 Volts per count (112 counts = approx 2.20 Volts above idle).</li>
+<li><strong>Dynamic Zero Reference</strong>: Uses session-learned closed-throttle voltage <code>MINTHR</code> as base reference.</li>
+<li><strong>T1 Exclusivity</strong>: T2 mode relies on full-throttle flag <code>b4f_FullThrottle</code> rather than <code>TPSLIM</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>TPSLIM</code>
+        </footer>
+    </div>
+</body>
+</html>

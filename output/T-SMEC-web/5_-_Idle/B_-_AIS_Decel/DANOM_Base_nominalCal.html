@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DANOM: Base nominalCal | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0F1C</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DANOM: Base nominalCal</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DANOM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DANOM_Base_nominalCal</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0F1C</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">counts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x10                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4058-L4068"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L1859"><code>CalculateAisPosition_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L1875"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DANOM</code> defines the base nominal calibration offset utilized by the Chrysler SMEC deceleration airflow calculation.</p>
+<p>To provide smooth throttle dashpot cushioning without holding engine speed artificially high, the SMEC calculates a synthetic decel control manifold absolute pressure threshold. This calculated threshold represents the expected intake manifold vacuum curve during closed-throttle overrun.</p>
+<p><code>DANOM</code> serves as the foundational base term to which the learned adaptive airflow integrator is added, followed by coolant temperature, run time, and air conditioning offsets.</p>
+<p>In factory calibrations, <code>DANOM</code> is set to 18 counts (approximately 2.1 psi absolute / 4.2 inHg), providing an initial manifold pressure baseline for decel dashpot air calculations.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1996</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Engine must be running (<code>BitFlags_54</code> bit <code>b54_FuelEngineNotRunning</code> clear at line 1860).</li>
+<li>Throttle must be closed (<code>b4f_OffIdle</code> clear at line 1862).</li>
+<li>MAP sensor must be healthy (<code>b45_MapStuck</code> and <code>b45_MapBadSignal</code> clear at line 1866).</li>
+<li>Startup feedback lockout timer <code>Timer_CountdownFromStartRunForAisFeedback</code> must be zero at line 1868.</li>
+<li>Adds <code>DANOM</code> to the quarter-scaled adaptive integrator <code>Timer_DacalCountdown</code> at line 1875.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Curing Deceleration Stalls</strong>:</li>
+<li>Increase <code>DANOM</code> from 18 to 22 to 26 counts if the engine tends to dip below idle and stall when releasing the throttle abruptly.</li>
+<li><strong>Lightweight Rotating Assemblies</strong>:</li>
+<li>Raising <code>DANOM</code> provides a stronger electronic dashpot cushion to catch engines with lightened flywheels that lose momentum rapidly.</li>
+<li><strong>Eliminating High-RPM Decel Hang</strong>:</li>
+<li>If engine speed refuses to drop cleanly when coasting, lower <code>DANOM</code> to reduce the baseline decel control threshold.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateAisPosition_MM</code>, after early exit checks pass, line 1872 loads <code>Timer_DacalCountdown</code> into accumulator A. Lines 1873-1874 shift it right twice (<code>lsra; lsra</code>), scaling the integrator to one-quarter value. Line 1875 executes <code>adda DANOM_Base_nominalCal</code>. If the addition does not overflow carry (<code>bcc</code>), the result serves as the baseline control MAP in accumulator A. If carry is set (<code>bcs L1064</code>), accumulator A is saturated to 255 counts.</p>
+<pre><code class="language-motorola6803">; --- CalculateAisPosition_MM (T-SMEC_v19.asm:1872-1877) ---
+L1063:	ldaa Timer_DacalCountdown	    ; load a with memory contents
+	lsra		
+	lsra		
+	adda DANOM_Base_nominalCal    ;  (data is 12)
+	bcs  L1064	    ; branch if lower
+	brclr *BitFlags_50, #b50_FallToIdle, L1065    ; branch if bit(s) clear</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Blended with <a href="../../5_-_Idle/B_-_AIS_Decel/TIMEDC_AISDecelBaseAirflowCurveOffset.html"><code>TIMEDC</code></a> (time decay), <a href="../../5_-_Idle/B_-_AIS_Decel/TEMPDC_AISDecel_FromTemp.html"><code>TEMPDC</code></a> (coolant offset), and <a href="../../5_-_Idle/B_-_AIS_Decel/DAACF_ACFactorDeltaFromBase.html"><code>DAACF</code></a> (A/C offset).</li>
+<li><strong>Adaptive Offset Integration</strong>: Combines with <code>Timer_DacalCountdown</code>, meaning learned throttle body drift adjusts the effective starting point.</li>
+<li><strong>Factory Value</strong>: 0x12 (18 counts = approximately 2.1 psi absolute).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>DANOM</code>
+        </footer>
+    </div>
+</body>
+</html>

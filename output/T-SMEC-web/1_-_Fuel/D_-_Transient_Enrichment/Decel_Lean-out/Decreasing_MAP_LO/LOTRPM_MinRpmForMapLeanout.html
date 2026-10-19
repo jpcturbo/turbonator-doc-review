@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOTRPM: MinRpmForMapLeanout | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0993</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ D - Transient Enrichment ➔ Decel Lean-out ➔ Decreasing MAP LO</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>LOTRPM: MinRpmForMapLeanout</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>LOTRPM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>LOTRPM_MinRpmForMapLeanout</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\D_-_Transient_Enrichment\Decel_Lean-out\Decreasing_MAP_LO\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0993</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (0 to 8160 RPM, 32 RPM / count)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x3E                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L2641-L2651"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L6435"><code>TransFuel_CalculateDecreasingMAPTransientFuel</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L6441"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>LOTRPM</code> sets the minimum engine speed threshold required for MAP-based deceleration lean-out to operate.</p>
+<p>When coasting down toward a stop, the engine controller must restore full fueling before the engine reaches idle speed to prevent rough running, RPM dipping, or stalling. If engine speed drops below <code>LOTRPM</code>, the controller clears the deceleration lean-out factor and resumes standard fuel delivery.</p>
+<p>The factory setting of 62 counts corresponds to approximately 1984 RPM, ensuring that fuel delivery is fully normalized well before the engine settles into its target idle range.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Enclosed in routine <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> at lines 6435-6476 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Evaluated when <code>MapValue &lt; AverageMAPValue</code> and full throttle flag <code>b4f_FullThrottle</code> is clear (lines 6407, 6439).</li>
+<li>Comparison: Line 6440 loads <code>EngineRpm_HB</code> and line 6441 executes <code>cmpa LOTRPM_MinRpmForMapLeanout</code>.</li>
+<li>Polarity: If <code>EngineRpm_HB &lt; LOTRPM</code>, instruction <code>bcs ClearDecelLOMAPFactor</code> branches to line 6474, clearing <code>Factor_DecelLeanoutWhenMAPDecreasing</code> to zero.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Preventing Clutch-in Stalling</strong>: In manual transmission setups with lightweight flywheels, raising <code>LOTRPM</code> to 2200 to 2400 RPM gives the engine more time to recover full fueling, eliminating RPM dipping and stalling when pushing the clutch pedal in.</li>
+<li><strong>Automatic Transmission Optimization</strong>: In automatic transmission vehicles, <code>LOTRPM</code> can be lowered closer to 1600 to 1800 RPM to maximize fuel cutoff duration and fuel economy.</li>
+<li><strong>Lower Limit Rule</strong>: Do not set <code>LOTRPM</code> below the target idle speed, as cutting fuel during idle recovery causes stalling.</li>
+<li><strong>Camshaft Matching</strong>: High-overlap performance camshafts with unstable low-RPM vacuum benefit from raising <code>LOTRPM</code> to prevent rough low-speed coast-down.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: Within <code>TransFuel_CalculateDecreasingMAPTransientFuel</code>, line 6439 tests <code>brset *BitFlags_4f, #b4f_FullThrottle, ClearDecelLOMAPFactor</code>. Line 6440 loads <code>EngineRpm_HB</code> into accumulator A, and line 6441 compares it against <code>LOTRPM_MinRpmForMapLeanout</code>. If <code>EngineRpm_HB</code> is less than <code>LOTRPM</code>, line 6442 branches via <code>bcs ClearDecelLOMAPFactor</code> to line 6474, clearing accumulator B to zero and storing it into <code>Factor_DecelLeanoutWhenMAPDecreasing</code>.</p>
+<pre><code class="language-motorola6803">; --- TransFuel_CalculateDecreasingMAPTransientFuel (T-SMEC_v19.asm:6435-6476) ---
+TransFuel_CalculateDecreasingMAPTransientFuel:
+	ldx  #LMAPTC_TimeConstant	 ; load index with value
+	jsr  Lookup4ByteTable	 ; call subroutine
+	staa Factor_LeanoutOrEnrichTime_MAP    ; store a into memory
+	brset *BitFlags_4f, #b4f_FullThrottle, ClearDecelLOMAPFactor	; branch if bit(s) set
+	ldaa EngineRpm_HB    ; load a with memory contents
+	cmpa LOTRPM_MinRpmForMapLeanout    ; compare a with memory contents (data is 3e)
+	bcs  ClearDecelLOMAPFactor	    ; branch if lower
+	ldaa CONFIG_ConfigurationFlags	  ; load a with memory contents (data is 02)
+	bita #cfg_ATX		;  -00100000-
+	beq  L1548	    ; branch if equal (zero)
+	brclr *BitFlags_AIS, #b0c_ATXInGear, ClearDecelLOMAPFactor    ; branch if bit(s) clear
+L1548:	brclr *KeyOnOrEngineRunningTime, #$%11111111, ClearDecelLOMAPFactor    ; branch if bit(s) clear
+	ldd  VehicleSpeed_HB	; load d (a&amp;b) with memory contents
+	cmpD #0x0080    ; compare D -00000000 10000000-
+	bcs  ClearDecelLOMAPFactor	    ; branch if lower
+	ldaa Temp0	    ; load a with memory contents
+	nega		    ; negate a (set high bit)
+	ldab Factor_DecelLeanoutWhenMAPDecreasing    ; load b with memory contents
+	beq  L1549	    ; branch if equal (zero)
+	adda DECHYS_DeltaMapHysteresisonTriggerLevels	 ;  (data is 01)
+L1549:	cmpa DECTRG_DeltaMapTriggerForNoIncrementalLeanout    ; compare a with memory contents (data is 02)
+	bcs  ClearDecelLOMAPFactor	    ; branch if lower
+	cmpa DTRG2_DeltaMapTriggerForMaxLeanout    ; compare a with memory contents (data is 05)
+	bcs  IncrementDecelLOMAPFactor	    ; branch if lower
+	ldaa DCELTM_O2CNTRInhibitAfterLeanoutDone    ; load a with memory contents (data is 00)
+	staa Timer_O2InhibitSwitchingRichIdleToClosedLoop    ; store a into memory
+	ldaa CoolantTemp    ; load a with memory contents
+	ldx  #DECEL_DecelLeanoutFactorMAP	 ; load index with value
+	jsr  Lookup4ByteTable	 ; call subroutine
+	bra  StoreDecelLOMAPFactor	    ; branch
+
+IncrementDecelLOMAPFactor:
+	tstb
+	beq  L1553	    ; branch if equal (zero)
+	incb		
+	bra  StoreDecelLOMAPFactor	    ; branch
+
+ClearDecelLOMAPFactor:
+	clrb		    ; b = 0
+StoreDecelLOMAPFactor:
+	stab Factor_DecelLeanoutWhenMAPDecreasing    ; store b into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>RPM Scaling</strong>: Scaled at 32 RPM per count (62 counts = 1984 RPM).</li>
+<li><strong>Automatic Cutoff Gate</strong>: Gates both incremental and full-table MAP deceleration lean-out.</li>
+<li><strong>Companion Parameters</strong>: Coordinates with <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DECEL_DecelLeanoutFactorMAP.html"><code>DECEL</code></a>, <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DECTRG_DeltaMapTriggerForNoIncrementalLeanout.html"><code>DECTRG</code></a>, and <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DTRG2_DeltaMapTriggerForMaxLeanout.html"><code>DTRG2</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>LOTRPM</code>
+        </footer>
+    </div>
+</body>
+</html>

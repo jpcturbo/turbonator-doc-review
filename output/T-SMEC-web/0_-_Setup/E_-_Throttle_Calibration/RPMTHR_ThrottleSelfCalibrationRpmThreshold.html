@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPMTHR: ThrottleSelfCalibrationRpmThreshold | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x199F</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ E - Throttle Calibration</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>RPMTHR: ThrottleSelfCalibrationRpmThreshold</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>RPMTHR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>RPMTHR_ThrottleSelfCalibrationRpmThreshold</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\E_-_Throttle_Calibration\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x199F</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x30                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6749-L6759"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L7885"><code>CheckThrottle_VehicleSpeedStillAboveDecelIdle</code></a> in <a href="../../T-SMEC_v19.asm.html#L7896"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>RPMTHR</code> defines the minimum engine speed boundary required to permit upward adaptive learning of the closed-throttle baseline voltage.</p>
+<p>When an engine decelerates, the vehicle must be traveling at sufficient speed with the engine spinning above idle to ensure high manifold vacuum and verify that the throttle plate is completely closed against its mechanical stop. In factory calibrations, <code>RPMTHR</code> is configured to forty-eight counts, which corresponds to approximately fifteen hundred RPM. As long as engine speed remains above fifteen hundred RPM while braking under high vacuum, the controller validates closed-throttle conditions and increments the learned minimum throttle voltage.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CheckThrottle_VehicleSpeedStillAboveDecelIdle</code> (<code>T-SMEC_v19.asm:7885-7914</code>), instruction line 7896 (<code>cmpa RPMTHR_...</code>).</li>
+<li><strong>Prerequisites</strong>:</li>
+<li>Brake switch pressed and <code>b4f_PartThrottle</code> clear.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Accumulator A loads <code>EngineRpm_HB</code>.</li>
+<li>Line 7896 executes <code>cmpa RPMTHR_ThrottleSelfCalibrationRpmThreshold</code>.</li>
+<li>If engine speed is lower (<code>bcs L1656</code>), upward learning is bypassed.</li>
+<li>If engine speed is higher or equal, proceeds to evaluate <a href="../../0_-_Setup/E_-_Throttle_Calibration/MAPTHR_ThrottleSelfCalibrationMapDeltaThreshold.html"><code>MAPTHR</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Minimum Engine Speed for Learning</strong>:</li>
+<li>Ensures deceleration learning occurs strictly while coasting down in gear above idle speed.</li>
+<li><strong>High Idle Applications</strong>:</li>
+<li>If idle speed target is elevated above 1100 RPM for wild camshafts, raise <code>RPMTHR</code> proportionally (e.g., 1800 to 2000 RPM).</li>
+<li><strong>Prevents Low-Speed False Learning</strong>:</li>
+<li>Prevents erratic minimum throttle updates when the engine is lugging or recovering from an idle dip.</li>
+<li><strong>Factory Default</strong>:</li>
+<li>Set to forty-eight counts (~1500 RPM) in stock calibrations.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CheckThrottle_VehicleSpeedStillAboveDecelIdle</code> at lines 7895-7897, accumulator A loads <code>EngineRpm_HB</code>. Line 7896 compares engine speed against <code>RPMTHR_ThrottleSelfCalibrationRpmThreshold</code>. If carry is set (<code>bcs L1656</code>), current engine speed is below <code>RPMTHR</code>, so the CPU skips <code>MINTHR</code> updating. If carry is clear, execution continues to line 7899 to test <a href="../../0_-_Setup/E_-_Throttle_Calibration/MAPTHR_ThrottleSelfCalibrationMapDeltaThreshold.html"><code>MAPTHR</code></a>.</p>
+<pre><code class="language-motorola6803">; --- CheckThrottle_VehicleSpeedStillAboveDecelIdle (T-SMEC_v19.asm:7895-7901) ---
+	ldaa EngineRpm_HB    ; load a with memory contents
+	cmpa RPMTHR_ThrottleSelfCalibrationRpmThreshold    ; compare a with memory contents (data is 30)
+	bcs  L1656	    ; branch if lower
+	ldaa MapValue	    ; load a with memory contents
+	cmpa MAPTHR_ThrottleSelfCalibrationMapDeltaThreshold	; compare a with memory contents (data is 20)
+	bcc  L1656	    ; branch if greater or equal</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>RPM High Byte Scale</strong>: Evaluates <code>EngineRpm_HB</code> where 1 count equals approximately 31.25 RPM (48 counts = 1500 RPM).</li>
+<li><strong>Coordinated Gating</strong>: Works in direct tandem with <a href="../../0_-_Setup/E_-_Throttle_Calibration/MAPTHR_ThrottleSelfCalibrationMapDeltaThreshold.html"><code>MAPTHR</code></a> to confirm true trailing-throttle deceleration.</li>
+<li><strong>Standard Chrysler Strategy</strong>: Unchanged across factory 2.2L and 2.5L calibrations.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>RPMTHR</code>
+        </footer>
+    </div>
+</body>
+</html>

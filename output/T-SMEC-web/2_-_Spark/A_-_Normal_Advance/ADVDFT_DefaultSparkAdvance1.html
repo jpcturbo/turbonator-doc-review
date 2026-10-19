@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADVDFT: DefaultSparkAdvance1 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x03FE</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>2 - Spark ➔ A - Normal Advance</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ADVDFT: DefaultSparkAdvance1</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ADVDFT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ADVDFT_DefaultSparkAdvance1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>2_-_Spark\A_-_Normal_Advance\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x03FE</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">degrees BTDC</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x14                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1212-L1222"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8015"><code>DetermineMechanicalAdvanceFromRpm</code></a> in <a href="../../T-SMEC_v19.asm.html#L8034"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ADVDFT</code> establishes the default minimum mechanical baseline spark advance floor (factory setting 20 counts = 10.0 degrees BTDC).</p>
+<p>When the engine operates at closed throttle, the calculated mechanical advance from <a href="../../2_-_Spark/A_-_Normal_Advance/GOVNER_AdvanceFromRPM.html"><code>GOVNER</code></a> (after any adaptive retard subtraction) is compared against <code>ADVDFT</code>; if lower, it is clamped to <code>ADVDFT</code>. This ensures that closed-throttle engine operation maintains a stable minimum 10.0 degrees BTDC timing foundation, preventing excessive timing retard from causing rough idle, stalling, or poor off-idle throttle pickup.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>DetermineMechanicalAdvanceFromRpm</code> (<code>T-SMEC_v19.asm:8034-8038</code>), called from <code>CalculateSparkAdvance_MM</code>.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Accumulator A holds advance after <a href="../../2_-_Spark/A_-_Normal_Advance/GOVNER_AdvanceFromRPM.html"><code>GOVNER</code></a> and adaptive retard subtraction.</li>
+<li><code>cmpa ADVDFT_DefaultSparkAdvance1</code>: if accumulator A &gt;= <code>ADVDFT</code> (<code>bcc L1668</code>), branches to add <code>Temp0</code>.</li>
+<li>If accumulator A &lt; <code>ADVDFT</code>, checks <code>brset *BitFlags_4f, #b4f_OffIdle, L1668</code>; if off-idle, branch is taken.</li>
+<li>If closed throttle, accumulator A is loaded directly with <code>ADVDFT</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Idle Torque Support for Large Cams</strong>:</li>
+<li>Raising <code>ADVDFT</code> to 12-14 degrees BTDC provides additional base torque to stabilize idle on aggressive camshafts.</li>
+<li><strong>High Idle Speed Correction</strong>:</li>
+<li>If base idle speed is persistently high due to minor intake air leaks or large throttle bodies, lowering <code>ADVDFT</code> can reduce combustion torque to bring idle RPM down.</li>
+<li><strong>Closed-Throttle Gate</strong>:</li>
+<li><code>ADVDFT</code> is active strictly when <code>b4f_OffIdle</code> is clear; off-idle acceleration bypasses this clamp.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>DetermineMechanicalAdvanceFromRpm</code> at line 8034, <code>cmpa ADVDFT_DefaultSparkAdvance1</code> compares accumulator A against <code>ADVDFT</code>. If accumulator A is greater than or equal to <code>ADVDFT</code>, <code>bcc L1668</code> branches to line 8038. If lower, line 8036 executes <code>brset *BitFlags_4f, #b4f_OffIdle, L1668</code>; if off-idle, it branches. If the throttle is closed, line 8037 executes <code>ldaa ADVDFT_DefaultSparkAdvance1</code>, clamping accumulator A to the calibrated default before executing <code>adda Temp0</code> at line 8038.</p>
+<pre><code class="language-motorola6803">; --- DetermineMechanicalAdvanceFromRpm (T-SMEC_v19.asm:8034-8038) ---
+L1667:	cmpa ADVDFT_DefaultSparkAdvance1    ; compare a with memory contents (data is 14)
+	bcc  L1668	    ; branch if greater or equal
+	brset *BitFlags_4f, #b4f_OffIdle, L1668    ; branch if bit(s) set
+	ldaa ADVDFT_DefaultSparkAdvance1    ; load a with memory contents (data is 14)
+L1668:	adda Temp0</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Minimum Mechanical Floor</strong>: Ensures baseline mechanical advance does not collapse below 10.0 degrees BTDC at idle.</li>
+<li><strong>Scaling</strong>: 1 count = 0.5 degrees. Factory setting 0x14 = 20 counts = 10.0 degrees BTDC.</li>
+<li><strong>Bypassed Off-Idle</strong>: Only enforces clamping when the throttle is shut.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>ADVDFT</code>
+        </footer>
+    </div>
+</body>
+</html>

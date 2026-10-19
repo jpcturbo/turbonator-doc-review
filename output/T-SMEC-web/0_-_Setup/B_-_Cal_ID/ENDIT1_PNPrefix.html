@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ENDIT1: PNPrefix | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x00DE</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ B - Cal ID</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ENDIT1: PNPrefix</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ENDIT1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ENDIT1_PNPrefix</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\B_-_Cal_ID\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x00DE</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Part Number Prefix</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0x5235                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L405-L415"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L3829"><code>SendECUIDToSCI</code></a> in <a href="../../T-SMEC_v19.asm.html#L3830"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ENDIT1</code> stores the high-order part number prefix in the Chrysler engine controller read-only calibration header.</p>
+<p>In factory Chrysler electronics, each engine control computer is assigned a distinctive seven-digit Mopar part number. <code>ENDIT1</code> contains the first four numerical digits of that part number, configured in the factory calibration as fifty-two thirty-five to represent production part number series 5235xxx. During diagnostic serial communications, when an external diagnostic scan tool requests vehicle identification using the diagnostic readout box protocol, the engine controller reads this sixteen-bit header word and transmits it across the serial line so technicians can verify the controller hardware and calibration series.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>SendECUIDToSCI</code> (<code>T-SMEC_v19.asm:3829-3845</code>) and <code>CaculateChecksum</code> (<code>T-SMEC_v19.asm:4141-4178</code>).</li>
+<li><strong>Diagnostic Trigger</strong>:</li>
+<li>Evaluated when the serial communications interface receives diagnostic command 0x16 (request ECU ID).</li>
+<li><strong>Pointer Math</strong>:</li>
+<li>Index register X is loaded with the base address <code>#ENDIT1_PNPrefix</code> (<code>ldx #ENDIT1_PNPrefix</code>).</li>
+<li>The requested string index from <code>DRBPointer2</code> is added to X via <code>abx</code> to sequentially transmit each ASCII character.</li>
+<li><strong>Checksum Verification</strong>:</li>
+<li>Also serves as the starting address for the ROM checksum verification loop in <code>CaculateChecksum</code> (<code>ldx #ENDIT1_PNPrefix</code>).</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Diagnostic Identification Only</strong>:</li>
+<li>Modifying <code>ENDIT1</code> alters the four-digit part number prefix transmitted to diagnostic scan tools, with zero impact on fueling calculations, spark timing, or boost control.</li>
+<li><strong>Custom Signatures &amp; Stock Cloning</strong>:</li>
+<li>Most tuners leave <code>ENDIT1</code> set to the stock factory digits unless cloning a specific original part number or leaving an identifiable calibrator mark.</li>
+<li><strong>Checksum Recalculation Requirement</strong>:</li>
+<li>Changing this word shifts the overall memory sum; tuning suites like MPTune automatically adjust <a href="../../0_-_Setup/B_-_Cal_ID/CHKFIX_ChecksumFixupValue.html"><code>CHKFIX</code></a> to ensure internal diagnostics pass without setting fault code 53.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>SendECUIDToSCI</code> at line 3830, the instruction <code>ldx #ENDIT1_PNPrefix</code> loads the base pointer to the calibration header block in ROM. Register B loads <code>DRBPointer2</code>, which is added to index register X via <code>abx</code> at line 3836. Accumulator A then loads the character byte at <code>0x00,x</code> and transmits it via <code>SerialOutput1a</code>. In <code>CaculateChecksum</code> at line 4142, <code>ldx #ENDIT1_PNPrefix</code> initializes index register X as the starting boundary for the full-ROM summation loop.</p>
+<pre><code class="language-motorola6803">; --- SendECUIDToSCI (T-SMEC_v19.asm:3829-3841) ---
+SendECUIDToSCI:
+	ldx  #ENDIT1_PNPrefix	 ; Point to ECU ID string in ROM
+	ldab DRBPointer2    ; Load requested string character index
+	bpl  L1269	    
+	lslb		    
+	lslb		    
+	stab DRBPointer2    
+L1269:	abx		    ; Add index to base pointer
+	ldaa 0x00,x	    ; Load ASCII character
+	inc  DRBPointer2    ; Increment for next request
+	brclr *DRBPointer2, #$%00000011, L1270	  ; Branch logic for checksum
+	bra  SerialOutput1a ; Transmit character</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>ROM Header Anchor</strong>: Anchors the first location of the calibration identification block at the base of calibration memory.</li>
+<li><strong>Checksum Anchor</strong>: Acts as the start of the sixteen-bit address span evaluated by <code>CaculateChecksum</code>.</li>
+<li><strong>Companion Headers</strong>: Sequentially followed by <a href="../../0_-_Setup/B_-_Cal_ID/ENDITM_ECUID.html"><code>ENDITM</code></a> (offset +2), <a href="../../0_-_Setup/B_-_Cal_ID/HunstvilleTesterCodeBits.html"><code>HUNTSV</code></a> (offset +4), and <a href="../../0_-_Setup/B_-_Cal_ID/MDLCDE_ModelTypeCode.html"><code>MDLCDE</code></a> (offset +6).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>ENDIT1</code>
+        </footer>
+    </div>
+</body>
+</html>

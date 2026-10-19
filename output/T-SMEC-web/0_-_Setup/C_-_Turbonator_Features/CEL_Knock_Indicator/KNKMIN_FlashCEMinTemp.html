@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KNKMIN: FlashCEMinTemp | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1DE9</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ C - Turbonator Features ➔ CEL Knock Indicator</strong> &nbsp;|&nbsp; Subsystem: <strong>Turbonator_Features</strong>
+        </div>
+        
+        <article class="content">
+            <h1>KNKMIN: FlashCEMinTemp</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>KNKMIN</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>KNKMIN_FlashCEMinTemp</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Turbonator_Features</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\C_-_Turbonator_Features\CEL_Knock_Indicator\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1DE9</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Coolant Temperature (degF, 168 counts = ~160 degF)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xA8                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7847-L7857"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_v19.asm.html#L10100"><code>UseCELForKnockIndication_MM</code></a> in <a href="../../../T-SMEC_v19.asm.html#L10105"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>KNKMIN</code> defines the minimum engine coolant temperature required before the engine controller will flash the instrument cluster Check Engine or Power Loss light upon detecting detonation knock.</p>
+<p>Turbonator firmware includes a real-time knock alert feature: whenever the knock sensor registers detonation and the controller retards ignition timing on any individual cylinder, the Check Engine light flashes to alert the driver. However, cold engines naturally produce mechanical valvetrain clatter and piston slap that can register as false knock.</p>
+<p><code>KNKMIN</code> suppresses knock light flashing until the engine warms up to normal operating temperature, with the factory setting corresponding to approximately 160 degF.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Enclosed in subroutine <code>UseCELForKnockIndication_MM</code> at lines 10100-10121 of <code>cals/SMEC/T-SMEC_v19.asm</code> (invoked via main loop at line 7545).</li>
+<li>Requires custom option flag <code>opt_FlashCE</code> (bit 4) to be enabled in <a href="../../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1_CalCustomOptionConfigFlags1</code></a> (line 10102).</li>
+<li>Bypassed if engine is not running (<code>BitFlags_54</code> bit <code>b54_FuelEngineNotRunning</code> is set at line 10103).</li>
+<li>Temperature comparison: <code>cmpa KNKMIN_FlashCEMinTemp</code> against <code>CoolantTemp</code> (line 10105).</li>
+<li>If <code>CoolantTemp &lt; KNKMIN</code> (<code>bcs FlashCEL_OnKnock_return</code>), knock light flashing is suppressed.</li>
+<li>If <code>CoolantTemp &gt;= KNKMIN</code>, lines 10107-10114 check individual cylinder knock retard variables (<code>Cylinder1Retard</code> through <code>Cylinder4Retard</code>). If any cylinder has active retard, bit <code>pia1abuf_CELight</code> in <code>PIA1_A_Buffer</code> is cleared to illuminate the lamp.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stock Cast Pistons</strong>: Factory setting of approximately 160 degF effectively filters cold start clatter while providing prompt alerts as soon as the thermostat opens.</li>
+<li><strong>Forged Racing Pistons</strong>: Forged 2618 or 4032 pistons with loose clearances produce mechanical slap when cold. Raise <code>KNKMIN</code> to 175 degF to suppress false alerts until the engine reaches operating temperature.</li>
+<li><strong>Diagnostic Value</strong>: Provides immediate real-time driver feedback during road or dyno tuning without needing a laptop connected.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: Subroutine <code>UseCELForKnockIndication_MM</code> begins at line 10100. It checks <code>opt_FlashCE</code> in <a href="../../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1_CalCustomOptionConfigFlags1</code></a> and ensures the engine is running. Line 10104 loads <code>CoolantTemp</code> into accumulator A and compares it against <code>KNKMIN_FlashCEMinTemp</code> at line 10105. If coolant temperature is below the threshold, branch <code>bcs FlashCEL_OnKnock_return</code> exits immediately. If coolant temperature meets or exceeds <code>KNKMIN</code>, lines 10107-10114 test <code>Cylinder2Retard</code>, <code>Cylinder1Retard</code>, <code>Cylinder3Retard</code>, and <code>Cylinder4Retard</code>. If any value is non-zero, line 10119 clears bit <code>pia1abuf_CELight</code> in <code>PIA1_A_Buffer</code> (active-low drive), turning the Check Engine lamp on. If all are zero, line 10116 sets the bit to extinguish the lamp.</p>
+<pre><code class="language-motorola6803">; --- UseCELForKnockIndication_MM (T-SMEC_v19.asm:10100-10121) ---
+UseCELForKnockIndication_MM:
+        ldx   #OPTN1_CalCustomOptionConfigFlags1
+	brclr 0, X, #opt_FlashCE, FlashCEL_OnKnock_return
+	brset *BitFlags_54, #b54_FuelEngineNotRunning, FlashCEL_OnKnock_return	  ; branch if bit(s) set
+	ldaa  CoolantTemp
+	cmpa  KNKMIN_FlashCEMinTemp
+	bcs   FlashCEL_OnKnock_return; cold motor creates a LOT of false positives
+	ldaa  Cylinder2Retard	 ; load a with memory contents
+	bne   KnockDetect_LightCEL	    ; branch if not equal (not zero)
+	ldaa  Cylinder1Retard	 ; load a with memory contents
+	bne   KnockDetect_LightCEL	    ; branch if not equal (not zero)
+	ldaa  Cylinder3Retard	 ; load a with memory contents
+	bne   KnockDetect_LightCEL	    ; branch if not equal (not zero)
+	ldaa  Cylinder4Retard	 ; load a with memory contents
+	bne   KnockDetect_LightCEL	    ; branch if not equal (not zero)
+NoKnockDetect_UnlightCEL:		; fallthrough, extinguish light
+	bset	*PIA1_A_Buffer, #pia1abuf_CELight
+	bra	FlashCEL_OnKnock_return
+KnockDetect_LightCEL:
+	bclr	*PIA1_A_Buffer, #pia1abuf_CELight
+FlashCEL_OnKnock_return:
+	rts</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Hardware Inversion</strong>: Check Engine light output driver in <code>PIA1_A_Buffer</code> is active-low (clearing the bit turns the lamp on).</li>
+<li><strong>Option Dependency</strong>: Enabled via custom option bit <code>opt_FlashCE</code> in <a href="../../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1</code></a>.</li>
+<li><strong>Non-linear Temperature Curve</strong>: Evaluated using raw coolant temperature counts where 168 counts equals approximately 160 degF.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>KNKMIN</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VACTIM: CruiseControlVacuumTime | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x16F3</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Cruise Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Cruise_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>VACTIM: CruiseControlVacuumTime</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>VACTIM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>VACTIM_CruiseControlVacuumTime</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Cruise_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Cruise_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x16F3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">counts pulse duration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x01 (1 count minimum vacuum pulse)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6065-L6075"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8723"><code>CalculateVehicleSpeed</code></a> in <a href="../../T-SMEC_v19.asm.html#L8943"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>VACTIM</code> defines the minimum vacuum solenoid pulse duration mask applied whenever the cruise controller commands throttle opening.</p>
+<p>Electromagnetic solenoid valves have mechanical inertia and spring preload that require a minimum electrical energization duration before the valve disc cracks off its seat and passes vacuum. If commanded pulse widths are too short, the solenoid buzzes without physically moving the throttle. <code>VACTIM</code> enforces a minimum electrical on-time of 1 count, ensuring every commanded vacuum pulse produces clean, reliable mechanical actuator movement.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8941-8947</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated when servo accumulator commands vacuum pull.</li>
+<li>Direction bit preserved in accumulator A.</li>
+<li><strong>Bitwise Operation</strong>:</li>
+<li>Masks sign bit at line 8942 (<code>anda #0x80</code>).</li>
+<li>ORs <code>VACTIM</code> at line 8943 via <code>oraa VACTIM</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Solenoid Stiction Compensation</strong>:</li>
+<li>Enforces minimum electrical on-time so the vacuum solenoid valve physically cracks open.</li>
+<li>Raising to 2 counts helps older or stiffer solenoids respond cleanly.</li>
+<li><strong>Surge Prevention</strong>:</li>
+<li>Setting <code>VACTIM</code> too high delivers excessive vacuum on tiny corrections, inducing low-speed surging.</li>
+<li><strong>Hardware Integration</strong>:</li>
+<li>ORed into commanded servo pulse at line 8943 before output mapping.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateVehicleSpeed</code> at line 8941, <code>Temp0</code> is loaded into accumulator A and masked via <code>anda #0x80</code> at line 8942 to preserve pulse sign. Line 8943 executes <code>oraa VACTIM_CruiseControlVacuumTime</code>, forcing the lower bits of accumulator A to at least <code>VACTIM</code>. At line 8944, existing command <code>CruiseControlVar3</code> is evaluated before gating through throttle limits.</p>
+<pre><code class="language-motorola6803">; --- CalculateVehicleSpeed (T-SMEC_v19.asm:8941-8947) ---
+	ldaa Temp0	    ; load a with memory contents
+	anda #0x80	    ; AND a with value -10000000-
+	oraa VACTIM_CruiseControlVacuumTime    ;  (data is 01)
+	ldab CruiseControlVar3	  ; load b with memory contents
+	beq  L1792	    ; branch if equal (zero)
+	bpl  L1797	    ; branch if plus (hi bit 0)</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Bitwise Floor</strong>: Guarantees bit 0 is asserted whenever vacuum is commanded.</li>
+<li><strong>Output Control</strong>: Directly impacts <code>pia1abuf_CruiseVacuum</code> energization time.</li>
+<li><strong>Companion Parameter</strong>: Works alongside <a href="../../7_-_Aux_Functions/Cruise_Control/CLOTHR_CruiseControlDontVentIfThrottleBelowThis.html"><code>CLOTHR</code></a> and <a href="../../7_-_Aux_Functions/Cruise_Control/MAXTHR_CruiseControlDontVacIfThrottleAboveThis.html"><code>MAXTHR</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>VACTIM</code>
+        </footer>
+    </div>
+</body>
+</html>

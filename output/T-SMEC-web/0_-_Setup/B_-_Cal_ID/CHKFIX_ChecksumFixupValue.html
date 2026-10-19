@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHKFIX: ChecksumFixupValue | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x016D</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ B - Cal ID</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CHKFIX: ChecksumFixupValue</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CHKFIX</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CHKFIX_ChecksumFixupValue</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\B_-_Cal_ID\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x016D</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Checksum Fixup Counts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x71                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L553-L563"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L4141"><code>CaculateChecksum</code></a> in <a href="../../T-SMEC_v19.asm.html#L4172"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CHKFIX</code> is the single-byte calibration checksum fixup constant located in the engine controller ROM header.</p>
+<p>To safeguard against memory corruption, defective memory chips, or unauthorized modifications, the engine controller executes an internal checksum routine during startup initialization. This routine computes an arithmetic eight-bit sum across all calibration memory locations and compares the final sum against the expected checksum target stored in the calibration identifier. <code>CHKFIX</code> is specifically calculated and placed in the calibration so that the cumulative sum of all bytes across the entire calibration space matches the expected target byte exactly.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CaculateChecksum</code> (<code>T-SMEC_v19.asm:4141-4178</code>), evaluated at instruction line 4172 (<code>cmpa ENDITM_ECUID+1</code>).</li>
+<li><strong>Checksum Algorithm</strong>:</li>
+<li>Computes an 8-bit arithmetic sum of all bytes across ROM starting at <code>#ENDIT1_PNPrefix</code>.</li>
+<li>The fixup byte at <code>CHKFIX_ChecksumFixupValue</code> is added into accumulator A along with all other calibration bytes.</li>
+<li><strong>Comparison &amp; Fault</strong>:</li>
+<li>Compares total sum against <code>ENDITM_ECUID+1</code>.</li>
+<li>If not equal (<code>bne L1291</code>), executes <code>ldd #0x0201</code> and jumps to <code>ThrowNonCriticalError</code> (Error 53).</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Automatic Tool Maintenance</strong>:</li>
+<li>Calibration software like MPTune automatically calculates and saves <code>CHKFIX</code> whenever calibration changes are written.</li>
+<li><strong>Diagnostic Fault Code 53 Prevention</strong>:</li>
+<li>If <code>CHKFIX</code> does not balance the cumulative memory sum, the computer sets error code 53 upon startup.</li>
+<li><strong>Manual Binary Calculation</strong>:</li>
+<li>When modifying raw binary files without an automated checksum tool, <code>CHKFIX</code> must be adjusted by the exact difference of all edited bytes.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CaculateChecksum</code> at lines 4141-4178, the CPU performs a block summation. Index register X begins at <code>#ENDIT1_PNPrefix</code> (address 0x8000) and loops through ROM, accumulating bytes into accumulator A. <code>CHKFIX_ChecksumFixupValue</code> (at address 0x016D / ROM 0x8015) is summed into accumulator A. At line 4172, <code>cmpa ENDITM_ECUID+1</code> compares the accumulated 8-bit sum to the target byte; if unequal (<code>bne</code>), error 0x0201 (fault 53) is thrown.</p>
+<pre><code class="language-motorola6803">; --- CaculateChecksum (T-SMEC_v19.asm:4171-4178) ---
+L1290:	cmpa ENDITM_ECUID+1    ; compare a with memory contents (data is ff)
+	bne  L1291	    ; branch if not equal (not zero)
+	rts		    ; return from subroutine
+
+L1291:	ldd  #0x0201	    ; load d (a&amp;b) with value -00000010 00000001-
+	jmp  ThrowNonCriticalError</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Direct Target Alignment</strong>: Tuned so that (Sum of all ROM bytes mod 256) == <code>ENDITM_ECUID+1</code>.</li>
+<li><strong>Factory Value</strong>: Configured to 0x71 (113 counts) in factory 2.5L Turbo I automatic calibrations.</li>
+<li><strong>Automated Checksum Update</strong>: Calibration editors continuously manage this byte during save operations.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>CHKFIX</code>
+        </footer>
+    </div>
+</body>
+</html>

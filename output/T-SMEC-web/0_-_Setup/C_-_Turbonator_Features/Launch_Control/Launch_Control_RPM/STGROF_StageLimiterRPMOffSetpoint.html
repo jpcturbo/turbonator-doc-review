@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STGROF: StageLimiterRPMOffSetpoint | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1857</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ C - Turbonator Features ➔ Launch Control ➔ Launch Control RPM</strong> &nbsp;|&nbsp; Subsystem: <strong>Turbonator_Features</strong>
+        </div>
+        
+        <article class="content">
+            <h1>STGROF: StageLimiterRPMOffSetpoint</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>STGROF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>STGROF_StageLimiterRPMOffSetpoint</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Turbonator_Features</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\C_-_Turbonator_Features\Launch_Control\Launch_Control_RPM\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1857</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM (0 to 8160 RPM, 32 RPM / count)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x7D                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6421-L6431"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L10175"><code>LaunchControl_CheckUpperRPM</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L10177"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>STGROF</code> establishes the upper engine speed limit where launch control cuts ignition and/or fuel injection while staging.</p>
+<p>When staging at wide-open throttle, the engine revs rapidly toward this setpoint. The instant engine speed reaches <code>STGROF</code>, the engine controller triggers rotating spark cuts and/or fuel cuts depending on configured options, arresting engine acceleration and locking RPM within the staging window.</p>
+<p>The factory setting of 125 counts corresponds to 4000 RPM, providing a solid rev limit ceiling for turbo boost generation on the starting line.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Enclosed in subroutine <code>LaunchControl_CheckUpperRPM</code> at lines 10175-10191 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Evaluated when <code>Turbonator_Staging</code> is active and neither spark nor fuel cut is currently asserted (<code>brclr 0, x, #Turbonator_FuelOff | Turbonator_SparkCut, LaunchControl_CheckUpperRPM</code> at line 10172).</li>
+<li>High-byte engine speed <code>EngineRpm_HB</code> is compared against <code>STGROF_StageLimiterRPMOffSetpoint</code> (line 10177).</li>
+<li>If <code>EngineRpm_HB &lt; STGROF</code>, execution branches to <code>LaunchControl_AllowFuelSpark</code>.</li>
+<li>If <code>EngineRpm_HB &gt;= STGROF</code>, execution advances to <code>LaunchControl_ShutOffFuelSpark</code>, asserting <code>Turbonator_FuelOff</code> and/or <code>Turbonator_SparkCut</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Target Staging RPM</strong>: Calibrate to desired launch ceiling (3200-3600 RPM for street tires, 4200-4800 RPM for drag slicks or high-stall converters).</li>
+<li><strong>Pairing With Resume Point</strong>: Always maintain <code>STGROF</code> strictly higher than <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_RPM/STGRON_StageLimiterRPMOnSetpoint.html"><code>STGRON</code></a> by roughly 150 to 250 RPM to establish proper hysteresis.</li>
+<li><strong>Rev Limit Strategy</strong>: Enable <code>opt_SprkRevLim</code> in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a> for boost building via rotating spark cut. Fuel cut (<code>opt_FuelRevLim</code>) halts turbine drive energy and slows boost spool.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: When staging is active without an ongoing cut, <code>LaunchControl_CheckUpperRPM</code> executes at line 10175. Line 10176 loads <code>EngineRpm_HB</code> into accumulator A and compares it against <code>STGROF_StageLimiterRPMOffSetpoint</code> at line 10177. If engine speed is below <code>STGROF</code> (<code>bcs LaunchControl_AllowFuelSpark</code>), normal engine operation continues. When engine speed meets or exceeds <code>STGROF</code>, execution falls into <code>LaunchControl_ShutOffFuelSpark</code>. The routine inspects <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2_CalCustomOptionConfigFlags2</code></a>: if <code>opt_FuelRevLim</code> is set, line 10184 sets <code>Turbonator_FuelOff</code>; if <code>opt_SprkRevLim</code> is set, line 10189 sets <code>Turbonator_SparkCut</code>.</p>
+<pre><code class="language-motorola6803">; --- LaunchControl_CheckUpperRPM (T-SMEC_v19.asm:10175-10191) ---
+LaunchControl_CheckUpperRPM:
+	ldaa  EngineRpm_HB                      ; load a with memory contents
+	cmpa  STGROF_StageLimiterRPMOffSetpoint ; compare a with memory at index + value
+	bcs   LaunchControl_AllowFuelSpark      ; branch if launch control RPM is greater than current RPM
+
+LaunchControl_ShutOffFuelSpark:
+        ldaa  OPTN2_CalCustomOptionConfigFlags2
+        bita  #opt_FuelRevLim
+        beq   LaunchControl_CheckSparkCut       ; don&#x27;t turn off the fuel...
+        bset  0, x, #Turbonator_FuelOff         ; set bits
+
+LaunchControl_CheckSparkCut:
+        bita  #opt_SprkRevLim
+        beq   LaunchControl_Return              ; don&#x27;t turn off the spark...
+        bset  0, x, #Turbonator_SparkCut        ; new T-SMEC Spark rev limiter
+        bra   LaunchControl_Return</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>RPM Scaling</strong>: Scaled at 32 RPM per count. The factory setting of 125 counts equals 4000 RPM.</li>
+<li><strong>Hysteresis Window Upper Bound</strong>: Governs the peak cut point in the staging hysteresis loop with <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_RPM/STGRON_StageLimiterRPMOnSetpoint.html"><code>STGRON</code></a>.</li>
+<li><strong>Option Flags</strong>: Activates fuel cut if <code>opt_FuelRevLim</code> is enabled in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a> and spark cut if <code>opt_SprkRevLim</code> is enabled in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>STGROF</code>
+        </footer>
+    </div>
+</body>
+</html>

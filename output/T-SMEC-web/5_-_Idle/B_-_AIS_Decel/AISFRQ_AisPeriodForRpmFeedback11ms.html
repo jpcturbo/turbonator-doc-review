@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AISFRQ: AisPeriodForRpmFeedback11ms | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1120</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>AISFRQ: AisPeriodForRpmFeedback11ms</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>AISFRQ</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>AISFRQ_AisPeriodForRpmFeedback11ms</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1120</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">seconds</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x3F                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4574-L4584"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L2170"><code>HandleAcCutout</code></a> in <a href="../../T-SMEC_v19.asm.html#L2370"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>AISFRQ</code> defines the closed-loop feedback update period that governs how frequently the automatic idle speed stepper motor can make corrective position changes based on RPM error.</p>
+<p>Because an internal combustion engine has physical intake manifold volume and delayed torque response to airflow changes, making stepper motor adjustments too rapidly causes control loop instability, where the controller constantly overshoots and hunts around target idle. AISFRQ acts as a rate-limiting filter, requiring a minimum elapsed timer duration between successive closed-loop step corrections from <a href="../../5_-_Idle/A_-_AIS_Control/FWDAIS_ForwardAisSteps_NoSlope.html"><code>FWDAIS</code></a> or <a href="../../5_-_Idle/A_-_AIS_Control/REVAIS_ReverseAisSteps_NoSlope.html"><code>REVAIS</code></a>.</p>
+<p>In factory calibrations, <code>AISFRQ</code> is set to 63 counts (or 127 counts in some variants), which enforces a settling delay of approximately 0.7 to 1.4 seconds between motor adjustments. This deliberate pacing allows the engine to respond and manifold vacuum to stabilize before the controller evaluates whether another step correction is needed.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2401</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Startup feedback lockout timer <code>Timer_CountdownFromStartRunForAisFeedback</code> must be zero at line 2368.</li>
+<li>Compares <code>AISFRQ</code> against <code>Timer_AisChanges</code> at line 2371.</li>
+<li>If <code>Timer_AisChanges</code> is less than <code>AISFRQ</code> (<code>bcc L1136</code>), the closed-loop RPM error calculation is skipped, holding the stepper motor stationary.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Curing Rhythmic Idle Surging</strong>:</li>
+<li>If idle speed oscillates up and down in an endless cycle, increase <code>AISFRQ</code> from 63 up to 90 to 127 counts to slow down the feedback response and allow manifold pressure to settle.</li>
+<li><strong>Sharpening Sluggish Recovery</strong>:</li>
+<li>If the idle air controller takes too long to recover from an accessory load drop, reduce <code>AISFRQ</code> to 45 to 50 counts to allow more frequent stepper nudges.</li>
+<li><strong>Minimum Stability Boundary</strong>:</li>
+<li>Do not set <code>AISFRQ</code> below 30 counts, as rapid corrections outpace engine mechanical response time, triggering severe hunting.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>, line 2368 tests <code>Timer_CountdownFromStartRunForAisFeedback</code>. If zero, line 2370 executes <code>ldab AISFRQ_AisPeriodForRpmFeedback11ms</code> and line 2371 compares against <code>Timer_AisChanges</code>. If <code>Timer_AisChanges</code> has not reached <code>AISFRQ</code>, the branch <code>bcc L1136</code> bypasses the <a href="../../5_-_Idle/A_-_AIS_Control/FWDAIS_ForwardAisSteps_NoSlope.html"><code>FWDAIS</code></a>/<a href="../../5_-_Idle/A_-_AIS_Control/REVAIS_ReverseAisSteps_NoSlope.html"><code>REVAIS</code></a> block entirely. When <code>Timer_AisChanges</code> exceeds <code>AISFRQ</code>, closed-loop feedback executes, and line 2400 calls <code>ClearAisTimer</code>, resetting <code>Timer_AisChanges</code> to zero.</p>
+<pre><code class="language-motorola6803">; --- HandleAcCutout (T-SMEC_v19.asm:2368-2373) ---
+L1130:	ldaa Timer_CountdownFromStartRunForAisFeedback	  ; load a with memory contents
+	bne  R1142	    ; branch if not equal (not zero)
+	ldab AISFRQ_AisPeriodForRpmFeedback11ms    ; load b with memory contents (data is 7f)
+	cmpb Timer_AisChanges
+	bcc  L1136	    ; branch if greater or equal
+	ldx  #FWDAIS_ForwardAisSteps_NoSlope	; load index with value</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Timer Increment Mechanics</strong>: <code>Timer_AisChanges</code> increments on foreground loop clock ticks (~11 ms per tick).</li>
+<li><strong>Companion Parameters</strong>: Paces the execution frequency of <a href="../../5_-_Idle/A_-_AIS_Control/FWDAIS_ForwardAisSteps_NoSlope.html"><code>FWDAIS</code></a> and <a href="../../5_-_Idle/A_-_AIS_Control/REVAIS_ReverseAisSteps_NoSlope.html"><code>REVAIS</code></a>.</li>
+<li><strong>Factory Value</strong>: 0x3F (63 counts = approximately 700 ms, or 0x7F = 1.4 seconds in Stage IV).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>AISFRQ</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLOTHR: CruiseControlDontVentIfThrottleBelowThis | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x168B</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Cruise Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Cruise_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CLOTHR: CruiseControlDontVentIfThrottleBelowThis</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CLOTHR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CLOTHR_CruiseControlDontVentIfThrottleBelowThis</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Cruise_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Cruise_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x168B</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">counts TPS above idle</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x01 (1 count above closed idle TPS)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5961-L5971"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8723"><code>CalculateVehicleSpeed</code></a> in <a href="../../T-SMEC_v19.asm.html#L8956"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CLOTHR</code> defines the closed-throttle angle threshold below which the cruise vent solenoid is completely inhibited from pulsing.</p>
+<p>When vehicle speed climbs above the setpoint going down a hill, the cruise controller commands the vent solenoid to bleed vacuum and close the throttle. Once the mechanical throttle lever has returned fully to its resting idle stop, further venting cannot slow the vehicle down any more because the throttle is already fully closed. Pulsing the vent solenoid against a closed throttle causes unnecessary solenoid wear and annoying clicking noises. <code>CLOTHR</code> gates the vent circuit, turning off the solenoid whenever throttle angle above idle is below this limit.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8956-8958</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Negative servo command present (accumulator A negative, commanding vent).</li>
+<li>Net throttle position calculated as <code>TpsVolts - MINTHR_LowestSessionTPS</code> in accumulator B.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Compares throttle opening against <code>CLOTHR</code> via <code>cmpb CLOTHR</code> at line 8956.</li>
+<li>If lower (<code>bcs L1795</code>), execution branches to line 8962 to clear accumulator A to zero, cancelling the vent command.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Solenoid Chatter Prevention</strong>:</li>
+<li>Shuts off the vent solenoid once the throttle returns to idle stop position, eliminating rapid clicking noises.</li>
+<li><strong>Aftermarket Throttle Bodies &amp; TPS Ground Noise</strong>:</li>
+<li>If a replacement TPS exhibits electrical ground offset, increase <code>CLOTHR</code> to 2 or 3 counts to ensure clean shutoff.</li>
+<li><strong>Symmetrical Throttle Gate</strong>:</li>
+<li>Serves as the lower throttle boundary, while <a href="../../7_-_Aux_Functions/Cruise_Control/MAXTHR_CruiseControlDontVacIfThrottleAboveThis.html"><code>MAXTHR</code></a> serves as the upper throttle boundary for vacuum pull.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateVehicleSpeed</code> at line 8950, <code>TpsVolts</code> is loaded and <code>MINTHR_LowestSessionTPS</code> is subtracted to find net throttle opening. At line 8954, <code>tsta</code> checks commanded servo direction. When negative (venting), line 8956 executes <code>cmpb CLOTHR_CruiseControlDontVentIfThrottleBelowThis</code>. If borrow occurs (<code>bcs L1795</code>), throttle is below <code>CLOTHR</code>, and line 8962 executes <code>clra</code>, zeroing <code>CruiseControlVar3</code> at line 8963 to inhibit the vent solenoid pulse.</p>
+<pre><code class="language-motorola6803">; --- CalculateVehicleSpeed (T-SMEC_v19.asm:8954-8959) ---
+L1793:	tsta		    ; test a
+	bpl  L1794	    ; branch if plus (hi bit 0)
+	cmpb CLOTHR_CruiseControlDontVentIfThrottleBelowThis	; compare b with memory contents (data is 01)
+	bcs  L1795	    ; branch if lower
+	bra  L1796	    ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Hardware Gate</strong>: Zeroes out <code>CruiseControlVar3</code>, preventing bit 7 (<code>pia1abuf_CruiseVent</code>) from being energized in <code>PIA1_A_Buffer</code>.</li>
+<li><strong>Session Reference</strong>: Evaluated relative to <code>MINTHR_LowestSessionTPS</code> (learned closed-throttle voltage) rather than absolute zero volts.</li>
+<li><strong>Companion Parameter</strong>: Coordinates with <a href="../../7_-_Aux_Functions/Cruise_Control/MAXTHR_CruiseControlDontVacIfThrottleAboveThis.html"><code>MAXTHR_CruiseControlDontVacIfThrottleAboveThis</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>CLOTHR</code>
+        </footer>
+    </div>
+</body>
+</html>

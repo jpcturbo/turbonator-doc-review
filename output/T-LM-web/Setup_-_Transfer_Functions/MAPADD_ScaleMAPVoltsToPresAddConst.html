@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAPADD: ScaleMAPVoltsToPresAddConst | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x138B</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Setup - Transfer Functions</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MAPADD: ScaleMAPVoltsToPresAddConst</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MAPADD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MAPADD_ScaleMAPVoltsToPresAddConst</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Setup_-_Transfer_Functions\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x138B</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 8 (3D Table / MPTune)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Mathematical Offset / Intercept Constant (16-bit word; 0x0361 = 2-Bar; 0x0700 = 3-Bar)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0x0361                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L5033-L5047"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L1198"><code>ConvertMAPVoltsToValue</code></a> in <a href="../T-LMv13.asm.html#L1207"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MAPADD</code> (ScaleMAPVoltsToPresAddConst) is the 16-bit zero-offset / intercept constant added to the scaled product of <code>MAPVolts * MAPMULT</code> inside <code>ConvertMAPVoltsToValue</code>.</p>
+<p>Pressure sensors output a small non-zero offset voltage at absolute zero vacuum (typically 0.2V to 0.4V). <code>MAPADD</code> provides the mathematical intercept calibration that aligns zero manifold absolute pressure to the baseline of the ECU's internal lookup tables:
+- <strong>Stock Mopar 2-Bar</strong>: <code>.word 0x0361</code> (865 decimal).
+- <strong>Mopar Super 60 / 3-Bar</strong>: <code>.word 0x0700</code> (1792 decimal).
+Together with <a href="../Setup_-_Transfer_Functions/MAPMULT_ScaleMAPVoltsToPresMultiplyConst.html"><code>MAPMULT</code></a>, <code>MAPADD</code> forms the classic linear equation y = mx + b for manifold pressure sensing.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside subroutine <code>ConvertMAPVoltsToValue</code> at line 1207.</li>
+<li>Added directly to 16-bit product in accumulator D: <code>addd MAPADD_ScaleMAPVoltsToPresAddConst</code>.</li>
+<li>Followed by upper clamping at <code>$FF</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Fine-Tuning MAP Accuracy</strong>: When verifying MAP sensor calibration with a hand vacuum pump and MPTune live data display:</li>
+<li>If atmospheric pressure reads 29.9 inHg but live scan data reads 28.5 inHg (offset error across all points), trim <code>MAPADD</code> upward or downward by a few counts to zero the sensor perfectly.</li>
+<li>If the slope is incorrect between atmospheric and full boost, adjust <a href="../Setup_-_Transfer_Functions/MAPMULT_ScaleMAPVoltsToPresMultiplyConst.html"><code>MAPMULT</code></a>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- ConvertMAPVoltsToValue (T-LMv13.asm:1206-1210) ---
+        ldaa #0xff                               
+LC9FA:  addd MAPADD_ScaleMAPVoltsToPresAddConst  ; Add 16-bit offset intercept ($138B, data 0x0361)
+        bcc  LCA01                               ; If no carry, conversion complete!
+        ldaa #0xff                               ; Else clamp to maximum 255
+LCA01:  rts                                      ; Return calibrated pressure in Accumulator A</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 1207</strong> (<code>ConvertMAPVoltsToValue</code>): <code>LC9FA:  addd MAPADD_ScaleMAPVoltsToPresAddConst    ;  (data is 03)</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>16-bit Addition</strong>: Adds directly to the 16-bit product in Register D ($A:B$) for high fractional precision.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>MAPADD</code>
+        </footer>
+    </div>
+</body>
+</html>

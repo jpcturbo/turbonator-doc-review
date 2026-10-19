@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INCSRT: KnockRetardIncreaseRate | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x031A</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Spark - Knock Retard</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>INCSRT: KnockRetardIncreaseRate</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>INCSRT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>INCSRT_KnockRetardIncreaseRate</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Spark_-_Knock_Retard\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x031A</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant / Bitmask)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">31 decimal, bitmask %00011111</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x1F (31 decimal, bitmask %00011111)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L824-L836"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;">Main Loop Periodic Task in T-LMv13.asm in <a href="../T-LMv13.asm.html#L1524"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>INCSRT_KnockRetardIncreaseRate</code> controls the <strong>decay rate / recovery rate of ignition timing after a knock event has ended</strong>.</p>
+<p>When the ECU detects knock, it retards ignition timing immediately. Once detonation ceases, the ECU must gradually return (decay) the timing back toward the normal advance curve. If timing is returned too quickly, the engine will immediately re-detonate; if returned too slowly, the vehicle remains sluggish with elevated exhaust temperatures long after the knock event has passed. </p>
+<p><code>INCSRT</code> acts as a loop counter bitmask: every time the main loop timer matches this mask, the ECU restores 0.5° of timing to each cylinder until all knock retard has decayed to zero.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<p><code>INCSRT</code> is evaluated in the 11-millisecond main background loop:
+* <strong>Trigger Condition:</strong> The main loop counter (<code>Counter_MainLoop1</code>) is bitwise-ANDed with <code>INCSRT</code>.
+* <strong>Action:</strong> When all masked bits are zero, the ECU decrements the knock retard accumulators for all four cylinders (<code>Cylinder1Retard</code> through <code>Cylinder4Retard</code>) by 1 unit (0.5° advance restored).</p>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<blockquote>
+<p>[!WARNING]
+<strong>Bitmask Rule:</strong> <code>INCSRT</code> is a binary bitmask. It <strong>MUST ONLY</strong> be set to binary power-of-two minus one values: <code>0x00</code>, <code>0x01</code>, <code>0x03</code>, <code>0x07</code>, <code>0x0F</code>, <code>0x1F</code>, <code>0x3F</code>, <code>0x7F</code>, or <code>0xFF</code>. Using intermediate values (e.g., <code>0x10</code>) will cause erratic, non-uniform timing recovery rates.</p>
+</blockquote>
+<ul>
+<li><strong>Increasing the Value (Larger Mask / Slower Recovery):</strong></li>
+<li><strong>Effect:</strong> Timing decays more slowly (recovers fewer degrees per second).</li>
+<li><strong>Real-World Driving Feel:</strong> Prevents repeat detonation after severe knock events, but leaves the engine in a retarded state longer.</li>
+<li><strong>Decreasing the Value (Smaller Mask / Faster Recovery):</strong></li>
+<li><strong>Effect:</strong> Timing recovers more rapidly back to base advance.</li>
+<li><strong>Real-World Driving Feel:</strong> Restores full horsepower quickly after transient knock (such as a bad gear shift or fuel splash), but risks rapid cyclic re-knock if the underlying cause is low fuel octane.</li>
+<li><strong>Stock Rate:</strong></li>
+<li>Mask <code>0x1F</code> triggers once every 32 program loops. At ~11 ms per loop, timing recovers at 0.5° every ~352 milliseconds (~1.4° per second).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 1524–1537):</p>
+<pre><code class="language-motorola6803">ldaa Counter_MainLoop1
+        bita INCSRT_KnockRetardIncreaseRate ; Test against mask (0x1F)
+        bne  LCC44                         ; If non-zero, skip recovery this pass
+
+        ; --- Decay Retard on Cylinders 1-4 ---
+        ldx  #Cylinder2Retard
+LCC2F:  sei
+        ldaa 0x00,x
+        tab
+        anda #0xc0
+        andb #0x3f
+        beq  LCC3A
+        decb                               ; Decrement retard (recover 0.5° advance)
+LCC3A:  aba
+        staa 0x00,x
+        cli
+        inx
+        cpx  #Cylinder4Retard
+        bls  LCC2F</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Misnomer Clarification:</strong> The label name <code>KnockRetardIncreaseRate</code> refers to <em>increasing advance</em> (recovering timing), <strong>not</strong> increasing the retard amount.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>INCSRT</code>
+        </footer>
+    </div>
+</body>
+</html>

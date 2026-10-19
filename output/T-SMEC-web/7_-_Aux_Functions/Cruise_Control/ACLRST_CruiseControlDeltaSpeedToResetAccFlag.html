@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACLRST: CruiseControlDeltaSpeedToResetAccFlag | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x167E</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Cruise Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Cruise_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ACLRST: CruiseControlDeltaSpeedToResetAccFlag</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ACLRST</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ACLRST_CruiseControlDeltaSpeedToResetAccFlag</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Cruise_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Cruise_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x167E</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">counts speed deficit</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x09 (9 counts ≈ 4.5 MPH deficit)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5948-L5958"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8723"><code>CalculateVehicleSpeed</code></a> in <a href="../../T-SMEC_v19.asm.html#L8886"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ACLRST</code> defines the vehicle speed deficit threshold below which the accelerated cruise mode flag is cleared, returning the cruise servo loop from high-gain <a href="../../7_-_Aux_Functions/Cruise_Control/VACACC_CruiseControlVacAcceleratedGainCurve_FromDeltaSpeed.html"><code>VACACC</code></a> to standard <a href="../../7_-_Aux_Functions/Cruise_Control/VACREG_CruiseControlVacRegularGainGurve_FromDeltaSpeed.html"><code>VACREG</code></a> operation.</p>
+<p>When the vehicle is accelerating back toward its setpoint during resume, the engine controller commands aggressive vacuum duty cycles via <a href="../../7_-_Aux_Functions/Cruise_Control/VACACC_CruiseControlVacAcceleratedGainCurve_FromDeltaSpeed.html"><code>VACACC</code></a>. As road speed approaches the target setting, high acceleration must be tapered off before reaching the setpoint to avoid overshooting and surging. <code>ACLRST</code> establishes this handoff threshold, calibrated in stock calibrations to 9 counts, corresponding to approximately 4.5 miles per hour below target speed.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8886-8888</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Accelerated cruise mode active (<code>CruiseStatus</code> bit 6 set).</li>
+<li>Remaining speed deficit evaluated in accumulator B.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Compares remaining speed deficit against <code>ACLRST</code> via <code>cmpb ACLRST</code> at line 8886.</li>
+<li>If deficit is greater or equal (<code>bcc L1784</code>), bit 6 remains set.</li>
+<li>If deficit is smaller, clears bit 6 (<code>bclr *CruiseStatus, #$%01000000</code>) at line 8888, returning to <a href="../../7_-_Aux_Functions/Cruise_Control/VACREG_CruiseControlVacRegularGainGurve_FromDeltaSpeed.html"><code>VACREG</code></a> on next cycle.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Overshoot Suppression</strong>:</li>
+<li>Increasing <code>ACLRST</code> drops out of accelerated cruise earlier, tapering throttle before the vehicle reaches target speed.</li>
+<li>Recommended if the vehicle consistently pulls 2 to 4 mph past the set speed when resuming.</li>
+<li><strong>Aggressive Resume Pull</strong>:</li>
+<li>Lowering <code>ACLRST</code> sustains high vacuum pull closer to the target setpoint, sharp for heavy vehicles.</li>
+<li><strong>Factory Setting</strong>:</li>
+<li>Set to 9 counts (≈ 4.5 mph) in production calibrations, offering balanced handoff without perceptible throttle hunting.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateVehicleSpeed</code>, when bit 6 of <code>CruiseStatus</code> is asserted, line 8880 selects <a href="../../7_-_Aux_Functions/Cruise_Control/VACACC_CruiseControlVacAcceleratedGainCurve_FromDeltaSpeed.html"><code>VACACC</code></a>. Register D holds the remaining speed deficit (<code>CruiseSpeedSetpoint - VehicleSpeed</code>). At line 8886, <code>cmpb ACLRST_CruiseControlDeltaSpeedToResetAccFlag</code> tests accumulator B. If deficit is lower than <code>ACLRST</code> (carry set), line 8888 executes <code>bclr *CruiseStatus, #$%01000000</code>, extinguishing the accelerated cruise flag and restoring standard <a href="../../7_-_Aux_Functions/Cruise_Control/VACREG_CruiseControlVacRegularGainGurve_FromDeltaSpeed.html"><code>VACREG</code></a> operation.</p>
+<pre><code class="language-motorola6803">; --- CalculateVehicleSpeed (T-SMEC_v19.asm:8883-8889) ---
+L1782:	tsta		    ; test a
+	beq  L1783	    ; branch if equal (zero)
+	ldab #0xff	    ; load b with value -11111111-
+L1783:	cmpb ACLRST_CruiseControlDeltaSpeedToResetAccFlag    ; compare b with memory contents (data is 09)
+	bcc  L1784	    ; branch if greater or equal
+	bclr *CruiseStatus, #$%01000000    ; clear bits
+L1784:	tba		    ; a = b
+	jsr  Lookup4ByteTable	 ; call subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Flag Cleared</strong>: Directly resets bit 6 in <code>CruiseStatus</code> (accelerated vacuum mode).</li>
+<li><strong>Speed Unit Conversion</strong>: 1 count equals 0.5 mph speed deficit, so factory 9 counts equals 4.5 mph.</li>
+<li><strong>Companion Curves</strong>: Coordinates transition between <a href="../../7_-_Aux_Functions/Cruise_Control/VACACC_CruiseControlVacAcceleratedGainCurve_FromDeltaSpeed.html"><code>VACACC</code></a> (accelerated vacuum curve) and <a href="../../7_-_Aux_Functions/Cruise_Control/VACREG_CruiseControlVacRegularGainGurve_FromDeltaSpeed.html"><code>VACREG</code></a> (regular cruise vacuum curve).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>ACLRST</code>
+        </footer>
+    </div>
+</body>
+</html>

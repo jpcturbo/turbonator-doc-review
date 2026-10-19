@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EGR6: ExhGasRecircConst6 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1AB0</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ EGR</strong> &nbsp;|&nbsp; Subsystem: <strong>EGR_Emissions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>EGR6: ExhGasRecircConst6</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>EGR6</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>EGR6_ExhGasRecircConst</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">EGR_Emissions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\EGR\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1AB0</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Loop counts high byte (256 counts per unit; paired with EGR15A for 364 total counts / ~3.6 to 5.5 seconds)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x01                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7022-L7032"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5470"><code>EGR_ResetEGRVars</code></a> in <a href="../../T-SMEC_v19.asm.html#L5485"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>EGR6</code> (ExhGasRecircConst) establishes the high byte of the 16-bit Phase 2 diagnostic timeout timer threshold for the Exhaust Gas Recirculation flow verification routine.</p>
+<p>During Phase 2, the engine controller de-energizes the EGR solenoid to shut off exhaust gas flow into the intake manifold and waits for closed-loop oxygen sensor feedback to register a lean shift. The controller requires an upper time limit on this test so that prolonged solenoid de-energization does not unnecessarily alter emissions or driveability if the valve is stuck.</p>
+<p>Although defined in calibration templates as an 8-bit constant, the CPU reads <code>EGR6</code> with a 16-bit comparison instruction at line 5485, pairing <code>EGR6</code> (1 count) as the high byte with adjacent byte <a href="../../7_-_Aux_Functions/EGR/EGR15a_ExhGasRecircConstFromRPMHiLimit.html"><code>EGR15A</code></a> (108 counts) as the low byte. This combined 16-bit threshold of 364 loop iterations corresponds to approximately 3.6 to 5.5 seconds.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5485.</li>
+<li><strong>State Condition</strong>: Phase 2 active (<code>EGRVar2</code> bit 7 set).</li>
+<li><strong>Input Variable</strong>: 16-bit RAM loop counter <code>EGRVar3</code> evaluated in index register X.</li>
+<li><strong>Comparison</strong>: 16-bit index comparison <code>cpx EGR6_ExhGasRecircConst</code>.</li>
+<li><strong>Branch Behavior</strong>: If <code>EGRVar3 &gt;= 0x016C</code> (<code>bcc L1470</code>), Phase 2 times out, branching to <code>L1470</code> to increment failure counter <code>EGRVar1</code>. If <code>EGRVar3 &lt; 0x016C</code>, increments <code>EGRVar3</code> and proceeds to window checks.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>16-Bit Firmware Anomaly</strong>: In <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a> line 5485, the CPU executes a 16-bit comparison against <code>EGR6_ExhGasRecircConst</code>. <code>EGR6</code> serves as the high byte (1 count) and contiguous byte <a href="../../7_-_Aux_Functions/EGR/EGR15a_ExhGasRecircConstFromRPMHiLimit.html"><code>EGR15A</code></a> serves as the low byte (108 counts), forming the 16-bit threshold of 364 counts.</li>
+<li><strong>Raising EGR6</strong>: Adds 256 loop counts (roughly 2.5 to 3.8 seconds) per integer increase to the Phase 2 timeout window. Highly beneficial for headers or high-flow plenums where exhaust gas transport delay is longer.</li>
+<li><strong>Lowering EGR6 (to 0)</strong>: Reduces the timeout window to strictly the low byte <a href="../../7_-_Aux_Functions/EGR/EGR15a_ExhGasRecircConstFromRPMHiLimit.html"><code>EGR15A</code></a> (108 counts / ~1.1 to 1.6 seconds), which risks false diagnostic failures.</li>
+<li><strong>Calibration Protocol</strong>: When adjusting Phase 2 timeout, calculate <code>(EGR6 * 256) + EGR15A</code> to determine the exact 16-bit threshold.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>ExhGasRecirc_MM</code>, when <code>EGRVar2</code> bit 7 is set, line 5425 branches to <code>L1467</code> (line 5485). At line 5485, index register X (holding 16-bit counter <code>EGRVar3</code>) is evaluated via <code>cpx EGR6_ExhGasRecircConst</code>. The 6811 CPU reads a 16-bit word from the calibration address: the high byte is loaded from <code>EGR6</code> (ROM address 0x1AB0 / org 0x882F, data 0x01), and the low byte is loaded from adjacent address <a href="../../7_-_Aux_Functions/EGR/EGR15a_ExhGasRecircConstFromRPMHiLimit.html"><code>EGR15A</code></a> (ROM address 0x1ABD / org 0x8830, data 0x6C), yielding 0x016C (364 decimal). If X meets or exceeds 0x016C, <code>bcc L1470</code> branches to line 5514 to process a diagnostic failure. If X is less than 0x016C, line 5487 increments X (<code>inx</code>), stores it back to <code>EGRVar3</code> (<code>stx EGRVar3</code>), and checks MAP window <a href="../../7_-_Aux_Functions/EGR/EGR16_ExhGasRecircConstLoLimit.html"><code>EGR16</code></a>.</p>
+<pre><code class="language-motorola6803">; --- ExhGasRecirc_MM (T-SMEC_v19.asm:5485-5491) ---
+L1467:	cpx  EGR6_ExhGasRecircConst	;  (data is 016c)
+	bcc  L1470	    ; branch if greater or equal
+L1468:	inx		    ; increment index (x=x+1)
+	stx  EGRVar3    ; store index into memory
+	ldaa MapValue	    ; load a with memory contents
+	ldx  #EGR16_ExhGasRecircConstLoLimit	; load index with value
+	bsr  EGR_CheckHiLoLimits    ; call subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>16-Bit Firmware Anomaly</strong>: Documented in smec_anomaly.md. Defined in templates as Type 3 single-byte constant, but the firmware reads it as the upper half of a 16-bit operand via <code>cpx</code>.</li>
+<li><strong>Paired with EGR15A</strong>: Must be modified in coordination with <a href="../../7_-_Aux_Functions/EGR/EGR15a_ExhGasRecircConstFromRPMHiLimit.html"><code>EGR15A</code></a>, which supplies the low byte (0x6C).</li>
+<li><strong>Physical Time Equivalent</strong>: 364 counts represents roughly 3.6 to 5.5 seconds depending on background loop execution time.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>EGR6</code>
+        </footer>
+    </div>
+</body>
+</html>

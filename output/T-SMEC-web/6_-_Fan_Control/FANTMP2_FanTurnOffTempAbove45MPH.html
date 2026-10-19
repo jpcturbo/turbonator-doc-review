@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FANTMP2: FanTurnOffTempAbove45MPH | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x14F6</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>6 - Fan Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>FANTMP2: FanTurnOffTempAbove45MPH</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>FANTMP2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>FANTMP2_FanTurnOffTempAbove45MPH</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>6_-_Fan_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x14F6</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">degF</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xE3                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T-SMEC_25_ATX_A283_Stock.tpl.html#L5556-L5566"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SMEC_v19.asm.html#L1711"><code>PreventRadSteaming</code></a> in <a href="../T-SMEC_v19.asm.html#L1729"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>FANTMP2</code> defines the engine coolant temperature threshold where the radiator cooling fan is turned off after a highway cooling cycle above 45 MPH.</p>
+<p>Once the cooling fan is engaged at high vehicle speed, it continues running until coolant temperature is driven down below <code>FANTMP2</code>. In factory calibrations, <code>FANTMP2</code> is set to 227 counts, corresponding to approximately 199 °F. This establishes a 5 °F hysteresis buffer below the turn-on setpoint (204 °F), preventing rapid cycling and relay flutter while driving on the highway.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ControlFan_MM</code> / <code>PreventRadSteaming</code> (<code>T-SMEC_v19.asm:1707-1755</code>), instruction lines 1729, 1752.</li>
+<li><strong>Speed &amp; Relay State</strong>:</li>
+<li>High road speed (<code>VehicleSpeed_HB &lt; FNSPHI_FanControlSpeedHi</code>).</li>
+<li>Fan relay currently active (<code>pia1abuf_FanRelay</code> clear in <code>PIA1_A_Buffer</code>).</li>
+<li><strong>Pointer Step</strong>:</li>
+<li>Line 1752 executes <code>inx</code>, advancing the pointer to offset +1 (<code>FANTMP2</code>).</li>
+<li>Compares table value against <code>CoolantTemp</code> (<code>cmpa CoolantTemp</code> at line 1754).</li>
+<li>If coolant temperature is still above <code>FANTMP2</code>, execution branches to <code>TurnFanOn</code> to keep running.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Proportional Downward Shift</strong>:</li>
+<li>Lower <code>FANTMP2</code> alongside <a href="../6_-_Fan_Control/FANTMP_FanTurnOnTempAbove45MPH.html"><code>FANTMP1</code></a> when fitting a cooler thermostat (e.g. 188 °F for a 180 °F thermostat).</li>
+<li><strong>Thermostat Rating Floor</strong>:</li>
+<li>Ensure <code>FANTMP2</code> is at least 4 to 6 °F above the thermostat mechanical rating so the fan can shut off.</li>
+<li><strong>Deadband Width</strong>:</li>
+<li>Retain a 4 to 6 °F gap below <a href="../6_-_Fan_Control/FANTMP_FanTurnOnTempAbove45MPH.html"><code>FANTMP1</code></a> to avoid relay chatter.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>PreventRadSteaming</code>, index register X starts at <code>#FANTMP_FanTurnOnTempAbove45Mph</code>. Because vehicle speed is above 45 MPH, no speed offsets are added. At line 1750, <code>bitb #pia1abuf_FanRelay</code> tests if the fan relay is already on. If on (bit clear, result zero), line 1752 executes <code>inx</code>, advancing the pointer to offset +1 (<code>FANTMP2</code>). <code>ldaa 0x00,x</code> loads <code>FANTMP2</code> and compares it to <code>CoolantTemp</code>. If coolant remains higher, it branches to keep the fan on.</p>
+<pre><code class="language-motorola6803">; --- PreventRadSteaming (T-SMEC_v19.asm:1750-1756) ---
+L1050:	bitb #pia1abuf_FanRelay	    ;  -00010000-
+	bne  L1051	    ; branch if not equal (not zero)
+	inx		    ; increment index (x=x+1)
+L1051:	ldaa 0x00,x	    ; load a with memory at index + value
+	cmpa CoolantTemp    ; compare a with memory contents
+	bcs  TurnFanOn	    ; branch if coolant temp is higher than setpoint</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Indexed Offset</strong>: Located at offset +1 from <code>FANTMP_FanTurnOnTempAbove45Mph</code>.</li>
+<li><strong>Companion Parameter</strong>: Must remain calibrated 4 to 6 °F below <a href="../6_-_Fan_Control/FANTMP_FanTurnOnTempAbove45MPH.html"><code>FANTMP1</code></a>.</li>
+<li><strong>Minimum Runtime Override</strong>: Even when coolant drops below <code>FANTMP2</code>, <code>Timer_MinimumFanRun</code> holds the fan on until its countdown expires.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>FANTMP2</code>
+        </footer>
+    </div>
+</body>
+</html>

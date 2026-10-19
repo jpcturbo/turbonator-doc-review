@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STFPRD: FuelRunStartTransferPointRpm | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x07E6</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Spark - Start to Run Transfer</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark (Start-to-Run Transfer Group)</strong>
+        </div>
+        
+        <article class="content">
+            <h1>STFPRD: FuelRunStartTransferPointRpm</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>STFPRD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>STFPRD_FuelRunStartTransferPointRpm</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark (Start-to-Run Transfer Group)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Spark_-_Start_to_Run_Transfer\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x07E6</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">EPPs (0 to 65535 epps)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x0104 (260 decimal, ~450 RPM)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L2052-L2078"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;">Fuel Pulse Width Calculation in T-LMv13.asm in <a href="../T-LMv13.asm.html#L4929"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>STFPRD_FuelRunStartTransferPointRpm</code> is the <strong>fuel stall-detection hysteresis threshold</strong> that drops fuel injection back from running speed-density mode into cranking enrichment mode if engine RPM sags below ~450 RPM.</p>
+<p>If an engine stalls or the driver lugs it down to near-zero speed, speed-density MAP readings become erratic and injectors cannot deliver stable fuel pulses. If engine RPM drops below <code>STFPRD</code>, the ECU re-engages starting/cranking fuel logic to prevent backfiring and assist the engine in catching or restarting cleanly.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<p><code>STFPRD</code> is evaluated while the engine is running:
+* If <code>TimerOverflowsBetweenDistPulses</code> increases past <code>STFPRD</code> (engine speed drops below ~450 RPM):
+  The ECU drops out of running fuel mode and returns to cranking fuel logic.</p>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Increasing the Value (Lower RPM Threshold):</strong></li>
+<li><strong>Effect:</strong> Allows the engine to drop lower in speed before re-triggering cranking fuel.</li>
+<li><strong>Real-World Driving Feel:</strong> Prevents sudden rich bogging when lugging the engine at low speeds.</li>
+<li><strong>Decreasing the Value (Higher RPM Threshold):</strong></li>
+<li><strong>Effect:</strong> Re-triggers cranking fuel at a higher speed.</li>
+<li><strong>Real-World Driving Feel:</strong> Drops back to cranking fuel sooner during stalls. If set too high, an abrupt idle dip can flood the engine with cranking fuel.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 4926–4932):</p>
+<pre><code class="language-motorola6803">LE390:  ldx  TimerOverflowsBetweenDistPulses
+        cpx  RNFPRD_FuelStartRunTransferPointRpm ; Check Start-to-Run speed (705 RPM)
+        bcs  LE3A4
+        cpx  STFPRD_FuelRunStartTransferPointRpm ; Compare period to STFPRD (0x0104 ~ 450 RPM)
+        bcs  LE3DA                               ; If period &lt;= STFPRD (RPM &gt;= 450), stay in Run Fuel
+        ...                                      ; Else drop back to Cranking Fuel!</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Hysteresis Matching:</strong> <a href="../Spark_-_Start_to_Run_Transfer/RNFPRD_FuelStartRunTransferPointRpm.html"><code>RNFPRD</code></a> (~705 RPM) and <code>STFPRD</code> (~450 RPM) form the fuel hysteresis loop, mirroring the spark hysteresis loop defined by <a href="../Spark_-_Start_to_Run_Transfer/STRNTR_SparkStartRunTransferPointRpm.html"><code>STRNTR</code></a> (~600 RPM) and <a href="../Spark_-_Start_to_Run_Transfer/RNSTTR_SparkRunStartTransferPointRpm.html"><code>RNSTTR</code></a> (~410 RPM).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>STFPRD</code>
+        </footer>
+    </div>
+</body>
+</html>

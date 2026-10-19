@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPDLMH: SpeedLimitFuelShutoff254mph | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1950</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>4 - OB, Speed, and Rev Limiter ➔ C - Speed Limiter</strong> &nbsp;|&nbsp; Subsystem: <strong>Limiters_Limp</strong>
+        </div>
+        
+        <article class="content">
+            <h1>SPDLMH: SpeedLimitFuelShutoff254mph</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>SPDLMH</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>SPDLMH_SpeedLimitFuelShutoff254MPH</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Limiters_Limp</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>4_-_OB,_Speed,_and_Rev_Limiter\C_-_Speed_Limiter\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1950</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">mph</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x76 (118 counts ≈ 118 mph)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6670-L6680"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5700"><code>Cutout_CheckRevLimitingValues</code></a> in <a href="../../T-SMEC_v19.asm.html#L5707"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>SPDLMH</code> establishes the maximum permissible vehicle road speed fuel shutoff threshold.</p>
+<p>Automobile manufacturers incorporate vehicle speed limiters to comply with factory tire speed ratings, drivetrain rotational limits, and regional safety mandates. In the factory 2.5L calibration, <code>SPDLMH</code> is set to 118 counts, which corresponds to 118 mph on the 0 to 255 mph vehicle speed scale. Provided engine speed is above the overspeed arming threshold (<a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/SPDRPM_EngineSpeedHighLimitToEnableOverspeed.html"><code>SPDRPM</code></a>), when vehicle road speed reaches or exceeds <code>SPDLMH</code>, the controller immediately cuts fuel injection to govern vehicle velocity. Fuel remains deactivated until road speed decelerates below the companion recovery setpoint (<a href="../../4_-_OB,_Speed,_and_Rev_Limiter/C_-_Speed_Limiter/SPDLML_SpeedLimitFuelShutoffRestore253MPH.html"><code>SPDLML</code></a>).</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>Cutout_CheckRevLimitingValues</code> (<code>T-SMEC_v19.asm:5700-5712</code>), line 5707.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Reached after primary rev limiter check passes (<code>EngineRpm_HB &lt; 0x00,x</code>).</li>
+<li>Evaluated only when <code>EngineRpm_HB &gt;= SPDRPM</code> (4000 RPM). If RPM is below <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/SPDRPM_EngineSpeedHighLimitToEnableOverspeed.html"><code>SPDRPM</code></a>, speed check is skipped.</li>
+<li><strong>Speed Comparison</strong>:</li>
+<li>Full-range vehicle speed <code>Temp1</code> (1 mph per count, 0 to 255 mph) is compared against <code>SPDLMH</code> (<code>cmpb SPDLMH_SpeedLimitFuelShutoff254mph</code>).</li>
+<li>If <code>Temp1 &gt;= SPDLMH</code> (<code>bcc Cutout_ShutOffEngineForThisRotation</code>), fuel is cut for the current rotation.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Track &amp; Competition Removal</strong>:</li>
+<li>Set <code>SPDLMH</code> to 255 counts (255 mph) to eliminate the top-speed fuel shutoff completely on race vehicles.</li>
+<li><strong>Stage IV Benchmark</strong>:</li>
+<li>Stage IV calibrations elevate <code>SPDLMH</code> to 175 counts (175 mph), paired with <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/C_-_Speed_Limiter/SPDLML_SpeedLimitFuelShutoffRestore253MPH.html"><code>SPDLML</code></a> at 170 mph.</li>
+<li><strong>Fleet &amp; Safety Governing</strong>:</li>
+<li>Lower <code>SPDLMH</code> to 75 to 85 mph for restricted drivers, ensuring <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/C_-_Speed_Limiter/SPDLML_SpeedLimitFuelShutoffRestore253MPH.html"><code>SPDLML</code></a> is lowered proportionally to provide clean hysteresis.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>Cutout_CheckRevLimitingValues</code> at lines 5704-5708, <code>cmpa SPDRPM_EngineSpeedHighLimitToEnableOverspeed</code> checks engine RPM. If RPM is at or above <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/SPDRPM_EngineSpeedHighLimitToEnableOverspeed.html"><code>SPDRPM</code></a>, accumulator B is loaded with <code>Temp1</code> and line 5707 executes <code>cmpb SPDLMH_SpeedLimitFuelShutoff254mph</code>. If carry is clear (<code>bcc</code>), vehicle speed meets or exceeds <code>SPDLMH</code> and execution branches to <code>Cutout_ShutOffEngineForThisRotation</code>.</p>
+<pre><code class="language-motorola6803">; --- Cutout_CheckRevLimitingValues (T-SMEC_v19.asm:5704-5708) ---
+	cmpa SPDRPM_EngineSpeedHighLimitToEnableOverspeed    ; compare a with memory contents (data is 7d)
+	bcs  L1485	    ; branch if lower
+	ldab Temp1	    ; load b with memory contents
+	cmpb SPDLMH_SpeedLimitFuelShutoff254mph    ; compare b with memory contents (data is 76)
+	bcc  Cutout_ShutOffEngineForThisRotation    ; branch if greater or equal</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Hysteresis Pair</strong>: <code>SPDLMH</code> (upper shutoff limit, 118 mph stock, 175 mph Stage IV) paired with <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/C_-_Speed_Limiter/SPDLML_SpeedLimitFuelShutoffRestore253MPH.html"><code>SPDLML</code></a> (lower restore limit, 110 mph stock, 170 mph Stage IV).</li>
+<li><strong>Case Discrepancy</strong>: The template label uses uppercase <code>MPH</code> (<code>SPDLMH_SpeedLimitFuelShutoff254MPH</code>), while <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a> line 5707 uses lowercase <code>mph</code> (<code>SPDLMH_SpeedLimitFuelShutoff254mph</code>).</li>
+<li><strong>Speed Scaling</strong>: Scaled at 1 mph per count. 118 counts equals 118 mph.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>SPDLMH</code>
+        </footer>
+    </div>
+</body>
+</html>

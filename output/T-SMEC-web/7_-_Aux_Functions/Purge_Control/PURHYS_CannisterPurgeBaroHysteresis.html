@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PURHYS: CannisterPurgeBaroHysteresis | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x155E</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Purge Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PURHYS: CannisterPurgeBaroHysteresis</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PURHYS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>PURHYS_CannisterPurgeBaroHysteresis</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Purge_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x155E</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">inHg vacuum</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5660-L5671"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L1817"><code>CanisterPurgeOff</code></a> in <a href="../../T-SMEC_v19.asm.html#L1823"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PURHYS</code> defines the vacuum hysteresis deadband for the evaporative canister purge solenoid control routine.</p>
+<p>When driving at steady cruising speeds near light throttle, intake manifold vacuum naturally oscillates due to road irregularities and small throttle pedal movements. If the controller used a single fixed vacuum threshold to toggle the purge solenoid, the valve would buzz or chatter rapidly on and off. In factory calibrations, <code>PURHYS</code> is configured to 2 counts, providing approximately 0.23 psi (0.5 inHg) of hysteresis. Once canister purge is energized, <code>PURHYS</code> is subtracted from the barometric headroom, requiring manifold pressure to rise closer to atmospheric pressure before the solenoid is shut off.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ControlPurgeSolenoid_MM</code> (<code>T-SMEC_v19.asm:1821-1826</code>), instruction line 1823.</li>
+<li><strong>Active State Gate</strong>:</li>
+<li>Reached only when purge solenoid is currently energized (<code>pia1abuf_PurgeSolenoid</code> set in <code>PIA1_A_Buffer</code>).</li>
+<li><strong>Math Operation</strong>:</li>
+<li>Subtracts <code>PURHYS_CannisterPurgeBaroHysteresis</code> from <code>BaroPressure</code> before subtracting <a href="../../7_-_Aux_Functions/Purge_Control/PURMAP_CannisterPurgeWhenBelowThisBaro.html"><code>PURMAP</code></a>.</li>
+<li>Effective shutoff threshold becomes <code>MapValue &gt; Baro - PURMAP - PURHYS</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Hysteresis Deadband Preservation</strong>:</li>
+<li>Keep <code>PURHYS</code> at factory 2 counts (~0.5 inHg) for quiet, stable purge valve operation.</li>
+<li><strong>Preventing Solenoid Chatter</strong>:</li>
+<li>Zeroing <code>PURHYS</code> produces rapid on-off clicking on rough pavement or highway undulations.</li>
+<li><strong>Upper Limit Caution</strong>:</li>
+<li>Do not raise <code>PURHYS</code> beyond 4 counts to avoid delaying purge shutoff as the engine transitions into boost.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>ControlPurgeSolenoid_MM</code> at line 1822, <code>brset *PIA1_A_Buffer, #pia1abuf_PurgeSolenoid, L1060</code> tests if the purge solenoid is currently active. If active, it falls through to line 1823, which executes <code>subb PURHYS_CannisterPurgeBaroHysteresis</code>, deducting the hysteresis margin from accumulator B before line 1824 subtracts <a href="../../7_-_Aux_Functions/Purge_Control/PURMAP_CannisterPurgeWhenBelowThisBaro.html"><code>PURMAP</code></a>. This widens the pressure margin before <code>cmpb MapValue</code> branches to <code>CanisterPurgeOff</code>.</p>
+<pre><code class="language-motorola6803">; --- ControlPurgeSolenoid_MM (T-SMEC_v19.asm:1821-1826) ---
+L1059:	ldab BaroPressure    ; load b with memory contents
+	brset *PIA1_A_Buffer, #pia1abuf_PurgeSolenoid, L1060	; branch if bit(s) set
+	subb PURHYS_CannisterPurgeBaroHysteresis    ; subtract memory contents from b (data is 01)
+L1060:	subb PURMAP_CannisterPurgeWhenBelowThisBaro    ; subtract memory contents from b (data is 03)
+	cmpb MapValue	
+	bcs  CanisterPurgeOff	 ; branch if lower</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Subtractive Delta</strong>: Operates subtractively from the barometric reference, lowering the required shutoff pressure.</li>
+<li><strong>Paired Parameter</strong>: Directly modifies the effective trigger point of <a href="../../7_-_Aux_Functions/Purge_Control/PURMAP_CannisterPurgeWhenBelowThisBaro.html"><code>PURMAP_CannisterPurgeWhenBelowThisBaro</code></a>.</li>
+<li><strong>3-Bar Conversion</strong>: On 3-bar MAP setups, 2 counts represents ~0.35 psi of hysteresis.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>PURHYS</code>
+        </footer>
+    </div>
+</body>
+</html>

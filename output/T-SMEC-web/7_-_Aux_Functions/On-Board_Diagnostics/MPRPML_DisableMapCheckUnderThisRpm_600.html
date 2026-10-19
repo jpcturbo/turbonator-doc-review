@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPRPML: DisableMapCheckUnderThisRpm 600 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1CC5</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MPRPML: DisableMapCheckUnderThisRpm 600</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MPRPML</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MPRPML_DisableMapCheckUnderThisRpm_600</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1CC5</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x12C0 (4800 counts = 600 RPM)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7555-L7565"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L7037"><code>StoreAntiDwell</code></a> in <a href="../../T-SMEC_v19.asm.html#L7052"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MPRPML</code> defines the lower engine speed limit for the manifold absolute pressure sensor steady-state rationality validation window.</p>
+<p>To confirm that the MAP sensor is operating accurately and providing trustworthy load signals, the engine controller validates the sensor reading against expected manifold pressure boundaries under steady idle and light cruising conditions. However, during engine cranking, initial startup flare, or unstable low-speed chugging below normal idle speed, manifold vacuum fluctuates wildly.</p>
+<p>In factory calibrations, <code>MPRPML</code> is configured to 4800 counts, corresponding to exactly 600 RPM. If engine speed is below <code>MPRPML</code>, the controller suspends steady-state sensor validation, preventing false rationality errors during engine start.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>StoreAntiDwell</code> (<code>T-SMEC_v19.asm:7040-7063</code>), instruction at line 7052.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Engine running confirmed (<code>b51_SparkEngineNotRunning</code> clear at line 7040).</li>
+<li>MAP delta below <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPDELT_DeltaMapThatChecksGood.html"><code>MPDELT</code></a> at line 7047.</li>
+<li><code>b45_MapStuck</code> and <code>b54_BigMapChange</code> flags both clear.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li><code>EngineRpm_HB</code> loaded into register D at line 7051.</li>
+<li><code>cmpD MPRPML_DisableMapCheckUnderThisRpm_600</code> at line 7052 compares 16-bit RPM against 4800 counts (600 RPM).</li>
+<li>If lower (<code>bcs</code>), branches to <code>L1595</code> at line 7053, bypassing assertion of <code>b47_MapOK</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Camshaft &amp; High Idle Tuning</strong>:</li>
+<li>If installing performance camshafts that require an elevated idle target (e.g., 950 RPM), raise <code>MPRPML</code> from 600 RPM to 750 RPM to avoid erratic validation during lope.</li>
+<li><strong>Startup Stability</strong>:</li>
+<li>Keeping <code>MPRPML</code> above cranking speed (600 RPM vs 200-250 RPM cranking) prevents false rationality judgments during engine startup.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Zeroing <code>MPRPML</code> forces validation during engine cranking when manifold vacuum is completely unstable.</li>
+<li>Setting <code>MPRPML</code> higher than normal cruising RPM disables MAP steady-state validation entirely.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In routine <code>StoreAntiDwell</code> (lines 7040-7063), after verifying that MAP pressure change is stable and less than <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPDELT_DeltaMapThatChecksGood.html"><code>MPDELT</code></a>, line 7051 loads 16-bit engine speed <code>EngineRpm_HB</code> into register D. Line 7052 executes <code>cmpD MPRPML_DisableMapCheckUnderThisRpm_600</code> (0x12C0 = 4800 counts, 600 RPM). If register D is strictly lower than <code>MPRPML</code>, the carry flag is set and <code>bcs L1595</code> branches to line 7062, bypassing line 7061 where bit <code>b47_MapOK</code> is set in register <code>BitFlags_47</code>.</p>
+<pre><code class="language-motorola6803">; --- StoreAntiDwell (T-SMEC_v19.asm:7040-7063) ---
+	brset *BitFlags_51, #b51_SparkEngineNotRunning, L1596	 ; branch if bit(s) set
+	ldaa CPU_A2DResults1	; load a with memory contents
+	tab		    ; b = a
+	suba MapVolts
+	stab MapVolts	    ; store b into memory
+	bcc  L1594	    ; branch if greater or equal
+	nega		    ; negate a (set high bit)
+L1594:	cmpa MPDELT_DeltaMapThatChecksGood    ; compare a with memory contents (data is 01)
+	bcc  L1595	    ; branch if greater or equal
+	brset *b45_IPL1, #b45_MapStuck, L1595    ; branch if bit(s) set
+	brset *BitFlags_54, #b54_BigMapChange, L1595	; branch if bit(s) set
+	ldd  EngineRpm_HB    ; load d (a&amp;b) with memory contents
+	cmpD MPRPML_DisableMapCheckUnderThisRpm_600    ; compare D (data is 12)
+	bcs  L1595	    ; branch if lower
+	cmpD MPRPMH_DisableMapCheckAboveThisRpm_1500	; compare D (data is 2e)
+	bcc  L1595	    ; branch if greater or equal
+	ldaa MapVolts	    ; load a with memory contents
+	cmpa MPDAGL_DisableMapCheckBelowThisMap    ; compare a with memory contents (data is 0a)
+	bcs  L1595	    ; branch if lower
+	cmpa MPDAGH_DisableMapCheckAboveThisMap    ; compare a with memory contents (data is 56)
+	bcc  L1595	    ; branch if greater or equal
+	bset *BitFlags_47, #b47_MapOK	 ; set bits
+L1595:	bclr *BitFlags_54, #b54_BigMapChange	; clear bits
+L1596:	ldaa TimerOverflowsBetweenDistPulses	; load a with memory contents
+</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPRPMH_DisableMapCheckAboveThisRpm_1500.html"><code>MPRPMH</code></a> (high RPM gate), <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPDAGL_DisableMapCheckBelowThisMap.html"><code>MPDAGL</code></a> (low MAP gate), and <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPDAGH_DisableMapCheckAboveThisMap.html"><code>MPDAGH</code></a> (high MAP gate).</li>
+<li><strong>Validation Target</strong>: Qualifies setting of internal flag <code>b47_MapOK</code> in <code>BitFlags_47</code>.</li>
+<li><strong>16-Bit Word Constant</strong>: Stored as a 2-byte word where 8 counts equal 1 RPM (4800 counts = 600 RPM).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MPRPML</code>
+        </footer>
+    </div>
+</body>
+</html>

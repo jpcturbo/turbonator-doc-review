@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THRTHR: 25PctThrValueFromShutoff | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x18F5</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>4 - OB, Speed, and Rev Limiter ➔ D - Misc, Limp Mode</strong> &nbsp;|&nbsp; Subsystem: <strong>Limiters_Limp</strong>
+        </div>
+        
+        <article class="content">
+            <h1>THRTHR: 25PctThrValueFromShutoff</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>THRTHR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>THRTHR_25PctThrValueFromShutoff</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Limiters_Limp</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>4_-_OB,_Speed,_and_Rev_Limiter\D_-_Misc,_Limp_Mode\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x18F5</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">volts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x21 (33 counts ≈ 0.65 Volts / ~25% throttle)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6579-L6589"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5672"><code>Cutout_CheckRevLimiters</code></a> in <a href="../../T-SMEC_v19.asm.html#L5675"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>THRTHR</code> defines the throttle position offset above closed throttle that delineates light-throttle driving from loaded acceleration during MAP sensor limp-in mode.</p>
+<p>When the engine controller flags a defective manifold absolute pressure sensor, it must apply special rev limiting to prevent the engine from operating under high load without accurate fuel metering. If the driver is merely feathering the throttle to maneuver the vehicle at low speed, a lower or less intrusive limit may apply. However, if the throttle position exceeds <code>MINTHR</code> by more than <code>THRTHR</code>, the controller confirms the driver is attempting loaded acceleration and enforces the strict MAP limp-in rev limiter (<a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/REVLMT2_MapLimpinAndThrAbove25PercentUpper2000.html"><code>REVLMT2</code></a> and <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/REVLMT_MapLimpinAndThrAbove25PercentLower1850.html"><code>REVLMT</code></a>). In factory calibrations, <code>THRTHR</code> is set to 33 counts, representing approximately 0.65 volts above base closed throttle, or roughly 25 percent of throttle travel.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>Cutout_CheckRevLimiters</code> (<code>T-SMEC_v19.asm:5672-5678</code>) and <code>Cutout_DetermineLimpModeCutoutRPM</code> (<code>T-SMEC_v19.asm:5776-5782</code>).</li>
+<li><strong>Fault Activation</strong>:</li>
+<li>Evaluated when <code>b45_MapStuck</code> or <code>b45_MapBadSignal</code> in <code>b45_IPL1</code> is set.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li>Added to <code>MINTHR_LowestSessionTPS</code> (<code>addb MINTHR_LowestSessionTPS</code>).</li>
+<li>Result compared against <code>TpsVolts</code> (<code>cmpb TpsVolts</code>).</li>
+<li>If <code>TpsVolts &gt; MINTHR + THRTHR</code> (<code>bcs</code>), throttle is treated as open &gt; 25%, maintaining <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/REVLMT2_MapLimpinAndThrAbove25PercentUpper2000.html"><code>REVLMT2</code></a> (cutout) or <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/REVLMT_MapLimpinAndThrAbove25PercentLower1850.html"><code>REVLMT</code></a> (recovery).</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Throttle Body Sizing</strong>:</li>
+<li>Large aftermarket throttle bodies flow more air at lower opening angles. Lowering <code>THRTHR</code> maintains protective gating on modified inductions.</li>
+<li><strong>High-Stall Converters</strong>:</li>
+<li>Raising <code>THRTHR</code> slightly allows additional pedal travel to overcome tight or high-stall converters without triggering the limp limiter.</li>
+<li><strong>Relative Voltage Operation</strong>:</li>
+<li>Because <code>THRTHR</code> is added to <code>MINTHR</code>, it dynamically tracks closed-throttle voltage adjustments automatically.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>Cutout_CheckRevLimiters</code> at line 5675, <code>ldab THRTHR_25PctThrValueFromShutoff</code> loads the 33-count offset into accumulator B. Line 5676 adds <code>MINTHR_LowestSessionTPS</code>, and line 5677 executes <code>cmpb TpsVolts</code>. If <code>TpsVolts</code> is greater (<code>bcs</code>), execution branches directly to <code>Cutout_CheckRevLimitingValues</code> with X pointing to <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/REVLMT2_MapLimpinAndThrAbove25PercentUpper2000.html"><code>REVLMT2</code></a>. An identical check occurs at line 5779 in <code>Cutout_DetermineLimpModeCutoutRPM</code>.</p>
+<pre><code class="language-motorola6803">; --- Cutout_CheckRevLimiters (T-SMEC_v19.asm:5672-5678) ---
+Cutout_CheckRevLimiters:
+	ldx  #REVLMT2_MapLimpinAndThrAbove25PercentUpper2000	; load index with value
+	brclr *b45_IPL1, #b45_MapStuck | b45_MapBadSignal, MAPSENSOR_OKAY_OR_LIGHTTHROTTLE	 ; branch if bit(s) clear
+	ldab THRTHR_25PctThrValueFromShutoff	; load b with memory contents (data is 21)
+	addb MINTHR_LowestSessionTPS	; b=b+memory contents
+	cmpb TpsVolts	
+	bcs  Cutout_CheckRevLimitingValues    ; branch if lower</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Dynamic Learning Support</strong>: <code>THRTHR</code> is evaluated relative to <code>MINTHR_LowestSessionTPS</code>, insulating the threshold from thermal throttle body expansion or throttle stop repositioning.</li>
+<li><strong>Voltage Scaling</strong>: Scaled at approx 0.0196 volts per count ($5.0 / 255$). 33 counts equals 33 × 5.0 / 255 ≈ 0.65 volts.</li>
+<li><strong>Stage IV Calibrations</strong>: Retains the stock value of 33 counts.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>THRTHR</code>
+        </footer>
+    </div>
+</body>
+</html>

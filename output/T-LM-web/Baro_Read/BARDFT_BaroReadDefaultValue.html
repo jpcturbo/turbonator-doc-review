@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BARDFT: BaroReadDefaultValue | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0FDE</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Baro Read</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BARDFT: BaroReadDefaultValue</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BARDFT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BARDFT_BaroReadDefaultValue</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Baro_Read\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0FDE</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Barometric Pressure ADC (0x7F = 127 decimal; exactly 29.92 inHg / 101.3 kPa)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x7F                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L4092-L4105"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L4254"><code>BaroReadIfRequired</code></a> in <a href="../T-LMv13.asm.html#L4264"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BARDFT</code> (BaroReadDefaultValue) defines the nominal sea-level fallback atmospheric pressure (stock calibration = <code>0x7F</code> / 127 decimal = 29.92 inHg / 101.325 kPa standard atmosphere).</p>
+<p>If the MAP sensor is disconnected, if the baro solenoid harness is damaged, or if an in-flight atmospheric reading fails either <a href="../Baro_Read/BAROHI_BaroReadValidHighLimit.html"><code>BAROHI</code></a> or <a href="../Baro_Read/BAROLO_BaroReadValidLowLimit.html"><code>BAROLO</code></a> boundary tests, the ECU loads <code>BARDFT</code> into <code>BaroPressure</code>. This ensures that all fuel modifier tables, baro-compensations (<a href="../Idle_-_AIS_Control/BARAIS_BaroCompensation_FromBaro.html"><code>BARAIS</code></a>, <a href="../Idle_-_AIS_Decel/BARFLR_OffsetCorrectionTo_MAPFLR_FromBaro.html"><code>BARFLR</code></a>), and target boost altitude calculations fall back to nominal sea-level operation, keeping the engine running safely with standard baseline fueling.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Loaded whenever <code>BaroPressure</code> fails plausibility checks in <code>BaroReadIfRequired</code> (line 4264) or <code>CheckBaroPressure</code> (line 4961).</li>
+<li>Applied as the baseline barometric reference during sensor fault recovery.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stock Value</strong>: <code>0x7F</code> (127 decimal = standard 1.0 atmosphere).</li>
+<li><strong>High Altitude Permanent Relocation</strong>: If a vehicle operates exclusively at high altitude (e.g. Denver, CO at 5,280 ft where average baro is ~25 inHg / <code>0x6A</code>), and has a deleted or non-functional baro solenoid, changing <code>BARDFT</code> to <code>0x6A</code> ensures that even during limp-home fallback, baseline altitude fuel and spark trims remain accurate.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CheckBaroPressure (T-LMv13.asm:4960-4962) ---
+LE3D5:  ldaa BARDFT_BaroReadDefaultValue         ; Load standard sea-level constant ($0FDE, data 0x7F)
+        staa BaroPressure                        ; Save to BaroPressure RAM variable</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 4264</strong> (<code>BaroReadIfRequired</code>): <code>LDEDD:  ldaa BARDFT_BaroReadDefaultValue    ; load a with memory contents (data is 7f)</code></li>
+<li><strong>Line 4961</strong> (<code>CheckBaroPressure</code>): <code>LE3D5:  ldaa BARDFT_BaroReadDefaultValue    ; load a with memory contents (data is 7f)</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Fail-Safe Anchor</strong>: The universal fallback anchor for all atmospheric compensation routines.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>BARDFT</code>
+        </footer>
+    </div>
+</body>
+</html>

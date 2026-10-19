@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAPHIG: MapSensorUpperLimit | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x12E2</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Setup - On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MAPHIG: MapSensorUpperLimit</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MAPHIG</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MAPHIG_MapSensorUpperLimit</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Setup_-_On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x12E2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">MAP Sensor ADC (0xFC = 252 decimal; approx 4.94 Volts / extreme overboost)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xFC                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L4864-L4876"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L1181"><code>VerifyOperationOfMapSensor_MM</code></a> in <a href="../T-LMv13.asm.html#L1187"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MAPHIG</code> (MapSensorUpperLimit) establishes the maximum valid electrical ceiling (stock calibration = <code>0xFC</code> / ~4.94V) for the MAP sensor.</p>
+<p>If the 3-wire MAP sensor connector becomes unplugged or its ground wire is severed, the ECU's internal input circuitry pulls the signal up to 5.0V (<code>&gt; MAPHIG</code>). When detected in <code>VerifyOperationOfMapSensor_MM</code>, the ECU flags <strong>Fault Code 14</strong>. Additionally, <code>MAPHIG</code> is referenced inside <code>ControlEngineCutout_MM</code> as a secondary overboost/sensor limit ceiling.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated in <code>VerifyOperationOfMapSensor_MM</code> at line 1187 and <code>ControlEngineCutout_MM</code> at lines 6370, 6372, and 6394.</li>
+<li>Compares raw MAP ADC against <code>MAPHIG</code>.</li>
+<li>If <code>MAPVolts &gt;= MAPHIG</code>, flags Code 14 and clamps overboost accumulators.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>3-Bar MAP Sensor Calibration</strong>: When installing a 3-Bar MAP sensor, ensure wiring polarity is correct. If the sensor ground pin is improperly pinned, signal voltage will float at 5.0V, instantly triggering Code 14 and engine cutout.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- VerifyOperationOfMapSensor_MM (T-LMv13.asm:1186-1188) ---
+        cmpa MAPHIG_MapSensorUpperLimit          ; Check upper open-circuit bound ($12E2, data 0xFC = 4.94V)
+        bcc  MapAppearsToBeFaulty                ; If &gt;= MAPHIG, flag Code 14!</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 1187</strong> (<code>VerifyOperationOfMapSensor_MM</code>): <code>cmpa MAPHIG_MapSensorUpperLimit    ; compare a with memory contents (data is fc)</code></li>
+<li><strong>Line 6370</strong> (<code>ControlEngineCutout_MM</code>): <code>cmpa MAPHIG_MapSensorUpperLimit    ; compare a with memory contents (data is fc)</code></li>
+<li><strong>Line 6372</strong> (<code>ControlEngineCutout_MM</code>): <code>ldaa MAPHIG_MapSensorUpperLimit    ; load a with memory contents (data is fc)</code></li>
+<li><strong>Line 6394</strong> (<code>ControlEngineCutout_MM</code>): <code>cmpb MAPHIG_MapSensorUpperLimit    ; compare b with memory contents (data is fc)</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Electrical Sanity Band</strong>: Valid MAP voltage must reside strictly within 0.02V ≤ V_MAP &lt; 4.94V.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>MAPHIG</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CONFIG: ConfigurationFlags | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0146</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Setup - Cal Configuration</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CONFIG: ConfigurationFlags</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CONFIG</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CONFIG_ConfigurationFlags</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Setup_-_Cal_Configuration\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0146</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 5 (8-bit Bitmask Flag)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">8-Bit Bitmask Flag Byte (0x00 in stock MTX)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x00                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L314-L364"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L1630"><code>ControlPurgeSolenoid_MM</code></a> in <a href="../T-LMv13.asm.html#L1632"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CONFIG</code> (CONFIG_ConfigurationFlags) is one of the most powerful and versatile calibration bytes in the entire ECU firmware. It serves as the master software toggle for major driveline architecture and Turbonator performance modifications.</p>
+<p>In this stock factory manual transmission binary (<code>T_LM_22_MTX_A171</code>), <code>CONFIG</code> is initialized to <code>0x00</code>. When building custom performance calibrations, tuners toggle specific bits in this byte to enable cutting-edge features:
+- <strong>Bit 7 (<code>cfg_ATX</code>, $80)</strong>: Driveline selection. Set = Automatic transmission (ATX); Cleared = Manual transmission (MTX).
+- <strong>Bit 6 (<code>cfg_FlashCE</code>, $40)</strong>: Flash Check Engine Light on knock detection.
+- <strong>Bit 5 (<code>cfg_BankEnrich</code>, $20)</strong>: Enable selective bank fuel enrichment.
+- <strong>Bit 4 (<code>cfg_ShiftLight</code>, $10)</strong>: Repurpose Purge solenoid driver as an adjustable RPM Shift Light.
+- <strong>Bit 3 (<code>cfg_SwBoost</code>, $08)</strong>: Enable dual switchable boost stages via dash switch.
+- <strong>Bit 2 (<code>cfg_BstSwPol</code>, $04)</strong>: Invert boost switch input polarity (normally open vs normally closed).
+- <strong>Bit 1 (<code>cfg_StageLim</code>, $02)</strong>: Enable 2-step staging rev limiter for drag launches.
+- <strong>Bit 0 (<code>cfg_AntiLag</code>, $01)</strong>: Enable anti-lag launch retard.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Queried continuously across multiple engine routines:</li>
+<li><code>ControlPurgeSolenoid_MM</code> (line 1632)</li>
+<li><code>CalculateAisPosition_MM</code> (line 3583)</li>
+<li><code>CalculateTargetIdleSpeedAndAisPosition_MM</code> (line 5184)</li>
+<li><code>ControlEngineCutout_MM</code> (line 6441)</li>
+<li><code>CalcTargetBoost_MM</code> (line 6961)</li>
+<li><code>UseCELForKnockIndication_MM</code> (line 7337)</li>
+<li><code>CalculateAntiLagRetard_Routine_MM</code> (line 7458)</li>
+<li><code>ControlShiftLight_Routine_MM</code> (line 7490)</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Manual vs Auto Swap</strong>: When swapping a manual transmission into an automatic car (or vice versa), toggle Bit 7 (<code>cfg_ATX</code>). This reconfigures idle decel dashpot routines, target idle tables, and rev limiters.</li>
+<li><strong>Knock CEL Flash</strong>: Enabling Bit 6 (<code>cfg_FlashCE</code>, +$40) provides real-time in-cockpit visual knock feedback without needing a scan tool or laptop.</li>
+<li><strong>Drag Racing 2-Step</strong>: Enable Bit 1 (+02) to activate staging limiter features using the clutch switch or an auxiliary staging button.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- Check Knock CEL in UseCELForKnockIndication_MM (T-LMv13.asm:7337-7341) ---
+        ldaa CONFIG_ConfigurationFlags           ; Read master configuration byte
+        bita #0x40                               ; Test bit 6 (cfg_FlashCE)
+        beq  LF319                               ; If disabled, exit routine
+        ; Else proceed to flash CEL if KnockCount exceeds threshold!</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 1632</strong> (<code>ControlPurgeSolenoid_MM</code>): <code>ldaa CONFIG_ConfigurationFlags</code></li>
+<li><strong>Line 1989</strong> (<code>CruiseIsSwitchedOn</code>): <code>ldaa CONFIG_ConfigurationFlags</code></li>
+<li><strong>Line 3583</strong> (<code>CalculateAisPosition_MM</code>): <code>ldab CONFIG_ConfigurationFlags</code></li>
+<li><strong>Line 4366</strong> (<code>IncludeSelectiveBankEnrichment</code>): <code>ldaa CONFIG_ConfigurationFlags</code></li>
+<li><strong>Line 5184</strong> (<code>CalculateTargetIdleSpeedAndAisPosition_MM</code>): <code>tst  CONFIG_ConfigurationFlags</code></li>
+<li><strong>Line 6441</strong> (<code>ControlEngineCutout_MM</code>): <code>ldab CONFIG_ConfigurationFlags</code></li>
+<li><strong>Line 6961</strong> (<code>CalcTargetBoost_MM</code>): <code>ldaa CONFIG_ConfigurationFlags</code></li>
+<li><strong>Line 7337</strong> (<code>UseCELForKnockIndication_MM</code>): <code>ldaa CONFIG_ConfigurationFlags</code></li>
+<li><strong>Line 7380</strong> (<code>CEReturn</code>): <code>;         ldaa CONFIG_ConfigurationFlags</code></li>
+<li><strong>Line 7410</strong> (<code>CEReturn</code>): <code>;         ldaa CONFIG_ConfigurationFlags</code></li>
+<li><strong>Line 7458</strong> (<code>CalculateAntiLagRetard_Routine_MM</code>): <code>ldab CONFIG_ConfigurationFlags</code></li>
+<li><strong>Line 7490</strong> (<code>ControlShiftLight_Routine_MM</code>): <code>ldab CONFIG_ConfigurationFlags</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Clean Integration</strong>: Unlike separate patch tables, <code>CONFIG</code> centralizes all performance add-ons into a single unified control byte.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>CONFIG</code>
+        </footer>
+    </div>
+</body>
+</html>

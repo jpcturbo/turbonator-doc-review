@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AISCLD: IdleSpeedDrive FromTemp | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0DC0</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ A - AIS Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>AISCLD: IdleSpeedDrive FromTemp</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>AISCLD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>AISCLD_IdleSpeedDrive_FromTemp</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\A_-_AIS_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0DC0</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2D Table / Curve)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">2 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Coolant Temperature (-200 to 260 °F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Target Idle Speed (0 to 2048 RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM vs. degF</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Number of points in table
+.byte 0x7F, 0x96, 0xFF, 0x5C     ;Point 1
+.byte 0xCD, 0x64                 ;Point 2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3710-L3722"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L2080"><code>LoadDiagIdleSpeed</code></a> in <a href="../../T-SMEC_v19.asm.html#L2085"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>AISCLD</code> defines the target idle speed curve across engine coolant temperatures when an automatic transmission is engaged in gear (Drive, Reverse, 1st, or 2nd).</p>
+<p>When an automatic transmission is shifted into gear, the torque converter impeller creates substantial viscous drag against the engine crankshaft. To prevent the vehicle from excessively creeping forward against the brakes while stopped at traffic lights, and to reduce transmission fluid heating, the controller targets a lower idle speed in gear than in neutral.</p>
+<p><code>AISCLD</code> is looked up by coolant temperature whenever the in-gear flag is active.</p>
+<p>In factory calibrations, <code>AISCLD</code> commands approximately 1200 RPM during cold warm-up, tapering down to a hot in-gear target of 800 to 850 RPM once fully warmed up.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>LoadDiagIdleSpeed</code> (<code>T-SMEC_v19.asm:2080-2115</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Automatic transmission vehicle detected (<code>cfg_ATX</code> set in <a href="../../0_-_Setup/A_-_Cal_Configuration/CONFIG_ConfigurationFlags.html"><code>CONFIG_ConfigurationFlags</code></a>).</li>
+<li>In-gear flag <code>b0c_ATXInGear</code> in <code>BitFlags_AIS</code> must be set at line 2086.</li>
+<li>Gear change flag <code>b0c_ATXChngGear</code> must be clear at line 2084.</li>
+<li>Indexes <code>AISCLD</code> table at line 2085 via <code>ldx #AISCLD_IdleSpeedDrive_FromTemp</code>, then branches to <code>L1086</code> to perform <code>jsr Lookup4ByteTable</code> using <code>CoolantTemp</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>In-Gear Camshaft Stall Prevention</strong>:</li>
+<li>Raise warm in-gear targets from 800 RPM to 875 to 950 RPM if an aggressive camshaft pulls down vacuum and threatens to stall against the torque converter.</li>
+<li><strong>High-Stall Torque Converters</strong>:</li>
+<li>High-stall aftermarket converters create less idle drag; in-gear target can be adjusted closer to Park/Neutral target without causing harsh transmission engagement.</li>
+<li><strong>Relative Offset Rule</strong>:</li>
+<li>Keep <code>AISCLD</code> 50 to 100 RPM lower than <a href="../../5_-_Idle/A_-_AIS_Control/AISPN_IdleSpeedParkNeutral_FromTemp.html"><code>AISPN</code></a> across all temperature points to prevent engine flare when shifting out of gear.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>, line 2084 verifies gear shift stability. At line 2085, the CPU prepares index X: <code>ldx #AISCLD_IdleSpeedDrive_FromTemp</code>. Line 2086 executes <code>brset *BitFlags_AIS, #b0c_ATXInGear, L1086</code>. If the transmission is in gear, execution branches directly to <code>L1086</code>, loading <code>CoolantTemp</code> into accumulator A and executing <code>jsr Lookup4ByteTable</code> at line 2109. The resulting target idle speed is saved to <code>Temp0</code>, augmented with <a href="../../5_-_Idle/A_-_AIS_Control/TIMED2_AISDecelBaseAirflowCurveOffset2.html"><code>TIMED2</code></a>, and shifted into <code>TargetIdleSpeed_HB</code>.</p>
+<pre><code class="language-motorola6803">; --- LoadDiagIdleSpeed (T-SMEC_v19.asm:2084-2095) ---
+L1083:	brset *BitFlags_AIS, #b0c_ATXChngGear, L1092	; branch if bit(s) set
+	ldx  #AISCLD_IdleSpeedDrive_FromTemp	  ; load index with value
+	brset *BitFlags_AIS, #b0c_ATXInGear, L1086    ; branch if bit(s) set
+	ldaa DRBPointer1    ; load a with memory contents
+	cmpa #0x19	    ; compare a with value -00011001-
+	beq  L1084	    ; branch if equal (zero)
+	brclr *BitFlags_50, #b50_InMotion, L1085    ; branch if bit(s) clear
+	ldd  TargetIdleSpeed_HB	; load d (a&amp;b) with memory contents
+	subd #0x0001	     ;	-00000000 00000001-
+	bitb #0x3f	    ;  -00111111-
+	bne  L1091	    ; branch if not equal (not zero)
+	bclr *BitFlags_50, #b50_InMotion    ; clear bits</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Automatic Transmission Specific</strong>: Exclusively utilized on automatic transmission calibrations; manual transmission vehicles always execute the <a href="../../5_-_Idle/A_-_AIS_Control/AISPN_IdleSpeedParkNeutral_FromTemp.html"><code>AISPN</code></a> path.</li>
+<li><strong>Companion Parameter</strong>: Directly paired with <a href="../../5_-_Idle/A_-_AIS_Control/AISPN_IdleSpeedParkNeutral_FromTemp.html"><code>AISPN</code></a> (Park/Neutral target curve) and <a href="../../5_-_Idle/B_-_AIS_Decel/PNDRK_ParkNeutralToDriveKicks_FromTemp.html"><code>PNDRK</code></a> (shift-into-drive kick opening steps).</li>
+<li><strong>Table Resolution</strong>: 2 points (Temp vs RPM).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>AISCLD</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAPLIM: NoCellUpdateAboveThisMAP | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0BD4</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ F - Adaptive memory</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MAPLIM: NoCellUpdateAboveThisMAP</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MAPLIM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MAPLIM_NoCellUpdateAboveThisMAP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\F_-_Adaptive_memory\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0BD4</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi absolute</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x99 (153 counts ≈ 17.6 psia / +2.9 psi boost)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3218-L3229"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L3062"><code>O2Signal_BelowToggle</code></a> in <a href="../../T-SMEC_v19.asm.html#L3077"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MAPLIM</code> defines the upper manifold absolute pressure limit above which closed-loop oxygen sensor feedback is inhibited and adaptive memory cell updates are blocked.</p>
+<p>Under higher engine loads and positive boost pressure, maintaining closed-loop stoichiometric fuel targeting is undesirable because engines require rich mixtures for cylinder cooling and detonation suppression.</p>
+<p>In the stock A283 calibration, <code>MAPLIM</code> is set to 153 counts, corresponding to approximately 17.6 psia or 2.9 psi of positive boost pressure, locking out closed loop whenever manifold pressure exceeds this threshold.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> / <code>O2Signal_BelowToggle</code> (<code>T-SMEC_v19.asm:3076-3080</code>), instruction line 3077.</li>
+<li><strong>Gating Conditions</strong>: Automatic transmission in-gear verification passed (or manual transmission).</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Line 3076 loads <code>MapValue</code> into register B.</li>
+<li>Line 3077 executes <code>cmpb MAPLIM_NoCellUpdateAboveThisMAP</code>.</li>
+<li>If <code>MapValue &gt; MAPLIM</code> (<code>bhi</code>), execution branches to <code>SwitchOrStayOpenLoop</code> (line 3095), forcing open-loop fueling.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Boost Lockout Calibration</strong>:</li>
+<li>Lowering <code>MAPLIM</code> to atmospheric pressure (approx 128 counts or 0 psi gauge) ensures immediate exit from closed-loop feedback as the turbo spools.</li>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
+<li>Must be rescaled down from 153 counts to approximately 102 counts on a 3-bar sensor to prevent closed loop under boost.</li>
+<li><strong>Upper Boundary Interaction</strong>:</li>
+<li>Acts as the hard ceiling for AutoCal adaptive cell updates; must be calibrated higher than <a href="../../1_-_Fuel/F_-_Adaptive_memory/MP5_AutoCalMapCellBoundary5.html"><code>MP5</code></a>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>HandleO2Processing_MM</code>, after checking transmission gear status at line 3074, line 3076 loads <code>MapValue</code> into accumulator B. Line 3077 executes <code>cmpb MAPLIM_NoCellUpdateAboveThisMAP</code>. If <code>MapValue</code> is strictly higher than <code>MAPLIM</code>, the higher branch <code>bhi SwitchOrStayOpenLoop</code> is taken to line 3095. Line 3096 sets <code>b50_OpenLoop</code> in <code>BitFlags_50</code>, terminating closed-loop feedback and preventing adaptive cell updates.</p>
+<pre><code class="language-motorola6803">; --- O2Signal_BelowToggle (T-SMEC_v19.asm:3076-3080) ---
+	ldab MapValue	    ; load b with memory contents
+	cmpb MAPLIM_NoCellUpdateAboveThisMAP	; compare b with memory contents (data is 66)
+	bhi  SwitchOrStayOpenLoop    ; branch if higher
+	cmpb MAPDEC_NoCellUpdateAndO2CNTRHeldBelowThisMap    ; compare b with memory contents (data is 0d)
+	bls  SwitchOrStayOpenLoop    ; branch if lower or same</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Works with <a href="../../1_-_Fuel/E_-_O2_Controller/BOOSTP_AdjustO2ResponseForPTEWhenMapAboveThis.html"><code>BOOSTP</code></a> (boost inhibit) and forms the upper limit above <a href="../../1_-_Fuel/F_-_Adaptive_memory/MP5_AutoCalMapCellBoundary5.html"><code>MP5</code></a>.</li>
+<li><strong>Sensor Scaling</strong>: 153 counts = 17.6 psia (+2.9 psi boost) on a 2-bar sensor. On a 3-bar sensor, 153 counts = 26.4 psia (+11.7 psi boost).</li>
+<li><strong>Persistence</strong>: Evaluated on every main loop pass; immediate effect in RAM.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MAPLIM</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPLMSK2: PowerLossLightMask2 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x02E7</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ A - Cal Configuration</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>IPLMSK2: PowerLossLightMask2</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>IPLMSK2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>IPLMSK2_PowerLossLightMask2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\A_-_Cal_Configuration\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x02E7</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 5 (Bitfield / Configuration Mask)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Warning Lamp Mask 2</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xD8                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L933-L944"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L4631"><code>DetermineEngineRunningCELStatus</code></a> in <a href="../../T-SMEC_v19.asm.html#L4645"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>IPLMSK2</code> defines the second dashboard warning lamp mask register, focusing on actuator circuit failures and major system diagnostic faults.</p>
+<p>Configured in factory calibrations to two hundred sixteen counts, <code>IPLMSK2</code> evaluates error flags stored in memory register b46_IPL2. The switches in <code>IPLMSK2</code> control dashboard check engine light illumination for turbocharger wastegate solenoid circuit faults, fuel injector driver failures, and major powertrain electrical faults. By evaluating <code>IPLMSK2</code> after sensor faults in <a href="../../0_-_Setup/A_-_Cal_Configuration/IPLMSK_PowerLossLightMask.html"><code>IPLMSK</code></a> have been verified, the controller ensures that severe hardware failures alert the driver immediately.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>DetermineEngineRunningCELStatus</code> (<code>T-SMEC_v19.asm:4631-4654</code>), instruction line 4645 (<code>bita IPLMSK2_PowerLossLightMask2</code>).</li>
+<li><strong>Gating Logic</strong>:</li>
+<li>Checked after <a href="../../0_-_Setup/A_-_Cal_Configuration/IPLMSK_PowerLossLightMask.html"><code>IPLMSK</code></a> sensor faults evaluate clear.</li>
+<li>If <code>cfg_EGR</code> is clear in <a href="../../0_-_Setup/A_-_Cal_Configuration/CONFIG_ConfigurationFlags.html"><code>CONFIG</code></a>, bits 7 and <code>b46_MajorFault</code> are masked out (<code>anda #~(b46_bit7 | b46_MajorFault)</code>).</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>If <code>bita IPLMSK2_PowerLossLightMask2</code> is zero (<code>beq TurnCheckEngineLightOnAndOff</code>), light is turned off.</li>
+<li>If non-zero, falls through to <code>clrb</code>, illuminating the warning light.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Wastegate Solenoid Elimination</strong>:</li>
+<li>Clearing the wastegate bit prevents the open-circuit condition from illuminating the dashboard check engine light when running an aftermarket boost controller.</li>
+<li><strong>Actuator Warning Control</strong>:</li>
+<li>Selectively disables warning light illumination for actuator and driver circuits without disabling primary analog sensor alerts.</li>
+<li><strong>EGR Interaction</strong>:</li>
+<li>The routine checks <code>cfg_EGR</code> in <a href="../../0_-_Setup/A_-_Cal_Configuration/CONFIG_ConfigurationFlags.html"><code>CONFIG</code></a>; if EGR is disabled, major fault bits are masked out before checking <code>IPLMSK2</code>.</li>
+<li><strong>Factory Setting</strong>:</li>
+<li>Set to two hundred sixteen counts in stock calibrations.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>DetermineEngineRunningCELStatus</code> at lines 4640-4646, accumulator A loads <code>b46_IPL2</code>. Line 4641 tests <code>bita #b46_InjectorFault</code>; if set, it branches to light the CEL. If EGR is not installed (<code>brset 0, X, #cfg_EGR, L1345</code>), line 4644 masks major fault bits. Line 4645 executes <code>bita IPLMSK2_PowerLossLightMask2</code>. If no unmasked bits are active (<code>beq TurnCheckEngineLightOnAndOff</code>), the lamp remains off; otherwise line 4647 clears register B to turn the light on.</p>
+<pre><code class="language-motorola6803">; --- DetermineEngineRunningCELStatus (T-SMEC_v19.asm:4640-4648) ---
+	ldaa b46_IPL2    ; load a with memory contents
+	bita #b46_InjectorFault 	 ;  -00010000-
+	bne  L1346	    ; branch if not equal (not zero)
+	brset  0, X, #cfg_EGR, L1345	; branch if bit(s) set
+	anda #~(b46_bit7 | b46_MajorFault)	    ; AND a with value -00111111-
+L1345:	bita IPLMSK2_PowerLossLightMask2    ;  (data is d8)
+	beq  TurnCheckEngineLightOnAndOff	 ; branch if equal (zero)
+L1346:	clrb		    ; b = 0</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Bit Allocations</strong>: Bit 7: Unused, Bit 6: Major Fault, Bit 4: Fuel Injector Fault, Bit 3: Wastegate Solenoid Fault.</li>
+<li><strong>Companion Mask</strong>: Works directly with <a href="../../0_-_Setup/A_-_Cal_Configuration/IPLMSK_PowerLossLightMask.html"><code>IPLMSK</code></a>.</li>
+<li><strong>Active In Running Mode</strong>: Evaluated continuously in the foreground main loop while the engine is running.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>IPLMSK2</code>
+        </footer>
+    </div>
+</body>
+</html>

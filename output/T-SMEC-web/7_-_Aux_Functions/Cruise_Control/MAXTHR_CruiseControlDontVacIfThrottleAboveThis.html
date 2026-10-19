@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAXTHR: CruiseControlDontVacIfThrottleAboveThis | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1698</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Cruise Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Cruise_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MAXTHR: CruiseControlDontVacIfThrottleAboveThis</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MAXTHR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MAXTHR_CruiseControlDontVacIfThrottleAboveThis</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Cruise_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Cruise_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1698</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">counts TPS above idle</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x50 (80 counts ≈ 31.4% throttle opening above idle)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5974-L5984"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8723"><code>CalculateVehicleSpeed</code></a> in <a href="../../T-SMEC_v19.asm.html#L8960"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MAXTHR</code> defines the maximum throttle position ceiling above which the cruise control vacuum solenoid is blocked from applying further vacuum.</p>
+<p>Cruise control is engineered solely for maintaining highway cruising speed under moderate load, not for wide-open throttle acceleration. If vehicle speed drops on an extremely steep grade or if the vehicle is towing a heavy trailer, the cruise servo must not be permitted to pull the throttle plate wide open or generate sustained high turbocharger boost. In factory calibrations, <code>MAXTHR</code> is set to 80 counts, corresponding to approximately 31.4 percent throttle opening above idle, capping vacuum authority at a safe partial-throttle boundary.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8960-8964</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Positive servo command present (accumulator A positive, commanding vacuum pull).</li>
+<li>Net throttle position calculated as <code>TpsVolts - MINTHR_LowestSessionTPS</code> in accumulator B.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Compares throttle opening against <code>MAXTHR</code> via <code>cmpb MAXTHR</code> at line 8960.</li>
+<li>If lower (<code>bcs L1796</code>), vacuum command is permitted; if higher or equal, branches to line 8962 (<code>clra</code>), zeroing vacuum command in <code>CruiseControlVar3</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Mountain Climbing Authority</strong>:</li>
+<li>If cruise control sags and drops speed on steep highway grades, raise <code>MAXTHR</code> from 80 counts to 96 or 112 counts.</li>
+<li>Gives the servo additional throttle authority to maintain speed without driver foot intervention.</li>
+<li><strong>Boost &amp; Safety Ceiling</strong>:</li>
+<li>Maintaining <code>MAXTHR</code> below 50 percent throttle opening prevents cruise control from building full turbo boost or pulling wide open.</li>
+<li><strong>Zeroing Out Output</strong>:</li>
+<li>When throttle exceeds <code>MAXTHR</code>, vacuum command <code>CruiseControlVar3</code> is zeroed, allowing the return spring to stabilize throttle position.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateVehicleSpeed</code> at line 8954, accumulator A holds the commanded servo pulse. If positive (commanding vacuum to open throttle), line 8960 executes <code>cmpb MAXTHR_CruiseControlDontVacIfThrottleAboveThis</code>. If net throttle in accumulator B equals or exceeds <code>MAXTHR</code>, execution falls through to line 8962 (<code>clra</code>), zeroing accumulator A and storing 0 into <code>CruiseControlVar3</code> at line 8963, shutting off vacuum solenoid pulsing.</p>
+<pre><code class="language-motorola6803">; --- CalculateVehicleSpeed (T-SMEC_v19.asm:8960-8964) ---
+L1794:	cmpb MAXTHR_CruiseControlDontVacIfThrottleAboveThis    ; compare b with memory contents (data is 50)
+	bcs  L1796	    ; branch if lower
+L1795:	clra		    ; a = 0
+L1796:	staa CruiseControlVar3	  ; store a into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Throttle Ceiling Calculation</strong>: 80 counts / 255 counts total TPS span = 31.4% throttle opening above resting idle stop.</li>
+<li><strong>Turbo Protection</strong>: Prevents the cruise servo from entering wastegate boost control regimes under steady cruising.</li>
+<li><strong>Companion Parameter</strong>: Coordinates with lower throttle floor <a href="../../7_-_Aux_Functions/Cruise_Control/CLOTHR_CruiseControlDontVentIfThrottleBelowThis.html"><code>CLOTHR_CruiseControlDontVentIfThrottleBelowThis</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MAXTHR</code>
+        </footer>
+    </div>
+</body>
+</html>

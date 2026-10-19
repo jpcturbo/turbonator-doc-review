@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCYTMH: CurveAHotDecayTime | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x07D2</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ B - Running</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Base_Modifiers</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DCYTMH: CurveAHotDecayTime</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DCYTMH</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DCYTMH_CurveAHotDecayTime</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Base_Modifiers</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\B_-_Running\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x07D2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">counts / seconds</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x01 (1 count ≈ 89.8 seconds decay)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L2192-L2202"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5992"><code>CalculateSumOfAllFuelModifiers_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L6022"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DCYTMH</code> defines the decay rate divisor for after-start enrichment (Curve A) following a hot restart.</p>
+<p>After hot hold duration (<a href="../../1_-_Fuel/B_-_Running/HOTHLD_CurveAHotHoldTime.html"><code>HOTHLD</code></a>) expires, <code>DCYTMH</code> governs how quickly the remaining hot restart fuel enrichment tapers to zero. In factory calibrations, <code>DCYTMH</code> is calibrated to 1 count, producing a very gradual, smooth taper.</p>
+<p>This gentle decay ensures that hot engine restarts remain smooth and stable without abrupt lean transitions as the fuel rail stabilizes.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateSumOfAllFuelModifiers_MM</code> (<code>T-SMEC_v19.asm:6029-6036</code>), instruction line 6033.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Active when <code>b50_FuelCurveACToggle</code> is set and hot restart conditions apply (<code>CoolantTemp &gt;= TMPHLD</code>).</li>
+<li><strong>Pointer Increment</strong>:</li>
+<li>Because <code>CoolantTemp &gt;= TMPHLD</code>, line 6012 incremented pointer X.</li>
+<li>In <code>L1516</code>, <code>subb 0x03,x</code> evaluates <code>TMPHLD + 1 + 3</code> = <code>DCYTMH</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Hot Decay Rate Formula</strong>:</li>
+<li>Decay duration in seconds equals approximately 89.76 divided by calibration counts (1 count = ~89.8 seconds maximum taper).</li>
+<li><strong>Large Injector Tuning</strong>:</li>
+<li>Increase <code>DCYTMH</code> to 4-9 counts on large injector setups to eliminate prolonged rich hot idling.</li>
+<li><strong>Lean Surge Prevention</strong>:</li>
+<li>Keep values low if hot restarts exhibit lean bucking or hesitation when shifting into gear.</li>
+<li><strong>Companion Decay Rate</strong>:</li>
+<li>Evaluated as the hot-restart counterpart to cold decay rate constant <a href="../../1_-_Fuel/B_-_Running/DCYTMC_CurveAColdDecayTime.html"><code>DCYTMC</code></a>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateSumOfAllFuelModifiers_MM</code>, during hot restarts (<code>CoolantTemp &gt;= TMPHLD</code>), register X was incremented at line 6012 (<code>inx</code>). Once hot hold expires, <code>b50_FuelCurveACToggle</code> is set and execution enters <code>L1516</code> every 32 loop passes. The instruction <code>subb 0x03,x</code> at line 6033 evaluates <code>(TMPHLD + 1) + 3</code> = <code>TMPHLD + 4</code> = <code>DCYTMH</code>. Accumulator B is decremented by <code>DCYTMH</code> each pass, providing the hot restart decay rate.</p>
+<pre><code class="language-motorola6803">; --- CalculateSumOfAllFuelModifiers_MM (T-SMEC_v19.asm:6032-6036) ---
+L1516:	ldab Factor_ACVDCY_CurveACurveCDecayAfterRunModeReached    ; load b with memory contents
+	subb 0x03,x	
+	bcc  L1517	    ; branch if greater or equal
+	clrb		    ; b = 0
+L1517:	stab Factor_ACVDCY_CurveACurveCDecayAfterRunModeReached    ; store b into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Offset Pairing</strong>: Located in ROM at address <code>TMPHLD + 4</code> (0x82B4); accessed via <code>0x03,x</code> following <code>inx</code>.</li>
+<li><strong>Stock Calibration</strong>: Single count setting produces an extended decay taper to guard against heat-soak lean surging.</li>
+<li><strong>Loop Timing</strong>: Decremented once every 32 main loop iterations.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>DCYTMH</code>
+        </footer>
+    </div>
+</body>
+</html>

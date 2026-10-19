@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRPMHI: BaroReadHighRPM6650 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x147E</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Baro Read</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BRPMHI: BaroReadHighRPM6650</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BRPMHI</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BRPMHI_BaroReadHighRPM6650</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Baro_Read\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x147E</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0xBB80                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5436-L5446"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L1495"><code>ReadBaroIfPossible</code></a> in <a href="../../T-SMEC_v19.asm.html#L1499"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BRPMHI</code> defines the upper engine speed boundary for in-flight atmospheric barometric pressure sampling during vehicle deceleration.</p>
+<p>When the driver lifts off the throttle from high engine speeds, intense exhaust scavenging, valvetrain harmonics, and rapid manifold pressure transients occur. Additionally, the driver is more likely to re-apply throttle abruptly during aggressive driving. <code>BRPMHI</code> prevents the controller from actuating the baro solenoid above this RPM ceiling. In factory calibrations, <code>BRPMHI</code> is configured to 6650 RPM (48000 counts in word format, representing approximately 6000 to 6650 RPM). If engine speed exceeds this ceiling, barometric reading requests are locked out until engine speed settles.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ReadBaroIfPossible</code> (<code>T-SMEC_v19.asm:1495-1517</code>), instruction line 1499.</li>
+<li><strong>Execution Path</strong>:</li>
+<li>Entered when throttle is closed (<code>b4f_OffIdle</code> clear).</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Compares 16-bit <code>EngineRpm_HB</code> against <code>BRPMHI_BaroReadHighRPM6650</code> (<code>cpx BRPMHI</code> at line 1499).</li>
+<li>If <code>EngineRpm_HB &gt; BRPMHI</code> (<code>bhi R1028</code>), branches immediately to exit without sampling baro.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>High-RPM Safeguard</strong>:</li>
+<li>Keep <code>BRPMHI</code> below 6500 RPM to prevent venting the pressure sensor during aggressive high-RPM throttle lifts.</li>
+<li><strong>Transient Fueling Protection</strong>:</li>
+<li>Ensures the pressure sensor is never disconnected from manifold vacuum when rapid wide-open throttle reapplication is likely.</li>
+<li><strong>Drag Racing Recommendations</strong>:</li>
+<li>Leaving <code>BRPMHI</code> at factory settings prevents unwanted baro reads during high-RPM gear shifts.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>ReadBaroIfPossible</code> at line 1498, <code>EngineRpm_HB</code> is loaded into index register X. Line 1499 executes <code>cpx BRPMHI_BaroReadHighRPM6650</code>. If the engine speed is higher than this 16-bit threshold (<code>bhi</code>), the routine immediately branches to <code>R1028</code>, returning from the subroutine without updating <code>Timer_BaroReadRpmConditionsSatisfied</code>.</p>
+<pre><code class="language-motorola6803">; --- ReadBaroIfPossible (T-SMEC_v19.asm:1498-1502) ---
+	ldx  EngineRpm_HB
+	cpx  BRPMHI_BaroReadHighRPM6650    ;  (data is bb80)
+	bhi  R1028	    ; branch if higher
+	cpx  BRPMLO_BaroReadLowRPM1800	  ;  (data is 3840)
+	bcs  R1028	    ; branch if lower</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Template Constant Format</strong>: Stored as a 16-bit word (<code>Type 4</code>), factory value <code>0xBB80</code>.</li>
+<li><strong>High-Speed Lockout</strong>: Ensures that atmospheric sampling occurs only under stable deceleration conditions.</li>
+<li><strong>Companion Parameter</strong>: Works alongside <a href="../../7_-_Aux_Functions/Baro_Read/BRPMLO_BaroReadLowRPM1800.html"><code>BRPMLO_BaroReadLowRPM1800</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>BRPMHI</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T2KDCMAX: WastegateDutyCycleIncreaseMaxWhenKnocking | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x13E9</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ B - WG Control ➔ T2 WG Control ➔ T2 WGDC Knock Adj</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>T2KDCMAX: WastegateDutyCycleIncreaseMaxWhenKnocking</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>T2KDCMAX</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T2KDCMAX_WastegateDutyCycleIncreaseMaxWhenKnocking</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\B_-_WG_Control\T2_WG_Control\T2_WGDC_Knock_Adj\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x13E9</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">percent duty cycle</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x3C                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5287-L5297"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L9857"><code>T2WGDC_LookupWGDutyCycleBase</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L9895"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>T2KDCMAX</code> establishes the upper ceiling on cumulative knock duty cycle modification in T2 control.</p>
+<p>When persistent detonation occurs under boost, repeated knock events accumulate additional duty cycle steps. <code>T2KDCMAX</code> prevents this penalty total from increasing indefinitely, capping total knock-induced duty cycle modification to a calibrated maximum that ensures the wastegate opens fully to base actuator spring pressure without over-driving the solenoid.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9894-9897</code>).</li>
+<li><strong>Gating Conditions</strong>: Evaluated immediately after <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2KDCINC_WastegateDutyCycleIncreaseStepWhenKnocking.html"><code>T2KDCINC</code></a> is added to accumulator B.</li>
+<li><strong>Clamp Comparison</strong>:</li>
+<li>Line 9895 loads <code>T2KDCMAX_WastegateDutyCycleIncreaseMaxWhenKnocking</code> into accumulator A.</li>
+<li>Line 9896 executes <code>cba</code> to compare accumulator B against accumulator A.</li>
+<li>If accumulator B exceeds <code>T2KDCMAX</code> (<code>bcs</code>), execution branches to line 9901 (<code>tab</code>) to clamp accumulator B to <code>T2KDCMAX</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Maximum T2 Knock Duty Cycle Ceiling</strong>:</li>
+<li>Caps total cumulative knock duty cycle addition in T2 mode.</li>
+<li>Factory setting is 60 counts in template (30.0% duty cycle), or 80 counts in ASM (40.0% duty cycle).</li>
+<li><strong>High-Boost Safety Scaling</strong>:</li>
+<li>Ensure <code>T2KDCMAX</code> is large enough to push final duty cycle to 100%, venting full pressure to the wastegate actuator.</li>
+<li><strong>Preventing Solenoid Saturation</strong>:</li>
+<li>Restricts knock duty cycle from winding up beyond physical mechanical necessity.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalcWGDutyCycleT2</code> at line 9895, <code>ldaa T2KDCMAX_WastegateDutyCycleIncreaseMaxWhenKnocking</code> loads the maximum allowable knock addition into accumulator A. Line 9896 executes <code>cba</code> to compare accumulator B against accumulator A. If accumulator B is higher, carry is set and line 9897 branches to line 9901, where <code>tab</code> clamps accumulator B to <code>T2KDCMAX</code>. The clamped value is subsequently stored in <code>WastegateDutyCycleIncreaseFromKnock</code>.</p>
+<pre><code class="language-motorola6803">; --- CalcWGDutyCycleT2 (T-SMEC_v19.asm:9894-9897) ---
+        ldab #0xff                     ; load b with value -11111111-
+L7759:  ldaa T2KDCMAX_WastegateDutyCycleIncreaseMaxWhenKnocking    ; load a with memory contents (data is 50)
+        cba
+        bcs  L7760                     ; branch if lower</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Upper Boundary</strong>: Limits maximum knock duty cycle addition in T2 mode.</li>
+<li><strong>Factory Value</strong>: 0x3C = 60 counts = 30.0% (template), 0x50 = 80 counts = 40.0% (ASM).</li>
+<li><strong>Actuator Spring Dump</strong>: Sized so that adding <code>T2KDCMAX</code> fully opens the wastegate flapper.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>T2KDCMAX</code>
+        </footer>
+    </div>
+</body>
+</html>

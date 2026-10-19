@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MINAMP: MinimumAverageMAP | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1DCC</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ D - Transfer Functions</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MINAMP: MinimumAverageMAP</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MINAMP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MINAMP_MinimumAverageMAP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\D_-_Transfer_Functions\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1DCC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x06                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7818-L7829"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L7818"><code>CheckThrottle_AtFullThrottle</code></a> in <a href="../../T-SMEC_v19.asm.html#L7860"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MINAMP</code> defines the absolute lower limit floor for the running average manifold absolute pressure variable.</p>
+<p>When transitioning off-idle, the controller fakes a delta pressure surge by subtracting <a href="../../0_-_Setup/E_-_Throttle_Calibration/OCTAE_FakeDeltaMapIncrease.html"><code>OCTAE</code></a> from instantaneous manifold pressure. Under severe trailing-throttle overrun deceleration where manifold pressure is already extremely low, this subtraction could cause mathematical underflow. <code>MINAMP</code> prevents this by establishing a hard lower floor. Configured in factory calibrations to six counts, <code>MINAMP</code> represents approximately zero point six nine psi absolute (about twenty-eight point five inches of mercury vacuum).</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CheckThrottle_AtFullThrottle</code> (<code>T-SMEC_v19.asm:7818-7866</code>), instruction line 7860 (<code>ldaa MINAMP_...</code>).</li>
+<li><strong>Trigger Condition</strong>:</li>
+<li>Reached when <code>suba OCTAE_FakeDeltaMapIncrease</code> produces a negative result (carry set).</li>
+<li><strong>Clamping Execution</strong>:</li>
+<li>Line 7860 loads <code>MINAMP_MinimumAverageMAP</code> and stores it directly into <code>AverageMAPValue</code> at line 7861.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Mathematical Underflow Prevention</strong>:</li>
+<li>Enforces a non-zero floor for <code>AverageMAPValue</code> during off-idle delta pressure calculations.</li>
+<li><strong>Three-Bar Sensor Conversions</strong>:</li>
+<li>Can be retained at factory setting of six counts or reduced to four counts on 3-bar MAP conversions.</li>
+<li><strong>Avoid Excessive Values</strong>:</li>
+<li>Setting <code>MINAMP</code> too high inflates perceived engine load on closed-throttle overrun.</li>
+<li><strong>Factory Setting</strong>:</li>
+<li>Six counts (~0.69 psi absolute / 28.5 inHg vacuum) in stock calibrations.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CheckThrottle_AtFullThrottle</code> at lines 7857-7861, off-idle transition logic executes <code>suba OCTAE_FakeDeltaMapIncrease</code>. If carry is set (<code>bcs</code>), underflow has occurred, and execution falls through to line 7860: <code>ldaa MINAMP_MinimumAverageMAP</code>. Line 7861 stores this floor into <code>AverageMAPValue</code>.</p>
+<pre><code class="language-motorola6803">; --- CheckThrottle_AtFullThrottle (T-SMEC_v19.asm:7857-7862) ---
+L1649:	ldaa MapValue	    ; load a with memory contents
+	suba OCTAE_FakeDeltaMapIncrease    ;  (data is 01)
+	bcc  L1650	    ; branch if greater or equal
+        ldaa MINAMP_MinimumAverageMAP
+L1650:	staa AverageMAPValue    ; store a into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Underflow Clamp</strong>: Acts as an emergency lower clamp during the tip-in transient subtraction.</li>
+<li><strong>Pairing</strong>: Direct companion to <a href="../../0_-_Setup/E_-_Throttle_Calibration/OCTAE_FakeDeltaMapIncrease.html"><code>OCTAE_FakeDeltaMapIncrease</code></a>.</li>
+<li><strong>Scale Factor</strong>: 1 count corresponds to approximately 0.115 psi on standard 2-bar scaling.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MINAMP</code>
+        </footer>
+    </div>
+</body>
+</html>

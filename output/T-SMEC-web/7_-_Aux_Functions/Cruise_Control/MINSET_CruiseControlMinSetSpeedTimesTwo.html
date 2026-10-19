@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MINSET: CruiseControlMinSetSpeedTimesTwo | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x16B2</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Cruise Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Cruise_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MINSET: CruiseControlMinSetSpeedTimesTwo</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MINSET</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MINSET_CruiseControlMinSetSpeedTimesTwo</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Cruise_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Cruise_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x16B2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">counts (MPH times two)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x46 (70 counts = 35.0 MPH)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6000-L6010"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8626"><code>CruiseBumpUpSpeedBy2Mph</code></a> in <a href="../../T-SMEC_v19.asm.html#L8642"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MINSET</code> defines the minimum vehicle road speed threshold required for cruise control engagement.</p>
+<p>Cruise control is engineered strictly for open highway and rural driving. Engaging cruise control in congested city traffic, residential neighborhoods, or school zones represents a significant safety hazard. In factory calibrations, <code>MINSET</code> is configured to 70 counts (representing 35 miles per hour in stock 2.5L calibrations, or 60 counts / 30 miles per hour in Stage IV calibrations). If the driver attempts to engage cruise control below this threshold, the engine controller locks out engagement and clears the saved setpoint.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CruiseBumpUpSpeedBy2Mph</code> (<code>T-SMEC_v19.asm:8642-8646</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated whenever driver presses set or resume switch.</li>
+<li><code>CruiseSpeedSetpoint</code> held in accumulator B.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Compares setpoint against <code>MINSET</code> via <code>cmpb MINSET</code> at line 8642.</li>
+<li>If greater or equal (<code>bcc L1748</code>), setpoint is accepted; if lower, line 8644 executes <code>clrb</code> and stores 0 into <code>CruiseSpeedSetpoint</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Secondary Road Engagement</strong>:</li>
+<li>Lowering <code>MINSET</code> from 70 counts (35 mph) to 60 counts (30 mph) permits cruise operation on slower country roads.</li>
+<li><strong>City Driving Safety Lockout</strong>:</li>
+<li>Keeps cruise control locked out in low-speed urban environments to ensure driver remains in manual control.</li>
+<li><strong>Zeroing on Violation</strong>:</li>
+<li>If setpoint is below <code>MINSET</code>, register B is cleared to zero at line 8644 and stored to <code>CruiseSpeedSetpoint</code>, locking out engagement.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CruiseBumpUpSpeedBy2Mph</code> at line 8642, accumulator B is compared against <code>MINSET_CruiseControlMinSetSpeedTimesTwo</code>. If accumulator B is greater than or equal to <code>MINSET</code> (<code>bcc L1748</code>), the setpoint is valid and execution branches to line 8701. If speed is below <code>MINSET</code>, line 8644 executes <code>clrb</code> (zeroing accumulator B) and line 8645 stores 0 into <code>CruiseSpeedSetpoint</code>, aborting cruise engagement.</p>
+<pre><code class="language-motorola6803">; --- CruiseBumpUpSpeedBy2Mph (T-SMEC_v19.asm:8642-8646) ---
+L1737:	cmpb MINSET_CruiseControlMinSetSpeedTimesTwo	; compare b with memory contents (data is 46)
+	bcc  L1748	    ; branch if greater or equal
+	clrb		    ; b = 0
+L1738:	stab CruiseSpeedSetpoint    ; store b into memory
+	bra  L1748	    ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Template Variation</strong>: Configured to 0x46 (70 counts = 35.0 mph) in stock 2.5L template, and 0x3C (60 counts = 30.0 mph) in Stage IV template.</li>
+<li><strong>Multiplier Factor</strong>: Value = MPH * 2, so 70 counts = 35.0 mph.</li>
+<li><strong>Companion Limiter</strong>: Pairs with <a href="../../7_-_Aux_Functions/Cruise_Control/LOSPCO_CruiseControlLowSpeedCutoutSpeed.html"><code>LOSPCO_CruiseControlLowSpeedCutoutSpeed</code></a> (runtime dropout threshold).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MINSET</code>
+        </footer>
+    </div>
+</body>
+</html>

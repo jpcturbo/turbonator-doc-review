@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCYTMC: CurveAColdDecayTime | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x07C5</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ B - Running</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Base_Modifiers</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DCYTMC: CurveAColdDecayTime</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DCYTMC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DCYTMC_CurveAColdDecayTime</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Base_Modifiers</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\B_-_Running\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x07C5</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">counts / seconds</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x09 (9 counts ≈ 10.0 seconds decay)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L2179-L2189"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5992"><code>CalculateSumOfAllFuelModifiers_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L6022"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DCYTMC</code> defines the decay rate divisor for after-start cold enrichment (Curve A) following a cold start.</p>
+<p>Once cold hold duration (<a href="../../1_-_Fuel/B_-_Running/CLDHLD_CurveAColdHoldTime.html"><code>CLDHLD</code></a>) expires, <code>DCYTMC</code> controls how quickly after-start fuel enrichment tapers down to zero. The decay rate is inversely proportional to this constant, producing a smooth reduction in fuel enrichment over time.</p>
+<p>In factory calibrations, <code>DCYTMC</code> is calibrated to 9 counts, yielding a decay window of approximately 10.0 seconds.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateSumOfAllFuelModifiers_MM</code> (<code>T-SMEC_v19.asm:6022-6036</code>), instruction lines 6022, 6033.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Active when <code>b50_FuelCurveACToggle</code> is set (decay active) and cold start conditions apply.</li>
+<li><strong>Indexed Subtraction</strong>:</li>
+<li>When cold, pointer X points to <a href="../../1_-_Fuel/B_-_Running/TMPHLD_TempSwitchPointForCurveAHoldDecay.html"><code>TMPHLD</code></a>. In <code>L1516</code>, <code>subb 0x03,x</code> reads <code>TMPHLD + 3</code> = <code>DCYTMC</code>.</li>
+<li>Subtracted from <code>Factor_ACVDCY</code> every 32 loop passes.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Decay Duration Formula</strong>:</li>
+<li>Decay time in seconds equals approximately 89.76 divided by calibration counts (9 counts = 10.0 seconds decay).</li>
+<li><strong>Smoothing the Taper</strong>:</li>
+<li>Lower <code>DCYTMC</code> to 4-6 counts if the engine hesitates or sags as cold hold ends.</li>
+<li><strong>Accelerating Warm-Up</strong>:</li>
+<li>Raising <code>DCYTMC</code> drops cold enrichment faster, reducing exhaust soot and fuel consumption if idle stability permits.</li>
+<li><strong>Companion Calibration</strong>:</li>
+<li>Works with <a href="../../1_-_Fuel/B_-_Running/CLDHLD_CurveAColdHoldTime.html"><code>CLDHLD</code></a>; <a href="../../1_-_Fuel/B_-_Running/CLDHLD_CurveAColdHoldTime.html"><code>CLDHLD</code></a> sets the dwell, and <code>DCYTMC</code> sets the ramp-down rate.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateSumOfAllFuelModifiers_MM</code>, after cold hold elapses, <code>b50_FuelCurveACToggle</code> is set. Line 6013 branches to <code>L1515</code>. Line 6029 checks the main loop counter: <code>brset *Counter_MainLoop, #$%00011111, L1516</code>. Every 32 loop cycles, <code>L1516</code> loads <code>Factor_ACVDCY</code> into accumulator B and executes <code>subb 0x03,x</code>. Because X was not incremented when cold, <code>0x03,x</code> points to <code>TMPHLD + 3</code> = <code>DCYTMC</code>. The decremented value is stored back into <code>Factor_ACVDCY</code> at line 6036 until it reaches zero.</p>
+<pre><code class="language-motorola6803">; --- CalculateSumOfAllFuelModifiers_MM (T-SMEC_v19.asm:6029-6037) ---
+L1515:	brset *Counter_MainLoop, #$%00011111, L1516	; branch if bit(s) set
+	bra  ClearTemp0ForResultStorage    ; branch
+
+L1516:	ldab Factor_ACVDCY_CurveACurveCDecayAfterRunModeReached    ; load b with memory contents
+	subb 0x03,x	
+	bcc  L1517	    ; branch if greater or equal
+	clrb		    ; b = 0
+L1517:	stab Factor_ACVDCY_CurveACurveCDecayAfterRunModeReached    ; store b into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Memory Alignment</strong>: Stored at ROM offset <code>TMPHLD + 3</code> (address 0x82B3); evaluated via <code>0x03,x</code> when cold.</li>
+<li><strong>Decay Formula</strong>: Total decay duration ≈ 89.76 / counts seconds.</li>
+<li><strong>Dual Role</strong>: Serves as direct operand for Curve A cold decay, and serves as base symbol pointer <code>#DCYTMC</code> for Curve C parameters.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>DCYTMC</code>
+        </footer>
+    </div>
+</body>
+</html>

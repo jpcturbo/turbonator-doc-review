@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DECPT: AdaptiveDecAfterThisTime | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1292</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ B - WG Control ➔ T1 WG Control ➔ T1 WGDC Adaptives</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DECPT: AdaptiveDecAfterThisTime</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DECPT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DECPT_AdaptiveDecAfterThisTime</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\B_-_WG_Control\T1_WG_Control\T1_WGDC_Adaptives\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1292</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Loop Counts / Duration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x20                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4944-L4954"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L9676"><code>WGDC_DecrementWGAdaptive</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L9688"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DECPT</code> specifies the dwell time threshold that a sustained overboost condition must persist before the controller decrements the active adaptive wastegate cell.</p>
+<p>Brief turbocharger pressure spikes during rapid throttle opening or quick upshifts are normal physical phenomena that should not permanently alter steady-state calibration trims. <code>DECPT</code> ensures that the error timer must accumulate a steady duration of continuous overboost before the controller trims down the baseline duty cycle cell. Note that this constant is shared between both T1 and T2 control routines.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_DecrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9686-9689</code>) in T1, and <code>T2WGDC_DecrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9995-9998</code>) in T2.</li>
+<li><strong>Gating Conditions</strong>: Error delta must exceed <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MPDEL1_IncCounterWhenDeltaMapBelowThis.html"><code>MPDEL1</code></a> and pass stability check <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MPFLOR_StopAdaptiveWGWhenDeltaMapIsLessThanThis.html"><code>MPFLOR</code></a>.</li>
+<li><strong>Timer Comparison</strong>:</li>
+<li>Line 9686 loads <code>Timer_BoostErrTimer</code> and increments it (<code>inca</code>).</li>
+<li>Line 9688 executes <code>cmpa DECPT_AdaptiveDecAfterThisTime</code>.</li>
+<li>If timer is below <code>DECPT</code> (<code>bcs</code>), execution branches to <code>WGDC_StoreBoostErrTimer</code> (line 9689) to save timer state without updating memory.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Overboost Dwell Time Threshold</strong>:</li>
+<li>Number of consecutive error timer counts that overboost must persist before the adaptive cell is decremented.</li>
+<li>Factory setting is 32 counts (approximately 0.35 seconds).</li>
+<li><strong>Suppressing False Adaptation on Spikes</strong>:</li>
+<li>Raising <code>DECPT</code> to 45 to 60 counts (0.5 to 0.7 seconds) prevents momentary gear-shift boost spikes from trimming baseline duty cycle.</li>
+<li><strong>Accelerating Boost Creep Correction</strong>:</li>
+<li>Lowering <code>DECPT</code> to 15 to 20 counts speeds up downward duty cycle trimming if steady-state boost consistently runs too high.</li>
+<li><strong>Shared Code Anomaly</strong>:</li>
+<li>Used in both <code>CalcWGDutyCycleT1</code> (line 9688) and <code>CalcWGDutyCycleT2</code> (line 9997); modifying <code>DECPT</code> affects both algorithms.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>WGDC_DecrementWGAdaptive</code> at line 9686, accumulator A loads <code>Timer_BoostErrTimer</code> and increments it (<code>inca</code>). Line 9688 executes <code>cmpa DECPT_AdaptiveDecAfterThisTime</code>. If accumulator A is less than <code>DECPT</code>, carry is set and line 9689 branches to <code>WGDC_StoreBoostErrTimer</code>, preserving the running timer. Once the timer reaches <code>DECPT</code>, accumulator B loads the cell byte, verifies it is above <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/DECLIM_LowerLimitOnWastegateDutyCycleCorrection.html"><code>DECLIM</code></a> at line 9690, and executes <code>decb</code> at line 9692 before writing the decremented byte back to adaptive memory.</p>
+<pre><code class="language-motorola6803">; --- WGDC_DecrementWGAdaptive (T-SMEC_v19.asm:9686-9689) ---
+	ldaa Timer_BoostErrTimer    ; load a with memory contents
+	inca		    ; increment a
+	cmpa DECPT_AdaptiveDecAfterThisTime    ; compare a with memory contents (data is 20)
+	bcs  WGDC_StoreBoostErrTimer	    ; branch if lower</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Shared Constant</strong>: Referenced by both <code>CalcWGDutyCycleT1</code> (line 9688) and <code>CalcWGDutyCycleT2</code> (line 9997).</li>
+<li><strong>Timer Rate</strong>: Increments once per main loop pass while overboost criteria are met.</li>
+<li><strong>Factory Value</strong>: 0x20 = 32 counts = approx 0.35 seconds dwell time.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>DECPT</code>
+        </footer>
+    </div>
+</body>
+</html>

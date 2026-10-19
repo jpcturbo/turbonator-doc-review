@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MP1: AutoCalMapCellBoundary1 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0B18</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ F - Adaptive memory</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MP1: AutoCalMapCellBoundary1</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MP1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MP1_AutoCalMapCellBoundary1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\F_-_Adaptive_memory\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0B18</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi absolute (inHg vacuum)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x24 (36 counts ≈ 4.1 psia / 21.6 inHg vac)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3030-L3041"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L3350"><code>AdaptiveMemory_DetermineWhichCellApplies_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L3354"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MP1</code> defines the first manifold absolute pressure load boundary in the adaptive fuel memory grid, separating Cell 0 and 1 from Cell 2 and 3.</p>
+<p>The Chrysler SMEC organizes long-term fuel trim into 13 distinct memory cells, comprising 12 off-idle cells arranged across 6 manifold pressure load columns and 2 engine speed rows, plus one dedicated closed-throttle idle cell. <code>MP1</code> represents the transition from extreme high-vacuum conditions, such as trailing-throttle coastdown and steep deceleration overrun, into light-load cruise.</p>
+<p>In stock calibrations, <code>MP1</code> is set to 36 counts, which corresponds to approximately 4.1 psia or 21.6 inHg of vacuum.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code> (<code>T-SMEC_v19.asm:3350-3393</code>), instruction line 3354.</li>
+<li><strong>Gating Conditions</strong>: Off-idle flag confirmed (<code>BitFlags_4f</code> bit <code>b4f_OffIdle</code> set) or engine speed above idle threshold (<code>EngineRpm_HB &gt; TargetIdleSpeed_HB + IDLOFS</code>).</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Line 3354 loads index register X with <code>#MP1_AutoCalMapCellBoundary1</code>.</li>
+<li>Line 3371 compares <code>MapValue</code> against the boundary in register A via <code>cmpa MapValue</code>.</li>
+<li>If <code>boundary &gt;= MapValue</code> (<code>bcc</code>), execution branches to <code>L1247</code> (line 3380), selecting that MAP column.</li>
+<li>If <code>boundary &lt; MapValue</code>, line 3373 increments X via <code>inx</code> to evaluate <a href="../../1_-_Fuel/F_-_Adaptive_memory/MP2_AutoCalMapCellBoundary2.html"><code>MP2</code></a>, incrementing <code>Temp0</code> by 2.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Camshaft Upgrades</strong>:</li>
+<li>High-overlap cams produce less engine vacuum at light load; raising <code>MP1</code> prevents light cruise from being trapped in deceleration fuel cells.</li>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
+<li>Must be scaled down in counts to match the 44.1 psi absolute range (approximately 24 counts on a 3-bar sensor).</li>
+<li><strong>Ascending Order Requirement</strong>:</li>
+<li><code>MP1</code> through <a href="../../1_-_Fuel/F_-_Adaptive_memory/MP5_AutoCalMapCellBoundary5.html"><code>MP5</code></a> must strictly maintain ascending numerical order: <code>MP1 &lt; MP2 &lt; MP3 &lt; MP4 &lt; MP5</code>.</li>
+<li><strong>Lowering the Boundary</strong>:</li>
+<li>Shrinks the decel fuel cell domain, causing Cell 2 and 3 to take effect at higher manifold vacuum.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code>, the engine controller determines which of the 13 adaptive memory cells applies. At line 3354, the microcontroller loads index register X with the base address of the MAP boundary table via <code>ldx #MP1_AutoCalMapCellBoundary1</code>. An iterative loop begins at line 3367 (<code>L1245</code>): register A loads the boundary byte <code>0x00,x</code>. If moving to a higher cell, line 3370 adds <a href="../../1_-_Fuel/F_-_Adaptive_memory/DLTMAP_MapHysteresisAtMapCellBoundaries.html"><code>DLTMAP</code></a> hysteresis. Line 3371 compares accumulator A against <code>MapValue</code> (<code>cmpa MapValue</code>). If <code>boundary &gt;= MapValue</code>, the branch <code>bcc L1247</code> takes the active MAP column. Otherwise, line 3373 executes <code>inx</code> to advance to the next boundary (<a href="../../1_-_Fuel/F_-_Adaptive_memory/MP2_AutoCalMapCellBoundary2.html"><code>MP2</code></a> through <a href="../../1_-_Fuel/F_-_Adaptive_memory/MP5_AutoCalMapCellBoundary5.html"><code>MP5</code></a>) and increments <code>Temp0</code> twice, looping until <code>cpx #DLTMAP_MapHysteresisAtMapCellBoundaries</code> matches at line 3378.</p>
+<pre><code class="language-motorola6803">; --- AdaptiveMemory_DetermineWhichCellApplies_MM (T-SMEC_v19.asm:3352-3379) ---
+	clra		    ; a = 0
+	staa Temp0	    ; store a into memory
+	ldx  #MP1_AutoCalMapCellBoundary1    ; load index with value (Base of MAP boundaries)
+	ldaa BitFlags_4f    ; load a with memory contents
+	bmi  ONTHROTTLE_OR_RPMTOOHIGHFORIDLE	; branch if minus(hi bit 1) (If OffIdle is set, skip idle check)
+	ldab #0x0c	    ; load b with value -00001100- (Cell 12 is the Idle Cell)
+	ldaa TargetIdleSpeed_HB	; load a with memory contents
+	adda IDLOFS_DeltaForIdleRPMForClosedThrottleCell    ;  (data is 04)
+	cmpb PointerIntoAdaptiveMemory
+	bne  L1244	    ; branch if not equal (not zero) (If already in Cell 12, add hysteresis)
+	adda HYTRPM_HysteresisFor_IDLOFS    ;  (data is 02)
+L1244:	cmpa EngineRpm_HB    ; compare a with memory contents (Check if RPM is below threshold for idle cell)
+	bcs  ONTHROTTLE_OR_RPMTOOHIGHFORIDLE	; branch if lower (If RPM is too high, it&#x27;s not idle, use run cells)
+	bra  L1250	    ; branch (RPM is low enough, set cell to 12)
+
+L1245:	ldaa 0x00,x	    ; load a with memory at index + value (Load MAP boundary)
+	cmpb Temp0	
+	bcc  L1246	    ; branch if greater or equal
+	adda DLTMAP_MapHysteresisAtMapCellBoundaries	;  (data is 01) (Add hysteresis if jumping cells)
+L1246:	cmpa MapValue	    ; compare a with memory contents
+	bcc  L1247	    ; branch if greater or equal (Found our MAP band)
+	inx		    ; increment index (x=x+1) (Move to next MAP boundary)
+ONTHROTTLE_OR_RPMTOOHIGHFORIDLE:
+	ldab PointerIntoAdaptiveMemory	  ; load b with memory contents
+	inc  Temp0	    ; Increment Temp0 twice to step the cell index for MAP (map bands represent jumps of 2 cells)
+	inc  Temp0	
+	cpx  #DLTMAP_MapHysteresisAtMapCellBoundaries	 ;  -10000100 01001010- (Check if we&#x27;ve hit the end of MAP boundaries)
+	bne  L1245	    ; branch if not equal (not zero)</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Works directly with <a href="../../1_-_Fuel/F_-_Adaptive_memory/MP2_AutoCalMapCellBoundary2.html"><code>MP2</code></a>, <a href="../../1_-_Fuel/F_-_Adaptive_memory/MP3_AutoCalMapCellBoundary3.html"><code>MP3</code></a>, <a href="../../1_-_Fuel/F_-_Adaptive_memory/MP4_AutoCalMapCellBoundary4.html"><code>MP4</code></a>, <a href="../../1_-_Fuel/F_-_Adaptive_memory/MP5_AutoCalMapCellBoundary5.html"><code>MP5</code></a>, and <a href="../../1_-_Fuel/F_-_Adaptive_memory/DLTMAP_MapHysteresisAtMapCellBoundaries.html"><code>DLTMAP</code></a> (hysteresis).</li>
+<li><strong>Cell Geometry</strong>: Defines the ceiling for AutoCal Cell 0 (low RPM) and Cell 1 (high RPM).</li>
+<li><strong>Persistence</strong>: Read on every main loop pass; modifications immediately shift cell boundaries in RAM.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MP1</code>
+        </footer>
+    </div>
+</body>
+</html>

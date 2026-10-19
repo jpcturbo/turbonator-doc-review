@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FANTMP2: FanTurnOffTempAbove45Mph | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0F32</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fan Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Turbonator</strong>
+        </div>
+        
+        <article class="content">
+            <h1>FANTMP2: FanTurnOffTempAbove45Mph</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>FANTMP2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>FANTMP2_FanTurnOffTempAbove45Mph</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Turbonator</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fan_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0F32</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Coolant Temperature ADC (0xE8 = 232 decimal; approx 208°F / 98°C)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xE8                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L3920-L3932"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;">Direct symbol reference or ROM header constant in <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>FANTMP2</code> (FanTurnOffTempAbove45Mph) establishes the radiator cooling fan turn-OFF temperature threshold (stock calibration = <code>0xE8</code> / ~208°F) when cruising above 45 MPH.</p>
+<p>Once high-speed coolant temperature triggers the fan ON (<a href="../Fan_Control/FANTMP1_FanTurnOnTempAbove45Mph.html"><code>FANTMP1</code></a> at 218°F), the fan continues running until ram airflow and forced convection pull engine coolant down below <code>FANTMP2</code>. The 10°F hysteresis deadband between <a href="../Fan_Control/FANTMP1_FanTurnOnTempAbove45Mph.html"><code>FANTMP1</code></a> (218°F) and <code>FANTMP2</code> (208°F) prevents the heavy-duty radiator fan relay from rapidly chattering on and off.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside subroutine <code>ControlFan2_MM</code> at line 6908-6920.</li>
+<li>Active when the radiator fan is currently running and vehicle speed is above 45 MPH.</li>
+<li>When <code>CoolantTemp &lt; FANTMP2</code>, the ECU de-energizes the fan relay.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Hysteresis Staggering</strong>: Always calibrate <code>FANTMP2</code> roughly 8°F to 12°F below <a href="../Fan_Control/FANTMP1_FanTurnOnTempAbove45Mph.html"><code>FANTMP1</code></a>. If <code>FANTMP2</code> is set too close to <a href="../Fan_Control/FANTMP1_FanTurnOnTempAbove45Mph.html"><code>FANTMP1</code></a>, relay contacts will arc and wear prematurely.</li>
+<li><strong>Thermostat Floor</strong>: Never set <code>FANTMP2</code> below the opening temperature of your mechanical thermostat (e.g. never set below 185°F for a 180°F thermostat), otherwise the electric fan will run continuously and never turn off on the highway!</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- ControlFan2_MM (T-LMv13.asm:6908-6912) ---
+LF23D:  inx                                      ; Increment pointer X from FANTMP1 ($0F25) to FANTMP2 ($0F32)
+        inx                                      
+        anda #0xfe                               ; Clear fan running flag if cooled below FANTMP2</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Pointer Indexing</strong>: The 6803 firmware accesses <code>FANTMP2</code> via structured pointer offsets following <a href="../Fan_Control/FANTMP1_FanTurnOnTempAbove45Mph.html"><code>FANTMP1</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>FANTMP2</code>
+        </footer>
+    </div>
+</body>
+</html>

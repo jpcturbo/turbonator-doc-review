@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANLGRP: AntiLagRetardRPM | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x054F</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ C - Turbonator Features ➔ Launch Control ➔ Antilag Settings</strong> &nbsp;|&nbsp; Subsystem: <strong>Turbonator_Features</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ANLGRP: AntiLagRetardRPM</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ANLGRP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ANLGRP_AntiLagRetardRPM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Turbonator_Features</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\C_-_Turbonator_Features\Launch_Control\Antilag_Settings\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x054F</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM (0 to 8160 RPM, 32 RPM / count)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x45                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1549-L1559"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L10262"><code>CalulateLaunchAdvance</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L10266"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ANLGRP</code> defines the engine speed threshold required before anti-lag ignition timing takes effect during staging launch control.</p>
+<p>When staging a turbocharged engine, ignition timing must remain normal at low speeds to allow the engine to rev cleanly off idle without stumbling. Once engine speed surpasses <code>ANLGRP</code>, the engine controller activates the anti-lag absolute timing schedule, transferring combustion heat into the exhaust manifold to spool the turbocharger.</p>
+<p>The factory setting of 69 counts corresponds to approximately 2208 RPM, providing a smooth transition window well below the staging rev limiter.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Enclosed in subroutine <code>CalulateLaunchAdvance</code> at lines 10262-10277 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Evaluated when flag <code>Turbonator_Staging</code> is asserted in <code>Turbonator_Flags</code> and <code>opt_AntiLag</code> is enabled in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a>.</li>
+<li>Threshold comparison: <code>cmpb EngineRpm_HB</code> against <code>ANLGRP_AntiLagRetardRPM</code> (lines 10266-10267).</li>
+<li>If <code>EngineRpm_HB &lt;= ANLGRP_AntiLagRetardRPM</code>, the branch <code>bcc AntiLag_Return</code> is taken, bypassing anti-lag retard.</li>
+<li>If <code>EngineRpm_HB &gt; ANLGRP_AntiLagRetardRPM</code>, execution continues to line 10269 to load <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Antilag_Settings/ANTLAG_AntiLagRetardAbs.html"><code>ANTLAGX</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Threshold Placement</strong>: Set <code>ANLGRP</code> approximately 200 to 400 RPM below the lower staging limiter threshold (<a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_RPM/STGRON_StageLimiterRPMOnSetpoint.html"><code>STGRON</code></a>). For example, if staging launch speed is set to 3800 RPM, configure <code>ANLGRP</code> between 3400 and 3600 RPM.</li>
+<li><strong>Setting Too Low</strong>: Retards ignition timing immediately off idle, causing hesitation, severe misfiring, and poor throttle response while trying to stage.</li>
+<li><strong>Setting Too High</strong>: Setting this threshold higher than the lower staging limiter prevents anti-lag from ever activating, resulting in lack of boost on the starting line.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: At line 10266 within <code>CalulateLaunchAdvance</code>, accumulator B loads <code>ANLGRP_AntiLagRetardRPM</code>. The CPU executes <code>cmpb EngineRpm_HB</code> against the high-byte engine speed variable (scaled at 32 RPM per count). If <code>EngineRpm_HB</code> is less than or equal to <code>ANLGRP_AntiLagRetardRPM</code>, the condition <code>bcc AntiLag_Return</code> branches out, retaining normal spark advance. Once <code>EngineRpm_HB</code> strictly exceeds <code>ANLGRP</code>, execution proceeds to load <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Antilag_Settings/ANTLAG_AntiLagRetardAbs.html"><code>ANTLAG_AntiLagRetardAbs</code></a>.</p>
+<pre><code class="language-motorola6803">; --- CalulateLaunchAdvance (T-SMEC_v19.asm:10262-10277) ---
+CalulateLaunchAdvance:
+        ldx  #OPTN2_CalCustomOptionConfigFlags2
+        brclr 0x00, X, #opt_AntiLag, AntiLag_Return
+
+        ldab ANLGRP_AntiLagRetardRPM
+        cmpb EngineRpm_HB
+        bcc  AntiLag_Return ; branch if
+        ldaa ANTLAG_AntiLagRetardAbs
+        asra
+        asra ; divide by 4 - min/max = +/-16 deg
+        adca #0x00 ; round up any remainder
+        ldx  #Turbonator_Flags
+        bset 0x00, x, #Turbonator_AntiLag ;just to indicate that the anti-lag is active, for logging purposes
+
+AntiLag_Return:
+        rts</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>RPM Scaling</strong>: Scaled at 32 RPM per count. The factory setting of 69 counts equals 2208 RPM.</li>
+<li><strong>Hysteresis Coordination</strong>: Must always be calibrated lower than <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_RPM/STGRON_StageLimiterRPMOnSetpoint.html"><code>STGRON</code></a> and <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_RPM/STGROF_StageLimiterRPMOffSetpoint.html"><code>STGROF</code></a> to ensure anti-lag engages before the rev limiter begins cycling.</li>
+<li><strong>Option Dependency</strong>: Depends on option flag <code>opt_AntiLag</code> in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>ANLGRP</code>
+        </footer>
+    </div>
+</body>
+</html>

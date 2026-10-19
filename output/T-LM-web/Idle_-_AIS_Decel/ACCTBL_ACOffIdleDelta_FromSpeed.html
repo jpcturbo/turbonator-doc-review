@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACCTBL: ACOffIdleDelta FromSpeed | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0C31</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ACCTBL: ACOffIdleDelta FromSpeed</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ACCTBL</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ACCTBL_ACOffIdleDelta_FromSpeed</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0C31</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2D Table / Curve)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Stepper Motor Steps vs Vehicle Speed (MPH / raw ADC)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x03                       ;Number of points in table; .byte 0x32, 0x1E, 0x00, 0x70     ;Point 1; .byte 0x64, 0x34, 0x00, 0xA6     ;Point 2; .byte 0x78, 0x41                 ;Point 3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L3151-L3166"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L5003"><code>CalculateTargetIdleSpeedAndAisPosition_MM</code></a> in <a href="../T-LMv13.asm.html#L5056"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ACCTBL</code> (ACOffIdleDelta_FromSpeed) defines the dynamic AIS step addition applied when the Air Conditioning compressor clutch is engaged and the engine is fully warmed up (<code>CoolantTemp &gt;= ACTMP_AisTempSwap</code>).</p>
+<p>At cruising speeds, the A/C compressor operates at high RPM, demanding significant horsepower. When cruising on the highway or in city traffic, releasing the throttle while the A/C is pumping requires progressive bypass air to cushion the deceleration. <code>ACCTBL</code> indexes vehicle speed (<code>VehicleSpeed_HB</code>) to provide an increasing step offset as road speed rises, ensuring seamless A/C load handling at all speeds.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated in <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at line 5056 and line 5251.</li>
+<li>Active when A/C clutch is engaged and <code>CoolantTemp &gt;= ACTMP_AisTempSwap</code>.</li>
+<li>Indexed by vehicle speed high byte: <code>VehicleSpeed_HB</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>A/C Decel Stumble at Speed</strong>: If letting off the gas while driving at 45 MPH with the A/C on causes the car to buck or hesitate, increase the mid-speed points in <code>ACCTBL</code>.</li>
+<li><strong>A/C Disengagement Flare</strong>: When the A/C cycles off at speed, <code>ACCTBL</code> interacts directly with <a href="../Idle_-_AIS_Decel/OFFPER2_AisInstantlyClosesWhenAcDisengages2.html"><code>OFFPER2</code></a> to instantly subtract the A/C step addition and avoid engine speed flare.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateTargetIdleSpeedAndAisPosition_MM (T-LMv13.asm:5250-5256) ---
+        ldx  #ACCTBL_ACOffIdleDelta_FromSpeed    ; Pointer to ACCTBL table ($0C31)
+        ldd  VehicleSpeed_HB                     ; Load vehicle speed high byte
+        asld                                     ; Shift left 3 times (scale speed)
+        asld
+        asld
+        jsr  Lookup4ByteTable                    ; Look up dynamic A/C steps vs speed</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 5056</strong> (<code>CalculateTargetIdleSpeedAndAisPosition_MM</code>): <code>ldx  #ACCTBL_ACOffIdleDelta_FromSpeed    ; load index with value</code></li>
+<li><strong>Line 5251</strong> (<code>CalculateTargetIdleSpeedAndAisPosition_MM</code>): <code>ldx  #ACCTBL_ACOffIdleDelta_FromSpeed    ; load index with value</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Dual Usage</strong>: Notice that <code>ACCTBL</code> is referenced in two routines: at line 5056 when handling A/C disengagement, and at line 5251 when computing desired running AIS position.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>ACCTBL</code>
+        </footer>
+    </div>
+</body>
+</html>

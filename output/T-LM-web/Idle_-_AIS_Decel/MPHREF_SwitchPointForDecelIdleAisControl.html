@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPHREF: SwitchPointForDecelIdleAisControl | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0CE5</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MPHREF: SwitchPointForDecelIdleAisControl</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MPHREF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MPHREF_SwitchPointForDecelIdleAisControl</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0CE5</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Vehicle Road Speed (MPH / raw ADC; 0x06 = 6 MPH)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x06                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L3331-L3343"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L3474"><code>SetTPSFlags_MM</code></a> in <a href="../T-LMv13.asm.html#L3490"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MPHREF</code> (SwitchPointForDecelIdleAisControl) is the critical speed threshold (stock calibration = 6 MPH / <code>0x06</code>) defining the operational boundary between stationary curb idle regulation and moving deceleration control.</p>
+<p>When the vehicle is moving above <code>MPHREF</code>, the ECU treats closed-throttle events as trailing-throttle vehicle deceleration, engaging dashpot anti-stall airflow curves (<a href="../Idle_-_AIS_Decel/DLYTIM_AisDelayAfterThrottleClosesWhenMoving.html"><code>DLYTIM</code></a>, <a href="../Idle_-_AIS_Decel/TIMEDC_DecelAisBaseAirflowCurveOffset_FromTime.html"><code>TIMEDC</code></a>, <a href="../Idle_-_AIS_Decel/MAPFLR_AdditionToControlMap_FromRpm.html"><code>MAPFLR</code></a>). When vehicle speed drops below <code>MPHREF</code> (with a built-in 1.5 MPH hysteresis deadband), the ECU transitions to stationary curb idle control (<a href="../Idle_-_AIS_Decel/DLYTIM2_AisDelayAfterThrottleClosesWhenStopped.html"><code>DLYTIM2</code></a>, <a href="../Idle_-_AIS_Control/FWDAIS_ForwardAisSteps_NoSlope.html"><code>FWDAIS</code></a>, <a href="../Idle_-_AIS_Control/REVAIS_ReverseAisSteps_NoSlope.html"><code>REVAIS</code></a>). This clean separation prevents rolling vehicles from surging at stop signs or dragging their idle motors while coasting in gear.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated in <code>SetTPSFlags_MM</code> (line 3490), <code>StoreDwell</code> (line 4802), and <code>CheckThrottle_AtFullThrottle</code> (line 6814).</li>
+<li>Compares scaled <code>VehicleSpeed_HB</code> against <code>MPHREF</code>.</li>
+<li>Governs the selection between <a href="../Idle_-_AIS_Decel/DLYTIM_AisDelayAfterThrottleClosesWhenMoving.html"><code>DLYTIM</code></a> (moving) and <a href="../Idle_-_AIS_Decel/DLYTIM2_AisDelayAfterThrottleClosesWhenStopped.html"><code>DLYTIM2</code></a> (stopped).</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Rolling Idle Surge / Stall</strong>: If pushing the clutch in while rolling up to a red light at 10-15 MPH causes the engine to dip and stall, or conversely if the engine hangs at 1,500 RPM until the vehicle comes to a dead stop, <code>MPHREF</code> defines the boundary.</li>
+<li><strong>Tuning Recommendations</strong>: Lowering <code>MPHREF</code> to 3-4 MPH forces the ECU into stationary idle control earlier. Raising <code>MPHREF</code> to 8-10 MPH extends deceleration dashpot protection longer during low-speed rolling traffic.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CheckThrottle_AtFullThrottle (T-LMv13.asm:6809-6815) ---
+        ldd  VehicleSpeed_HB                     ; Load vehicle speed high byte
+        asld                                     ; Shift left 3 times (scale speed)
+        asld
+        asld
+        ldab Temp0                               
+        cmpa MPHREF_SwitchPointForDecelIdleAisControl ; Compare against speed threshold ($0CE5, data 0x06 = 6 MPH)
+        bcc  LF18E                               ; If VehicleSpeed &gt;= MPHREF (moving), use DLYTIM
+        ; Else switch to stationary DLYTIM2</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 3490</strong> (<code>SetTPSFlags_MM</code>): <code>ldaa MPHREF_SwitchPointForDecelIdleAisControl    ; load a with memory contents (data is 06)</code></li>
+<li><strong>Line 4802</strong> (<code>StoreDwell</code>): <code>cmpa MPHREF_SwitchPointForDecelIdleAisControl    ; compare a with memory contents (data is 06)</code></li>
+<li><strong>Line 6814</strong> (<code>CheckThrottle_AtFullThrottle</code>): <code>cmpa MPHREF_SwitchPointForDecelIdleAisControl    ; compare a with memory contents (data is 06)</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>1.5 MPH Hysteresis</strong>: The firmware incorporates a 1.5 MPH hysteresis deadband to prevent rapid hunting between modes when creeping in stop-and-go traffic.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>MPHREF</code>
+        </footer>
+    </div>
+</body>
+</html>

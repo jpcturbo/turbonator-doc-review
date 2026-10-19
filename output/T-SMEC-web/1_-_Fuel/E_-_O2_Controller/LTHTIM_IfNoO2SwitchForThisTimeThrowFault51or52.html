@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LTHTIM: IfNoO2SwitchForThisTimeThrowFault51or52 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0D30</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ E - O2 Controller</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>LTHTIM: IfNoO2SwitchForThisTimeThrowFault51or52</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>LTHTIM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>LTHTIM_IfNoO2SwitchForThisTimeThrowFault51or52</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\E_-_O2_Controller\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0D30</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Main Loop Passes (approx 11 ms per pass)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x2B (43 counts ≈ 480 ms / 43 main loops)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3566-L3576"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L3150"><code>CheckAndSetO2FaultCode</code></a> in <a href="../../T-SMEC_v19.asm.html#L3153"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>LTHTIM</code> defines the timeout duration that the oxygen sensor is permitted to remain on one side (stuck rich or stuck lean) without toggling before the engine controller initiates its two-strike fault sequence.</p>
+<p>When closed loop is active, the controller expects the sensor to oscillate continuously across the stoichiometric threshold. If the sensor fails to switch for the duration specified by <code>LTHTIM</code>, the first strike triggers an internal warning and erases all 15 adaptive fuel memory cells.</p>
+<p>If the timeout expires a second consecutive time, fault code 51 (lean) or code 52 (rich) is latched, adaptive memory is cleared again, and closed loop is locked out. In stock calibrations, <code>LTHTIM</code> is set to 43 counts (approximately 480 milliseconds across 43 main loop passes).</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>CheckAndSetO2FaultCode</code> (<code>T-SMEC_v19.asm:3150-3160</code>), instruction line 3153.</li>
+<li><strong>Gating Conditions</strong>: Engine in closed loop (<code>BitFlags_50</code> bit <code>b50_StayOpenLoop</code> clear) and sensor has not toggled.</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Line 3152 loads <code>Counter_AdaptiveMem_Erase</code> into register A.</li>
+<li>Line 3153 executes <code>cmpa LTHTIM_IfNoO2SwitchForThisTimeThrowFault51or52</code>.</li>
+<li>If <code>Counter_AdaptiveMem_Erase &gt;= LTHTIM</code> (<code>bcc</code>), execution branches to <code>EraseAdaptiveMemory_possiblySetErrorBit</code> (line 3161).</li>
+<li>If <code>Counter_AdaptiveMem_Erase &lt; LTHTIM</code>, line 3157 increments register A on loop rollover.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Header &amp; Relocated Sensor Tuning</strong>:</li>
+<li>Moving the O2 sensor downstream increases exhaust transport delay. Raising <code>LTHTIM</code> to 60-80 counts prevents false fault codes 51/52 and stops constant adaptive memory erasing.</li>
+<li><strong>Two-Strike Fault Logic</strong>:</li>
+<li>Strike one sets internal warning bit <code>b2e_BadO2Read</code> and erases adaptive cells. Strike two sets fault code 51 or 52 and locks out closed loop.</li>
+<li><strong>Wideband Simulation</strong>:</li>
+<li>Simulated narrowband outputs from wideband controllers often switch more slowly; raise <code>LTHTIM</code> to accommodate signal delay.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CheckAndSetO2FaultCode</code>, line 3151 tests <code>b50_StayOpenLoop</code>. If clear, line 3152 loads <code>Counter_AdaptiveMem_Erase</code> into accumulator A. Line 3153 executes <code>cmpa LTHTIM_IfNoO2SwitchForThisTimeThrowFault51or52</code>. If accumulator A is greater than or equal to <code>LTHTIM</code> (43 counts ≈ 480 ms), the carry flag is clear and <code>bcc EraseAdaptiveMemory_possiblySetErrorBit</code> branches to line 3161. Line 3162 tests <code>b2e_BadO2Read</code>; if clear, it sets the bit and clears all 15 <code>AutoCalCell</code> locations. If <code>b2e_BadO2Read</code> was already set (second strike), line 3166 loads fault code <code>0x0381</code> (Code 51 lean or 52 rich), sets <code>b50_BadO2</code>, and clears adaptive memory.</p>
+<pre><code class="language-motorola6803">; --- CheckAndSetO2FaultCode (T-SMEC_v19.asm:3150-3159) ---
+CheckAndSetO2FaultCode:	
+        brset *BitFlags_50, #b50_StayOpenLoop, R1220	; branch if bit(s) set
+	ldaa Counter_AdaptiveMem_Erase	  ; load a with memory contents
+	cmpa LTHTIM_IfNoO2SwitchForThisTimeThrowFault51or52    ; compare a with memory contents (data is 2b)
+	bcc  EraseAdaptiveMemory_possiblySetErrorBit	; branch if greater or equal
+	ldab Counter_MainLoop	  ; load b with memory contents
+	bne  R1220	    ; branch if not equal (not zero)
+	inca		    ; increment a
+L1219:	staa Counter_AdaptiveMem_Erase	  ; store a into memory
+R1220:	rts		    ; return from subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Governs setting of fault codes 51 and 52 and triggers full erase of <code>AutoCalCell0</code> through <code>AutoCalCell0+0x0E</code>.</li>
+<li><strong>Timer Units</strong>: Incremented by main background loop passes (approx 11 ms per pass; 43 counts ≈ 480 ms).</li>
+<li><strong>Persistence</strong>: Monitored in RAM counter <code>Counter_AdaptiveMem_Erase</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>LTHTIM</code>
+        </footer>
+    </div>
+</body>
+</html>

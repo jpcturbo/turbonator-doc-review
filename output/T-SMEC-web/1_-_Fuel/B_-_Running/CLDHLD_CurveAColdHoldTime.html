@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLDHLD: CurveAColdHoldTime | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x07AB</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ B - Running</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Base_Modifiers</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CLDHLD: CurveAColdHoldTime</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CLDHLD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CLDHLD_CurveAColdHoldTime</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Base_Modifiers</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\B_-_Running\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x07AB</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">seconds</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x12 (18 counts ≈ 12.7 seconds)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L2153-L2163"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5992"><code>CalculateSumOfAllFuelModifiers_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L6008"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CLDHLD</code> specifies the duration that after-start cold enrichment (Curve A) is held at 100% full strength before decay begins following a cold start.</p>
+<p>When the engine starts with coolant temperature below <a href="../../1_-_Fuel/B_-_Running/TMPHLD_TempSwitchPointForCurveAHoldDecay.html"><code>TMPHLD</code></a>, fuel droplets condense heavily on cold intake runner walls. <code>CLDHLD</code> locks after-start enrichment at maximum intensity for several seconds, ensuring that intake manifold wall wetting stabilizes and idle speed settles before fuel enrichment starts tapering away.</p>
+<p>In factory calibrations, <code>CLDHLD</code> is set to 18 counts, representing approximately 12.7 seconds of hold time.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateSumOfAllFuelModifiers_MM</code> (<code>T-SMEC_v19.asm:6015-6021</code>), instruction line 6020.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Reached when <code>CoolantTemp &lt; TMPHLD</code> (cold start).</li>
+<li>Evaluated against <code>KeyOnOrEngineRunningTime</code> shifted left twice.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Read via indexed offset <code>0x01,x</code> from <a href="../../1_-_Fuel/B_-_Running/TMPHLD_TempSwitchPointForCurveAHoldDecay.html"><code>TMPHLD</code></a>.</li>
+<li>When running time reaches <code>CLDHLD</code> (<code>bcc L1514</code>), full hold ends and decay begins.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Cold Start Stabilization</strong>:</li>
+<li>Increasing <code>CLDHLD</code> extends the full-strength enrichment duration, smoothing cold idle on performance camshafts or in sub-freezing weather.</li>
+<li><strong>E85 Cold Tuning</strong>:</li>
+<li>Ethanol requires extended wall-wetting time; increase <code>CLDHLD</code> to 25-35 counts (18 to 25 seconds) on E85 calibrations.</li>
+<li><strong>Fuel Economy &amp; Emissions</strong>:</li>
+<li>Lowering values reduces rich idle dwell, speeding up transition to closed-loop oxygen sensor control.</li>
+<li><strong>Hold Time Formula</strong>:</li>
+<li>Dwell duration in seconds equals calibration counts multiplied by 0.704 seconds (18 counts = 12.7 seconds).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateSumOfAllFuelModifiers_MM</code>, because <code>CoolantTemp &lt; TMPHLD</code>, pointer X remains loaded with <code>#TMPHLD_TempSwitchPointForCurveAHoldDecay</code>. At line 6015, <code>KeyOnOrEngineRunningTime</code> is loaded into register D and shifted left twice via <code>asld; asld</code>. At line 6020, <code>cmpa 0x01,x</code> compares the high byte of elapsed running time against <code>CLDHLD</code> (located at offset <code>TMPHLD + 1</code>). If running time is greater or equal (<code>bcc L1514</code>), execution branches to <code>L1514</code>, setting <code>Factor_ACVDCY</code> to 0xFF and arming <code>b50_FuelCurveACToggle</code> to begin decay.</p>
+<pre><code class="language-motorola6803">; --- CalculateSumOfAllFuelModifiers_MM (T-SMEC_v19.asm:6015-6021) ---
+	ldd  KeyOnOrEngineRunningTime	 ; load d (a&amp;b) with memory contents
+	asld		    ; shift left (d=d*2)
+	bcs  L1514	    ; branch if lower
+	asld		    ; shift left (d=d*2)
+	bcs  L1514	    ; branch if lower
+	cmpa 0x01,x	    ; compare a with memory at index + value
+	bcc  L1514	    ; branch if greater or equal</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Indexed Offset</strong>: Stored in ROM immediately following <a href="../../1_-_Fuel/B_-_Running/TMPHLD_TempSwitchPointForCurveAHoldDecay.html"><code>TMPHLD</code></a> at address offset +1; accessed via <code>0x01,x</code> when cold.</li>
+<li><strong>Conversion Factor</strong>: Each count represents 0.704 seconds of runtime.</li>
+<li><strong>Oxygen Sensor Arming</strong>: If oxygen sensor validity flag <code>b4f_O2Valid</code> sets before <code>CLDHLD</code> elapses, hold mode terminates immediately.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>CLDHLD</code>
+        </footer>
+    </div>
+</body>
+</html>

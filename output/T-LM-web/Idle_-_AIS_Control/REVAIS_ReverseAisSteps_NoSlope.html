@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REVAIS: ReverseAisSteps NoSlope | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0AEF</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>REVAIS: ReverseAisSteps NoSlope</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>REVAIS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>REVAIS_ReverseAisSteps_NoSlope</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0AEF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2D Table / Curve)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Stepper Motor Reverse (Close) Steps vs Overspeed RPM Error</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x03                       ;Number of points in table; .byte 0x14, 0xFF, 0x00, 0x00     ;Point 1; .byte 0x28, 0xFE, 0x00, 0x00     ;Point 2; .byte 0x50, 0xFC                 ;Point 3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L2829-L2844"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L5003"><code>CalculateTargetIdleSpeedAndAisPosition_MM</code></a> in <a href="../T-LMv13.asm.html#L5176"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>REVAIS</code> (ReverseAisSteps_NoSlope) is a stepped lookup table that dictates how many reverse (closing) steps the ECU commands the AIS stepper motor to take when the engine is idling faster than target idle speed.</p>
+<p>When external engine load is removed (such as A/C compressor cycling off, radiator fan turning off, or clutch disengagement), engine RPM floats above <code>TargetIdleSpeed_HB</code>. The ECU calculates the overspeed error <code>(Actual - Target) / 4</code>. <code>REVAIS</code> outputs negative step adjustments (-1, -2, -4 steps) to gently pull the engine back down to target speed without causing an underspeed sag.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at line 5176.</li>
+<li>Active when <code>EngineRpm_HB &gt; TargetIdleSpeed_HB</code> (engine is above target).</li>
+<li>Executed when <code>Timer_AisChanges</code> exceeds <a href="../Idle_-_AIS_Decel/DCLRF2_TimeBetweenAisPulsesForDecelAis2.html"><code>DCLRF2</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Slow Return to Idle</strong>: If the engine revs and takes an excessively long time to settle back down to idle after load is removed, increase the reverse steps in <code>REVAIS</code>.</li>
+<li><strong>Decel Dipping / Stumble</strong>: If the engine drops rapidly and undershoots idle speed when load turns off, <code>REVAIS</code> is closing the bypass valve too aggressively. Soften the reverse step counts.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateTargetIdleSpeedAndAisPosition_MM (T-LMv13.asm:5174-5180) ---
+        subd EngineRpm_HB                        ; Target - Actual
+        bcc  LE582                               ; If positive, use FWDAIS
+        ldx  #REVAIS_ReverseAisSteps_NoSlope     ; Pointer to reverse steps table ($0AEF)
+        ldd  EngineRpm_HB                        ; Load actual engine RPM
+        subd TargetIdleSpeed_HB                  ; Actual - Target (overspeed error)
+LE582:  lsrd                                     ; Scale error (divide by 4)
+        lsrd</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 5176</strong> (<code>CalculateTargetIdleSpeedAndAisPosition_MM</code>): <code>ldx  #REVAIS_ReverseAisSteps_NoSlope    ; load index with value</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Symmetry with FWDAIS</strong>: <a href="../Idle_-_AIS_Control/FWDAIS_ForwardAisSteps_NoSlope.html"><code>FWDAIS</code></a> and <code>REVAIS</code> together form the proportional (P) gain terms of Chrysler's closed-loop idle speed controller.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>REVAIS</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MINADV: MinimumAdvance | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0213</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Spark - Normal Advance</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MINADV: MinimumAdvance</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MINADV</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MINADV_MinimumAdvance</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Spark_-_Normal_Advance\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0213</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Advance (0 to 128 deg)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x06 (6 decimal, +3.0° Crankshaft Advance)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L561-L573"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L6556"><code>CalculateSparkAdvance_MM</code></a> in <a href="../T-LMv13.asm.html#L6650"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MINADV_MinimumAdvance</code> is an absolute minimum safety floor applied to the calculated barometric advance limit.</p>
+<p>When the ECU calculates its altitude timing ceiling using <a href="../Spark_-_Normal_Advance/ABCBAS_AdvanceBaroCompensationBaseFromRPM.html"><code>ABCBAS</code></a>, <a href="../Spark_-_Normal_Advance/ABCFBR_AdvanceBaroCompensationFactorFromBaro.html"><code>ABCFBR</code></a>, and <a href="../Spark_-_Normal_Advance/ABCFRP_AdvanceBaroCompensationFactorFromRPM.html"><code>ABCFRP</code></a>, high altitude multipliers could theoretically subtract so much timing that the resulting ceiling becomes zero or negative (excessive retard). Overly retarded ignition timing under load can cause combustion to continue after exhaust valve opening, generating extreme exhaust gas temperatures (EGTs) that can warp exhaust manifolds, burn exhaust valves, and melt turbocharger turbines. <code>MINADV</code> guarantees that the baro-calculated timing ceiling will never fall below a defined minimum floor (+3.0° in stock calibrations).</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<p><code>MINADV</code> is checked immediately after the baro compensation calculation:
+* If the calculated baro ceiling ($A$) is less than <code>MINADV</code> (or negative):
+  The ECU clamps $A$ up to <code>MINADV</code>.</p>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Increasing the Value (Higher Minimum Floor):</strong></li>
+<li><strong>Effect on Total Timing:</strong> Ensures the engine never runs less than this floor from the baro limiter.</li>
+<li><strong>Real-World Driving Feel:</strong> Protects against excessive EGT buildup and sluggish performance at extreme altitudes (such as Pike's Peak or mountain passes over 10,000 ft).</li>
+<li><strong>Decreasing the Value (Lower Minimum Floor):</strong></li>
+<li><strong>Effect on Total Timing:</strong> Allows the baro calculation to pull timing further downward.</li>
+<li><strong>Real-World Driving Feel:</strong> Provides maximum knock protection at extreme altitudes, but risks high exhaust temperatures under extended wide-open throttle climbs.</li>
+<li><strong>Stock Setting:</strong></li>
+<li>In the stock A171 calibration, <code>MINADV</code> is set to <code>0x06</code> (6 / 2 = +3.0° advance), which represents an ideal failsafe baseline.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 6649–6655):</p>
+<pre><code class="language-motorola6803">sba                 ; A = ABCBAS - [(ABCFRP * ABCFBR) / 256]
+        cmpa MINADV_MinimumAdvance ; Compare calculated baro advance to MINADV (0x06)
+        bpl  LF054          ; If A &gt;= MINADV (positive/greater), branch to LF054
+        ldaa MINADV_MinimumAdvance ; Else force A = MINADV (+3.0°)
+LF054:  cmpa Temp0          ; Compare baro ceiling to Temp0
+        bgt  LF05A          ; If baro ceiling &gt; Temp0, keep Temp0
+        staa Temp0          ; Else clamp Temp0 down to baro ceiling
+LF05A:  ...</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Scaling:</strong> 1 unit = 0.5 degrees of crankshaft advance. Value <code>0x06</code> = 3.0 degrees.</li>
+<li><strong>Calculated Table Reference:</strong> Note that MPTune's calculated 3D display tables (<code>PTTIME</code> and <code>FTTIME</code>) reference <code>MINADV</code> via the tag <code>;mp3dmintable MINADV</code> to define the 3D grid floor.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>MINADV</code>
+        </footer>
+    </div>
+</body>
+</html>

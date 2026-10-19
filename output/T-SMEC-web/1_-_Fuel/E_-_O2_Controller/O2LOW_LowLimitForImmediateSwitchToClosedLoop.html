@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O2LOW: LowLimitForImmediateSwitchToClosedLoop | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0D16</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ E - O2 Controller</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>O2LOW: LowLimitForImmediateSwitchToClosedLoop</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>O2LOW</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>O2LOW_LowLimitForImmediateSwitchToClosedLoop</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\E_-_O2_Controller\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0D16</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">volts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x0F (15 counts ≈ 0.29 volts)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3540-L3550"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L2991"><code>O2_FullThrottle</code></a> in <a href="../../T-SMEC_v19.asm.html#L3011"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>O2LOW</code> defines the lower voltage threshold for immediate validation of the narrowband oxygen sensor signal.</p>
+<p>If the sensor produces a clear lean reading below <code>O2LOW</code> during warmup, the controller knows the sensor has reached operating temperature and is capable of full amplitude swings. The controller immediately validates the sensor flag without waiting for delay timers.</p>
+<p>In stock calibrations, <code>O2LOW</code> is set to 15 counts, corresponding to approximately 0.29 volts.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> / <code>O2_FullThrottle</code> (<code>T-SMEC_v19.asm:3008-3018</code>), instruction line 3011.</li>
+<li><strong>Gating Conditions</strong>: Signal tested lower than <a href="../../1_-_Fuel/E_-_O2_Controller/O2HIGH_HighLimitForImmediateSwitchToClosedLoop.html"><code>O2HIGH</code></a>.</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Line 3011 executes <code>cmpb O2LOW_LowLimitForImmediateSwitchToClosedLoop</code>.</li>
+<li>If <code>O2SensorValue &lt; O2LOW</code> (<code>bcs</code>), execution falls through to <code>O2_ValidSignal_OutsideMiddleRange</code> (line 3013), setting bit <code>b4f_O2Valid</code> immediately.</li>
+<li>If <code>O2SensorValue &gt;= O2LOW</code> (<code>bcc</code>), execution branches to <code>O2_InvalidSignal_InMiddleRange</code> (line 3019).</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Lean Signal Validation</strong>:</li>
+<li>Any signal below <code>O2LOW</code> (approx 0.29V) proves the sensor is hot and swinging lean, immediately triggering closed loop.</li>
+<li><strong>Ground Offset Mitigation</strong>:</li>
+<li>If wiring resistance creates a ground voltage offset, raising <code>O2LOW</code> to 18-20 counts (0.35-0.39V) prevents delayed closed-loop entry.</li>
+<li><strong>Interaction with O2HIGH</strong>:</li>
+<li>Together, <code>O2LOW</code> and <a href="../../1_-_Fuel/E_-_O2_Controller/O2HIGH_HighLimitForImmediateSwitchToClosedLoop.html"><code>O2HIGH</code></a> define the active boundaries outside the intermediate warmup zone.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>HandleO2Processing_MM</code> / <code>O2_FullThrottle</code>, if <code>O2SensorValue</code> is less than <a href="../../1_-_Fuel/E_-_O2_Controller/O2HIGH_HighLimitForImmediateSwitchToClosedLoop.html"><code>O2HIGH</code></a>, line 3011 executes <code>cmpb O2LOW_LowLimitForImmediateSwitchToClosedLoop</code>. If accumulator B is less than <code>O2LOW</code> (15 counts ≈ 0.29V), the carry flag is set, so the <code>bcc O2_InvalidSignal_InMiddleRange</code> branch at line 3012 is not taken. Execution falls through to line 3013 (<code>O2_ValidSignal_OutsideMiddleRange</code>), setting <code>b4f_O2Valid</code> in <code>BitFlags_4f</code>.</p>
+<pre><code class="language-motorola6803">; --- O2_FullThrottle (T-SMEC_v19.asm:3009-3015) ---
+	cmpb O2HIGH_HighLimitForImmediateSwitchToClosedLoop    ; compare b with memory contents (data is 26)
+	bcc  O2_ValidSignal_OutsideMiddleRange	  ; branch if greater or equal
+	cmpb O2LOW_LowLimitForImmediateSwitchToClosedLoop    ; compare b with memory contents (data is 0f)
+	bcc  O2_InvalidSignal_InMiddleRange    ; branch if greater or equal
+O2_ValidSignal_OutsideMiddleRange:
+	bset *BitFlags_4f, #b4f_O2Valid    ; set bits
+	staa Counter_AdaptiveMem_Erase	  ; store a into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Paired with <a href="../../1_-_Fuel/E_-_O2_Controller/O2HIGH_HighLimitForImmediateSwitchToClosedLoop.html"><code>O2HIGH</code></a> and bounds the entry to <code>O2_InvalidSignal_InMiddleRange</code>.</li>
+<li><strong>Voltage Conversion</strong>: 15 counts equals approximately 0.29 volts.</li>
+<li><strong>Persistence</strong>: Evaluated dynamically during closed-loop qualification.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>O2LOW</code>
+        </footer>
+    </div>
+</body>
+</html>

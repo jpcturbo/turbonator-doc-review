@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O2TIME: DelayTimeToClosedLoop | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x044B</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - O2 Controller</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel</strong>
+        </div>
+        
+        <article class="content">
+            <h1>O2TIME: DelayTimeToClosedLoop</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>O2TIME</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>O2TIME_DelayTimeToClosedLoop</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_O2_Controller\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x044B</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Timer increments ($1 \text{ count} = 2.8 \text{ seconds}$)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x15 (21 counts $\approx 58.8\text{ seconds}$)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L1129-L1141"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L3103"><code>CheckIfO2SensorDataIsValid</code></a> in <a href="../T-LMv13.asm.html#L1654"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>O2TIME_DelayTimeToClosedLoop</code> establishes the <strong>minimum warmup hold time</strong> that the ECU must wait after the engine has reached operating temperature (<a href="../Fuel_-_Adaptive_Memory_Timer/CLTEMP_TempToStartCLTIMETimer.html"><code>CLTEMP</code></a>) before attempting to transition from Open-Loop into Closed-Loop fuel feedback control.</p>
+<p>A cold narrow-band zirconia O2 sensor cannot generate an accurate or reliable voltage signal until its ceramic element reaches internal operating temperatures of at least 600Â°F (315Â°C). Entering closed-loop operation prematurely causes violent fueling oscillations, surging, or stalling because the ECU misinterprets the high-impedance resting voltage of an unheated sensor as an extreme rich or lean condition. <code>O2TIME</code> guarantees that the sensor heater and hot exhaust gases have had adequate time to bring the sensor up to full operational temperature.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<p>The closed-loop delay timer (<code>Timer_CLTIME_ClosedLoopTimer</code>) begins incrementing only when all of the following entry conditions are met:
+* <strong>Engine Running:</strong> The engine must be running above crank/stall speed.
+* <strong>Warmup Temperature Reached:</strong> Coolant temperature must equal or exceed <a href="../Fuel_-_Adaptive_Memory_Timer/CLTEMP_TempToStartCLTIMETimer.html"><code>CLTEMP_TempToStartCLTIMETimer</code></a> (typically 70Â°F to 120Â°F).
+* <strong>Load / MAP Limits:</strong> Manifold pressure must remain below <a href="../Fuel_-_Adaptive_memory/MAPDEC_NoCellUpdateAndO2CNTRHeldBelowThisMap.html"><code>MAPDEC_NoCellUpdateAndO2CNTRHeldBelowThisMap</code></a>.
+* <strong>Off-Idle / Timer Checks:</strong> Open-loop fraction timer must remain below <a href="../Fuel_-_Transient_Enrichment/LMTOLF2_LimitTimerOpenLoopFraction2.html"><code>LMTOLF2</code></a>.</p>
+<p>Once the timer accumulates ticks equal to <code>O2TIME</code>, the ECU executes <code>CheckIfO2SensorDataIsValid</code>. If the sensor voltage has broken out of the deadband (outside <a href="../Fuel_-_O2_Controller/O2TLML_LowLimitForDelayedSwitchToClosedLoop.html"><code>O2TLML</code></a> to <a href="../Fuel_-_O2_Controller/O2TLMH_HighLimitForDelayedSwitchToClosedLoop.html"><code>O2TLMH</code></a>), bit 4 of <code>BitFlags_81</code> is asserted and closed loop feedback activates.</p>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Factory Calibration Value:</strong> <code>0x15</code> (21 decimal × 2.8 s ≈ 59 seconds).</li>
+<li><strong>Increasing <code>O2TIME</code>:</strong></li>
+<li><strong>Effect:</strong> Lengthens the time the engine stays in open-loop warm-up mode after cold startup.</li>
+<li><strong>When to Use:</strong> Unheated 1-wire O2 sensors installed in long-tube headers or large-diameter aftermarket downpipes located further downstream from the exhaust valves. The extra distance requires longer time for exhaust heat to soak the sensor.</li>
+<li><strong>Decreasing <code>O2TIME</code>:</strong></li>
+<li><strong>Effect:</strong> Causes closed-loop mode to engage sooner after startup.</li>
+<li><strong>When to Use:</strong> Modern heated 3-wire or 4-wire O2 sensors with dedicated, fast-acting ceramic heaters that achieve operating temperature in under 15â€“20 seconds.</li>
+<li><strong>Caution:</strong> Setting <code>O2TIME</code> too low with an unheated or sluggish sensor will induce lean stumbling and hesitation during drive-away.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 3088â€“3102):</p>
+<pre><code class="language-motorola6803">ldaa CoolantTemp    ; Check engine temperature
+        cmpa CLTEMP_TempToStartCLTIMETimer    ; Must be &gt;= CLTEMP
+        bcs  LD6F2          ; Exit if engine still cold
+        ldaa Timer_CLTIME_ClosedLoopTimer    ; Load closed loop counter
+        cmpa O2TIME_DelayTimeToClosedLoop    ; Compare against O2TIME
+        bcc  CheckIfO2SensorDataIsValid    ; Once expired, evaluate O2 sensor
+        ldab BitFlags_82    ; Check operating status
+        bmi  LD6F2          
+        ldab Counter_MainLoop1    
+        bitb #0x1f          ; Scale timer tick (every 32 main loop iterations = ~2.8s)
+        bne  LD6F2          
+        inca                ; Increment Timer_CLTIME
+        staa Timer_CLTIME_ClosedLoopTimer</code></pre>
+<h3>Formula:</h3>
+<p><code>Delay Time (seconds) = O2TIME × 2.80 sec</code></p>
+<p><code>Max Value Allowed ≤ 0x7F (127 counts) ≈ 355.6 sec (5.9 minutes)</code></p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Hardware Independence:</strong> Regardless of whether a 1-wire, 3-wire, or 4-wire O2 sensor is fitted to the car, the 6803 ECU hardware has no electrical sense of heater circuit current. It relies purely on the software timer <code>O2TIME</code> combined with the dynamic voltage threshold checks in <a href="../Fuel_-_O2_Controller/O2TLMH_HighLimitForDelayedSwitchToClosedLoop.html"><code>O2TLMH</code></a> and <a href="../Fuel_-_O2_Controller/O2TLML_LowLimitForDelayedSwitchToClosedLoop.html"><code>O2TLML</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>O2TIME</code>
+        </footer>
+    </div>
+</body>
+</html>

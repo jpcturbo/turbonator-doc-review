@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCLMIN: MinLimitOnDecelAisControlledMap | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0F43</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DCLMIN: MinLimitOnDecelAisControlledMap</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DCLMIN</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DCLMIN_MinLimitOnDecelAisControlledMap</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0F43</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x01                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4097-L4107"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L1859"><code>CalculateAisPosition_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L1982"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DCLMIN</code> establishes a minimum lower clamp on the calculated deceleration control manifold absolute pressure value.</p>
+<p>During closed-throttle deceleration, intake manifold vacuum reaches extreme levels. If the synthetic decel control MAP calculation were allowed to drop to near-absolute zero pressure, the difference between actual MAP and control MAP would become artificially small, preventing the controller from recognizing deep deceleration vacuum and failing to open the dashpot.</p>
+<p><code>DCLMIN</code> enforces a hard lower floor on the calculated decel control MAP.</p>
+<p>In factory calibrations, <code>DCLMIN</code> is set to 10 counts, enforcing an absolute pressure floor of approximately 1.1 psi absolute (2.3 inHg / 27.6 inHg vacuum).</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1996</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Pacing timer <a href="../../5_-_Idle/B_-_AIS_Decel/DCLRFQ_TimeBetweenAisPulsesForDecelAis.html"><code>DCLRFQ</code></a> must be satisfied at line 1980.</li>
+<li>Compares calculated decel control MAP in accumulator A against <code>DCLMIN</code> at line 1982.</li>
+<li>If accumulator A is lower than <code>DCLMIN</code>, line 1984 clamps accumulator A to <code>DCLMIN</code> before proceeding to line 1985.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Deep Overrun Anti-Stall</strong>:</li>
+<li>Increase <code>DCLMIN</code> to 14 to 18 counts if the engine pulls extreme overrun vacuum and stalls when the clutch is pressed.</li>
+<li><strong>Factory Minimum Baseline</strong>:</li>
+<li>Factory setting of 10 counts (~1.1 psi absolute) guarantees a safe floor on stock induction systems.</li>
+<li><strong>Part-Throttle Boundary</strong>:</li>
+<li>Keep <code>DCLMIN</code> below 25 counts to prevent false decel triggering during light part-throttle cruising.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateAisPosition_MM</code>, line 1982 executes <code>cmpa DCLMIN_MinLimitOnDecelAisControlledMap</code>. If accumulator A is greater than or equal to <code>DCLMIN</code> (<code>bcc L1077</code>), execution proceeds directly to line 1985. If accumulator A is below <code>DCLMIN</code>, line 1984 executes <code>ldaa DCLMIN_MinLimitOnDecelAisControlledMap</code>, overwriting accumulator A with the calibrated floor value before proceeding to label <code>L1077</code>.</p>
+<pre><code class="language-motorola6803">; --- CalculateAisPosition_MM (T-SMEC_v19.asm:1981-1986) ---
+	bcs  R1075	    ; branch if lower
+	cmpa DCLMIN_MinLimitOnDecelAisControlledMap    ; compare a with memory contents (data is 0a)
+	bcc  L1077	    ; branch if greater or equal
+	ldaa DCLMIN_MinLimitOnDecelAisControlledMap    ; load a with memory contents (data is 0a)
+L1077:	cmpa DCLMN2_NoAisControlIfMapAndControlMapBelowThis    ; compare a with memory contents (data is 0d)
+	bcc  L1078	    ; branch if greater or equal</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Clamp Sequence</strong>: Applied immediately before checking the global lockout threshold <a href="../../5_-_Idle/B_-_AIS_Decel/DCLMN2_NoAisControlIfMapAndControlMapBelowThis.html"><code>DCLMN2</code></a>.</li>
+<li><strong>Companion Parameter</strong>: Direct predecessor to <a href="../../5_-_Idle/B_-_AIS_Decel/DCLMN2_NoAisControlIfMapAndControlMapBelowThis.html"><code>DCLMN2</code></a> in the decel evaluation chain.</li>
+<li><strong>Factory Value</strong>: 0x0A (10 counts = approximately 1.1 psi absolute).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>DCLMIN</code>
+        </footer>
+    </div>
+</body>
+</html>

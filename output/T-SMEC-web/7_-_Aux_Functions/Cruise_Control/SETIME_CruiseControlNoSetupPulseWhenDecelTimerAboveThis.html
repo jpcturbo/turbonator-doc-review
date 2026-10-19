@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SETIME: CruiseControlNoSetupPulseWhenDecelTimerAboveThis | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1664</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Cruise Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Cruise_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>SETIME: CruiseControlNoSetupPulseWhenDecelTimerAboveThis</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>SETIME</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>SETIME_CruiseControlNoSetupPulseWhenDecelTimerAboveThis</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Cruise_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Cruise_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1664</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">counts timer duration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x37 (55 counts ≈ 0.61 seconds)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5922-L5932"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8565"><code>ContinueCruise</code></a> in <a href="../../T-SMEC_v19.asm.html#L8584"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>SETIME</code> defines the deceleration elapsed timer threshold for suppressing or modifying the vacuum setup pre-charge pulse when the driver releases the coast button.</p>
+<p>When holding down the coast or decelerate switch, the cruise servo vents and the vehicle slows down. Upon releasing the button, the driver intends to set a new, lower cruising speed. If the controller applied an aggressive vacuum pre-charge pulse immediately upon switch release, the vehicle would abruptly surge forward, causing an uncomfortable jerk. <code>SETIME</code> monitors the deceleration timer; if the button was held longer than <code>SETIME</code>, aggressive pre-charging is suppressed to ensure smooth engagement at the new lower speed.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ContinueCruise</code> (<code>T-SMEC_v19.asm:8584-8588</code>) and <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8841-8846</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated when coast/resume switch is held or released.</li>
+<li><code>Timer_CruiseDecelerate</code> incremented each foreground loop pass while switch is active.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>In <code>ContinueCruise</code>, compares <code>Timer_CruiseDecelerate</code> against <code>SETIME</code> via <code>cmpb SETIME</code> at line 8584.</li>
+<li>If lower (<code>bcs L1730</code>), leaves state unchanged; if higher, evaluates <a href="../../7_-_Aux_Functions/Cruise_Control/SETIM1_CruiseControlNoSetupPulseWhenDecelTimerBelowThis.html"><code>SETIM1</code></a> and asserts bit 2 of <code>CruiseStatus</code>.</li>
+<li>In <code>CalculateVehicleSpeed</code>, if timer exceeds <code>SETIME</code>, branches to force vent command 0x8F.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Coast-to-Set Behavior</strong>:</li>
+<li>Suppresses aggressive vacuum pre-charge when driver holds the coast button to decelerate.</li>
+<li>Factory 55 counts (approx 0.61 seconds) ensures smooth handoff to the new lower speed setting.</li>
+<li><strong>Preventing Decel Surge</strong>:</li>
+<li>If releasing coast causes an immediate forward lurch, lower <code>SETIME</code> to suppress setup pulsing earlier.</li>
+<li><strong>Secondary Use in Speed Calculation</strong>:</li>
+<li>In <code>CalculateVehicleSpeed</code> (line 8842), if <code>Timer_CruiseDecelerate</code> exceeds <code>SETIME</code>, the servo commands continuous vent to maintain deceleration.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>ContinueCruise</code> at line 8584, <code>Timer_CruiseDecelerate</code> is compared against <code>SETIME_CruiseControlNoSetupPulseWhenDecelTimerAboveThis</code>. If lower (<code>bcs L1730</code>), execution skips setup pulse modification. If equal or higher, execution checks <a href="../../7_-_Aux_Functions/Cruise_Control/SETIM1_CruiseControlNoSetupPulseWhenDecelTimerBelowThis.html"><code>SETIM1</code></a> at line 8586. If between <code>SETIME</code> and <a href="../../7_-_Aux_Functions/Cruise_Control/SETIM1_CruiseControlNoSetupPulseWhenDecelTimerBelowThis.html"><code>SETIM1</code></a>, line 8589 sets bit 2 of <code>CruiseStatus</code> (<code>oraa #b2f_bit2</code>) to flag decel-active setpoint. In <code>CalculateVehicleSpeed</code> at line 8842, <code>cmpa SETIME</code> branches to force vent command 0x8F if the timer is still running.</p>
+<pre><code class="language-motorola6803">; --- ContinueCruise (T-SMEC_v19.asm:8583-8588) ---
+L1727:	ldab Timer_CruiseDecelerate    ; load b with memory contents
+	cmpb SETIME_CruiseControlNoSetupPulseWhenDecelTimerAboveThis	; compare b with memory contents (data is 37)
+	bcs  L1730	    ; branch if lower
+	cmpb SETIM1_CruiseControlNoSetupPulseWhenDecelTimerBelowThis	; compare b with memory contents (data is 52)
+	bcc  L1728	    ; branch if greater or equal</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Dual Routine Reference</strong>: Referenced at line 8584 (switch qualification) and line 8842 (vent command during active deceleration).</li>
+<li><strong>Timer Scaling</strong>: Incremented once per 11-millisecond main loop pass, making 55 counts equal to approximately 0.61 seconds.</li>
+<li><strong>Companion Parameter</strong>: Paired directly with <a href="../../7_-_Aux_Functions/Cruise_Control/SETIM1_CruiseControlNoSetupPulseWhenDecelTimerBelowThis.html"><code>SETIM1_CruiseControlNoSetupPulseWhenDecelTimerBelowThis</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>SETIME</code>
+        </footer>
+    </div>
+</body>
+</html>

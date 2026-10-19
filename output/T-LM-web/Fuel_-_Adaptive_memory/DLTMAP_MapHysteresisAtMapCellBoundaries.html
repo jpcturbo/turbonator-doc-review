@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DLTMAP: MapHysteresisAtMapCellBoundaries | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x05B4</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - Adaptive memory</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DLTMAP: MapHysteresisAtMapCellBoundaries</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DLTMAP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DLTMAP_MapHysteresisAtMapCellBoundaries</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_Adaptive_memory\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x05B4</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">MAP ADC Counts ($1 \text{ count} \approx 0.115\text{ psi}$)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x01 (1 count $\approx 0.115\text{ psi}$)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L1490-L1503"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L3344"><code>AdaptiveMemory_DetermineWhichCellApplies_MM</code></a> in <a href="../T-LMv13.asm.html#L3364"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DLTMAP_MapHysteresisAtMapCellBoundaries</code> provides <strong>manifold pressure hysteresis</strong> when transitioning between adjacent adaptive fuel memory cells.</p>
+<p>Without hysteresis, driving at a steady load that hovers precisely on a cell boundary (e.g., exactly at <a href="../Fuel_-_Adaptive_memory/MP2_AutoCalMapCellBoundary2.html"><code>MP2</code></a>) would cause the cell pointer to oscillate rapidly back and forth between cells on every single engine revolution, resetting cell timers and preventing either cell from ever accumulating enough steady-state time to update. <code>DLTMAP</code> adds a deadband offset to the boundary check to lock the cell selection until pressure moves decisively past the boundary.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Boundary Comparison Check:</strong></li>
+<li>Evaluated on every execution of <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code>.</li>
+<li>If the previous cell index was lower than the current boundary being tested, <code>DLTMAP</code> is added to the boundary threshold:</li>
+</ul>
+<p><code>Effective Boundary = MP_x + DLTMAP</code></p>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stock Value:</strong> <code>0x01</code> (1 ADC step ≈ 0.12 psi).</li>
+<li><strong>Tuning Guidance:</strong> The stock 1-count hysteresis is generally optimal. Increasing to 2 or 3 counts can help vehicles with excessive intake manifold pulsation (e.g., individual runner intakes or radical camshaft overlap), stabilizing cell selection.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 3362â€“3366):</p>
+<pre><code class="language-motorola6803">cmpb Temp0      
+        bcc  LD879          ; If not moving upward, skip hysteresis
+        adda DLTMAP_MapHysteresisAtMapCellBoundaries ; Add DLTMAP offset to threshold
+LD879:  cmpa MapValue       ; Compare with current MAP
+        bcc  LD889          ; If Boundary &gt;= MapValue, lock in cell</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><code>DLTMAP</code> also acts as the end-of-array sentinel label in the 6803 assembly source (line 3370: <code>cpx #DLTMAP_MapHysteresisAtMapCellBoundaries</code>).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>DLTMAP</code>
+        </footer>
+    </div>
+</body>
+</html>

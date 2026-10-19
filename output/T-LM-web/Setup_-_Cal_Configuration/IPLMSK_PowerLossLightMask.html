@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPLMSK: PowerLossLightMask | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x00B9</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Setup - Cal Configuration</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>IPLMSK: PowerLossLightMask</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>IPLMSK</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>IPLMSK_PowerLossLightMask</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Setup_-_Cal_Configuration\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x00B9</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 5 (8-bit Bitmask Flag)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Bitmask (0xE9; binary 11101001)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xE9                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L166-L179"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;">Direct symbol reference or ROM header constant in <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>IPLMSK</code> (PowerLossLightMask) is an 8-bit diagnostic control mask that determines which electronic sensor and circuit faults cause the dashboard 'Power Loss' / 'Check Engine' lamp to illuminate.</p>
+<p>While the ECU logs dozens of minor diagnostic anomalies into memory, not every fault warrants alerting the driver. Minor faults (such as a temporary A/C switch glitch) are stored silently as fault codes for mechanics to read later. Critical faults that directly compromise emissions or engine survival (such as a disconnected MAP sensor, dead coolant sensor, or charging system failure) are filtered through <code>IPLMSK</code>. If an active fault matches an enabled bit in <code>IPLMSK</code>, the ECU immediately grounds the lamp driver to illuminate the dashboard warning light.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated during OBD background diagnostic executive processing.</li>
+<li>Bit assignments:</li>
+<li>Bit 7 (<code>1</code>): Charge Temperature Sensor Fault</li>
+<li>Bit 6 (<code>1</code>): Coolant Temperature Sensor Fault</li>
+<li>Bit 5 (<code>1</code>): Charging System / Voltage Regulator Fault</li>
+<li>Bit 4 (<code>0</code>): Unused / Bit 3</li>
+<li>Bit 3 (<code>1</code>): Battery Voltage Out of Range</li>
+<li>Bit 2 (<code>0</code>): MAP Signal Electrical Fault</li>
+<li>Bit 1 (<code>0</code>): TPS Signal Electrical Fault</li>
+<li>Bit 0 (<code>1</code>): MAP Pneumatic / Overboost Fault</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Custom Warning Light Setup</strong>: If running a dedicated race car or custom conversion and you want to prevent non-critical sensor faults from turning on the dashboard light, you can selectively clear corresponding bits in <code>IPLMSK</code>.</li>
+<li><strong>CEL Knock Warning</strong>: Note that in Turbonator custom code, the Check Engine Light can also be repurposed to flash on knock detection via <a href="../Setup_-_Cal_Configuration/CONFIG_ConfigurationFlags.html"><code>CONFIG</code></a> (<code>cfg_FlashCE</code>).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; Calibration Header at $C006 (T_LM_22_MTX_A171_Stock.tpl:166-177)
+IPLMSK_PowerLossLightMask:
+    .byte 0xE9                                   ; Binary 11101001 (Selects critical MIL faults)</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><em>Direct symbol reference or header constant.</em></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Nomenclature</strong>: In 1984-1987 Chrysler turbo vehicles, the dashboard lamp was labeled 'Power Loss'; in 1988+ vehicles, it was labeled 'Check Engine'.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>IPLMSK</code>
+        </footer>
+    </div>
+</body>
+</html>

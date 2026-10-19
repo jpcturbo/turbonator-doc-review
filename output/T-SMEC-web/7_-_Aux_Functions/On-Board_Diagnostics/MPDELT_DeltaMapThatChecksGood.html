@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPDELT: DeltaMapThatChecksGood | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1CAB</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MPDELT: DeltaMapThatChecksGood</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MPDELT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MPDELT_DeltaMapThatChecksGood</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1CAB</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x01 (1 count ≈ 0.12 psi MAP change)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7529-L7539"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L4848"><code>CheckIfMapSensorHasStartedWorkingAgain</code></a> in <a href="../../T-SMEC_v19.asm.html#L4867"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MPDELT</code> establishes the minimum pressure delta between successive sensor readings required to verify that the manifold absolute pressure sensor is dynamically responding to engine airflow changes.</p>
+<p>A functioning pressure sensor on an operating engine exhibits minor continuous pressure pulsations caused by intake valve opening events. If a sensor output becomes frozen due to an internal electronic failure or disconnected vacuum line, its reading remains completely static.</p>
+<p>In factory calibrations, <code>MPDELT</code> is configured to 1 count, corresponding to approximately 0.12 psi of pressure change. When the measured change between consecutive samples equals or exceeds <code>MPDELT</code>, the engine controller sets an internal flag indicating dynamic pressure activity, which is required both to clear previous fault codes and to validate sensor health.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>CheckIfMapSensorHasStartedWorkingAgain</code> (<code>T-SMEC_v19.asm:4863-4873</code>), instruction at line 4867, and <code>StoreAntiDwell</code> (line 7047).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated when computing delta between <code>MapVolts</code> and <code>CPU_A2DResults1</code>.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li>Absolute delta computed at lines 4863-4866.</li>
+<li><code>ldab MPDELT_DeltaMapThatChecksGood</code> loads 1 count at line 4867.</li>
+<li>If <code>b45_IPL1</code> bit <code>b45_MapStuck</code> is clear, compares delta against <code>MPDELT</code> (<code>cba</code> at line 4870).</li>
+<li>If delta &gt;= <code>MPDELT</code>, sets <code>b54_BigMapChange</code> at line 4872.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Sensor Activity Verification</strong>:</li>
+<li>1 count (0.12 psi) reliably detects the normal pressure ripple of an idling multi-cylinder engine.</li>
+<li><strong>3-Bar Sensor Compatibility</strong>:</li>
+<li>1 count on a 3-bar sensor represents 0.17 psi, which is still easily satisfied by normal intake stroke pressure ripples.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Setting <code>MPDELT</code> to zero marks the sensor as dynamically active even when disconnected or frozen.</li>
+<li>Setting <code>MPDELT</code> too high prevents the engine controller from clearing Fault Code 13 after a repaired vacuum line.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In routine <code>CheckIfMapSensorHasStartedWorkingAgain</code> (lines 4863-4873), the absolute difference between <code>MapVolts</code> and <code>CPU_A2DResults1</code> is calculated in accumulator A. At line 4867, <code>ldab MPDELT_DeltaMapThatChecksGood</code> loads 0x01 (1 count). If <code>b45_MapStuck</code> is clear, line 4870 executes <code>cba</code>. If accumulator A is greater than or equal to register B, line 4872 executes <code>bset *BitFlags_54, #b54_BigMapChange</code>. The same constant is also checked in <code>StoreAntiDwell</code> at line 7047 to validate steady-state pressure before asserting <code>b47_MapOK</code>.</p>
+<pre><code class="language-motorola6803">; --- CheckIfMapSensorHasStartedWorkingAgain (T-SMEC_v19.asm:4863-4873) ---
+L1375:	ldaa MapVolts	    ; load a with memory contents
+	suba CPU_A2DResults1
+	bcc  L1376	    ; branch if greater or equal
+	nega		    ; negate a (set high bit)
+L1376:	ldab MPDELT_DeltaMapThatChecksGood    ; load b with memory contents (data is 01)
+	brclr *b45_IPL1, #b45_MapStuck, L1377    ; branch if bit(s) clear
+	addb MPDELA_MatureMapLimpinWhenDeltaAbove_MPDELT_plus_MPDELA	    ;  (data is 01)
+L1377:	cba
+	bcs  R1380	    ; branch if lower
+	bset *BitFlags_54, #b54_BigMapChange	; set bits
+	brclr *b45_IPL1, #b45_MapStuck, R1380    ; branch if bit(s) clear
+</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPDELA_MatureMapLimpinWhenDeltaAbove_MPDELT_plus_MPDELA.html"><code>MPDELA</code></a> (hysteresis adder) and <code>b54_BigMapChange</code> (activity flag).</li>
+<li><strong>Diagnostic Codes</strong>: Feeds into recovery logic for DRB-II Fault Code 13 (MAP sensor pneumatic failure / stuck reading).</li>
+<li><strong>Multi-Routine Role</strong>: Checked both in sensor verification (<code>VerifyOperationOfMapSensor_MM</code>) and in dwell timing (<code>StoreAntiDwell</code>).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MPDELT</code>
+        </footer>
+    </div>
+</body>
+</html>

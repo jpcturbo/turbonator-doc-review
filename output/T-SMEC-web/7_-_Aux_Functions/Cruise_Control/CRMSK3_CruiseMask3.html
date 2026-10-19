@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRMSK3: CruiseMask3 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x171A</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Cruise Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Cruise_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CRMSK3: CruiseMask3</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CRMSK3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CRMSK3_CruiseMask3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Cruise_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Cruise_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x171A</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">counts accumulator negative threshold</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0xF4 (-12 counts signed negative error threshold)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6104-L6114"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8723"><code>CalculateVehicleSpeed</code></a> in <a href="../../T-SMEC_v19.asm.html#L8768"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CRMSK3</code> defines the negative accumulated servo error threshold for decrementing the adaptive integrator trim.</p>
+<p>When descending long highway grades or following sustained tailwinds, vehicle momentum causes speed to sit persistently above target. If accumulated error falls below <code>CRMSK3</code>, the engine controller recognizes that the vehicle is overspeeding and decrements the learned integrator trim by <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK4_CruiseMask4.html"><code>CRMSK4</code></a>. In factory calibrations, <code>CRMSK3</code> is set to 244 counts (representing negative 12 signed counts), establishing the trigger boundary for shedding learned uphill throttle trim.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8768-8770</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Accumulated error not greater than <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK2_CruiseMask2.html"><code>CRMSK2</code></a>.</li>
+<li>Signed error evaluated in accumulator A.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Compares accumulated error against <code>CRMSK3</code> via <code>cmpa CRMSK3</code> at line 8768.</li>
+<li>If greater or equal (<code>bge L1764</code>), error is within deadband and trim is unchanged.</li>
+<li>If lower, decrements <code>BitFlags_27</code> by <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK4_CruiseMask4.html"><code>CRMSK4</code></a> at line 8770.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Downhill Trim Shedding</strong>:</li>
+<li>Initiates ramp-down of adaptive trim <code>BitFlags_27</code> when negative error falls below <code>CRMSK3</code>.</li>
+<li>Sheds extra throttle angle learned while climbing previous hills.</li>
+<li><strong>Signed Arithmetic</strong>:</li>
+<li>Stored as negative 12 signed counts, evaluated with signed comparison instructions.</li>
+<li><strong>Companion Parameter</strong>:</li>
+<li>Pairs with positive error threshold <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK2_CruiseMask2.html"><code>CRMSK2</code></a>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateVehicleSpeed</code> at line 8768, <code>cmpa CRMSK3_CruiseMask3</code> evaluates accumulator A against signed threshold -12 . If accumulator A is greater than or equal (<code>bge L1764</code>), error is within deadband. If accumulator A is more negative than <code>CRMSK3</code>, execution falls through to line 8770, executing <code>subb CRMSK4_CruiseMask4</code> on accumulator B to decrement <code>BitFlags_27</code> towards clamp floor <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK5_CruiseMask5.html"><code>CRMSK5</code></a>.</p>
+<pre><code class="language-motorola6803">; --- CalculateVehicleSpeed (T-SMEC_v19.asm:8766-8771) ---
+	cmpa CRMSK2_CruiseMask2    ; compare a with memory contents (data is 07)
+	bgt  L1762	    ; branch if greater
+	cmpa CRMSK3_CruiseMask3    ; compare a with memory contents (data is f4)
+	bge  L1764	    ; branch if greater or equal
+	subb CRMSK4_CruiseMask4    ; subtract memory contents from b (data is 02)</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Signed Value</strong>: Stored as 0xF4 (-12 decimal counts in two's complement).</li>
+<li><strong>Integrator Step</strong>: Triggers subtraction of <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK4_CruiseMask4.html"><code>CRMSK4_CruiseMask4</code></a> (-2 counts) from <code>BitFlags_27</code>.</li>
+<li><strong>Companion Parameter</strong>: Coordinates with positive threshold <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK2_CruiseMask2.html"><code>CRMSK2_CruiseMask2</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>CRMSK3</code>
+        </footer>
+    </div>
+</body>
+</html>

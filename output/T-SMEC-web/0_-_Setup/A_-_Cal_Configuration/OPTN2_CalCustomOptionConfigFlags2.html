@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPTN2: CalCustomOptionConfigFlags2 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x020C</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ A - Cal Configuration</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>OPTN2: CalCustomOptionConfigFlags2</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>OPTN2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>OPTN2_CalCustomOptionConfigFlags2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\A_-_Cal_Configuration\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x020C</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 5 (Bitfield / Configuration Mask)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Option Bitfield</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x05                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L714-L725"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L9506"><code>CalcWGDutyCycle_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L9507"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>OPTN2</code> serves as the second custom feature configuration register in the Turbonator codebase, controlling rev limiter mechanics, launch control, turbocharger anti-lag, boost algorithms, and wideband oxygen sensor emulation.</p>
+<p>In factory baseline files, <code>OPTN2</code> is configured to five counts, enabling spark-based rev limiting and two-step launch control. Unlike factory firmware that solely cut fuel during over-rev conditions, <code>OPTN2</code> provides independent toggles for spark cut and fuel cut rev limiting. It also enables stationary drag racing launch control, bang-bang exhaust pop, launch spark retard, second-generation proportional wastegate duty cycle logic, and wideband-to-narrowband oxygen sensor conversion.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalcWGDutyCycle_MM</code> (<code>T-SMEC_v19.asm:9506-9525</code>, line 9507), <code>LaunchControl_CheckEnable</code> (<code>T-SMEC_v19.asm:10132-10137</code>, line 10133), <code>LaunchControl_ShutOffFuelSpark</code> (line 10181), <code>CalulateLaunchAdvance</code> (line 10263), <code>SetBaseandPattern</code> (line 10286), and <code>ConvertWB2NBSignal_MM</code> (line 10311).</li>
+<li><strong>Bitmask Decoding</strong>:</li>
+<li>Bit 0 (<code>opt_SprkRevLim</code>, 0x01): Spark-based rev limiter enable.</li>
+<li>Bit 1 (<code>opt_FuelRevLim</code>, 0x02): Fuel-based rev limiter enable.</li>
+<li>Bit 2 (<code>opt_StageLim</code>, 0x04): Launch control / staging limiter enable.</li>
+<li>Bit 3 (<code>opt_BangBang</code>, 0x08): Bang-bang spark pattern enable.</li>
+<li>Bit 5 (<code>opt_AntiLag</code>, 0x20): Anti-lag spark retard enable.</li>
+<li>Bit 6 (<code>opt_T2BC</code>, 0x40): Second-generation boost control enable.</li>
+<li>Bit 7 (<code>opt_WB2NB</code>, 0x80): Wideband to narrowband conversion enable.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Spark Cut vs Fuel Cut Limiters</strong>:</li>
+<li>Bit 0 enables spark-based rev limiting, while Bit 1 enables fuel-based limiting. Running spark cut alone provides crisper staging limiter operation and rapid boost building on the two-step.</li>
+<li><strong>Stationary Launch Control (Two-Step)</strong>:</li>
+<li>Enabling Bit 2 engages the launch control routine when vehicle speed is below the launch speed threshold, holding engine speed at the launch setpoint.</li>
+<li><strong>Anti-Lag &amp; Bang-Bang Options</strong>:</li>
+<li>Bit 3 enables bang-bang spark cut patterns and Bit 5 enables anti-lag timing retards to spool large turbochargers.</li>
+<li><strong>Second-Generation Boost Control</strong>:</li>
+<li>Bit 6 switches the boost solenoid algorithm from early duty cycle logic to advanced proportional wastegate control.</li>
+<li><strong>Wideband to Narrowband Conversion</strong>:</li>
+<li>Bit 7 enables live transfer function lookup that converts wideband input voltages into simulated narrowband signals.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalcWGDutyCycle_MM</code> at line 9507, <code>ldaa OPTN2_CalCustomOptionConfigFlags2</code> is tested via <code>bita #opt_T2BC</code>. If set, execution jumps to <code>CalcWGDutyCycleT2</code>; if clear, it falls through to <code>CalcWGDutyCycleT1</code>. In <code>LaunchControl_CheckEnable</code> at line 10133, <code>bita #opt_StageLim</code> tests staging enable; if clear, execution branches to <code>LaunchControl_Off</code>. In <code>ConvertWB2NBSignal_MM</code> at line 10311, <code>bitb #opt_WB2NB</code> determines whether raw air-fuel input is looked up through <a href="../../0_-_Setup/C_-_Turbonator_Features/WB2NB/WB2AFR_WidebandToAFRTransferFunction.html"><code>WB2AFR_WidebandToAFRTransferFunction</code></a> and <a href="../../0_-_Setup/C_-_Turbonator_Features/WB2NB/AFR2NB_WidebandAFRToO2TransferFunction.html"><code>AFR2NB_WidebandAFRToO2TransferFunction</code></a>.</p>
+<pre><code class="language-motorola6803">; --- CalcWGDutyCycle_MM (T-SMEC_v19.asm:9506-9515) ---
+CalcWGDutyCycle_MM:
+        ldaa OPTN2_CalCustomOptionConfigFlags2    ; load a with memory contents (data is 9f)
+        bita #opt_T2BC          ; bitwise AND -00000001-
+        beq  CalcWGDutyCycleT1  ; branch if equal (zero)
+L2855:  jmp  CalcWGDutyCycleT2
+
+CalcWGDutyCycleT1:
+	brset *BitFlags_54, #b54_FuelEngineNotRunning, WGDC_ClearWGDutyCycleVars	; branch if bit(s) set
+        ldaa BoostTarget
+        staa Temp3</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Factory Default</strong>: Configured to 0x05 (5 counts), enabling spark-based rev limiter and launch control.</li>
+<li><strong>Staging Interaction</strong>: Works in concert with <a href="../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_Enable/STGSWS_StagingLimiterEnableSwitch.html"><code>STGSWS_StagingLimiterEnableSwitch</code></a>, <a href="../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_RPM/STGROF_StageLimiterRPMOffSetpoint.html"><code>STGROF_StageLimiterRPMOffSetpoint</code></a>, and <code>STGSPD_VehicleSpeedCutoffPointForStagingLimiter</code>.</li>
+<li><strong>Wideband Integration</strong>: When Bit 7 is set, requires properly calibrated <a href="../../0_-_Setup/C_-_Turbonator_Features/WB2NB/WB2AFR_WidebandToAFRTransferFunction.html"><code>WB2AFR</code></a> and <a href="../../0_-_Setup/C_-_Turbonator_Features/WB2NB/AFR2NB_WidebandAFRToO2TransferFunction.html"><code>AFR2NB</code></a> 2D transfer tables.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>OPTN2</code>
+        </footer>
+    </div>
+</body>
+</html>

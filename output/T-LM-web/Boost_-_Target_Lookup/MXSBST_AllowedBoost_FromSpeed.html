@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MXSBST: AllowedBoost FromSpeed | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0D43</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Boost - Target Lookup</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Limits</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MXSBST: AllowedBoost FromSpeed</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MXSBST</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MXSBST_AllowedBoost_FromSpeed</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Limits</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Boost_-_Target_Lookup\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0D43</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2D Table / Curve)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">2 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Vehicle Speed (Speed, 0 to 128 mph)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Target Boost Above Baro (Boost, 0 to 29.4 psi)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Target Boost Above Baro (Boost, 0 to 29.4 psi) vs. Vehicle Speed (Speed, 0 to 128 mph)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>Point 1: 21 mph = 7.2 psi; Point 2: 30 mph = 12.1 psi</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L3425-L3440"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L6994"><code>NoLoBoost</code></a> in <a href="../T-LMv13.asm.html#L7004"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MXSBST_AllowedBoost_FromSpeed</code> implements <strong>vehicle speed-dependent boost limiting (gear-based / traction boost limiting)</strong>.</p>
+<p>In front-wheel-drive Chrysler turbo vehicles, hitting full 12+ psi boost in 1st gear causes uncontrollable wheelspin and violent torque steer. Additionally, on automatic transmission vehicles, full-boost low-speed launches cause severe torque converter and differential pin wear. <code>MXSBST</code> limits boost to 7.2 psi below 21 mph, allowing boost to ramp up to full 12.1 psi as vehicle speed crosses 30 mph.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Vehicle Speed Evaluation:</strong></li>
+<li>In <code>CalcTargetBoost_MM</code>:</li>
+<li>Only evaluated if port C indicates automatic transmission or speed-limiting flag is set (<code>andb #0x08</code>).</li>
+<li>Clamps boost goal: extTemp4 = \min( extTemp4, extMXSBST( extVehicleSpeed)).</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>1st Gear Launch Traction:</strong> Excellent tool for dialing in launch traction on high-horsepower street cars.</li>
+<li><strong>Manual vs. Automatic:</strong> On manual transmission calibrations, if the Park/Neutral switch or speed flag is grounded, this limiter may be bypassed.</li>
+<li><strong>Drag Racing:</strong> If running drag slicks and you want full boost off the line, raise Point 1 to match your target boost so low speed does not hold back launch power.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 7001–7009):</p>
+<pre><code class="language-motorola6803">ldab Z83_PortCdata    
+        andb #0x08          ; Check speed limiter enable flag
+        beq  LF2A9          ; If not enabled, skip!
+        ldx  #MXSBST_AllowedBoost_FromSpeed
+        ldd  VehicleSpeed_HB ; Read vehicle speed
+        asld                ; Scale for table indexing
+        asld
+        asld
+        jsr  LookupAndKeepSmallerBoostGoal ; Clamp to MIN(Temp4, MXSBST)</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li>Factory electronic launch traction control.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>MXSBST</code>
+        </footer>
+    </div>
+</body>
+</html>

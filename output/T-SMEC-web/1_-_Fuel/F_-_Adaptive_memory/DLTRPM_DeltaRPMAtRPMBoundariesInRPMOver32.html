@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DLTRPM: DeltaRPMAtRPMBoundariesInRPMOver32 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0B79</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ F - Adaptive memory</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DLTRPM: DeltaRPMAtRPMBoundariesInRPMOver32</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DLTRPM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DLTRPM_DeltaRPMAtRPMBoundariesInRPMOver32</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\F_-_Adaptive_memory\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0B79</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x02 (2 counts ≈ 64 RPM)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3127-L3137"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L3374"><code>ONTHROTTLE_OR_RPMTOOHIGHFORIDLE</code></a> in <a href="../../T-SMEC_v19.asm.html#L3383"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DLTRPM</code> establishes the directional engine speed hysteresis applied to the R1 boundary when transitioning between low-RPM and high-RPM adaptive fuel cells.</p>
+<p>When the engine is operating in a low-RPM cell, <code>DLTRPM</code> is added to <a href="../../1_-_Fuel/F_-_Adaptive_memory/R1_RPMCellBoundaryInRPMover32.html"><code>R1</code></a> before evaluating whether engine speed has climbed into the upper cell.</p>
+<p>In stock calibrations, <code>DLTRPM</code> is set to 2 counts, which corresponds to 64 RPM (2 counts multiplied by 32 RPM per count). This deadband prevents continuous cell swapping when engine speed hovers around the boundary during steady cruise.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code> / <code>ONTHROTTLE_OR_RPMTOOHIGHFORIDLE</code> (<code>T-SMEC_v19.asm:3380-3388</code>), instruction line 3383.</li>
+<li><strong>Gating Conditions</strong>: Evaluated when transitioning from an even (low-RPM) cell index (<code>lsrb</code> produces carry clear).</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Line 3381 executes <code>lsrb</code> on cell pointer in register B.</li>
+<li>If carry is clear (<code>bcc L1248</code>), line 3383 executes <code>adda DLTRPM_DeltaRPMAtRPMBoundariesInRPMOver32</code>.</li>
+<li>Sum is compared against <code>EngineRpm_HB</code> at line 3385.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Boundary Stability</strong>:</li>
+<li>Prevents rapid hunting between even and odd adaptive cells when cruising near <a href="../../1_-_Fuel/F_-_Adaptive_memory/R1_RPMCellBoundaryInRPMover32.html"><code>R1</code></a>.</li>
+<li><strong>Increasing Hysteresis</strong>:</li>
+<li>Raising to 3 or 4 counts (96 to 128 RPM) smooths cell switching on vehicles with manual transmissions or driveline lash.</li>
+<li><strong>Lowering Hysteresis</strong>:</li>
+<li>Makes the transition between low and high RPM cells sharper, but setting to zero causes boundary chatter.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code> at line 3381, accumulator B containing the previous cell pointer is shifted right via <code>lsrb</code>. If the previous cell was an even number (low RPM cell), bit 0 is zero and carry is clear. Line 3382 branches if carry is set; since carry is clear, line 3383 executes <code>adda DLTRPM_DeltaRPMAtRPMBoundariesInRPMOver32</code>, raising the RPM boundary threshold by 64 RPM before comparing against <code>EngineRpm_HB</code>.</p>
+<pre><code class="language-motorola6803">; --- ONTHROTTLE_OR_RPMTOOHIGHFORIDLE (T-SMEC_v19.asm:3380-3386) ---
+L1247:	ldaa R1_RPMCellBoundaryInRPMover32    ; load a with memory contents (data is 32) (RPM Threshold separating low/high RPM cells)
+	lsrb		    ; logical shift right b
+	bcs  L1248	    ; branch if lower
+	adda DLTRPM_DeltaRPMAtRPMBoundariesInRPMOver32	  ;  (data is 02) (Add RPM hysteresis)
+L1248:	ldab Temp0	    ; load b with memory contents
+	cmpa EngineRpm_HB    ; compare a with memory contents
+	bcs  L1249	    ; branch if lower (If RPM &gt; threshold, we stay on the upper cell of this MAP band)</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Directly modifies <a href="../../1_-_Fuel/F_-_Adaptive_memory/R1_RPMCellBoundaryInRPMover32.html"><code>R1_RPMCellBoundaryInRPMover32</code></a>.</li>
+<li><strong>Units</strong>: High-byte RPM scaling (1 count = 32 RPM; 2 counts = 64 RPM).</li>
+<li><strong>Persistence</strong>: Stored in ROM; dynamically added during cell selection.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>DLTRPM</code>
+        </footer>
+    </div>
+</body>
+</html>

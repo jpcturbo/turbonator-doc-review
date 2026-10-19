@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPDELA: MatureMapLimpinWhenDeltaAbove MPDELT plus MPDELA | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1CB8</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MPDELA: MatureMapLimpinWhenDeltaAbove MPDELT plus MPDELA</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MPDELA</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MPDELA_MatureMapLimpinWhenDeltaAbove_MPDELT_plus_MPDELA</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1CB8</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x01 (1 count ≈ 0.12 psi additional delta)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7542-L7552"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L4848"><code>CheckIfMapSensorHasStartedWorkingAgain</code></a> in <a href="../../T-SMEC_v19.asm.html#L4869"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MPDELA</code> provides a calibrated hysteresis adder combined with <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPDELT_DeltaMapThatChecksGood.html"><code>MPDELT</code></a> to establish an elevated pressure change requirement when clearing a previously latched stuck MAP sensor fault code.</p>
+<p>When the engine controller flags <strong>Fault Code 13</strong> (stuck manifold absolute pressure reading), it demands stronger evidence of dynamic sensor health before trusting the sensor again. While a healthy sensor only requires a 1-count delta to prove activity, a sensor currently flagged as stuck must exceed the combined sum of <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPDELT_DeltaMapThatChecksGood.html"><code>MPDELT</code></a> plus <code>MPDELA</code>.</p>
+<p>In factory calibrations, <code>MPDELA</code> is configured to 1 count, making the total required delta 2 counts (approximately 0.24 psi). This hysteresis barrier ensures that random electrical sensor noise or voltage fluctuations do not prematurely clear a valid pneumatic error code.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>CheckIfMapSensorHasStartedWorkingAgain</code> (<code>T-SMEC_v19.asm:4863-4873</code>), instruction at line 4869.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Active only when <code>b45_IPL1</code> bit <code>b45_MapStuck</code> is set.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li><code>ldab MPDELT_DeltaMapThatChecksGood</code> loads 1 count at line 4867.</li>
+<li><code>brclr *b45_IPL1, #b45_MapStuck, L1377</code> checks stuck flag at line 4868.</li>
+<li>If stuck, line 4869 executes <code>addb MPDELA_MatureMapLimpinWhenDeltaAbove_MPDELT_plus_MPDELA</code>, adding 1 count (total 2 counts).</li>
+<li>Compared against absolute MAP delta via <code>cba</code> at line 4870.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Hysteresis Stability</strong>:</li>
+<li>The combined threshold of <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPDELT_DeltaMapThatChecksGood.html"><code>MPDELT</code></a> (1 count) plus <code>MPDELA</code> (1 count) requires a 2-count (0.24 psi) pressure excursion before clearing Fault Code 13.</li>
+<li>This prevents intermittent loose vacuum lines from clearing the code prematurely.</li>
+<li><strong>Raising for High Noise Environments</strong>:</li>
+<li>If electrical noise from high-output aftermarket ignition systems triggers false sensor recovery, raising <code>MPDELA</code> to 2 or 3 counts adds filtering margin.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Zeroing <code>MPDELA</code> eliminates the hysteresis margin between detection and recovery.</li>
+<li>Setting <code>MPDELA</code> excessively high prevents the engine controller from automatically clearing Fault Code 13 during gentle road testing after a repaired vacuum line.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In routine <code>CheckIfMapSensorHasStartedWorkingAgain</code> (lines 4863-4873), register B receives <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPDELT_DeltaMapThatChecksGood.html"><code>MPDELT</code></a> at line 4867. At line 4868, <code>brclr *b45_IPL1, #b45_MapStuck, L1377</code> checks whether Fault Code 13 is active. If set, line 4869 executes <code>addb MPDELA_MatureMapLimpinWhenDeltaAbove_MPDELT_plus_MPDELA</code> (0x01 = 1 count), raising register B to 2 counts. At line 4870, <code>cba</code> compares the measured absolute delta against register B. Only if the delta reaches or exceeds <code>MPDELT + MPDELA</code> does line 4872 set <code>b54_BigMapChange</code>.</p>
+<pre><code class="language-motorola6803">; --- CheckIfMapSensorHasStartedWorkingAgain (T-SMEC_v19.asm:4863-4873) ---
+L1375:	ldaa MapVolts	    ; load a with memory contents
+	suba CPU_A2DResults1
+	bcc  L1376	    ; branch if greater or equal
+	nega		    ; negate a (set high bit)
+L1376:	ldab MPDELT_DeltaMapThatChecksGood    ; load b with memory contents (data is 01)
+	brclr *b45_IPL1, #b45_MapStuck, L1377    ; branch if bit(s) clear
+	addb MPDELA_MatureMapLimpinWhenDeltaAbove_MPDELT_plus_MPDELA	    ;  (data is 01)
+L1377:	cba
+	bcs  R1380	    ; branch if lower
+	bset *BitFlags_54, #b54_BigMapChange	; set bits
+	brclr *b45_IPL1, #b45_MapStuck, R1380    ; branch if bit(s) clear
+</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPDELT_DeltaMapThatChecksGood.html"><code>MPDELT</code></a> (base activity delta) and <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPRMPD_CheckMapAtZeroSpeedAndThisDeltaRpm.html"><code>MPRMPD</code></a> (idle RPM delta check).</li>
+<li><strong>Diagnostic Code</strong>: DRB-II Fault Code 13 (MAP sensor pneumatic failure / stuck reading).</li>
+<li><strong>Total Delta</strong>: Default requirement is 2 counts ≈ 0.24 psi pressure change to qualify for fault clearing.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MPDELA</code>
+        </footer>
+    </div>
+</body>
+</html>

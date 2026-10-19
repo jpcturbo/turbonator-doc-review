@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACCTIM: AcDelayFromStartRunTransfer | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x15A0</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ AC Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ACCTIM: AcDelayFromStartRunTransfer</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ACCTIM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ACCTIM_AcDelayFromStartRunTransfer</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\AC_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x15A0</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">seconds</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x04                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5726-L5736"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L2170"><code>HandleAcCutout</code></a> in <a href="../../T-SMEC_v19.asm.html#L2172"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ACCTIM</code> defines the post-start time delay enforced after the engine transitions into run mode before the controller allows the air conditioning compressor clutch to engage.</p>
+<p>When starting an engine with the climate control switch left in the ON position, immediately engaging the compressor clutch while the starter motor is cranking or disengaging would place severe mechanical drag on the starter drive, battery voltage, and cold engine combustion. In factory calibrations, <code>ACCTIM</code> is set to 4 counts, representing approximately 0.4 seconds. This holds the A/C clutch disengaged until the engine has cleanly established oil pressure and stable idle flare control.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2173</code>), instruction line 2172.</li>
+<li><strong>Execution Context</strong>: Evaluated during the start-to-run transfer transition.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Compares <code>KeyOnOrEngineRunningTime</code> against <code>ACCTIM_AcDelayFromStartRunTransfer</code> at line 2172.</li>
+<li>If run time is less than <code>ACCTIM</code> (<code>bcs L1103</code>), branches to hold A/C cutout active.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Startup Idle Settling</strong>:</li>
+<li>Increase <code>ACCTIM</code> to 1.0 to 2.0 seconds (10 to 20 counts) on performance engines to allow idle flare to settle smoothly.</li>
+<li><strong>Starter Motor Protection</strong>:</li>
+<li>Prevents heavy mechanical cranking drag when starting with the dashboard A/C button depressed.</li>
+<li><strong>Zeroing Caution</strong>:</li>
+<li>Do not set <code>ACCTIM</code> to zero to avoid engaging the compressor clutch while oil pressure is still building.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>HandleAcCutout</code> at line 2171, accumulator A is loaded with <code>KeyOnOrEngineRunningTime</code>. Line 2172 executes <code>cmpa ACCTIM_AcDelayFromStartRunTransfer</code>. If accumulator A is less than <code>ACCTIM</code> (<code>bcs</code>), execution branches to <code>L1103</code>, keeping A/C clutch engagement inhibited. Once <code>KeyOnOrEngineRunningTime</code> meets or exceeds <code>ACCTIM</code>, execution continues to evaluate part-throttle cutout timers and temperature setpoints.</p>
+<pre><code class="language-motorola6803">; --- HandleAcCutout (T-SMEC_v19.asm:2170-2174) ---
+HandleAcCutout:
+	ldaa KeyOnOrEngineRunningTime	 ; load a with memory contents
+	cmpa ACCTIM_AcDelayFromStartRunTransfer    ; compare a with memory contents (data is 04)
+	bcs  L1103	    ; branch if lower
+	ldaa Timer_AcCutout    ; load a with memory contents</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Timebase Reference</strong>: Evaluates <code>KeyOnOrEngineRunningTime</code> timer counts.</li>
+<li><strong>Gating Impact</strong>: Acts as the master startup gate before any normal A/C clutch engagement can take place.</li>
+<li><strong>Low-Voltage Safeguard</strong>: Prevents excessive starter current draw and battery voltage sag during engine cranking.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>ACCTIM</code>
+        </footer>
+    </div>
+</body>
+</html>

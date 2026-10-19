@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BARFLR: OffsetCorrectionTo MAPFLR FromBaro | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0ED9</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BARFLR: OffsetCorrectionTo MAPFLR FromBaro</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BARFLR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BARFLR_OffsetCorrectionTo_MAPFLR_FromBaro</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0ED9</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2D Table / Curve)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">1 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Barometric Pressure (0.0 to 14.7 psi atmospheric, 0.0 to 29.9 inHg absolute)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Decel MAP Barometric Correction (0 to 255 scale)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">scale vs. psi</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x01                       ;Number of points in table
+.byte 0xFF, 0x00                 ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3991-L4003"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L1859"><code>CalculateAisPosition_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L1915"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BARFLR</code> is a 2D calibration curve that applies an altitude-dependent barometric pressure correction to the deceleration control manifold pressure calculation.</p>
+<p>At higher altitudes, atmospheric pressure is substantially lower than at sea level. Because manifold absolute pressure is measured relative to absolute vacuum, closed-throttle overrun at high elevation produces much lower absolute MAP readings than at sea level.</p>
+<p>Without barometric compensation, the calculated decel control MAP would become misaligned with actual intake manifold pressure, either causing false dashpot opening steps or inadequate deceleration cushioning.</p>
+<p><code>BARFLR</code> provides a barometric trim adder to keep the decel control MAP threshold properly calibrated across varying altitudes.</p>
+<p>In factory calibrations, <code>BARFLR</code> is configured as a single baseline point that maintains zero offset under standard atmospheric pressure.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1996</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated following the <a href="../../5_-_Idle/B_-_AIS_Decel/MAPFLR_AISAdditionToControlMap_FromRpm.html"><code>MAPFLR</code></a> and <a href="../../5_-_Idle/B_-_AIS_Decel/MPTEMP_TempTermForMapOffset_FromTemp.html"><code>MPTEMP</code></a> calculation chain.</li>
+<li>Running control MAP sum stored in <code>Temp0</code> at line 1914.</li>
+<li>Loads <code>BaroPressure</code> into accumulator A at line 1916.</li>
+<li>Indexes <code>BARFLR</code> table via <code>Lookup4ByteTable</code> at line 1917 and adds returned offset to <code>Temp0</code> at line 1918.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>High-Altitude Decel Hang</strong>:</li>
+<li>If decel idle floats or hangs only at high elevations, trim <code>BARFLR</code> downward to lower the control MAP threshold in thin air.</li>
+<li><strong>Sea-Level Baseline</strong>:</li>
+<li>Retain factory setting (0 offset) for normal sea-level and moderate elevation environments.</li>
+<li><strong>Companion Verification</strong>:</li>
+<li>Works in parallel with <a href="../../5_-_Idle/A_-_AIS_Control/BARAIS_AISBaroCompensation.html"><code>BARAIS</code></a>, which adjusts idle stepper motor opening steps for barometric pressure.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateAisPosition_MM</code>, line 1914 saves accumulator A into <code>Temp0</code>. Line 1915 loads index X with <code>#BARFLR_OffsetCorrectionTo_MAPFLR_FromBaro</code>. Line 1916 loads <code>BaroPressure</code> into accumulator A and line 1917 calls <code>jsr Lookup4ByteTable</code>. Line 1918 executes <code>adda Temp0</code>. If addition does not overflow (<code>bcc L1067</code>), the finalized decel control MAP advances to label <code>L1067</code>; if overflow occurs, line 1920 saturates accumulator A to 255 counts (<code>ldaa #0xff</code>).</p>
+<pre><code class="language-motorola6803">; --- CalculateAisPosition_MM (T-SMEC_v19.asm:1914-1920) ---
+	staa Temp0	    ; store a into memory
+	ldx  #BARFLR_OffsetCorrectionTo_MAPFLR_FromBaro	  ; load index with value
+	ldaa BaroPressure    ; load a with memory contents
+	jsr  Lookup4ByteTable	 ; call subroutine
+	adda Temp0	
+	bcc  L1067	    ; branch if greater or equal
+L1066:	ldaa #0xff	    ; load a with value -11111111-</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Final Term in Control MAP Chain</strong>: Final modifier added to synthesize the decel control MAP threshold.</li>
+<li><strong>Companion Parameter</strong>: Works alongside <a href="../../5_-_Idle/A_-_AIS_Control/BARAIS_AISBaroCompensation.html"><code>BARAIS</code></a> (idle airflow altitude multiplier).</li>
+<li><strong>Table Resolution</strong>: 1 point (Baro pressure vs Scale).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>BARFLR</code>
+        </footer>
+    </div>
+</body>
+</html>

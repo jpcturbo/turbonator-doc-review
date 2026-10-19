@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCYTMC: CurveAColdDecayTime | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0867</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - Running</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DCYTMC: CurveAColdDecayTime</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DCYTMC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DCYTMC_CurveAColdDecayTime</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_Running\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0867</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">out desc (0 to 255 out)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x04 (4 decimal)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L2181-L2193"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L2829"><code>DealWithColdLoadEnrichment_MM</code></a> in <a href="../T-LMv13.asm.html#L2860"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DCYTMC_CurveAColdDecayTime</code> sets the <strong>decay rate of post-start enrichment (<a href="../Fuel_-_Running/CURVEA_FuelColdEnrichmentCurveA.html"><code>CURVEA</code></a>) when the engine is started cold</strong> (coolant temperature below <a href="../Fuel_-_Running/TMPHLD_TempSwitchPointForCurveAHoldDecay.html"><code>TMPHLD</code></a>).</p>
+<p>After the cold hold time (<a href="../Fuel_-_Running/CLDHLD_CurveAColdHoldTime.html"><code>CLDHLD</code></a>) expires, the ECU gradually steps down Curve A's enrichment factor to zero. <code>DCYTMC</code> dictates how quickly this ramp-down occurs.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Condition:</strong> Engine started cold (<code>CoolantTemp &gt;= TMPHLD</code> in inverse NTC A/D counts, typically &lt; 178°F).</li>
+<li><strong>Timing:</strong> Becomes active immediately after the cold hold timer (<a href="../Fuel_-_Running/CLDHLD_CurveAColdHoldTime.html"><code>CLDHLD</code></a>) reaches zero.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Decay Formula:</strong> Decay time in seconds is calculated as:</li>
+</ul>
+<p><code>Decay Duration ≈ (89.76 / DCYTMC)</code></p>
+<ul>
+<li><strong>Increasing Value:</strong> Results in a faster decay rate (Curve A enrichment fades out more quickly).</li>
+<li><strong>Decreasing Value:</strong> Results in a slower decay rate (Curve A enrichment lingers longer).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 2856–2876):</p>
+<pre><code class="language-motorola6803">LD55C:  ldab DCYTMH_CurveAHotDecayTime    ; load b with memory contents (data is 09)
+           ldaa CoolantTemp    ; load a with memory contents
+           cmpa TMPHLD_TempSwitchPointForCurveAHoldDecay    ; compare a with memory contents (data is b2)
+           bcs  LD573          ; branch if lower
+           ldab DCYTMC_CurveAColdDecayTime    ; load b with memory contents (data is 04)
+           bra  LD573          ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Inverse Scaling:</strong> Larger numbers cause faster decay (shorter total duration). Stock value <code>0x04</code> produces a gradual, stable cold decay.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>DCYTMC</code>
+        </footer>
+    </div>
+</body>
+</html>

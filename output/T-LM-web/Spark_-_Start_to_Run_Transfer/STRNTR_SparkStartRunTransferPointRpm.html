@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STRNTR: SparkStartRunTransferPointRpm | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x029D</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Spark - Start to Run Transfer</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>STRNTR: SparkStartRunTransferPointRpm</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>STRNTR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>STRNTR_SparkStartRunTransferPointRpm</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Spark_-_Start_to_Run_Transfer\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x029D</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">DistOFs (0 to 65535 mSec)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x00C3 (195 decimal, ~600 RPM)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L699-L713"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;">Interrupt / Timer Handler in T-LMv13.asm in <a href="../T-LMv13.asm.html#L4705"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>STRNTR_SparkStartRunTransferPointRpm</code> defines the primary <strong>engine speed threshold required to transfer from Start Mode into Run Mode</strong>.</p>
+<p>During starter cranking, engine rotation is slow (~150–250 RPM) and irregular. The ECU remains in cranking mode, holding fixed base spark timing and dwell until the engine catches and spins up past <code>STRNTR</code>. Once the engine crosses above <code>STRNTR</code> (approximately 600 RPM) for the duration specified by <a href="../Spark_-_Start_to_Run_Transfer/SRTIME_SparkEPPsNeededToBeAboveSR_Hot.html"><code>SRTIME</code></a> or <a href="../Spark_-_Start_to_Run_Transfer/SRTIME2_SparkEPPsNeededToBeAboveSR_Cold.html"><code>SRTIME2</code></a>, the ECU formally transitions ignition control to Run Mode.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<p><code>STRNTR</code> is evaluated during every distributor pulse while the ECU is in Start Mode:
+* <strong>Measured Variable:</strong> <code>TimerOverflowsBetweenDistPulses</code> (16-bit pulse period).
+* <strong>Evaluation:</strong> If <code>STRNTR - TimerOverflowsBetweenDistPulses &gt;= 0</code> (meaning pulse period is less than or equal to <code>STRNTR</code>, or RPM ≥ ~600 RPM), the ECU branches to increment the consecutive start-to-run pulse counter (<code>Timer_NormalDwell</code>).</p>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Increasing the Value (Lower RPM Threshold):</strong></li>
+<li><strong>What it does:</strong> Allows the engine to transfer to Run Mode at a lower RPM (e.g., 500 RPM).</li>
+<li><strong>Real-World Driving Feel:</strong> Enables earlier engagement of dynamic spark advance and idle speed AIS stepper motor control. However, setting it too close to starter cranking speed can cause premature transfer while cranking, resulting in starter kickback or failure to catch.</li>
+<li><strong>Decreasing the Value (Higher RPM Threshold):</strong></li>
+<li><strong>What it does:</strong> Requires the engine to reach a higher RPM (e.g., 700–800 RPM) before entering Run Mode.</li>
+<li><strong>Real-World Driving Feel:</strong> Ensures the engine is spinning with high momentum before transferring, but if set higher than the cold flare RPM, the engine can get "stuck" in Start Mode and fail to transition into normal running.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 4705–4712):</p>
+<pre><code class="language-motorola6803">ldd  STRNTR_SparkStartRunTransferPointRpm ; Load 16-bit threshold (0x00C3 ~ 600 RPM)
+        subd TimerOverflowsBetweenDistPulses      ; Compare against measured period
+        bcc  ENGINE_IDLING_BETWEEN598_813RPM      ; If period &lt;= STRNTR (RPM &gt;= 600), branch!
+        ...</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Hysteresis Pair:</strong> <code>STRNTR</code> works as a hysteresis pair with <a href="../Spark_-_Start_to_Run_Transfer/RNSTTR_SparkRunStartTransferPointRpm.html"><code>RNSTTR</code></a> (~410 RPM). Once in Run Mode, the engine must drop below <a href="../Spark_-_Start_to_Run_Transfer/RNSTTR_SparkRunStartTransferPointRpm.html"><code>RNSTTR</code></a> before it will drop back into Start Mode.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>STRNTR</code>
+        </footer>
+    </div>
+</body>
+</html>

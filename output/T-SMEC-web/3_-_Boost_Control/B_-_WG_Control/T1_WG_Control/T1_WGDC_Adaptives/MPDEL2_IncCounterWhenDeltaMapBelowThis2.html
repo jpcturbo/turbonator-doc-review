@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPDEL2: IncCounterWhenDeltaMapBelowThis2 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x12BA</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ B - WG Control ➔ T1 WG Control ➔ T1 WGDC Adaptives</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MPDEL2: IncCounterWhenDeltaMapBelowThis2</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MPDEL2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MPDEL2_IncCounterWhenDeltaMapBelowThis2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\B_-_WG_Control\T1_WG_Control\T1_WGDC_Adaptives\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x12BA</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi boost</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4984-L4995"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L9698"><code>WGDC_IncrementWGAdaptive</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L9710"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MPDEL2</code> defines the manifold pressure stability threshold required to permit adaptive wastegate duty cycle incrementing when boost is below target.</p>
+<p>Similar to <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MPDEL1_IncCounterWhenDeltaMapBelowThis.html"><code>MPDEL1</code></a> on the overboost side, <code>MPDEL2</code> verifies that manifold pressure is steady and not undergoing violent fluctuations or throttle transients before allowing the error timer to advance toward an adaptive duty cycle increase. If the difference between instantaneous manifold pressure and rolling average manifold pressure exceeds <code>MPDEL2</code>, adaptive learning is inhibited. Shared between T1 and T2 control routines.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_IncrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9706-9711</code>) in T1, and <code>T2WGDC_DecrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9992-9994</code>) in T2.</li>
+<li><strong>Gating Conditions</strong>: Reached after passing <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MPROOF_StopAdaptiveWGWhenMapIsThisCloseToBoostTarget.html"><code>MPROOF</code></a>, <code>MINTHR</code>, and <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/TPSLIM_UpdateAdaptiveWGTPSUpperLimit.html"><code>TPSLIM</code></a> checks.</li>
+<li><strong>Stability Comparison</strong>:</li>
+<li>Absolute variance <code>|MapValue - AverageMAPValue|</code> computed in accumulator A at lines 9706-9709.</li>
+<li>Line 9710 executes <code>cmpa MPDEL2_IncCounterWhenDeltaMapBelowThis2</code>.</li>
+<li>If variance exceeds <code>MPDEL2</code> (<code>bhi</code>), branches to <code>WGDC_ClearBoostErrTimer</code>, resetting the timer.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Underboost Manifold Stability Gate</strong>:</li>
+<li>Requires <code>|MapValue - AverageMAPValue|</code> to be within <code>MPDEL2</code> to permit adaptive incrementing.</li>
+<li>Factory setting is 2 counts (approximately 0.23 psi variance).</li>
+<li><strong>Filtering Transient Spool Lag</strong>:</li>
+<li>Prevents rapid throttle tip-in or spool-up transients from triggering upward adaptive duty cycle learning.</li>
+<li><strong>Shared Code Usage</strong>:</li>
+<li>Evaluated in both <code>CalcWGDutyCycleT1</code> (line 9710) and <code>CalcWGDutyCycleT2</code> (line 9992).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>WGDC_IncrementWGAdaptive</code> at line 9706, accumulator A loads <code>MapValue</code> and executes <code>suba AverageMAPValue</code>. If negative, line 9709 executes <code>nega</code> to obtain the absolute delta. Line 9710 executes <code>cmpa MPDEL2_IncCounterWhenDeltaMapBelowThis2</code>. If accumulator A is higher (<code>bhi WGDC_ClearBoostErrTimer</code> at line 9711), the manifold pressure is judged transient and the timer is cleared. If within tolerance, execution proceeds to verify zero knock penalty and minimum engine RPM (<a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/DCRPML_NoWastegateDutyCycleCorrectionBelowThisRpm.html"><code>DCRPML</code></a>).</p>
+<pre><code class="language-motorola6803">; --- WGDC_IncrementWGAdaptive (T-SMEC_v19.asm:9706-9711) ---
+	ldaa MapValue	    ; load a with memory contents
+	suba AverageMAPValue
+	bcc  L1873	    ; branch if greater or equal
+	nega		    ; negate a (set high bit)
+L1873:	cmpa MPDEL2_IncCounterWhenDeltaMapBelowThis2    ; compare a with memory contents (data is 01)
+	bhi  WGDC_ClearBoostErrTimer	    ; branch if higher</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Shared Code Architecture</strong>: Evaluated in both T1 and T2 routines under identical label names.</li>
+<li><strong>Knock Interlock</strong>: Immediately following this check at line 9712, <code>WastegateDutyCycleIncreaseFromKnock</code> must be zero for adaptive incrementing to proceed.</li>
+<li><strong>Factory Value</strong>: 0x02 = 2 counts = approx 0.23 psi stability tolerance.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MPDEL2</code>
+        </footer>
+    </div>
+</body>
+</html>

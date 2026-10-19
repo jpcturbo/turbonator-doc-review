@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBCONST: OverboostConstant1 | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x06BF</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - Transient Enrichment</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel</strong>
+        </div>
+        
+        <article class="content">
+            <h1>OBCONST: OverboostConstant1</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>OBCONST</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>OBCONST_OverboostConstant1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_Transient_Enrichment\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x06BF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">MAP ADC Counts ($1 \text{ count} \approx 0.115\text{ psi}$)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0xAA (170 counts $\approx 19.6\text{ psia} \approx +4.9\text{ psig boost}$)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L1756-L1770"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L4282"><code>CalculateInjectorPulsewidthForEngineRunning</code></a> in <a href="../T-LMv13.asm.html#L4307"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>OBCONST_OverboostConstant1</code> defines the <strong>baseline manifold pressure transition threshold</strong> used during running fuel pulse width and spark advance calculation to bifurcate moderate part-throttle fuel scheduling from higher-load boost fuel enrichment.</p>
+<p>Despite its historical label name containing "Overboost", in the fuel assembly logic this constant is <strong>not</strong> the overboost fuel cut threshold (which is handled separately by boost limit routines). Instead, <code>OBCONST</code> serves as a critical manifold pressure breakpoint where the ECU branches its injector pulse width calculation into a dedicated high-load scaling branch.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Running Fuel Calculation:</strong></li>
+<li>In <code>CalculateInjectorPulsewidthForEngineRunning</code>:</li>
+<li>Manifold pressure is tested against <code>OBCONST</code>.</li>
+<li>If <code>MapValue &gt;= OBCONST</code>: The engine has entered high-boost territory. The ECU subtracts <code>OBCONST</code> from <code>MapValue</code> and scales fuel using the dedicated high-load multiplier branch (<code>FuelPulsewidthFunctionUnknown</code>).</li>
+<li><strong>Spark Advance Calculation:</strong></li>
+<li>Also evaluated in <code>CalculateSparkAdvance_MM</code> for high-load spark timing compensation.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stock Value:</strong> <code>0xAA</code> (≈ 4.9 psig boost).</li>
+<li><strong>Transition Point:</strong> Below 4.9 psig boost, base running fuel pulse width scales according to the primary part-throttle equations. Above 4.9 psig boost, additional slope multipliers engage.</li>
+<li><strong>Tuning Guidance:</strong> Generally preserve at factory <code>0xAA</code> unless re-scaling the entire boost fuel delivery architecture for 3-bar MAP sensors.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 4307â€“4316):</p>
+<pre><code class="language-motorola6803">cmpa OBCONST_OverboostConstant1 ; Compare MAP with 0xAA (4.9 psig)
+        bcc  LDF3E          ; If MapValue &gt;= OBCONST, branch to high-load fuel!
+        ...
+LDF3E:  suba OBCONST_OverboostConstant1 ; Calculate delta MAP above OBCONST
+        ldx  #FuelPulsewidthFunctionUnknown ; Apply high-load fuel curve</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Historical Misnomer:</strong> Do not confuse <code>OBCONST</code> with overboost shutdown fuel cut. Overboost shutdown is controlled by <code>OBSTIM</code> / <code>OVBST</code> in the Boost Limits subsystem.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>OBCONST</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPDAGL: DisableMapCheckBelowThisMap | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1CDF</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MPDAGL: DisableMapCheckBelowThisMap</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MPDAGL</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MPDAGL_DisableMapCheckBelowThisMap</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1CDF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x10 (16 counts ≈ 1.8 psi absolute / -12.9 psi gauge / 26.2 inHg vacuum)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7581-L7592"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L7037"><code>StoreAntiDwell</code></a> in <a href="../../T-SMEC_v19.asm.html#L7057"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MPDAGL</code> defines the lower manifold pressure boundary for the steady-state manifold absolute pressure sensor rationality validation window.</p>
+<p>While the engine is operating between the calibrated low and high engine speed boundaries, the engine controller checks whether manifold pressure falls within a realistic intake vacuum band. During high-RPM overrun or deep trailing-throttle deceleration, intake manifold vacuum reaches extreme levels that lie outside normal idle operating conditions.</p>
+<p>In factory calibrations, <code>MPDAGL</code> is set to 16 counts, representing approximately 1.8 psi absolute pressure (equivalent to -12.9 psi gauge pressure or roughly 26.2 inHg of manifold vacuum). If manifold pressure drops below <code>MPDAGL</code>, the controller suspends the steady-state rationality validation, preventing deceleration vacuum spikes from failing the sensor health check.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>StoreAntiDwell</code> (<code>T-SMEC_v19.asm:7040-7063</code>), instruction at line 7057.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Engine speed confirmed between <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPRPML_DisableMapCheckUnderThisRpm_600.html"><code>MPRPML</code></a> (600 RPM) and <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPRPMH_DisableMapCheckAboveThisRpm_1500.html"><code>MPRPMH</code></a> (1500 RPM).</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li><code>MapVolts</code> loaded into accumulator A at line 7056.</li>
+<li><code>cmpa MPDAGL_DisableMapCheckBelowThisMap</code> at line 7057 compares against 16 counts.</li>
+<li>If lower (<code>bcs</code>), branches to <code>L1595</code> at line 7058, bypassing assertion of <code>b47_MapOK</code>.</li>
+<li>If higher or equal, proceeds to check upper boundary <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPDAGH_DisableMapCheckAboveThisMap.html"><code>MPDAGH</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
+<li>Rescale <code>MPDAGL</code> by multiplying by 0.667 when upgrading to a 3-bar MAP sensor (from 16 counts down to 11 counts) to preserve the 1.8 psi absolute lower limit.</li>
+<li><strong>Deceleration Overrun Margin</strong>:</li>
+<li>Factory setting of 1.8 psi absolute (26.2 inHg vacuum) keeps trailing-throttle overrun vacuum from interfering with steady-state sensor validation.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Setting <code>MPDAGL</code> higher than warm idle manifold pressure (e.g., above 35 counts / 18 inHg vacuum) prevents <code>b47_MapOK</code> from ever setting.</li>
+<li>Zeroing <code>MPDAGL</code> allows sensor validation down to absolute zero pressure.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In routine <code>StoreAntiDwell</code> (lines 7040-7063), after engine speed is confirmed between 600 and 1500 RPM, line 7056 loads <code>MapVolts</code> into accumulator A. Line 7057 executes <code>cmpa MPDAGL_DisableMapCheckBelowThisMap</code> (0x10 = 16 counts, ~1.8 psi absolute). If accumulator A is strictly less than <code>MPDAGL</code>, <code>bcs L1595</code> branches to line 7062, clearing <code>b54_BigMapChange</code> and skipping line 7061 where <code>b47_MapOK</code> is asserted in register <code>BitFlags_47</code>.</p>
+<pre><code class="language-motorola6803">; --- StoreAntiDwell (T-SMEC_v19.asm:7050-7063) ---
+	brset *BitFlags_54, #b54_BigMapChange, L1595	; branch if bit(s) set
+	ldd  EngineRpm_HB    ; load d (a&amp;b) with memory contents
+	cmpD MPRPML_DisableMapCheckUnderThisRpm_600    ; compare D (data is 12)
+	bcs  L1595	    ; branch if lower
+	cmpD MPRPMH_DisableMapCheckAboveThisRpm_1500	; compare D (data is 2e)
+	bcc  L1595	    ; branch if greater or equal
+	ldaa MapVolts	    ; load a with memory contents
+	cmpa MPDAGL_DisableMapCheckBelowThisMap    ; compare a with memory contents (data is 0a)
+	bcs  L1595	    ; branch if lower
+	cmpa MPDAGH_DisableMapCheckAboveThisMap    ; compare a with memory contents (data is 56)
+	bcc  L1595	    ; branch if greater or equal
+	bset *BitFlags_47, #b47_MapOK	 ; set bits
+L1595:	bclr *BitFlags_54, #b54_BigMapChange	; clear bits
+L1596:	ldaa TimerOverflowsBetweenDistPulses	; load a with memory contents
+</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPDAGH_DisableMapCheckAboveThisMap.html"><code>MPDAGH</code></a> (high MAP ceiling), <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPRPML_DisableMapCheckUnderThisRpm_600.html"><code>MPRPML</code></a>, and <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPRPMH_DisableMapCheckAboveThisRpm_1500.html"><code>MPRPMH</code></a>.</li>
+<li><strong>Diagnostic Role</strong>: Prevents false MAP fault logging during trailing-throttle deceleration.</li>
+<li><strong>3-Bar MAP Scaling</strong>: Scale down by 2/3 when converting to a 3-bar sensor.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MPDAGL</code>
+        </footer>
+    </div>
+</body>
+</html>

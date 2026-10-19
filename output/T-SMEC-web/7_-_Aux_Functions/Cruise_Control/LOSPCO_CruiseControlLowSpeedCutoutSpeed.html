@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOSPCO: CruiseControlLowSpeedCutoutSpeed | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x16D9</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Cruise Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Cruise_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>LOSPCO: CruiseControlLowSpeedCutoutSpeed</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>LOSPCO</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>LOSPCO_CruiseControlLowSpeedCutoutSpeed</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Cruise_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Cruise_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x16D9</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">counts 16-bit speed</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x0780 (1920 counts ≈ 30.0 MPH)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6039-L6049"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8486"><code>CruiseResumeSwitchPressed</code></a> in <a href="../../T-SMEC_v19.asm.html#L8495"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>LOSPCO</code> defines the absolute low-speed safety cutout threshold below which active cruise control will automatically disengage and vent the servo.</p>
+<p>While <a href="../../7_-_Aux_Functions/Cruise_Control/MINSET_CruiseControlMinSetSpeedTimesTwo.html"><code>MINSET</code></a> prevents engaging cruise control below 35 miles per hour, <code>LOSPCO</code> monitors road speed during active cruising. If vehicle speed drops precipitously while cruise is active (for example, encountering sudden traffic congestion, wheel slippage on ice, or spinning the vehicle), <code>LOSPCO</code> immediately vents the servo and returns full throttle control to the driver. In factory calibrations, <code>LOSPCO</code> is set to 1920 counts, corresponding to approximately 30 miles per hour (or 1600 counts / 25 miles per hour in Stage IV calibrations).</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CruiseResumeSwitchPressed</code> (<code>T-SMEC_v19.asm:8494-8497</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Cruise switch ON and system currently enabled.</li>
+<li>Evaluates 16-bit road speed <code>VehicleSpeed_HB</code>.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Loads <code>VehicleSpeed_HB</code> into index register X at line 8494.</li>
+<li>Compares against <code>LOSPCO</code> via <code>cpx LOSPCO</code> at line 8495.</li>
+<li>If lower (<code>bcs DropOutOfCruise</code>), execution branches immediately to <code>DropOutOfCruise</code> at line 8537.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Active Cruising Safety Failsafe</strong>:</li>
+<li>Automatically vents the cruise servo if vehicle speed falls below this threshold during active cruise operation.</li>
+<li>Prevents the servo from holding throttle open if the vehicle slows down drastically in highway traffic.</li>
+<li><strong>Stage IV Calibration Setting</strong>:</li>
+<li>Stock 2.5L calibrations use 1920 counts ( ≈ 30 mph); Stage IV calibrations reduce <code>LOSPCO</code> to 1600 counts ( ≈ 25 mph).</li>
+<li><strong>Distinction from MINSET</strong>:</li>
+<li><a href="../../7_-_Aux_Functions/Cruise_Control/MINSET_CruiseControlMinSetSpeedTimesTwo.html"><code>MINSET</code></a> gates initial switch engagement, whereas <code>LOSPCO</code> monitors continuous runtime road speed.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CruiseResumeSwitchPressed</code> at line 8494, 16-bit <code>VehicleSpeed_HB</code> is loaded into index register X. At line 8495, <code>cpx LOSPCO_CruiseControlLowSpeedCutoutSpeed</code> compares current speed against <code>LOSPCO</code>. If road speed is lower than <code>LOSPCO</code> (carry set), line 8496 executes <code>bcs DropOutOfCruise</code>, branching immediately to disengage the cruise system, zero <code>CruiseSpeedSetpoint</code>, and vent the servo solenoids.</p>
+<pre><code class="language-motorola6803">; --- CruiseResumeSwitchPressed (T-SMEC_v19.asm:8494-8497) ---
+	ldx  VehicleSpeed_HB
+	cpx  LOSPCO_CruiseControlLowSpeedCutoutSpeed	;  (data is 0780)
+	bcs  DropOutOfCruise	; branch if lower</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>16-Bit Word Constant</strong>: Type 4 calibration parameter storing a 16-bit speed threshold (<code>.word 0x0780</code>).</li>
+<li><strong>Fixed-Point Scaling</strong>: 1920 counts / 64 = 30.0 mph in standard SMEC 16-bit vehicle velocity representation.</li>
+<li><strong>Dropout Action</strong>: Jumps to <code>DropOutOfCruise</code>, clearing <code>CruiseStatus</code> engaged flags and energizing vent solenoid <code>pia1abuf_CruiseVent</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>LOSPCO</code>
+        </footer>
+    </div>
+</body>
+</html>

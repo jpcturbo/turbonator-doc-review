@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STRTFL: StartFuel FromTemp | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x066B</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ A - Starting</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Base_Modifiers</strong>
+        </div>
+        
+        <article class="content">
+            <h1>STRTFL: StartFuel FromTemp</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>STRTFL</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>STRTFL_FuelStartFromCoolantTemp</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Base_Modifiers</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\A_-_Starting\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x066B</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2D Table / Curve)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">6 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Coolant Temperature (-200 to 260 °F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Square Root of Pulse Width (0 to 222 microseconds)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Square Root of Pulse Width (0 to 222 microseconds) vs. Coolant Temperature (-200 to 260 °F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x06 (6 points: -36°F: 245 sqrt-us, -15°F: 173 sqrt-us, 5°F: 145 sqrt-us, 26°F: 133 sqrt-us, 47°F: 106 sqrt-us, 185°F: 71 sqrt-us)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1833-L1850"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5546"><code>CalculateInjectorPulsewidthForStarting_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L5565"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>STRTFL</code> defines the base cranking fuel delivery curve indexed against engine coolant temperature during starter cranking.</p>
+<p>When starting a cold engine, fuel droplets condense onto cold intake runners, intake valves, and cylinder walls rather than remaining suspended in the intake airflow. To establish an ignitable air-fuel vapor cloud in the combustion chamber, <code>STRTFL</code> provides heavy initial fuel pulsewidths at low coolant temperatures, tapering down smoothly as the engine warms toward operating temperature.</p>
+<p>The engine controller uses this base table while the starter motor is actively rotating the crankshaft below running speed.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateInjectorPulsewidthForStarting_MM</code> (<code>T-SMEC_v19.asm:5546-5606</code>), instruction line 5565.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Active only when engine not running flag <code>b54_FuelEngineNotRunning</code> in <code>BitFlags_54</code> is set (<code>T-SMEC_v19.asm:5547</code>).</li>
+<li>Bypassed if flood clear mode is triggered via high throttle position (<code>TpsVolts &gt;= 0xD0</code> or <code>TpsVolts - MINTHR &gt;= UNLOAD</code>).</li>
+<li>If throttle is closed (<code>b4f_OffIdle</code> clear), coolant temperature is clamped to <a href="../../1_-_Fuel/A_-_Starting/STRLMT_ColdestTempAllowedAtClosedThrottle.html"><code>STRLMT</code></a>.</li>
+<li><strong>Mathematical Processing</strong>:</li>
+<li>Looked up via <code>Lookup4ByteTable</code>, then squared (<code>mul</code>) to yield quadratic cranking fuel in <code>Temp0</code>.</li>
+<li>Scaled by <a href="../../1_-_Fuel/A_-_Starting/EPPMUL_FuelStartFuelPerEPP.html"><code>EPPMUL</code></a> based on crankshaft pulse count, then modified by <a href="../../1_-_Fuel/A_-_Starting/STFBAR_FuelStartReductionFromBaro.html"><code>STFBAR</code></a> and <a href="../../1_-_Fuel/A_-_Starting/STFTMP_FuelStartFuelFromCoolant.html"><code>STFTMP</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Injector Size Scaling</strong>:</li>
+<li>When installing larger injectors, scale the entire <code>STRTFL</code> table downward by the flow ratio (stock flow divided by new flow) to avoid flooding.</li>
+<li><strong>E85 and Cold Weather Tuning</strong>:</li>
+<li>Increase values by 30 to 45 percent at low temperatures when running E85 or in sub-freezing climates to ensure reliable ignition.</li>
+<li><strong>Warm Start Behavior</strong>:</li>
+<li>Lowering values eliminates black exhaust smoke and flooded spark plugs on hot restarts.</li>
+<li><strong>Starting Symptoms</strong>:</li>
+<li>If the engine spins without catching on cold mornings, raise the lower temperature points incrementally.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateInjectorPulsewidthForStarting_MM</code>, the controller verifies <code>b54_FuelEngineNotRunning</code>. After checking for flood clear at line 5555, <code>AllowForHeatSoakAfterStall</code> is called. If <code>b4f_OffIdle</code> is clear, <code>CoolantTemp</code> is clamped against <a href="../../1_-_Fuel/A_-_Starting/STRLMT_ColdestTempAllowedAtClosedThrottle.html"><code>STRLMT</code></a>. At line 5565, <code>ldx #STRTFL_FuelStartFromCoolantTemp</code> is loaded and <code>Lookup4ByteTable</code> interpolates the base start fuel count. At line 5567, <code>mul</code> squares the value, storing the 16-bit result into <code>Temp0</code>. This squared base is subsequently scaled by <a href="../../1_-_Fuel/A_-_Starting/EPPMUL_FuelStartFuelPerEPP.html"><code>EPPMUL</code></a> and attenuated by the altitude-temperature product <code>STFBAR * STFTMP</code>.</p>
+<pre><code class="language-motorola6803">; --- CalculateInjectorPulsewidthForStarting_MM (T-SMEC_v19.asm:5560-5574) ---
+L1476:	jsr  AllowForHeatSoakAfterStall    ; call subroutine
+	brset *BitFlags_4f, #b4f_OffIdle, L1477    ; branch if bit(s) set
+	cmpa STRLMT_ColdestTempAllowedAtClosedThrottle	  ; compare a with memory contents (data is 69)
+	bcc  L1477	    ; branch if greater or equal
+	ldaa STRLMT_ColdestTempAllowedAtClosedThrottle	  ; load a with memory contents (data is 69)
+L1477:	ldx  #STRTFL_FuelStartFromCoolantTemp	 ; load index with value
+	jsr  Lookup4ByteTable	 ; call subroutine
+	mul		    ; multiply (d=a*b)
+	stD *Temp0	    ; store D to RAM
+	ldaa Counter_EPP_MaxFF	  ; load a with memory contents
+	ldx  #EPPMUL_FuelStartFuelPerEPP    ; load index with value
+	jsr  Lookup4ByteTable	 ; call subroutine
+	ldY Temp0	    ; load Y index
+	jsr  ScaleYbyA	    ; call subroutine
+	stY Temp0	    ; store Y index</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Quadratic Scaling</strong>: The controller squares the lookup result (<code>mul</code>), creating an exponential fueling ramp at sub-freezing temperatures.</li>
+<li><strong>Companion Parameters</strong>: Governed by <a href="../../1_-_Fuel/A_-_Starting/STRLMT_ColdestTempAllowedAtClosedThrottle.html"><code>STRLMT</code></a> (cold clamp), <a href="../../1_-_Fuel/A_-_Starting/EPPMUL_FuelStartFuelPerEPP.html"><code>EPPMUL</code></a> (cranking pulse decay), <a href="../../1_-_Fuel/A_-_Starting/STFBAR_FuelStartReductionFromBaro.html"><code>STFBAR</code></a> (barometric reduction), and <a href="../../1_-_Fuel/A_-_Starting/STFTMP_FuelStartFuelFromCoolant.html"><code>STFTMP</code></a> (coolant reduction).</li>
+<li><strong>Battery Offset</strong>: Following starting fuel math, battery dead time is added via <code>CallAndReturn1</code> calling <code>AddBatteryOffsetToInjectorPulsewidth</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>STRTFL</code>
+        </footer>
+    </div>
+</body>
+</html>

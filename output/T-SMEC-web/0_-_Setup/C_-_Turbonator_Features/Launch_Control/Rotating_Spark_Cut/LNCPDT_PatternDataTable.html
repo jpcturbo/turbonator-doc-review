@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LNCPDT: PatternDataTable | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0570</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ C - Turbonator Features ➔ Launch Control ➔ Rotating Spark Cut</strong> &nbsp;|&nbsp; Subsystem: <strong>Turbonator_Features</strong>
+        </div>
+        
+        <article class="content">
+            <h1>LNCPDT: PatternDataTable</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>LNCPDT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>LNCPDT_PatternDataTable</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Turbonator_Features</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\C_-_Turbonator_Features\Launch_Control\Rotating_Spark_Cut\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0570</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 9 (Bitmask / Pattern Array)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">8-Bit Ignition Bitmask Patterns</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x60                       ;Point 1
+.byte 0x20                       ;Point 2
+.byte 0x28                       ;Point 3
+.byte 0x40                       ;Point 4
+.byte 0x36                       ;Point 5
+.byte 0x2A                       ;Point 6
+.byte 0x22                       ;Point 7
+.byte 0x10                       ;Point 8</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1581-L1599"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L10290"><code>StoreSparkCutCounter</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L10293"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>LNCPDT</code> defines the eight-bit spark cut patterns that govern cylinder-by-cylinder ignition enabling during launch control staging.</p>
+<p>By rotating through an eight-bit mask on each distributor reference pulse, the engine controller selectively fires or suppresses ignition for each consecutive cylinder. A binary one bit permits spark, while a binary zero bit cuts coil firing. This rotating approach prevents cutting the same cylinder consecutively, protecting spark plugs from fouling and evening out exhaust runner heating while unburnt mixture drives the turbine wheel.</p>
+<p>The factory table provides eight distinct patterns ranging from mild 1/3 cut up to aggressive 6/7 cut.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Enclosed in subroutine <code>StoreSparkCutCounter</code> at lines 10290-10298 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Executed whenever <code>Counter_SparkCut</code> reaches zero during active staging spark cut (<code>Turbonator_SparkCut</code> set).</li>
+<li>Memory indexing: <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Rotating_Spark_Cut/SPKFRC_SparkCutFraction.html"><code>SPKFRC_SparkCutFraction</code></a> offsets pointer <code>#LNCPDT_PatternDataTable</code> in index register Y via <code>aby</code> (lines 10293-10294).</li>
+<li>The indexed pattern is stored into RAM variable <code>Pattern_SparkCut</code> at line 10296.</li>
+<li>In <code>RotateSparkCutPattern</code> (line 10254), instruction <code>rol Pattern_SparkCut</code> shifts the highest bit into the Carry flag. If Carry is set, spark is allowed for that cylinder; if clear, spark is suppressed.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Selection Mechanism</strong>: Patterns are chosen via <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Rotating_Spark_Cut/SPKFRC_SparkCutFraction.html"><code>SPKFRC</code></a> (choices 0 through 7) in calibration software.</li>
+<li><strong>Standard Bitmask Options</strong>: Pattern 0 (1/3 cut) fires two out of three cylinders; Pattern 3 (4/5 cut, factory setting) fires one out of five cylinders; Pattern 7 (6/7 cut) fires one out of seven cylinders.</li>
+<li><strong>Exhaust Energy Trade-off</strong>: Lower cut ratios provide higher firing frequency and maximum exhaust expansion to spool massive turbos. Higher cut ratios clamp engine speed tightly with lower exhaust temperatures.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: At line 10290 in <code>StoreSparkCutCounter</code>, <code>Counter_SparkCut</code> is initialized. Accumulator B reloads <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Rotating_Spark_Cut/SPKFRC_SparkCutFraction.html"><code>SPKFRC_SparkCutFraction</code></a> at line 10292 and adds it to index register Y (<code>aby</code>), which points to <code>#LNCPDT_PatternDataTable</code> at line 10293. The selected byte is fetched and stored into RAM variable <code>Pattern_SparkCut</code> at line 10296. On each distributor pulse interrupt, <code>RotateSparkCutPattern</code> at line 10250 decrements <code>Counter_SparkCut</code> and executes <code>rol Pattern_SparkCut</code> at line 10254. The <code>rol</code> instruction shifts the most significant bit into the Carry flag. If Carry is clear (<code>bcc CalulateLaunchAdvance</code>), spark is withheld. If Carry is set, line 10258 sets <code>Turbonator_AllowSpark</code> in <code>Turbonator_Flags</code>, permitting coil dwell and firing.</p>
+<pre><code class="language-motorola6803">; --- StoreSparkCutCounter (T-SMEC_v19.asm:10290-10298) ---
+StoreSparkCutCounter:
+        stab Counter_SparkCut
+        ldab SPKFRC_SparkCutFraction ; this is now an offset value -- oops, this was left off, made the pattern wrong
+        ldy  #LNCPDT_PatternDataTable
+        aby
+        ldab 0x00, Y ; b now contains the pattern
+        stab Pattern_SparkCut 
+        bra  CalulateLaunchAdvance</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Bit Rotation Mechanism</strong>: Uses a rotating shift register approach through CPU carry flag to evaluate firing permissions.</li>
+<li><strong>Companion Array</strong>: Works in strict synchrony with cycle counter array <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Rotating_Spark_Cut/LNCBDT_BaseDataTable.html"><code>LNCBDT</code></a>.</li>
+<li><strong>Firmware Lineage</strong>: Restores the <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Rotating_Spark_Cut/SPKFRC_SparkCutFraction.html"><code>SPKFRC</code></a> offset index in line 10292, resolving a legacy bug where the pattern pointer was unindexed in early test builds.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>LNCPDT</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARTM5P: AdaptiveRetardTimeOver5psiBoost | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x04EE</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>2 - Spark ➔ D - Adaptive Retard</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ARTM5P: AdaptiveRetardTimeOver5psiBoost</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ARTM5P</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ARTM5P_AdaptiveRetardTimeOver5psiBoost</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>2_-_Spark\D_-_Adaptive_Retard\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x04EE</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">counts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x0C                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1452-L1462"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L9518"><code>WGDC_LookAtCylRetards</code></a> in <a href="../../T-SMEC_v19.asm.html#L9528"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ARTM5P</code> defines the persistence timer threshold required to accumulate in-boost knock before the engine controller increments the adaptive retard index (<code>AdaptiveRetardIndex</code>).</p>
+<p>Momentary detonation can occur during rapid gear shifts, throttle tip-in, or turbocharger spool-up without representing chronic combustion instability. To avoid reacting prematurely to brief transient knock, the controller demands that cylinder knock retards persist while operating in boost for <code>ARTM5P</code> consecutive evaluation periods. In factory calibrations, <code>ARTM5P</code> is set to 12 counts (approximately 8.4 seconds of persistent knock under boost), ensuring that only sustained detonation triggers long-term adaptive retard learning.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_LookAtCylRetards</code> (<code>T-SMEC_v19.asm:9526-9529</code>), called from <code>CalcWGDutyCycleT1</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Cylinder retard present.</li>
+<li>Loop counter matches <a href="../../2_-_Spark/D_-_Adaptive_Retard/ARCMSK_AdaptiveRetardCounterMask.html"><code>ARCMSK</code></a>.</li>
+<li>Coolant temperature &gt; <a href="../../2_-_Spark/D_-_Adaptive_Retard/ARMINT_AdaptiveRetardMinimumTemp.html"><code>ARMINT</code></a>.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li><code>Timer_Over5PsiBoostMaxFF</code> is incremented (<code>inca</code>).</li>
+<li><code>cmpa ARTM5P_AdaptiveRetardTimeOver5psiBoost</code> at line 9528.</li>
+<li>If timer &lt; <code>ARTM5P</code> (<code>bcs WGDC_Store5psiBoostTimer</code>), timer is stored without incrementing adaptive retard.</li>
+<li>If timer &gt;= <code>ARTM5P</code>, execution proceeds to add <a href="../../2_-_Spark/D_-_Adaptive_Retard/ARINDX_AdaptiveRetardIndexBase_80.html"><code>ARINDX</code></a> to <code>AdaptiveRetardIndex</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Transient Knock Filtering</strong>:</li>
+<li>Factory setting of 12 counts requires sustained boost knock across ~8.4 seconds before incrementing adaptive retard, ignoring single-event pinging.</li>
+<li><strong>Road-Racing Protection</strong>:</li>
+<li>Lowering <code>ARTM5P</code> to 4 to 6 counts provides faster adaptation during prolonged track sessions where sustained knock can cause rapid heat buildup.</li>
+<li><strong>Pacing Relationship</strong>:</li>
+<li>Total time delay equals <code>ARTM5P</code> multiplied by the <a href="../../2_-_Spark/D_-_Adaptive_Retard/ARCMSK_AdaptiveRetardCounterMask.html"><code>ARCMSK</code></a> evaluation period (~704 ms * 12 ≈ 8.4 seconds).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>WGDC_LookAtCylRetards</code> at line 9526, <code>ldaa Timer_Over5PsiBoostMaxFF</code> loads the boost knock timer. Line 9527 increments accumulator A (<code>inca</code>). Line 9528 executes <code>cmpa ARTM5P_AdaptiveRetardTimeOver5psiBoost</code>. If accumulator A is less than <code>ARTM5P</code>, carry is set and <code>bcs WGDC_Store5psiBoostTimer</code> branches to line 9550, storing the updated timer in memory. Once accumulator A reaches <code>ARTM5P</code>, execution falls through to line 9530 to add <a href="../../2_-_Spark/D_-_Adaptive_Retard/ARINDX_AdaptiveRetardIndexBase_80.html"><code>ARINDX</code></a> to <code>AdaptiveRetardIndex</code>.</p>
+<pre><code class="language-motorola6803">; --- WGDC_LookAtCylRetards (T-SMEC_v19.asm:9526-9530) ---
+	ldaa Timer_Over5PsiBoostMaxFF	 ; load a with memory contents
+	inca		    ; increment a
+	cmpa ARTM5P_AdaptiveRetardTimeOver5psiBoost    ; compare a with memory contents (data is 0c)
+	bcs  WGDC_Store5psiBoostTimer	    ; branch if lower
+	sei		    ; disable interrupts</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Persistence Threshold</strong>: Dictates the cumulative duration of in-boost knock required before adaptive learning triggers.</li>
+<li><strong>Scaling</strong>: 1 count ≈ (ARCMSK + 1) * 11 ms ≈ 704 ms. Factory setting 0x0C = 12 counts ≈ 8.4 seconds.</li>
+<li><strong>Timer Reset</strong>: Cleared to zero whenever knock disappears or after <a href="../../2_-_Spark/D_-_Adaptive_Retard/ARINDX_AdaptiveRetardIndexBase_80.html"><code>ARINDX</code></a> has been added.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>ARTM5P</code>
+        </footer>
+    </div>
+</body>
+</html>

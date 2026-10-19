@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIAMSK: PIAMSK PIA1ADDRMask | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x02F5</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ A - Cal Configuration</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PIAMSK: PIAMSK PIA1ADDRMask</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PIAMSK</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>PIAMSK_PIA1ADDRMask</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\A_-_Cal_Configuration\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x02F5</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 5 (Bitfield / Configuration Mask)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Port A Driver Mask</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x3A                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L947-L958"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L4331"><code>UPDATE_PIA1_A_PDR_DDR_REGISTER</code></a> in <a href="../../T-SMEC_v19.asm.html#L4349"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PIAMSK</code> defines the diagnostic output driver circuit mask for Port A of the Peripheral Interface Adapter.</p>
+<p>In Chrysler SMEC engine controllers, high-current inductive drivers and relays are driven through a 6821 Peripheral Interface Adapter. To detect open wiring harnesses, blown solenoid coils, or shorted circuits, the controller periodically cycles each driver line and reads back the electrical logic level. Configured in factory calibrations to fifty-eight counts, <code>PIAMSK</code> establishes which output driver circuits on Port A are actively evaluated for electrical continuity faults. Monitored circuits include the radiator fan relay, air conditioning clutch relay, automatic shutdown relay, canister purge solenoid, check engine light, part throttle unlock solenoid, and cruise control solenoids.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>UPDATE_PIA1_A_PDR_DDR_REGISTER</code> (<code>T-SMEC_v19.asm:4331-4375</code>), instruction line 4349 (<code>bita PIAMSK_PIA1ADDRMask</code>).</li>
+<li><strong>Hardware Feedback Loop</strong>:</li>
+<li>Port A pins are pulsed and read back during main loop passes.</li>
+<li>Loop counter bits (<code>Counter_MainLoop &amp; 0x07</code>) select which driver pin is verified.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>If <code>bita PIAMSK_PIA1ADDRMask</code> is zero (<code>beq L1314</code>), diagnostic error testing for that pin is bypassed.</li>
+<li>If unmasked and the read-back level indicates a circuit fault, branches to <code>ThrowCriticalError</code> or <code>ThrowNonCriticalError</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Auxiliary Driver Deletions</strong>:</li>
+<li>Clearing specific bits in <code>PIAMSK</code> disables hardware circuit integrity tests on removed relays or solenoids.</li>
+<li><strong>Monitored Port A Circuits</strong>:</li>
+<li>Purge solenoid, A/C clutch relay, radiator fan relay, ASD relay, check engine lamp, and cruise solenoids.</li>
+<li><strong>Ghost Error Prevention</strong>:</li>
+<li>Prevents open-circuit error codes when eliminating comfort accessories or evaporative purge hardware.</li>
+<li><strong>Factory Default</strong>:</li>
+<li>Set to fifty-eight counts, actively monitoring purge, fan, A/C, and ASD circuits.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>UPDATE_PIA1_A_PDR_DDR_REGISTER</code> at lines 4343-4350, the CPU reads back the actual logic states from <code>PIA1_PortA_DataDirection</code> and exclusive-ORs them against the commanded buffer. At line 4349, <code>bita PIAMSK_PIA1ADDRMask</code> masks the resulting error bits. If clear (<code>beq L1314</code>), circuit error logging is skipped. If set, lines 4363-4374 execute <code>ThrowCriticalError</code> or <code>ThrowNonCriticalError</code> to store the failure.</p>
+<pre><code class="language-motorola6803">; --- UPDATE_PIA1_A_PDR_DDR_REGISTER (T-SMEC_v19.asm:4343-4357) ---
+	eora PIA1_PortA_DataDirection
+	ldx  #PIA1AManipulation_Table	    ; load index with value
+	ldab Counter_MainLoop	  ; load b with memory contents
+	andb #0x07	    ;  -00000111-
+	abx		    ; add b to index
+	anda 0x00,x	
+	bita PIAMSK_PIA1ADDRMask	  ;  (data is 3a)
+	beq  L1314	    ; branch if no bits are set
+	cmpb #0x03	    ;  -00000011-
+	bne  L1312	    ; branch if not equal (not zero)
+	tst  CONFIG_ConfigurationFlags	  ;  (data is 02)
+	bpl  L1311	    ; branch if plus (hi bit 0)
+	brclr *PIA1_A_Buffer, #pia1abuf_FanRelay, L1312    ; branch if bit(s) clear
+	bra  L1314	    ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Bit Allocations</strong>: Bit 6: Purge Solenoid, Bit 5: Part Throttle Unlock, Bit 4: A/C Clutch Relay, Bit 3: Fan Relay, Bit 1: ASD Relay, Bit 0: Cruise Solenoids.</li>
+<li><strong>Port Pair</strong>: Companion to <a href="../../0_-_Setup/A_-_Cal_Configuration/PIBMSK_PIA1BDDRMask.html"><code>PIBMSK</code></a> which manages Port B driver circuits.</li>
+<li><strong>Safety Interlocks</strong>: Includes countdown timers from key-on to allow inductive coil flyback voltages to settle before testing.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>PIAMSK</code>
+        </footer>
+    </div>
+</body>
+</html>

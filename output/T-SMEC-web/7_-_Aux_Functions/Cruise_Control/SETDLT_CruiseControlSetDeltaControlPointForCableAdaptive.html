@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SETDLT: CruiseControlSetDeltaControlPointForCableAdaptive | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1700</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Cruise Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Cruise_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>SETDLT: CruiseControlSetDeltaControlPointForCableAdaptive</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>SETDLT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>SETDLT_CruiseControlSetDeltaControlPointForCableAdaptive</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Cruise_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Cruise_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1700</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">counts speed delta offset</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x00 (0 counts offset)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6078-L6088"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8723"><code>CalculateVehicleSpeed</code></a> in <a href="../../T-SMEC_v19.asm.html#L8796"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>SETDLT</code> defines the calibration offset bias added to speed error during evaluation of the throttle cable adaptive delta variable.</p>
+<p>In Chrysler SMEC engine management, the cruise controller continuously monitors mechanical throttle linkage compliance and cable stretch by calculating the difference between commanded speed and measured vehicle velocity. <code>SETDLT</code> is added to this delta, allowing calibrators to introduce an intentional bias into the cable compensation routine. In factory calibrations, <code>SETDLT</code> is configured to 0 counts, providing pure symmetrical calculation.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8792-8798</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated when <code>Counter_Cruise &lt; CRSCN1</code>.</li>
+<li>Compares scaled <code>CruiseSpeedSetpoint</code> against <code>VehicleSpeed_HB</code>.</li>
+<li><strong>Math &amp; Application</strong>:</li>
+<li>Computes <code>(CruiseSpeedSetpoint * 4) - (VehicleSpeed_HB / 8)</code>.</li>
+<li>Adds <code>SETDLT</code> via <code>adda SETDLT</code> at line 8796.</li>
+<li>Updates adaptive variable <code>CruiseControlVar6</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Symmetrical Error Baseline</strong>:</li>
+<li>Factory 0 counts provides unbiased calculation of throttle cable slack.</li>
+<li><strong>Linkage Compliance Compensation</strong>:</li>
+<li>Offset feeds into <code>CruiseControlVar6</code>, which tracks mechanical hysteresis in the throttle linkage.</li>
+<li><strong>Offset Errors</strong>:</li>
+<li>Non-zero values induce persistent steady-state speed offsets; keep at 0 counts.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateVehicleSpeed</code> at line 8788, <code>VehicleSpeed_HB</code> is shifted right three times. Line 8792 loads <code>CruiseSpeedSetpoint</code> and shifts left twice (<code>lsla; lsla</code>), multiplying by 4. Line 8795 subtracts road speed via <code>sba</code>. At line 8796, <code>adda SETDLT_CruiseControlSetDeltaControlPointForCableAdaptive</code> adds the offset constant. If the resulting delta exceeds existing adaptive variable <code>CruiseControlVar6</code>, line 8804 stores accumulator A into <code>CruiseControlVar6</code>.</p>
+<pre><code class="language-motorola6803">; --- CalculateVehicleSpeed (T-SMEC_v19.asm:8792-8798) ---
+	ldaa CruiseSpeedSetpoint    ; load a with memory contents
+	lsla		    ; logical shift left a
+	lsla		    ; logical shift left a
+	sba		    ; subtract (a=a-b)
+	adda SETDLT_CruiseControlSetDeltaControlPointForCableAdaptive	 ;  (data is 00)
+	bmi  L1767	    ; branch if minus(hi bit 1)</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Adaptive Variable Feed</strong>: Directly updates <code>CruiseControlVar6</code> (learned cable slack delta).</li>
+<li><strong>Mathematical Form</strong>: Delta = <code>(Setpoint * 4) - (Speed / 8) + SETDLT</code>.</li>
+<li><strong>Companion Parameter</strong>: Coordinates with deadband constant <a href="../../7_-_Aux_Functions/Cruise_Control/CRSCN2_CruiseComapreConstant2.html"><code>CRSCN2</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>SETDLT</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRSCN2: CruiseComapreConstant2 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1775</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Cruise Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Cruise_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CRSCN2: CruiseComapreConstant2</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CRSCN2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CRSCN2_CruiseComapreConstant2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Cruise_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Cruise_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1775</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">counts error deadband</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x06 (6 counts ≈ 3.0 MPH deadband)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6195-L6205"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8723"><code>CalculateVehicleSpeed</code></a> in <a href="../../T-SMEC_v19.asm.html#L8757"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CRSCN2</code> defines the speed error deadband threshold for the cable adaptive delta variable.</p>
+<p>Road surfaces are never perfectly flat; tire expansion, pavement seams, and minor wind gusts cause momentary road speed variations of 1 to 2 miles per hour. If the cruise controller reacted to every minor speed fluctuation, the throttle cable would constantly twitch and the vacuum solenoids would experience excessive wear. <code>CRSCN2</code> establishes a deadband of 6 counts (representing approximately 3.0 miles per hour of speed error), suppressing adaptive servo updates when speed remains within this acceptable margin.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8757-8758</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Counter expired (<code>Counter_Cruise &gt;= CRSCN1</code>).</li>
+<li>Absolute value of cable adaptive delta <code>CruiseControlVar6</code> evaluated in accumulator B.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Compares absolute delta against <code>CRSCN2</code> via <code>cmpb CRSCN2</code> at line 8757.</li>
+<li>If lower (<code>bcs L1764</code>), speed error is within deadband; skips integrator updates and clears bit 1 of <code>CruiseStatus</code>.</li>
+<li>If equal or greater, proceeds to evaluate <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK2_CruiseMask2.html"><code>CRMSK2</code></a> and <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK3_CruiseMask3.html"><code>CRMSK3</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Error Deadband Filtering</strong>:</li>
+<li>Filters out road surface noise, tire expansion, and wind gusts below 3.0 mph.</li>
+<li>Prevents rapid solenoid cycling and throttle cable flutter during steady highway driving.</li>
+<li><strong>Precision vs. Drivability</strong>:</li>
+<li>Lowering to 3 or 4 counts tightens speed holding on flat interstates.</li>
+<li>Raising to 8 counts provides a more relaxed, fuel-efficient cruise profile.</li>
+<li><strong>Factory Setting</strong>:</li>
+<li>Set to 6 counts (≈ 3.0 mph) in production calibrations.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateVehicleSpeed</code> at line 8753, <code>CruiseControlVar6</code> is loaded into accumulator B and tested. Lines 8755-8756 negate negative values (<code>negb</code>) to produce an absolute magnitude in accumulator B. At line 8757, <code>cmpb CRSCN2_CruiseComapreConstant2</code> evaluates the magnitude. If lower than <code>CRSCN2</code> (carry set), line 8758 executes <code>bcs L1764</code>, branching to clear bit 1 of <code>CruiseStatus</code> and bypass integrator modification.</p>
+<pre><code class="language-motorola6803">; --- CalculateVehicleSpeed (T-SMEC_v19.asm:8753-8759) ---
+	ldab CruiseControlVar6	  ; load b with memory contents
+	tba		    ; a = b
+	bpl  L1760	    ; branch if plus (hi bit 0)
+	negb		
+L1760:	cmpb CRSCN2_CruiseComapreConstant2    ; compare b with memory contents (data is 06)
+	bcs  L1764	    ; branch if lower</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Absolute Value Filter</strong>: Uses <code>tba; bpl; negb</code> to compute <code>|CruiseControlVar6|</code> before comparison.</li>
+<li><strong>Deadband Magnitude</strong>: 6 counts ≈ 3.0 mph total error tolerance.</li>
+<li><strong>Companion Parameter</strong>: Coordinates with timer threshold <a href="../../7_-_Aux_Functions/Cruise_Control/CRSCN1_CruiseComapreConstant1.html"><code>CRSCN1_CruiseComapreConstant1</code></a> and threshold constants <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK2_CruiseMask2.html"><code>CRMSK2</code></a> / <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK3_CruiseMask3.html"><code>CRMSK3</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>CRSCN2</code>
+        </footer>
+    </div>
+</body>
+</html>

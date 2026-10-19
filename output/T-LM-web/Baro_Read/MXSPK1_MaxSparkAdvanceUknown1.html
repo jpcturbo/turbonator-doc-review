@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MXSPK1: MaxSparkAdvanceUknown1 | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0FEC</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Baro Read</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MXSPK1: MaxSparkAdvanceUknown1</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MXSPK1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MXSPK1_MaxSparkAdvanceUknown1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Baro_Read\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0FEC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Ignition Advance Degrees (0.5° per LSB; 0x6E = 55.0° BTDC)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x6E                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L4106-L4118"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L4780"><code>StoreDwell</code></a> in <a href="../T-LMv13.asm.html#L4804"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MXSPK1</code> (MaxSparkAdvanceUknown1) provides a hard physical ceiling on total ignition advance (stock calibration = <code>0x6E</code> = 110 decimal / 110 × 0.5° = 55.0° BTDC) evaluated inside <code>StoreDwell</code>.</p>
+<p>In distributor-equipped Chrysler 2.2L/2.5L engines, the distributor rotor sweeps across a physical brass cap terminal. If total spark advance exceeds ~55° to 60° BTDC, the rotor tip becomes physically closer to the adjacent cylinder's cap terminal than the target cylinder terminal. Firing the ignition coil beyond this mechanical limit causes cross-fire (spark jumping to the wrong cylinder), which can break ring lands or bend connecting rods. <code>MXSPK1</code> clamps ignition timing to safe mechanical limits.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside subroutine <code>StoreDwell</code> at line 4804.</li>
+<li>Active when vehicle speed is below <a href="../Idle_-_AIS_Decel/MPHREF_SwitchPointForDecelIdleAisControl.html"><code>MPHREF</code></a> (low speed / decel conditions).</li>
+<li>Loaded into <code>Temp5</code> to establish the maximum dwell timing limit.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Mechanical Rotor Phase Limit</strong>: <strong>NEVER</strong> increase <code>MXSPK1</code> above 56° BTDC on factory distributor systems. Doing so will cause distributor cap cross-firing, erratic misfires, and backfires under light cruising conditions.</li>
+<li><strong>Coil-on-Plug / Distributorless (DIS) Conversions</strong>: Only on custom distributorless ignition systems (which eliminate the physical rotor and cap) can spark ceilings be safely raised.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- StoreDwell (T-LMv13.asm:4802-4805) ---
+        cmpa MPHREF_SwitchPointForDecelIdleAisControl ; Check vehicle speed threshold ($0CE5, data 0x06)
+        bcc  LE2A1                               ; If moving above MPHREF, bypass clamp 1
+        ldaa MXSPK1_MaxSparkAdvanceUknown1       ; Else load timing ceiling 1 ($0FEC, data 0x6E = 55.0°)
+        staa Temp5                               ; Store as maximum allowable advance clamp</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 4804</strong> (<code>StoreDwell</code>): <code>ldaa MXSPK1_MaxSparkAdvanceUknown1    ; load a with memory contents (data is 6e)</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Scaling</strong>: Each raw count represents 0.5 degrees of crankshaft timing advance (0x6E = 110 × 0.5 = 55.0°).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>MXSPK1</code>
+        </footer>
+    </div>
+</body>
+</html>

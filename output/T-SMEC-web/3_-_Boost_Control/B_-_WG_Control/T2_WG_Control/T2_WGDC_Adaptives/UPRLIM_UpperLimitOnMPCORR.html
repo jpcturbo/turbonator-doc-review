@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPRLIM: UpperLimitOnMPCORR | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1432</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ B - WG Control ➔ T2 WG Control ➔ T2 WGDC Adaptives</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>UPRLIM: UpperLimitOnMPCORR</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>UPRLIM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>UPRLIM_UpperLimitOnMPCORR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\B_-_WG_Control\T2_WG_Control\T2_WGDC_Adaptives\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1432</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Offset Counts / Gain Clamp</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x10                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5360-L5370"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L9767"><code>T2WGDC_ClearWGDutyCycleVars</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L9841"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>UPRLIM</code> specifies the upper authority clamp applied to the dynamic manifold pressure response correction (<code>MPCORR</code>) in T2 boost creep control.</p>
+<p>When boost is rising rapidly, the T2 algorithm computes a correction factor by multiplying the rate of boost rise by the response factor table (<a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_BoostCreep/T2RESFAC_MapCorrectionResponseFactor_FromMap.html"><code>T2RESFAC</code></a>). <code>UPRLIM</code> limits the maximum positive correction authority that this calculation can apply to the base boost target, preventing excessive control windup and sudden over-correction.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9839-9843</code>), called from <code>CalcWGDutyCycle_MM</code> (<code>T-SMEC_v19.asm:9506-9510</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Active when <code>BoostDelta_Signed</code> (<code>Temp1</code>) is positive (boost rising, line 9839).</li>
+<li><strong>Clamp Comparison</strong>:</li>
+<li>Line 9841 loads <code>UPRLIM_UpperLimitOnMPCORR</code> into accumulator A.</li>
+<li>Line 9846 executes <code>cba</code> to compare accumulator B (the multiplied correction) against <code>UPRLIM</code>.</li>
+<li>If accumulator B exceeds <code>UPRLIM</code>, accumulator B is clamped to <code>UPRLIM</code> at line 9848.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Positive Boost Creep Authority Clamp</strong>:</li>
+<li>Caps the maximum dynamic correction applied when boost is rising rapidly.</li>
+<li>Factory setting is 16 counts (approximately 8.0 percent duty cycle offset authority).</li>
+<li><strong>Damping Aggressive Spool Spikes</strong>:</li>
+<li>Increasing <code>UPRLIM</code> to 24 to 32 counts gives the ECU more authority to suppress severe boost overshoot on fast-spooling turbos.</li>
+<li><strong>Preventing Sluggish Spool</strong>:</li>
+<li>If the car hesitates or dips boost during initial spool-up, lower <code>UPRLIM</code> to 8 to 12 counts to prevent excessive dampening.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalcWGDutyCycleT2</code> at line 9835, <code>mul</code> computes the response factor product in accumulator D. Line 9839 executes <code>tst Temp1</code> to test the sign of <code>BoostDelta_Signed</code>. When positive, line 9841 loads <code>UPRLIM_UpperLimitOnMPCORR</code> into accumulator A and branches to <code>L7750</code> at line 9846. <code>cba</code> compares the product in accumulator B against <code>UPRLIM</code>. If accumulator B is greater or equal, line 9848 executes <code>tab</code>, bounding the dynamic boost creep correction to <code>UPRLIM</code>.</p>
+<pre><code class="language-motorola6803">; --- CalcWGDutyCycleT2 (T-SMEC_v19.asm:9839-9843) ---
+L7748:  tst  Temp1
+        bmi  L7749                     ; branch if minus(hi bit 1)
+        ldaa UPRLIM_UpperLimitOnMPCORR ; load a with memory contents (data is 10)
+        bra  L7750                     ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Asymmetric Damping Authority</strong>: Sized at 16 counts (8.0%), exactly half the 32 counts (16.0%) authority of <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Adaptives/LWRLIM_LowerLimitOnMPCORR.html"><code>LWRLIM</code></a>.</li>
+<li><strong>Multiplication Scaling</strong>: Caps the 16-bit product of <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_BoostCreep/T2RESFAC_MapCorrectionResponseFactor_FromMap.html"><code>T2RESFAC</code></a> and rate delta.</li>
+<li><strong>Factory Value</strong>: 0x10 = 16 counts = 8.0% duty cycle offset authority.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>UPRLIM</code>
+        </footer>
+    </div>
+</body>
+</html>

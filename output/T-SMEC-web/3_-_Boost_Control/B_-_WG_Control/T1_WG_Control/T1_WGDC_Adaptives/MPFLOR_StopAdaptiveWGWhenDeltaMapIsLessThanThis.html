@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPFLOR: StopAdaptiveWhenDeltaMapIsLessThanThis | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1284</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ B - WG Control ➔ T1 WG Control ➔ T1 WGDC Adaptives</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MPFLOR: StopAdaptiveWhenDeltaMapIsLessThanThis</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MPFLOR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MPFLOR_StopAdaptiveWGWhenDeltaMapIsLessThanThis</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\B_-_WG_Control\T1_WG_Control\T1_WGDC_Adaptives\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1284</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi boost</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4930-L4941"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L9676"><code>WGDC_DecrementWGAdaptive</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L9684"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MPFLOR</code> establishes a manifold pressure rate-of-change stability gate required to permit adaptive wastegate duty cycle decrementing in T1 control.</p>
+<p>If manifold pressure is fluctuating rapidly due to gear shifting, aggressive throttle movement, or turbocharger compressor surge, the difference between instantaneous manifold pressure and rolling average manifold pressure will be large. <code>MPFLOR</code> verifies that boost has stabilized before allowing the error timer to accumulate, ensuring the controller never updates adaptive learning cells during chaotic transient events.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_DecrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9680-9685</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
+<li><strong>Gating Conditions</strong>: Evaluated after passing <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MPDEL1_IncCounterWhenDeltaMapBelowThis.html"><code>MPDEL1</code></a> overboost check.</li>
+<li><strong>Stability Comparison</strong>:</li>
+<li>Accumulator A computes <code>|MapValue - AverageMAPValue|</code> at lines 9680-9683.</li>
+<li>Line 9684 compares accumulator A against <code>MPFLOR_StopAdaptiveWGWhenDeltaMapIsLessThanThis</code> (<code>cmpa MPFLOR</code>).</li>
+<li>If variance exceeds <code>MPFLOR</code> (<code>bhi</code>), branches to <code>WGDC_ClearBoostErrTimer</code> (line 9685), resetting the error timer.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Manifold Stability Filter</strong>:</li>
+<li>Requires instantaneous MAP to be within <code>MPFLOR</code> of rolling <code>AverageMAPValue</code> before allowing adaptive decrement.</li>
+<li>Factory setting is 2 counts (approximately 0.23 psi MAP variance).</li>
+<li><strong>Preventing Learning During Transients</strong>:</li>
+<li>Inhibits downward adaptive trims during compressor surge, gear shifts, or throttle fluttering.</li>
+<li><strong>Pulsation Damping</strong>:</li>
+<li>If aggressive camshafts cause intake manifold pulsing that locks out adaptive learning, increase <code>MPFLOR</code> to 3 or 4 counts.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>WGDC_DecrementWGAdaptive</code> at line 9680, accumulator A loads <code>MapValue</code> and subtracts <code>AverageMAPValue</code>. If carry is clear, it branches to <code>L1871</code>; if negative, line 9683 executes <code>nega</code> to obtain absolute delta. Line 9684 executes <code>cmpa MPFLOR_StopAdaptiveWGWhenDeltaMapIsLessThanThis</code>. If accumulator A is higher (<code>bhi WGDC_ClearBoostErrTimer</code>), the manifold is considered unstable and the timer is cleared. If within tolerance, execution proceeds to increment <code>Timer_BoostErrTimer</code> at line 9686.</p>
+<pre><code class="language-motorola6803">; --- WGDC_DecrementWGAdaptive (T-SMEC_v19.asm:9680-9685) ---
+	ldaa MapValue	    ; load a with memory contents
+	suba AverageMAPValue
+	bcc  L1871	    ; branch if greater or equal
+	nega		    ; negate a (set high bit)
+L1871:	cmpa MPFLOR_StopAdaptiveWGWhenDeltaMapIsLessThanThis	 ; compare a with memory contents (data is 01)
+	bhi  WGDC_ClearBoostErrTimer	    ; branch if higher</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Noise Immunity Gate</strong>: Shields adaptive cells from being corrupted by unsteady airflow or backfires.</li>
+<li><strong>Factory Value</strong>: 0x02 = 2 counts = approx 0.23 psi stability delta.</li>
+<li><strong>T1 vs. T2 Naming</strong>: In T1, <code>MPFLOR</code> is a MAP stability threshold; in T2, <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Adaptives/T2MPFLOR_StopAdaptiveWhenMapIsThisCloseToBoostFloor.html"><code>T2MPFLOR</code></a> is an underboost deadband threshold.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MPFLOR</code>
+        </footer>
+    </div>
+</body>
+</html>

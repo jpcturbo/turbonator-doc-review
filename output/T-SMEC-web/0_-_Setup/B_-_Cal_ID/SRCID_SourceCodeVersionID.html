@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRCID: SourceCodeVersionID | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0179</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ B - Cal ID</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>SRCID: SourceCodeVersionID</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>SRCID</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>SRCID_SourceCodeVersionID</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\B_-_Cal_ID\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0179</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Version Word</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0x0B13                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L565-L575"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;">Direct symbol reference or ROM header constant in <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>SRCID</code> defines the Turbonator custom codebase version and controller family identifier within the calibration header.</p>
+<p>In custom firmware, <code>SRCID</code> replaces unused factory plant testing codes to provide positive identification of the underlying firmware architecture. Encoded as a sixteen-bit word, the upper byte designates the engine controller architecture (such as zero B for the SMEC family, zero A for logic modules, and zero C for SBEC controllers), while the lower byte indicates the firmware version in hexadecimal (such as nineteen in hexadecimal to designate version nineteen). Tuning editors query <code>SRCID</code> to automatically verify table compatibility and unlock platform-specific features.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: Unreferenced in executable code (<code>assembly_routine: {'routine': None, ...}</code>).</li>
+<li><strong>Firmware Status</strong>:</li>
+<li>Embedded in ROM header block at address 0x0179 (ROM 0x8021).</li>
+<li><strong>Checksum Inclusion</strong>:</li>
+<li>Included in the 8-bit checksum verification loop in <code>CaculateChecksum</code> (<code>T-SMEC_v19.asm:4141-4178</code>).</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Codebase &amp; Version Tracking</strong>:</li>
+<li>Identifies the ECU platform (T-SMEC) and firmware release (Version 19) to tuning software.</li>
+<li><strong>Feature Compatibility</strong>:</li>
+<li>Tuning suites like MPTune query <code>SRCID</code> to enable version-specific features (launch control, 3-bar scaling, anti-lag).</li>
+<li><strong>Firmware Anomaly</strong>:</li>
+<li>Not executed by any CPU instructions in <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>; functions strictly as a calibration metadata tag and checksum contributor.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: <code>SRCID_SourceCodeVersionID</code> is defined in the calibration ROM header at address 0x0179 (offset +0x21 from <a href="../../0_-_Setup/B_-_Cal_ID/ENDIT1_PNPrefix.html"><code>ENDIT1_PNPrefix</code></a>). It is not read by any runtime assembly instructions. Instead, it serves as a static metadata identifier read by PC-based calibration software (MPTune) during file import, and is included in the full-ROM summation performed by <code>CaculateChecksum</code> at line 4142.</p>
+<pre><code class="language-motorola6803">; --- Calibration ROM Header / Checksum Context (T-SMEC_25_ATX_A283_Stock.tpl:565-575) ---
+SRCID_SourceCodeVersionID:
+    ;mpgrp 0_-_Setup\B_-_Cal_ID\
+    ;mptbladdr 0x0179
+    ;mptbltype 4
+    ;mpsubtype n
+    ;mptbllname SourceCodeVersionID
+    ;mptblcname SRCID
+    ;mpxaxis in_desc 0 255 in
+    ;mpyaxis out_desc 0 255 out
+    ;mptbldesc Desc
+    .word 0x0B13                     ;Point 1 (0x0B = T-SMEC, 0x13 = v19)</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Codebase Encoding</strong>: 0x0A = T-LM, 0x0B = T-SMEC, 0x0C = T-SBEC, 0x0D = T-TIII (1991), 0x0E = T-TIII (1992-1993).</li>
+<li><strong>Version Encoding</strong>: The lower byte is the hexadecimal revision (0x13 = version 19).</li>
+<li><strong>Unreferenced Anomaly</strong>: No assembly instructions read <code>SRCID</code> during vehicle operation.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>SRCID</code>
+        </footer>
+    </div>
+</body>
+</html>

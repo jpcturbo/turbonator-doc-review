@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T2KDCINC: WastegateDutyCycleIncreaseStepWhenKnocking | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x13DD</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ B - WG Control ➔ T2 WG Control ➔ T2 WGDC Knock Adj</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>T2KDCINC: WastegateDutyCycleIncreaseStepWhenKnocking</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>T2KDCINC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T2KDCINC_WastegateDutyCycleIncreaseStepWhenKnocking</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\B_-_WG_Control\T2_WG_Control\T2_WGDC_Knock_Adj\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x13DD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">percent duty cycle</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x08                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5275-L5285"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L9857"><code>T2WGDC_LookupWGDutyCycleBase</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L9892"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>T2KDCINC</code> sets the incremental duty cycle step added to the knock reduction penalty on each confirmed detonation event under boost in T2 control.</p>
+<p>In T2 pressure-source wastegate plumbing, adding duty cycle increases solenoid flow to vent actuator pressure or route control signals according to T2 hardware topology. When knock is flagged above 5 psi of boost, <code>T2KDCINC</code> counts are added to the knock reduction penalty to adjust wastegate positioning and pull manifold boost down to safe levels.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9888-9894</code>).</li>
+<li><strong>Gating Conditions</strong>: Flag <code>b55_BoostOver5psi</code> in <code>BitFlags_55</code> must be set (line 9889).</li>
+<li><strong>Step Addition</strong>:</li>
+<li>Line 9890 clears <code>b55_BoostOver5psi</code>.</li>
+<li>Line 9891 loads <code>WastegateDutyCycleIncreaseFromKnock</code> into accumulator B.</li>
+<li>Line 9892 executes <code>addb T2KDCINC_WastegateDutyCycleIncreaseStepWhenKnocking</code>.</li>
+<li>Clamps against overflow at line 9894 before evaluating <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2KDCMAX_WastegateDutyCycleIncreaseMaxWhenKnocking.html"><code>T2KDCMAX</code></a> and <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2KDCMIN_WastegateDutyCycleIncreaseMinWhenKnocking.html"><code>T2KDCMIN</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>T2 Knock Duty Cycle Step</strong>:</li>
+<li>Sets incremental duty cycle addition per confirmed knock event under boost.</li>
+<li>Factory setting is 8 counts in template (4.0% duty cycle), or 4 counts in ASM (2.0% duty cycle).</li>
+<li><strong>Fast Knock Suppression</strong>:</li>
+<li>Increasing <code>T2KDCINC</code> to 8 to 12 counts drops boost more rapidly when severe knock occurs.</li>
+<li><strong>T2 Additive Output Polarity</strong>:</li>
+<li>In T2 control, knock duty cycle is added to final WGDC at line 10032 to open the gate under pressure-source plumbing.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalcWGDutyCycleT2</code> at line 9889, <code>brclr *BitFlags_55, #b55_BoostOver5psi, L7758</code> tests for active knock. When set, line 9890 clears the flag and line 9891 loads <code>WastegateDutyCycleIncreaseFromKnock</code> into accumulator B. Line 9892 executes <code>addb T2KDCINC_WastegateDutyCycleIncreaseStepWhenKnocking</code>. Overflow is checked at line 9893; if addition overflows, accumulator B is clamped to 255. Execution proceeds to compare against <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2KDCMAX_WastegateDutyCycleIncreaseMaxWhenKnocking.html"><code>T2KDCMAX</code></a> and <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2KDCMIN_WastegateDutyCycleIncreaseMinWhenKnocking.html"><code>T2KDCMIN</code></a>.</p>
+<pre><code class="language-motorola6803">; --- CalcWGDutyCycleT2 (T-SMEC_v19.asm:9888-9894) ---
+L7754:
+        brclr *BitFlags_55, #b55_BoostOver5psi, L7758	 ; branch if bit(s) clear
+	bclr *BitFlags_55, #b55_BoostOver5psi	 ; clear bits
+        ldab WastegateDutyCycleIncreaseFromKnock    ; load b with memory contents
+        addb T2KDCINC_WastegateDutyCycleIncreaseStepWhenKnocking    ;  (data is 04)
+        bcc  L7759                     ; branch if greater or equal
+        ldab #0xff                     ; load b with value -11111111-</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Inverted Action</strong>: In T2 mode, knock duty cycle is ADDED to output WGDC at line 10032, opening the wastegate.</li>
+<li><strong>Duty Cycle Scale</strong>: 1 count = 0.5% duty cycle (4 counts = 2.0%, 8 counts = 4.0%).</li>
+<li><strong>T1 vs. T2 Equivalents</strong>: T1 uses <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Knock_Adj/KDCINC_WastegateDutyCycleIncreaseStepWhenKnocking.html"><code>KDCINC</code></a> (0x08); T2 uses <code>T2KDCINC</code> (0x04 in ASM, 0x08 in template).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>T2KDCINC</code>
+        </footer>
+    </div>
+</body>
+</html>

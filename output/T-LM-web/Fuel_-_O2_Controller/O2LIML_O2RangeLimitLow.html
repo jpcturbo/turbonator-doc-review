@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O2LIML: O2RangeLimitLow | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0551</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - O2 Controller</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel</strong>
+        </div>
+        
+        <article class="content">
+            <h1>O2LIML: O2RangeLimitLow</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>O2LIML</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>O2LIML_O2RangeLimitLow</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_O2_Controller\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0551</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Signed Fuel Modifier Fractional Units ($1 \text{ count} = 1/512 \approx 0.195\%$)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0xB3 (-77 counts signed 2&#x27;s complement $\approx -15.0\%$ maximum enleanment)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L1391-L1419"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L3265"><code>IncrementO2SensorFeedbackCount</code></a> in <a href="../T-LMv13.asm.html#L3271"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>O2LIML_O2RangeLimitLow</code> establishes the <strong>maximum short-term enleanment authority</strong> permitted by the closed-loop O2 controller.</p>
+<p>Just as <a href="../Fuel_-_O2_Controller/O2LIMH_O2RangeLimitHigh.html"><code>O2LIMH</code></a> limits how much fuel the ECU can add, <code>O2LIML</code> protects the engine from being leaned out dangerously if a malfunctioning O2 sensor gets stuck producing high voltage. <code>O2LIML</code> forms the floor beneath which short-term fuel feedback cannot reduce injector pulse width.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Active Short-Term Enleanment Clamping:</strong></li>
+<li>Active whenever the closed-loop controller pulls fuel out (negative ramp accumulator).</li>
+<li>If the accumulator decreases past <code>O2LIML</code>, the value is clamped to <code>O2LIML</code>.</li>
+<li>If the accumulator remains pinned at <code>O2LIML</code> without crossing stoich for <a href="../Fuel_-_O2_Controller/LTHTIM_IfNoO2SwitchForThisTimeThrowFault51or52.html"><code>LTHTIM</code></a>, the ECU flags <strong>Fault 52</strong> (O2 sensor stuck rich / fuel trim pinned at maximum lean authority).</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stock Value:</strong> <code>0xB3</code> (Hex 0xB3 in 8-bit signed two's complement = 179 - 256 = -77 decimal).</li>
+</ul>
+<p><code>Min Multiplier = 1.0 + (Signed(0xB3) / 512) = 1.0 - (77 / 512) ≈ 1.0 - 0.1504 = 0.8496\ (-15.0%)</code></p>
+<ul>
+<li><strong>Safety Margin:</strong> Notice that the factory calibration allows +24.8% rich authority (<code>0x7F</code>), but only -15.0% lean authority (<code>0xB3</code>). This asymmetric bias is intentional: running slightly rich under error conditions is safe, while running excessively lean under load can melt pistons.</li>
+<li><strong>Tuning Note:</strong> Do not set below <code>0x80</code> (-128 counts / -25%), as that would trigger signed arithmetic underflow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 3271â€“3278):</p>
+<pre><code class="language-motorola6803">ldab O2LIML_O2RangeLimitLow    ; Load lower authority limit (0xB3 = -77)
+        tba                 
+DIDNT_2SCOMPLEMENT_OVERFLOW_UNDERFLOW1:
+        cba             
+        bge  SET_TO_MAX_OR_MIN_VALUE    ; Clamp if above max
+        ldab O2LIML_O2RangeLimitLow    
+        cba             
+        bge  LD7FF          ; If &gt;= O2LIML, valid!
+SET_TO_MAX_OR_MIN_VALUE:
+        tba                 ; Clamp accumulator to lower bound (O2LIML)</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><code>O2LIML</code> is a signed two's complement negative value. In MPTune, it displays in decimal or hex; ensure the sign bit (bit 7 = 1) is maintained when editing raw bytes.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>O2LIML</code>
+        </footer>
+    </div>
+</body>
+</html>

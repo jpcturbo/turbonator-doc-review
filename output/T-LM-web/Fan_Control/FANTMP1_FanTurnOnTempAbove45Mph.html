@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FANTMP1: FanTurnOnTempAbove45Mph | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0F25</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fan Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Turbonator</strong>
+        </div>
+        
+        <article class="content">
+            <h1>FANTMP1: FanTurnOnTempAbove45Mph</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>FANTMP1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>FANTMP_FanTurnOnTempAbove45Mph</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Turbonator</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fan_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0F25</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Coolant Temperature ADC (0xEE = 238 decimal; approx 218°F / 103°C)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xEE                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L3907-L3919"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L6852"><code>ControlFan2_MM</code></a> in <a href="../T-LMv13.asm.html#L6899"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>FANTMP1</code> (FanTurnOnTempAbove45Mph) defines the radiator cooling fan turn-on temperature threshold (stock calibration = <code>0xEE</code> / ~218°F) when the vehicle is cruising at highway speeds (above 45 MPH).</p>
+<p>At highway cruising speeds, high-velocity ambient ram-air naturally flows through the front grille, condenser, and radiator core, providing substantial passive cooling without requiring electrical fan assistance. Running the high-amp electric cooling fan at 60 MPH creates aerodynamic drag through the radiator shroud and places unnecessary electrical load on the alternator. <code>FANTMP1</code> elevates the fan turn-on threshold to 218°F at speed, ensuring the electric fan only engages on the highway if the engine encounters severe heat distress (such as climbing steep mountain grades or towing a trailer).</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside subroutine <code>ControlFan2_MM</code> at line 6899.</li>
+<li>Active when vehicle speed is above 45 MPH (<code>Temp0 &gt;= 0x46</code>).</li>
+<li>When <code>CoolantTemp &gt;= FANTMP1</code>, bit 0 of <code>BitFlags_84</code> is set and the radiator fan relay is grounded.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>160°F / 180°F Thermostats</strong>: When upgrading to a 180°F thermostat, lower <code>FANTMP1</code> to <code>0xD2</code> (~195°F). For a 160°F thermostat, lower to <code>0xBC</code> (~175°F).</li>
+<li><strong>High-Speed Overheating</strong>: If the car runs cool in city traffic but temperatures climb on the highway, verify that <code>FANTMP1</code> is set appropriately to assist ram airflow if the radiator core is partially clogged or heat-soaked.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- ControlFan2_MM (T-LMv13.asm:6899-6907) ---
+        ldx  #FANTMP_FanTurnOnTempAbove45Mph     ; Load pointer to high-speed fan threshold ($0F25, data 0xEE = 218°F)
+        ldaa Temp0                               ; Load vehicle road speed
+        cmpa #0x5a                               ; Check for high cruising speed (&gt;45 MPH)
+        bcc  TurnFanOn                           ; If hot and moving fast, activate fan!</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Speed Hysteresis</strong>: Works with low-speed threshold <a href="../Fan_Control/FANTMP3_FanTurnOnTempBelow35Mph.html"><code>FANTMP3</code></a> across a 35 MPH to 45 MPH vehicle speed hysteresis window.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>FANTMP1</code>
+        </footer>
+    </div>
+</body>
+</html>

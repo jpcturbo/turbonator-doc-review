@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAPMULT: ScaleMAPVoltsToPresMultiplyConst | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1DB0</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ D - Transfer Functions</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MAPMULT: ScaleMAPVoltsToPresMultiplyConst</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MAPMULT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MAPMULT_ScaleMAPVoltsToPresMultiplyConst</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\D_-_Transfer_Functions\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1DB0</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 8 (Transfer Function Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Multiplier Slope</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x07                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7790-L7802"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L7916"><code>ConvertMAPVoltsToValue</code></a> in <a href="../../T-SMEC_v19.asm.html#L7918"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MAPMULT</code> is the foundational mathematical slope multiplier in the transfer function that converts analog manifold absolute pressure sensor voltage into calibrated internal pressure units.</p>
+<p>In the Chrysler engine controller, manifold pressure conversion follows a linear equation where sensor voltage is multiplied by <code>MAPMULT</code> and added to <a href="../../0_-_Setup/D_-_Transfer_Functions/MAPADD_ScaleMAPVoltsToPresAddConst.html"><code>MAPADD</code></a>. Factory calibrations set <code>MAPMULT</code> to seven counts to match the standard Mopar two-bar pressure sensor, which spans zero to twenty-nine point four psi absolute. When upgrading to a three-bar pressure sensor to support higher boost, <code>MAPMULT</code> is configured to nine counts to compress the broader pressure range into the internal pressure representation.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ConvertMAPVoltsToValue</code> (<code>T-SMEC_v19.asm:7916-7929</code>), instruction line 7918 (<code>ldab MAPMULT_...</code>).</li>
+<li><strong>Conversion Pipeline</strong>:</li>
+<li>Raw sensor voltage loaded in accumulator A.</li>
+<li>Multiplied by <code>MAPMULT_ScaleMAPVoltsToPresMultiplyConst</code> in register B via <code>mul</code>.</li>
+<li><strong>Product Clamping</strong>:</li>
+<li>Added to accumulator A with carry overflow check clamped to 0xFF.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Three-Bar MAP Sensor Conversion</strong>:</li>
+<li>Set <code>MAPMULT</code> to nine counts and <a href="../../0_-_Setup/D_-_Transfer_Functions/MAPADD_ScaleMAPVoltsToPresAddConst.html"><code>MAPADD</code></a> to seventeen hundred counts when converting to a 3-bar sensor.</li>
+<li><strong>Two-Bar Stock Calibration</strong>:</li>
+<li>Factory setting is seven counts paired with <a href="../../0_-_Setup/D_-_Transfer_Functions/MAPADD_ScaleMAPVoltsToPresAddConst.html"><code>MAPADD</code></a> at eight hundred sixty-five counts.</li>
+<li><strong>Load Calculation Dependency</strong>:</li>
+<li>Because every fuel and spark advance table in the ECU is indexed against manifold pressure, correct <code>MAPMULT</code> scaling is mandatory.</li>
+<li><strong>Companion Offset</strong>:</li>
+<li>Must always be calibrated in direct coordination with <a href="../../0_-_Setup/D_-_Transfer_Functions/MAPADD_ScaleMAPVoltsToPresAddConst.html"><code>MAPADD_ScaleMAPVoltsToPresAddConst</code></a>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>ConvertMAPVoltsToValue</code> at lines 7916-7928, accumulator A stores raw MAP sensor voltage. Line 7918 loads <code>ldab MAPMULT_ScaleMAPVoltsToPresMultiplyConst</code>. Line 7921 executes <code>mul</code>, producing a 16-bit product in register D. Line 7922 adds <code>Temp5</code> to accumulator A, checking for overflow (<code>bcc L1659; ldaa #0xff</code>). Line 7925 adds <a href="../../0_-_Setup/D_-_Transfer_Functions/MAPADD_ScaleMAPVoltsToPresAddConst.html"><code>MAPADD_ScaleMAPVoltsToPresAddConst</code></a> to complete the pressure scaling.</p>
+<pre><code class="language-motorola6803">; --- ConvertMAPVoltsToValue (T-SMEC_v19.asm:7916-7928) ---
+ConvertMAPVoltsToValue:
+	staa Temp5	    ; store a into memory
+	ldab MAPMULT_ScaleMAPVoltsToPresMultiplyConst
+	bpl  L1658	    ; branch if plus (hi bit 0)
+	clr  Temp5	    ; zero byte at memory location
+L1658:	mul		    ; multiply (d=a*b)
+	adda Temp5	
+	bcc  L1659	    ; branch if greater or equal
+	ldaa #0xff	    ; load a with value -11111111-
+L1659:	addd MAPADD_ScaleMAPVoltsToPresAddConst
+	bcc  L1660	    ; branch if greater or equal
+	ldaa #0xff	    ; load a with value -11111111-
+L1660:	rts		    ; return from subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Linear Transfer Equation</strong>: Output = (Voltage * <code>MAPMULT</code>) + <a href="../../0_-_Setup/D_-_Transfer_Functions/MAPADD_ScaleMAPVoltsToPresAddConst.html"><code>MAPADD</code></a>.</li>
+<li><strong>Mopar 2-Bar Setting</strong>: 0x07 (7 counts).</li>
+<li><strong>Mopar 3-Bar Setting</strong>: 0x09 (9 counts).</li>
+<li><strong>Template Choices</strong>: Supported by <code>;mpchoices</code> in MPTune templates.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MAPMULT</code>
+        </footer>
+    </div>
+</body>
+</html>

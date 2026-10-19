@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T2RPMBST: MinimumRpmToTrackBoostCreep | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1363</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ B - WG Control ➔ T2 WG Control ➔ T2 WGDC BoostCreep</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>T2RPMBST: MinimumRpmToTrackBoostCreep</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>T2RPMBST</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T2RPMBST_MinimumRpmToTrackBoostCreep</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\B_-_WG_Control\T2_WG_Control\T2_WGDC_BoostCreep\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1363</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">rpm</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x4C                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5153-L5163"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L9767"><code>T2WGDC_ClearWGDutyCycleVars</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L9792"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>T2RPMBST</code> defines the minimum engine speed threshold required to advance the boost ramp countdown timer (<code>Timer_BoostTimer</code>) in T2 control.</p>
+<p>The boost ramp timer indexes the time-based allowed boost curve (<a href="../../../../3_-_Boost_Control/A_-_Target_Lookup/WSGTIM_AllowedBoost_FromTime.html"><code>WSGTIM</code></a>), controlling how quickly target boost ramps up to full pressure. <code>T2RPMBST</code> prevents the timer from advancing when the engine is operating at low RPM under heavy load where the turbocharger cannot physically build boost, ensuring the ramp timer remains synchronized with real engine airflow.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9789-9798</code>), called from <code>CalcWGDutyCycle_MM</code> (<code>T-SMEC_v19.asm:9506-9510</code>).</li>
+<li><strong>Prescaler Frequency</strong>: Evaluated every 32 main program loops when <code>Counter_MainLoop</code> bitmask 31 is zero (line 9789).</li>
+<li><strong>RPM Comparison</strong>:</li>
+<li>Line 9791 loads <code>EngineRpm_HB</code> (32 RPM per count) into accumulator B.</li>
+<li>Line 9792 executes <code>cmpb T2RPMBST_MinimumRpmToTrackBoostCreep</code>.</li>
+<li>If engine speed is below <code>T2RPMBST</code> (<code>bcs</code>), execution branches to <code>L7744</code>, skipping timer advancement.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>T2 Spool Tracking RPM Threshold</strong>:</li>
+<li>Minimum engine speed required to advance <code>Timer_BoostTimer</code> in T2 mode.</li>
+<li>Factory setting is 76 counts (approximately 2432 RPM).</li>
+<li><strong>Synchronizing with Turbocharger Size</strong>:</li>
+<li>Set to match the engine speed where the turbocharger begins producing positive boost.</li>
+<li>Raise to 3200 to 3800 RPM for large aftermarket turbochargers (Garrett GT30R, Holset HX35).</li>
+<li><strong>T1 vs. T2 Separation</strong>:</li>
+<li>Dedicated T2 companion to T1 constant <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Lookup/RPMBST_MinimumRpmToTrackBoostCreep.html"><code>RPMBST</code></a>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalcWGDutyCycleT2</code> at line 9789, accumulator B loads <code>Counter_MainLoop</code> and tests <code>bitb #0x1f</code>. Every 32 passes, line 9791 loads <code>EngineRpm_HB</code> and line 9792 executes <code>cmpb T2RPMBST_MinimumRpmToTrackBoostCreep</code>. If carry is set (<code>bcs L7744</code>), engine speed is below threshold and the timer is not incremented. If greater or equal, accumulator A loads <code>Timer_BoostTimer</code> at line 9794, increments it (<code>inca</code>), and writes it to memory at line 9797.</p>
+<pre><code class="language-motorola6803">; --- CalcWGDutyCycleT2 (T-SMEC_v19.asm:9789-9798) ---
+        bitb #0x1f                     ;  -00011111-
+        bne  L7744                     ; branch if not equal (not zero)
+        ldab EngineRpm_HB                ; load b with memory contents
+        cmpb T2RPMBST_MinimumRpmToTrackBoostCreep    ; compare b with memory contents (data is 4c)
+        bcs  L7744                     ; branch if lower
+        ldaa Timer_BoostTimer          ; load a with memory contents
+        inca                           ; increment a
+        beq  L7744                     ; branch if equal (zero)
+        staa Timer_BoostTimer          ; store a into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Scaling</strong>: 32 RPM per count (76 counts = 2432 RPM).</li>
+<li><strong>Timer Limit</strong>: Increments to 255 counts ceiling, matching <a href="../../../../3_-_Boost_Control/A_-_Target_Lookup/WSGTIM_AllowedBoost_FromTime.html"><code>WSGTIM</code></a> time axis.</li>
+<li><strong>T2 Mode Dedicated</strong>: Governs boost timer strictly when <code>opt_T2BC</code> is set in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>T2RPMBST</code>
+        </footer>
+    </div>
+</body>
+</html>

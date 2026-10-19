@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPROOF: StopAdaptiveWGWhenMapIsThisCloseToBoostTarget | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x12AC</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ B - WG Control ➔ T1 WG Control ➔ T1 WGDC Adaptives</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MPROOF: StopAdaptiveWGWhenMapIsThisCloseToBoostTarget</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MPROOF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MPROOF_StopAdaptiveWGWhenMapIsThisCloseToBoostTarget</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\B_-_WG_Control\T1_WG_Control\T1_WGDC_Adaptives\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x12AC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi boost</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x00                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4970-L4981"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L9698"><code>WGDC_IncrementWGAdaptive</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L9699"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MPROOF</code> sets the underboost deadband threshold below target boost where the controller permits adaptive duty cycle incrementing in T1 control.</p>
+<p>When manifold pressure is below target, the engine controller calculates the underboost delta. If manifold pressure is within <code>MPROOF</code> of target boost, the boost level is considered sufficiently accurate, and the controller freezes adaptive incrementing to avoid continuous hunting and trim oscillation around the target pressure.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_IncrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9698-9700</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li><code>MapValue &lt; BoostTarget</code> (line 9671 branching to <code>WGDC_BoostIsBelowTarget</code>).</li>
+<li><code>BitFlags_52</code> bit <code>b52_WGDC_BumpAdapt</code> must be clear (line 9695).</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Accumulator A holds the positive underboost delta (<code>BoostTarget - MapValue</code>).</li>
+<li>Line 9699 executes <code>cmpa MPROOF_StopAdaptiveWGWhenMapIsThisCloseToBoostTarget</code>.</li>
+<li>If error is less than <code>MPROOF</code> (<code>bcs</code>), branches to <code>WGDC_ClearBoostErrTimer</code>, halting adaptive increment.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Underboost Deadband Threshold</strong>:</li>
+<li>Minimum error delta below target (<code>Target - Actual</code>) required to trigger an adaptive duty cycle increment.</li>
+<li>Factory setting is 0 counts (adapts whenever actual boost is below target).</li>
+<li><strong>Eliminating Table Churn</strong>:</li>
+<li>Setting <code>MPROOF</code> to 2 to 3 counts (0.23 to 0.35 psi) creates a small deadband that stops adaptive hunting when boost is close to target.</li>
+<li><strong>Upward Adaptation Gating</strong>:</li>
+<li>Only affects the upward adaptive branch (<code>WGDC_IncrementWGAdaptive</code>).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>WGDC_IncrementWGAdaptive</code> at line 9699, accumulator A holds the underboost delta (<code>BoostTarget - MapValue</code>). The instruction <code>cmpa MPROOF_StopAdaptiveWGWhenMapIsThisCloseToBoostTarget</code> compares the boost error against the deadband threshold. If carry is set (<code>bcs WGDC_ClearBoostErrTimer</code> at line 9700), boost is considered within target deadband, and the error timer is cleared. If error meets or exceeds <code>MPROOF</code>, execution continues to test throttle position and manifold stability.</p>
+<pre><code class="language-motorola6803">; --- WGDC_IncrementWGAdaptive (T-SMEC_v19.asm:9698-9700) ---
+WGDC_IncrementWGAdaptive:
+	cmpa MPROOF_StopAdaptiveWGWhenMapIsThisCloseToBoostTarget    ; compare a with memory contents (data is 00)
+	bcs  WGDC_ClearBoostErrTimer	    ; branch if lower</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Factory Zero Deadband</strong>: Set to 0x00 in stock T1 cals; any underboost delta satisfies the check.</li>
+<li><strong>Hysteresis Buffer</strong>: When tuning large turbos, setting 0x02 to 0x03 stabilizes adaptive convergence.</li>
+<li><strong>Paired with MPDEL2</strong>: Works alongside <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MPDEL2_IncCounterWhenDeltaMapBelowThis2.html"><code>MPDEL2</code></a> (manifold stability) and <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/INCPT_AdaptiveIncAfterThisTime.html"><code>INCPT</code></a> (dwell timer).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MPROOF</code>
+        </footer>
+    </div>
+</body>
+</html>

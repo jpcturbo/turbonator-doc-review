@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EGR7: ExhGasRecircConst7 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1ACA</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ EGR</strong> &nbsp;|&nbsp; Subsystem: <strong>EGR_Emissions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>EGR7: ExhGasRecircConst7</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>EGR7</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>EGR7_ExhGasRecircConst</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">EGR_Emissions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\EGR\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1ACA</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Integrator delta counts (0 to 255; factory 0 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x00                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7048-L7058"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5470"><code>EGR_ResetEGRVars</code></a> in <a href="../../T-SMEC_v19.asm.html#L5506"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>EGR7</code> (ExhGasRecircConst) establishes the minimum closed-loop oxygen sensor fuel trim shift threshold required to confirm Exhaust Gas Recirculation valve flow and pass the onboard diagnostic test (Fault Code 32).</p>
+<p>During Phase 2, the engine controller commands the EGR valve closed, cutting off inert exhaust gas into the cylinders. This causes combustion air/fuel ratio to shift lean, forcing the closed-loop integrator to ramp richer to restore stoichiometry. The controller subtracts the filtered Phase 1 baseline trim (<code>EGRVar5</code>) from the peak Phase 2 trim (<code>EGRVar6</code>) and compares the delta against <code>EGR7</code> at line 5506.</p>
+<p>The factory setting of 0 counts requires any positive fuel trim shift to confirm gas flow and pass the test.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5506.</li>
+<li><strong>State Condition</strong>: Phase 2 active (<code>EGRVar2</code> bit 7 set) and all Phase 2 window checks passed.</li>
+<li><strong>Calculated Delta</strong>: <code>Counter_PrimaryAndSecondaryRamp - EGRVar5</code> stored in <code>EGRVar7</code> (RAM address 0x00A1).</li>
+<li><strong>Comparison</strong>: <code>cmpa EGR7_ExhGasRecircConst</code> at line 5506.</li>
+<li><strong>Branch Behavior</strong>: If delta &gt;= <code>EGR7</code>, advances to <code>L1469</code> (clears failure counter <code>EGRVar1</code>, sets pass bit 6 in <code>EGRVar2</code>, clears fault bit 7 in <code>b46_IPL2</code>, and restores EGR to on). If delta &lt; <code>EGR7</code>, branches to <code>L1474</code> to keep checking until timeout.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Raising EGR7</strong>: Demands a more pronounced fuel trim shift (richer integration) when the EGR valve shuts off. Enhances diagnostic stringency on stock engines, but can trigger false failures if EGR passages are moderately carbon-fouled.</li>
+<li><strong>Factory Setting (0 counts)</strong>: Any positive shift between peak Phase 2 ramp and Phase 1 baseline passes the test, maximizing monitor completion under varied weather and fuel conditions.</li>
+<li><strong>EGR Block-Off Reality</strong>: When an EGR block-off plate is installed, no exhaust gas flows; closing the valve produces zero fuel trim shift, causing the delta to stay below <code>EGR7</code> and eventually setting Fault Code 32 unless <a href="../../7_-_Aux_Functions/EGR/EGR1_ExhGasRecircConst.html"><code>EGR1</code></a> or <code>cfg_EGR</code> is adjusted.</li>
+<li><strong>Diagnostic Pass Actions</strong>: Passing the test immediately clears <code>EGRVar1</code> (failure counter), latches bit 6 in <code>EGRVar2</code>, and clears bit 7 in <code>b46_IPL2</code> (clearing active Fault Code 32).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: At line 5500, accumulator A loads <code>Counter_PrimaryAndSecondaryRamp</code> and compares it against peak Phase 2 tracker <code>EGRVar6</code> at line 5501. If higher, line 5503 updates <code>EGRVar6</code>. At line 5504, accumulator A subtracts the Phase 1 baseline <code>EGRVar5</code> (<code>suba EGRVar5</code>), and stores the difference into <code>EGRVar7</code> at line 5505. Line 5506 executes <code>cmpa EGR7_ExhGasRecircConst</code>. If accumulator A is lower than <code>EGR7</code> (factory 0x00 = 0), <code>bcs L1474</code> branches to continue Phase 2. If A meets or exceeds <code>EGR7</code>, execution falls into <code>L1469</code> (line 5508): <code>EGRVar1</code> is cleared (<code>clr EGRVar1</code>), bit 6 is set in <code>EGRVar2</code> (<code>bset *EGRVar2, #bit_bit6</code>), bit 7 is cleared in <code>EGRVar2</code>, and bit 7 is cleared in <code>b46_IPL2</code>, clearing Fault Code 32 and restoring normal EGR operation via <code>bra EGR_SetEGRtoOn</code>.</p>
+<pre><code class="language-motorola6803">; --- ExhGasRecirc_MM (T-SMEC_v19.asm:5503-5512) ---
+	staa EGRVar6    ; store a into memory
+	suba EGRVar5
+	staa EGRVar7    ; store a into memory
+	cmpa EGR7_ExhGasRecircConst	; compare a with memory contents (data is 00)
+	bcs  L1474	    ; branch if lower
+L1469:	clr  EGRVar1    ; zero byte at memory location
+	bset *EGRVar2, #bit_bit6	; set bits
+	bclr *EGRVar2, #bit_bit7	; clear bits
+	bclr *b46_IPL2, #b46_bit7	; clear bits
+	bra  EGR_SetEGRtoOn	        ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Single-Byte Type 3 Constant</strong>: Located at calibration address 0x1ACA (calculated ROM address 0x86E9 / template org 0x8831).</li>
+<li><strong>Direct Pass Gateway</strong>: The pivotal parameter that defines whether the EGR flow diagnostic passes or fails.</li>
+<li><strong>Zero-Shift Threshold</strong>: Factory value of 0 accepts any positive closed-loop enrichment delta as proof of EGR shutoff.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>EGR7</code>
+        </footer>
+    </div>
+</body>
+</html>

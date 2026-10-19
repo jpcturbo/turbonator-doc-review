@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AKPMOF: AlkyPumpOffSetpointFromMAP | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1E0E</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ C - Turbonator Features ➔ Alky Injection</strong> &nbsp;|&nbsp; Subsystem: <strong>Turbonator_Features</strong>
+        </div>
+        
+        <article class="content">
+            <h1>AKPMOF: AlkyPumpOffSetpointFromMAP</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>AKPMOF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>AKPMOF_AlkyPumpOffSetpointFromMAP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Turbonator_Features</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\C_-_Turbonator_Features\Alky_Injection\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1E0E</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Absolute Pressure (psi boost, 255 = Disabled)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xFF                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7884-L7895"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_v19.asm.html#L10578"><code>AlkyPump_CheckHysteresisAndTurnOff</code></a> in <a href="../../../T-SMEC_v19.asm.html#L10579"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>AKPMOF</code> establishes the manifold pressure turn-off threshold for the auxiliary alcohol or water injection delivery pump.</p>
+<p>Once energized by high boost pressure, the delivery pump must remain running until boost drops cleanly below the operational window. <code>AKPMOF</code> provides the lower boundary of a hysteresis loop, preventing rapid pump relay cycling and pressure fluctuations during transient throttle adjustments.</p>
+<p>The factory setting is 255 counts (disabled).</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Enclosed in subroutine <code>AlkyPump_CheckHysteresisAndTurnOff</code> at lines 10578-10585 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Evaluated when <code>MapValue</code> falls below <a href="../../../0_-_Setup/C_-_Turbonator_Features/Alky_Injection/AKPMON_AlkyPumpOnSetpointFromMAP.html"><code>AKPMON</code></a> in <code>MM_AlkyPump_Control</code>.</li>
+<li>In active firmware, this subroutine is commented out with semicolons in <a href="../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a> (as documented in <code>smec_anomaly.md</code>), meaning the controller does not execute these instructions unless uncommented in source.</li>
+<li>Comparison: <code>cmpa AKPMOF_AlkyPumpOffSetpointFromMAP</code> against <code>MapValue</code> (line 10579).</li>
+<li>If <code>MapValue &gt;= AKPMOF</code> (<code>bcc AlkyPump_Return</code>), the pump remains energized. If <code>MapValue &lt; AKPMOF</code>, line 10581 clears <code>PortA_PurgeEGR</code> to shut off the pump.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Hysteresis Band</strong>: Calibrate roughly 1 to 2 psi below <a href="../../../0_-_Setup/C_-_Turbonator_Features/Alky_Injection/AKPMON_AlkyPumpOnSetpointFromMAP.html"><code>AKPMON</code></a> to prevent relay chatter.</li>
+<li><strong>Threshold Ordering</strong>: <code>AKPMOF</code> must always be calibrated lower than <a href="../../../0_-_Setup/C_-_Turbonator_Features/Alky_Injection/AKPMON_AlkyPumpOnSetpointFromMAP.html"><code>AKPMON</code></a>.</li>
+<li><strong>Deactivation Baseline</strong>: Factory setting of 255 counts keeps the feature inactive.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>AlkyPump_CheckHysteresisAndTurnOff</code> at line 10578, accumulator A holds current <code>MapValue</code>. Line 10579 executes <code>cmpa AKPMOF_AlkyPumpOffSetpointFromMAP</code>. If manifold pressure remains greater than or equal to <code>AKPMOF</code>, branch <code>bcc AlkyPump_Return</code> leaves the pump output active. Once manifold pressure drops below <code>AKPMOF</code>, line 10581 performs <code>andb ~#PortA_PurgeEGR</code> on accumulator B and updates <code>Z83_PortA_copy</code> at line 10582, de-energizing the pump relay.</p>
+<pre><code class="language-motorola6803">; --- AlkyPump_CheckHysteresisAndTurnOff (T-SMEC_v19.asm:10578-10585) ---
+; AlkyPump_CheckHysteresisAndTurnOff:
+;         cmpa AKPMOF_AlkyPumpOffSetpointFromMAP
+;         bcc  AlkyPump_Return ; MAP is still higher than the &#x27;off&#x27; setpoint
+;         andb ~#PortA_PurgeEGR ;turn off the pump
+;         stab Z83_PortA_copy
+; 
+; AlkyPump_Return:
+;         rts</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Hysteresis Boundary</strong>: Forms the lower shutoff boundary paired with <a href="../../../0_-_Setup/C_-_Turbonator_Features/Alky_Injection/AKPMON_AlkyPumpOnSetpointFromMAP.html"><code>AKPMON</code></a>.</li>
+<li><strong>Commented-Out Firmware Subroutine</strong>: As documented in the SMEC firmware anomaly log, the alcohol injection control routines (<code>MM_AlkyPump_Control</code> and <code>MM_AlkyInjector_Control</code>) are commented out with semicolons in <a href="../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a> (lines 10562-10636). These calibration constants remain in the template data block, but modifying them has no effect unless the routines are uncommented and re-assembled into custom firmware.</li>
+<li><strong>Driver Assignment</strong>: Controls output bit <code>PortA_PurgeEGR</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>AKPMOF</code>
+        </footer>
+    </div>
+</body>
+</html>

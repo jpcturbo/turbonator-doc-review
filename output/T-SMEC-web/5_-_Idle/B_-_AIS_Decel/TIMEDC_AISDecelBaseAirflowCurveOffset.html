@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TIMEDC: DecelAisBaseAirflowCurveOffset FromTime | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0E7A</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>TIMEDC: DecelAisBaseAirflowCurveOffset FromTime</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>TIMEDC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>TIMEDC_AISDecelBaseAirflowCurveOffset</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0E7A</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2D Table / Curve)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">2 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Engine Running Time (0 to 255 seconds)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Decel Airflow Offset Time Decay (0 to 720 seconds scale)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">scale vs. seconds</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Number of points in table
+.byte 0x0B, 0x09, 0xFF, 0x1A     ;Point 1
+.byte 0x15, 0x00                 ;Point 2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3896-L3908"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L1859"><code>CalculateAisPosition_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L1879"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>TIMEDC</code> is a 2D lookup curve that provides a time-decaying manifold pressure offset added to the deceleration control calculation after engine start.</p>
+<p>When an engine has recently started and is driven off-idle, intake manifold runners and cylinder heads are still absorbing heat, and fuel atomization is not yet fully optimized. If the driver lifts off the throttle abruptly during the first minute of driving, the engine is much more vulnerable to deceleration stalling than when fully warm.</p>
+<p><code>TIMEDC</code> is indexed by engine run time and adds an auxiliary boost to the calculated decel control manifold pressure, commanding extra dashpot opening steps from <a href="../../5_-_Idle/B_-_AIS_Decel/DAISOP_DecelAisOpenStepsFromNeg_FromDeltaMap.html"><code>DAISOP</code></a>.</p>
+<p>In factory calibrations, <code>TIMEDC</code> supplies an auxiliary decel offset during the first 11 seconds that smoothly ramps to zero by 21 seconds of engine run time.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1996</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Fall-to-idle deceleration flag <code>b50_FallToIdle</code> must be set in <code>BitFlags_50</code> at line 1877.</li>
+<li>Loads <code>KeyOnOrEngineRunningTime</code> into accumulator A at line 1880.</li>
+<li>Indexes <code>TIMEDC</code> table at line 1879 via <code>jsr Lookup4ByteTable</code>.</li>
+<li>Sums the returned offset with the running control MAP in <code>Temp0</code> at line 1882.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Cold Drive-Away Stall Elimination</strong>:</li>
+<li>Increase <code>TIMEDC</code> offset values and extend the time axis to 30 to 45 seconds if the vehicle dies on gear changes immediately after starting.</li>
+<li><strong>Warm Restart High Idle Fix</strong>:</li>
+<li>If warm engine restarts produce an extended floating idle during the first 20 seconds of driving, reduce <code>TIMEDC</code> offset points.</li>
+<li><strong>Table Interpolation</strong>:</li>
+<li>Evaluated smoothly via <code>Lookup4ByteTable</code> using <code>KeyOnOrEngineRunningTime</code>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateAisPosition_MM</code>, line 1877 tests <code>brclr *BitFlags_50, #b50_FallToIdle, L1065</code>. When falling to idle, the baseline control MAP is saved to <code>Temp0</code> at line 1878. Line 1879 loads index X with <code>#TIMEDC_AISDecelBaseAirflowCurveOffset</code>. Line 1880 loads <code>KeyOnOrEngineRunningTime</code> into accumulator A and line 1881 calls <code>jsr Lookup4ByteTable</code>. Line 1882 executes <code>adda Temp0</code>. If addition does not overflow (<code>bcc</code>), the augmented control MAP proceeds to <a href="../../5_-_Idle/B_-_AIS_Decel/TEMPDC_AISDecel_FromTemp.html"><code>TEMPDC</code></a>; if overflow occurs, accumulator A is saturated to 255 counts.</p>
+<pre><code class="language-motorola6803">; --- CalculateAisPosition_MM (T-SMEC_v19.asm:1877-1884) ---
+	brclr *BitFlags_50, #b50_FallToIdle, L1065    ; branch if bit(s) clear
+	staa Temp0	    ; store a into memory
+	ldx  #TIMEDC_AISDecelBaseAirflowCurveOffset    ; load index with value
+	ldaa KeyOnOrEngineRunningTime	 ; load a with memory contents
+	jsr  Lookup4ByteTable	 ; call subroutine
+	adda Temp0	
+	bcs  L1064	    ; branch if lower
+	staa Temp0	    ; store a into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Dual-Table Architecture</strong>: Works in parallel with <a href="../../5_-_Idle/A_-_AIS_Control/TIMED2_AISDecelBaseAirflowCurveOffset2.html"><code>TIMED2</code></a>; while <a href="../../5_-_Idle/A_-_AIS_Control/TIMED2_AISDecelBaseAirflowCurveOffset2.html"><code>TIMED2</code></a> adds RPM to target idle speed, <code>TIMEDC</code> adds MAP offset to the decel dashpot calculation.</li>
+<li><strong>Companion Parameter</strong>: Summed directly with <a href="../../5_-_Idle/B_-_AIS_Decel/TEMPDC_AISDecel_FromTemp.html"><code>TEMPDC</code></a> (coolant offset) and <a href="../../5_-_Idle/B_-_AIS_Decel/DAACF_ACFactorDeltaFromBase.html"><code>DAACF</code></a> (A/C offset).</li>
+<li><strong>Table Resolution</strong>: 2 points (Time vs Scale).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>TIMEDC</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DECTRG: DeltaMapTriggerForNoIncrementalLeanout | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x095C</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ D - Transient Enrichment ➔ Decel Lean-out ➔ Decreasing MAP LO</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DECTRG: DeltaMapTriggerForNoIncrementalLeanout</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DECTRG</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DECTRG_DeltaMapTriggerForNoIncrementalLeanout</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\D_-_Transient_Enrichment\Decel_Lean-out\Decreasing_MAP_LO\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x095C</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Absolute Pressure Delta (0.0 to 29.4 psi, 0.115 psi / count)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x04                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L2586-L2597"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L6435"><code>TransFuel_CalculateDecreasingMAPTransientFuel</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L6456"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DECTRG</code> sets the primary manifold pressure drop threshold required to initiate incremental deceleration lean-out.</p>
+<p>When the vehicle is moving and manifold pressure falls below the rolling average, the engine controller calculates the rate of pressure drop. If this drop exceeds <code>DECTRG</code>, the controller begins incrementing the deceleration lean-out factor by one count on each execution pass.</p>
+<p>The factory setting of 4 counts corresponds to approximately 0.46 psi of manifold pressure drop, ensuring that gentle cruising throttle adjustments do not trigger unwanted fuel cuts while responding smoothly to moderate deceleration events.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Enclosed in routine <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> at lines 6435-6476 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Preconditions: <code>MapValue &lt; AverageMAPValue</code>, engine speed exceeds <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/LOTRPM_MinRpmForMapLeanout.html"><code>LOTRPM</code></a>, vehicle speed meets or exceeds 0x80 (lines 6439-6450).</li>
+<li>Threshold comparison: Line 6456 executes <code>cmpa DECTRG_DeltaMapTriggerForNoIncrementalLeanout</code>.</li>
+<li>Polarity: If pressure drop is less than <code>DECTRG</code>, instruction <code>bcs ClearDecelLOMAPFactor</code> branches to line 6474, clearing <code>Factor_DecelLeanoutWhenMAPDecreasing</code> to zero.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Deceleration Sensitivity</strong>: Lowering <code>DECTRG</code> makes MAP deceleration lean-out engage on smaller vacuum increases, helping lean out the mixture sooner during gradual deceleration.</li>
+<li><strong>Preventing Highway Cruise Surging</strong>: Setting this value too low can cause steady-speed cruising surging if manifold vacuum fluctuates slightly on level roads.</li>
+<li><strong>Camshaft Compatibility</strong>: Raising <code>DECTRG</code> prevents false lean-out engagement on camshafts with low manifold vacuum or high pulse amplitude.</li>
+<li><strong>3-Bar MAP Calibration</strong>: Scale <code>DECTRG</code> down by approximately 33 percent when converting to a 3-bar MAP sensor to preserve the stock 0.46 psi threshold.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: Within <code>TransFuel_CalculateDecreasingMAPTransientFuel</code>, after verifying vehicle speed and engine RPM, line 6451 loads the pressure drop from <code>Temp0</code> into accumulator A. Line 6452 executes <code>nega</code>. If leanout is already active, line 6455 adds <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DECHYS_DeltaMapHysteresisonTriggerLevels.html"><code>DECHYS</code></a>. Line 6456 compares accumulator A against <code>DECTRG_DeltaMapTriggerForNoIncrementalLeanout</code>. If A is less than <code>DECTRG</code>, line 6457 branches via <code>bcs ClearDecelLOMAPFactor</code> to line 6474, resetting the lean-out factor to zero. If A meets or exceeds <code>DECTRG</code>, execution proceeds to test <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DTRG2_DeltaMapTriggerForMaxLeanout.html"><code>DTRG2</code></a>.</p>
+<pre><code class="language-motorola6803">; --- TransFuel_CalculateDecreasingMAPTransientFuel (T-SMEC_v19.asm:6435-6476) ---
+TransFuel_CalculateDecreasingMAPTransientFuel:
+	ldx  #LMAPTC_TimeConstant	 ; load index with value
+	jsr  Lookup4ByteTable	 ; call subroutine
+	staa Factor_LeanoutOrEnrichTime_MAP    ; store a into memory
+	brset *BitFlags_4f, #b4f_FullThrottle, ClearDecelLOMAPFactor	; branch if bit(s) set
+	ldaa EngineRpm_HB    ; load a with memory contents
+	cmpa LOTRPM_MinRpmForMapLeanout    ; compare a with memory contents (data is 3e)
+	bcs  ClearDecelLOMAPFactor	    ; branch if lower
+	ldaa CONFIG_ConfigurationFlags	  ; load a with memory contents (data is 02)
+	bita #cfg_ATX		;  -00100000-
+	beq  L1548	    ; branch if equal (zero)
+	brclr *BitFlags_AIS, #b0c_ATXInGear, ClearDecelLOMAPFactor    ; branch if bit(s) clear
+L1548:	brclr *KeyOnOrEngineRunningTime, #$%11111111, ClearDecelLOMAPFactor    ; branch if bit(s) clear
+	ldd  VehicleSpeed_HB	; load d (a&amp;b) with memory contents
+	cmpD #0x0080    ; compare D -00000000 10000000-
+	bcs  ClearDecelLOMAPFactor	    ; branch if lower
+	ldaa Temp0	    ; load a with memory contents
+	nega		    ; negate a (set high bit)
+	ldab Factor_DecelLeanoutWhenMAPDecreasing    ; load b with memory contents
+	beq  L1549	    ; branch if equal (zero)
+	adda DECHYS_DeltaMapHysteresisonTriggerLevels	 ;  (data is 01)
+L1549:	cmpa DECTRG_DeltaMapTriggerForNoIncrementalLeanout    ; compare a with memory contents (data is 02)
+	bcs  ClearDecelLOMAPFactor	    ; branch if lower
+	cmpa DTRG2_DeltaMapTriggerForMaxLeanout    ; compare a with memory contents (data is 05)
+	bcs  IncrementDecelLOMAPFactor	    ; branch if lower
+	ldaa DCELTM_O2CNTRInhibitAfterLeanoutDone    ; load a with memory contents (data is 00)
+	staa Timer_O2InhibitSwitchingRichIdleToClosedLoop    ; store a into memory
+	ldaa CoolantTemp    ; load a with memory contents
+	ldx  #DECEL_DecelLeanoutFactorMAP	 ; load index with value
+	jsr  Lookup4ByteTable	 ; call subroutine
+	bra  StoreDecelLOMAPFactor	    ; branch
+
+IncrementDecelLOMAPFactor:
+	tstb
+	beq  L1553	    ; branch if equal (zero)
+	incb		
+	bra  StoreDecelLOMAPFactor	    ; branch
+
+ClearDecelLOMAPFactor:
+	clrb		    ; b = 0
+StoreDecelLOMAPFactor:
+	stab Factor_DecelLeanoutWhenMAPDecreasing    ; store b into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>First-Stage Threshold</strong>: Defines the threshold separating steady-state fuel delivery from gradual decel leaning.</li>
+<li><strong>Pressure Scaling</strong>: Each count represents approximately 0.115 psi (0.23 inHg) on a 2-bar sensor.</li>
+<li><strong>Companion Parameters</strong>: Coupled with <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DTRG2_DeltaMapTriggerForMaxLeanout.html"><code>DTRG2</code></a>, <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DECHYS_DeltaMapHysteresisonTriggerLevels.html"><code>DECHYS</code></a>, and <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DECEL_DecelLeanoutFactorMAP.html"><code>DECEL</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>DECTRG</code>
+        </footer>
+    </div>
+</body>
+</html>

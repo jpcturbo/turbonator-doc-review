@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMPHLD: TempSwitchPointForCurveAHoldDecay | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x089B</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - Running</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel</strong>
+        </div>
+        
+        <article class="content">
+            <h1>TMPHLD: TempSwitchPointForCurveAHoldDecay</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>TMPHLD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>TMPHLD_TempSwitchPointForCurveAHoldDecay</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_Running\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x089B</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Coolant Temp (-200 to 260 Degrees)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0xB2 (178 decimal, ~178°F / 81°C)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L2233-L2245"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L2829"><code>DealWithColdLoadEnrichment_MM</code></a> in <a href="../T-LMv13.asm.html#L2840"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>TMPHLD_TempSwitchPointForCurveAHoldDecay</code> is the coolant temperature switch point that selects between the <strong>Cold Hold/Decay parameters</strong> (<a href="../Fuel_-_Running/CLDHLD_CurveAColdHoldTime.html"><code>CLDHLD</code></a> &amp; <a href="../Fuel_-_Running/DCYTMC_CurveAColdDecayTime.html"><code>DCYTMC</code></a>) and the <strong>Hot Hold/Decay parameters</strong> (<a href="../Fuel_-_Running/HOTHLD_CurveAHotHoldTime.html"><code>HOTHLD</code></a> &amp; <a href="../Fuel_-_Running/DCYTMH_CurveAHotDecayTime.html"><code>DCYTMH</code></a>).</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>If <code>CoolantTemp &gt;= TMPHLD</code> (colder than ~178°F):</strong> The ECU applies the Cold parameters (<a href="../Fuel_-_Running/CLDHLD_CurveAColdHoldTime.html"><code>CLDHLD</code></a> = 90s hold, <a href="../Fuel_-_Running/DCYTMC_CurveAColdDecayTime.html"><code>DCYTMC</code></a> = slow decay).</li>
+<li><strong>If <code>CoolantTemp &lt; TMPHLD</code> (warmer than ~178°F):</strong> The ECU applies the Hot parameters (<a href="../Fuel_-_Running/HOTHLD_CurveAHotHoldTime.html"><code>HOTHLD</code></a> = 15s hold, <a href="../Fuel_-_Running/DCYTMH_CurveAHotDecayTime.html"><code>DCYTMH</code></a> = fast decay).</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Thermostat Matching:</strong> In stock calibrations, <code>0xB2</code> corresponds to ~178°F, matching the OEM 180°F thermostat. If using a cooler 160°F thermostat, adjusting <code>TMPHLD</code> ensures the ECU correctly classifies warm restarts under hot decay rules.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 2838–2861):</p>
+<pre><code class="language-motorola6803">ldab HOTHLD_CurveAHotHoldTime    ; load b with memory contents (data is 15)
+           ldaa CoolantTemp    ; load a with memory contents
+           cmpa TMPHLD_TempSwitchPointForCurveAHoldDecay    ; compare a with memory contents (data is b2)
+           bcs  LD544          ; branch if lower
+           ldab CLDHLD_CurveAColdHoldTime    ; load b with memory contents (data is 80)
+...
+   LD55C:  ldab DCYTMH_CurveAHotDecayTime    ; load b with memory contents (data is 09)
+           ldaa CoolantTemp    ; load a with memory contents
+           cmpa TMPHLD_TempSwitchPointForCurveAHoldDecay    ; compare a with memory contents (data is b2)
+           bcs  LD573          ; branch if lower
+           ldab DCYTMC_CurveAColdDecayTime    ; load b with memory contents (data is 04)</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Dual Comparison:</strong> Evaluated twice inside <code>DealWithColdLoadEnrichment_MM</code>—first to choose between <a href="../Fuel_-_Running/HOTHLD_CurveAHotHoldTime.html"><code>HOTHLD</code></a> and <a href="../Fuel_-_Running/CLDHLD_CurveAColdHoldTime.html"><code>CLDHLD</code></a>, and second to choose between <a href="../Fuel_-_Running/DCYTMH_CurveAHotDecayTime.html"><code>DCYTMH</code></a> and <a href="../Fuel_-_Running/DCYTMC_CurveAColdDecayTime.html"><code>DCYTMC</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>TMPHLD</code>
+        </footer>
+    </div>
+</body>
+</html>

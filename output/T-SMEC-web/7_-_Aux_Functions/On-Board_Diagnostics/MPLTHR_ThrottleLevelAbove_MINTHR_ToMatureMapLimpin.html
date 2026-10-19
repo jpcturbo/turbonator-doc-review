@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPLTHR: ThrottleLevelAbove MINTHR ToMatureMapLimpin | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1C9E</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MPLTHR: ThrottleLevelAbove MINTHR ToMatureMapLimpin</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MPLTHR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MPLTHR_ThrottleLevelAbove_MINTHR_ToMatureMapLimpin</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1C9E</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">volts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x42 (66 counts ≈ 1.29 volts above closed throttle)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7516-L7526"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L4893"><code>VerifyOperationOfMapSensor_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L4930"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MPLTHR</code> defines the throttle angle threshold above closed throttle above which electrical diagnostic checking of the manifold absolute pressure sensor is bypassed.</p>
+<p>During large or rapid throttle openings, intake manifold pressure changes rapidly as turbo boost develops, causing brief transient electrical fluctuations. To prevent transient throttle stomps from falsely triggering electrical fault codes, the engine controller restricts electrical MAP range checks to low-throttle operating conditions.</p>
+<p>In factory calibrations, <code>MPLTHR</code> is set to 66 counts, representing approximately 1.29 volts above closed-throttle resting voltage. If measured throttle position exceeds minimum session throttle by more than <code>MPLTHR</code>, the engine controller bypasses the electrical <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MAPLOW_MapSensorLowerLimit.html"><code>MAPLOW</code></a> and <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MAPHIG_MapSensorUpperLimit.html"><code>MAPHIG</code></a> checks on that loop.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>VerifyOperationOfMapSensor_MM</code> (<code>T-SMEC_v19.asm:4893-4946</code>), instruction at line 4930.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Checked after engine speed confirms <code>&lt; 3000 RPM</code> at line 4925.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li><code>TpsVolts</code> loaded into register B at line 4927.</li>
+<li><code>subb MINTHR_LowestSessionTPS</code> at line 4928 computes delta throttle above idle stop.</li>
+<li><code>cmpb MPLTHR_ThrottleLevelAbove_MINTHR_ToMatureMapLimpin</code> at line 4930 compares against 66 counts.</li>
+<li>If greater or equal (<code>bcc</code>), branches to <code>R1380</code> at line 4931, exiting without running electrical checks.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Transient Fault Suppression</strong>:</li>
+<li>If rapid throttle stomps trigger false Fault Code 14 on highly modified engines, lowering <code>MPLTHR</code> slightly confines electrical checks strictly to lower throttle angles.</li>
+<li><strong>Diagnostic Coverage</strong>:</li>
+<li>Raising <code>MPLTHR</code> allows the engine controller to verify sensor integrity at higher throttle openings.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Setting <code>MPLTHR</code> to zero suspends electrical MAP testing anytime the throttle is cracked open.</li>
+<li>Setting <code>MPLTHR</code> to 255 counts subjects wide-open throttle boost operation to electrical low/high screening.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In routine <code>VerifyOperationOfMapSensor_MM</code> (lines 4893-4946), if <code>EngineRpm_HB</code> is below 3000 RPM, line 4927 loads <code>TpsVolts</code> into register B. Line 4928 executes <code>subb MINTHR_LowestSessionTPS</code>. If the difference is non-negative, line 4930 executes <code>cmpb MPLTHR_ThrottleLevelAbove_MINTHR_ToMatureMapLimpin</code> (0x42 = 66 counts, 1.29 volts). If register B is greater than or equal to <code>MPLTHR</code>, <code>bcc R1380</code> branches to line 4931, completely bypassing lines 4932-4946 and returning from the verification routine.</p>
+<pre><code class="language-motorola6803">; --- VerifyOperationOfMapSensor_MM (T-SMEC_v19.asm:4924-4936) ---
+L1384:	ldx  EngineRpm_HB
+	cpx  #0x2ee0	    ;  -00101110 11100000-
+	bcc  R1380	    ; branch if greater or equal
+	ldab TpsVolts	    ; load b with memory contents
+	subb MINTHR_LowestSessionTPS	; b = b-memory contents
+	bcs  L1385	    ; branch if lower
+	cmpb MPLTHR_ThrottleLevelAbove_MINTHR_ToMatureMapLimpin    ; compare b with memory contents (data is 42)
+	bcc  R1380	    ; branch if greater or equal
+L1385:	ldaa CPU_A2DResults1	; load a with memory contents
+	cmpa MAPHIG_MapSensorUpperLimit    ; compare a with memory contents (data is ee)
+	bcc  L1386	    ; branch if greater or equal
+	cmpa MAPLOW_MapSensorLowerLimit    ; compare a with memory contents (data is 01)
+	bcc  L1389	    ; branch if greater or equal
+</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MAPLOW_MapSensorLowerLimit.html"><code>MAPLOW</code></a> and <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MAPHIG_MapSensorUpperLimit.html"><code>MAPHIG</code></a> (electrical limits) and <code>MINTHR</code> (idle throttle floor).</li>
+<li><strong>Diagnostic Code</strong>: DRB-II Fault Code 14.</li>
+<li><strong>Units</strong>: Scaled at approximately 0.0196 volts per count above minimum recorded throttle voltage.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MPLTHR</code>
+        </footer>
+    </div>
+</body>
+</html>

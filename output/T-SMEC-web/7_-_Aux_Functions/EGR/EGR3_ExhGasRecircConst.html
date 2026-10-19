@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EGR3: ExhGasRecircConst3 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x19ED</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ EGR</strong> &nbsp;|&nbsp; Subsystem: <strong>EGR_Emissions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>EGR3: ExhGasRecircConst3</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>EGR3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>EGR3_ExhGasRecircConst</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">EGR_Emissions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\EGR\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x19ED</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Integrator counts (0 to 255; 128 represents neutral closed loop mid-scale)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x80                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6827-L6837"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5389"><code>EGR_CheckForAutoTrans</code></a> in <a href="../../T-SMEC_v19.asm.html#L5440"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>EGR3</code> (ExhGasRecircConst) establishes the maximum allowable closed-loop fuel trim ceiling during Phase 1 of the Exhaust Gas Recirculation diagnostic verification routine.</p>
+<p>When evaluating EGR operation, the engine controller requires a stable baseline fuel mixture. If closed-loop oxygen sensor feedback is driving the fuel mixture excessively rich, the baseline calculation becomes unreliable because the feedback integrator is operating near its upper authority limit.</p>
+<p>At line 5440, the controller compares its primary and secondary closed-loop ramp counter against <code>EGR3</code>. The factory calibration of 128 counts represents neutral closed-loop authority. If the fuel trim integrator reaches or exceeds 128 counts, the controller aborts Phase 1 and resets the diagnostic timer, preventing an invalid baseline.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5440.</li>
+<li><strong>Preconditions Checked</strong>: Vehicle operating in Phase 1 (<code>EGRVar2</code> bit 7 clear), and all three Phase 1 window checks (<a href="../../7_-_Aux_Functions/EGR/EGR18_ExhGasRecircConstLoLimit.html"><code>EGR18</code></a> MAP, <a href="../../7_-_Aux_Functions/EGR/EGR14_ExhGasRecircConstFromTPSVoltsLoLimit.html"><code>EGR14</code></a> TPS, <a href="../../7_-_Aux_Functions/EGR/EGR15_ExhGasRecircConstFromRPMLoLimit.html"><code>EGR15</code></a> RPM) passed successfully.</li>
+<li><strong>Input Variable</strong>: <code>Counter_PrimaryAndSecondaryRamp</code> (RAM address 0x002B), the closed-loop O2 integrator.</li>
+<li><strong>Comparison</strong>: <code>cmpa EGR3_ExhGasRecircConst</code>.</li>
+<li><strong>Branch Behavior</strong>: If <code>Counter_PrimaryAndSecondaryRamp &gt;= EGR3</code> (<code>bge EGR_ResetEGRVars</code>), aborts Phase 1, resets <code>EGRVar3</code> to zero, and clears diagnostic test flags. If below <code>EGR3</code>, increments <code>EGRVar3</code> and proceeds with baseline filtering.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Raising EGR3</strong>: Permits Phase 1 baseline sampling under richer closed-loop integrator states. Helpful if aftermarket injectors or fuel pressure variations cause the closed-loop ramp counter to ride higher than stock during part-throttle cruise.</li>
+<li><strong>Lowering EGR3</strong>: Restricts Phase 1 testing to leaner or closer-to-neutral fueling conditions. If lowered too far (below 100 counts), normal transient fueling shifts may frequently abort Phase 1, preventing the EGR monitor from ever finishing.</li>
+<li><strong>Zeroing Edge Case</strong>: Setting <code>EGR3</code> to 0 causes line 5441 to branch to <code>EGR_ResetEGRVars</code> whenever the ramp counter is positive, effectively locking the diagnostic monitor out of Phase 2 and preventing Fault Code 32 from setting on decat or modified vehicles.</li>
+<li><strong>Factory Setting</strong>: 128 counts represents half-scale of the signed 8-bit closed-loop ramp integrator, providing a balanced threshold for stock calibrations.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>ExhGasRecirc_MM</code>, after completing window boundary comparisons for MAP, throttle position, and engine speed via <code>EGR_CheckHiLoLimits</code>, the CPU loads <code>Counter_PrimaryAndSecondaryRamp</code> into accumulator A at line 5439. It executes <code>cmpa EGR3_ExhGasRecircConst</code> at line 5440. If the accumulator value is greater than or equal to <code>EGR3</code> (factory 0x80 = 128), the condition codes satisfy <code>bge EGR_ResetEGRVars</code> at line 5441. The execution path jumps directly to <code>EGR_ResetEGRVars</code> (line 5470), which clears both accumulators to zero, stores double-word zero into <code>EGRVar3</code> (<code>stD *EGRVar3</code>), clears bits 7 and 4 in <code>EGRVar2</code>, initializes <code>EGRVar5</code> to the current ramp counter, and jumps to <code>EGR_SetEGRtoOn</code>. If the compare is strictly less, the CPU increments <code>EGRVar3</code> (<code>inx; stx EGRVar3</code>) and updates the smoothed baseline filter using <a href="../../7_-_Aux_Functions/EGR/EGR8_ExhGasRecircConst.html"><code>EGR8</code></a>.</p>
+<pre><code class="language-motorola6803">; --- ExhGasRecirc_MM (T-SMEC_v19.asm:5438-5445) ---
+	bsr  EGR_CheckHiLoLimits    ; call subroutine
+	ldaa Counter_PrimaryAndSecondaryRamp    ; load a with memory contents
+	cmpa EGR3_ExhGasRecircConst	; compare a with memory contents (data is 80)
+	bge  EGR_ResetEGRVars	 ; branch if greater or equal
+	ldx  EGRVar3
+	inx		    ; increment index (x=x+1)
+	stx  EGRVar3    ; store index into memory
+	ldab EGR8_ExhGasRecircConst	; load b with memory contents (data is 81)</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Single-Byte Type 3 Constant</strong>: Located at calibration address 0x19ED (calculated ROM address 0x86D8 / template org 0x8820).</li>
+<li><strong>Closed-Loop Safety Guard</strong>: Guards against logging false EGR flow failures caused by saturated closed-loop enrichment rather than true exhaust gas recirculating flow problems.</li>
+<li><strong>Integrator Polarity</strong>: 128 represents neutral mid-scale (0x80) on the signed feedback integrator byte.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>EGR3</code>
+        </footer>
+    </div>
+</body>
+</html>

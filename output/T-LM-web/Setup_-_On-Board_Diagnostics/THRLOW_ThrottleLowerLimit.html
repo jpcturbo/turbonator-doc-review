@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THRLOW: ThrottleLowerLimit | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1279</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Setup - On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>THRLOW: ThrottleLowerLimit</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>THRLOW</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>THRLOW_ThrottleLowerLimit</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Setup_-_On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1279</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">TPS ADC Voltage (0x08 = 8 decimal; approx 0.156 Volts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x08                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L4759-L4771"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L6702"><code>CheckThrottleRoutine_MM</code></a> in <a href="../T-LMv13.asm.html#L6707"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>THRLOW</code> (ThrottleLowerLimit) sets the absolute minimum valid electrical voltage (stock calibration = <code>0x08</code> / ~0.156V) for the Throttle Position Sensor (TPS) signal input.</p>
+<p>Under normal mechanical adjustment, a healthy closed-throttle TPS outputs between 0.60V and 0.95V. A reading below 0.16V indicates that the signal wire is severed, shorted directly to sensor ground, or the internal wiper arm has broken off. When <code>TpsVolts &lt; THRLOW</code>, the ECU immediately logs <strong>Fault Code 24</strong> (<code>ThrowCriticalError</code>), illuminates the Check Engine light, forces <code>MINTHR</code> to a default value (<code>0x40</code>), and switches to Alpha-N limp-home mode based on manifold pressure (<a href="../Setup_-_On-Board_Diagnostics/MPTHR_MapSwitchPointForFullThrottleOrIdle.html"><code>MPTHR</code></a>).</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside subroutine <code>CheckThrottleRoutine_MM</code> at line 6707.</li>
+<li>Compares raw <code>TPSVolts_11msUpdate</code> against <code>THRLOW</code>.</li>
+<li>If <code>TpsVolts &lt; THRLOW</code> (<code>bcs CheckThrottle_BadTpsSignal</code>), executes critical fault handler.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Throttle Body Swaps</strong>: When installing an aftermarket throttle body, use a scan tool or voltmeter to confirm that closed-throttle TPS voltage rests safely between 0.65V and 0.90V, well above <code>THRLOW</code> (0.16V).</li>
+<li><strong>Code 24 Limp-Home Mode</strong>: When Code 24 is active, the ECU ignores the broken TPS and calculates synthetic throttle angle from MAP pressure (<a href="../Setup_-_On-Board_Diagnostics/MPTHR_MapSwitchPointForFullThrottleOrIdle.html"><code>MPTHR</code></a> / <a href="../Setup_-_On-Board_Diagnostics/LMPINN_LimpinTableForMapFromThrottle.html"><code>LMPINN</code></a>).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CheckThrottleRoutine_MM (T-LMv13.asm:6706-6710) ---
+        ldaa TPSVolts_11msUpdate                 ; Read live TPS ADC reading
+        cmpa THRLOW_ThrottleLowerLimit           ; Compare against lower bound ($1279, data 0x08 = 0.16V)
+        bcs  CheckThrottle_BadTpsSignal          ; If below limit, flag Fault Code 24!
+        cmpa THRHIG_ThrottleUpperLimit           ; Compare against upper bound ($1286, data 0xF0 = 4.70V)
+        bcs  CheckThrottle_GotTpsValue           ; If valid, proceed normally
+CheckThrottle_BadTpsSignal:
+        ...
+        ldaa #0x16                               ; Error code 24 identifier
+        jsr  ThrowCriticalError                  ; Log critical OBD fault!</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 6707</strong> (<code>CheckThrottleRoutine_MM</code>): <code>cmpa THRLOW_ThrottleLowerLimit    ; compare a with memory contents (data is 08)</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Critical Fault</strong>: Code 24 is designated as a critical system fault, triggering immediate dashboard warning light illumination.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>THRLOW</code>
+        </footer>
+    </div>
+</body>
+</html>

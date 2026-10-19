@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AISDLY: DelayFromStartRunThatAisFeedbackDisabled | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0DA4</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ A - AIS Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>AISDLY: DelayFromStartRunThatAisFeedbackDisabled</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>AISDLY</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>AISDLY_DelayFromStartRunThatAisFeedbackDisabled</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\A_-_AIS_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0DA4</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">seconds</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x2D                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3682-L3692"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L6972"><code>HandleFuelStartRunStartTransfer</code></a> in <a href="../../T-SMEC_v19.asm.html#L6983"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>AISDLY</code> defines the post-startup time delay during which closed-loop automatic idle speed feedback and spark scatter idle stabilization are temporarily inhibited.</p>
+<p>Immediately following engine start, combustion chamber conditions undergo rapid thermal changes, and engine speed naturally flares before settling down. If closed-loop stepper motor feedback were active during this initial startup flare, the controller would observe an apparent overspeed error and command the stepper motor to snap shut, causing the engine to dip violently below target idle or stall out completely once the flare subsides.</p>
+<p>To prevent this hunting behavior, when transitioning from cranking to run mode, the controller loads <code>AISDLY</code> into a countdown timer.</p>
+<p>In factory calibrations, <code>AISDLY</code> is set to 45 counts, representing a feedback lockout period of approximately 2.8 seconds.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleFuelStartRunStartTransfer</code> (<code>T-SMEC_v19.asm:6972-6991</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Engine transitions from cranking to running state: <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/STFPRD_FuelRunStartTransferPointRpm.html"><code>STFPRD_FuelRunStartTransferPointRpm</code></a> threshold crossed.</li>
+<li>Clears start flags <code>b54_FuelEngineNotRunning</code> and <code>b54_JustStarted</code> in <code>BitFlags_54</code> at line 6977.</li>
+<li>Loads <code>AISDLY</code> into accumulator A at line 6983 and stores it into <code>Timer_CountdownFromStartRunForAisFeedback</code> at line 6984.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Curing Post-Start RPM Dips</strong>:</li>
+<li>Increase <code>AISDLY</code> from 2.8 seconds up to 4.0 to 5.0 seconds if the engine catches with a flare and then immediately dies as the stepper motor prematurely steps shut.</li>
+<li><strong>Reducing Hang Time</strong>:</li>
+<li>If post-start idle hangs at high RPM for an annoying length of time, trim <code>AISDLY</code> down to 2.0 seconds to bring closed-loop idle regulation online earlier.</li>
+<li><strong>Stability Margin</strong>:</li>
+<li>Do not set <code>AISDLY</code> below 1.5 seconds, as early closed-loop feedback during the flare transient will trigger severe idle surging.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>HandleFuelStartRunStartTransfer</code> at line 6972, when engine speed exceeds the run transfer threshold, the SMEC clears <code>b54_FuelEngineNotRunning</code> and <code>b54_JustStarted</code> at line 6977. At line 6983, it executes <code>ldaa AISDLY_DelayFromStartRunThatAisFeedbackDisabled</code> and stores accumulator A into <code>Timer_CountdownFromStartRunForAisFeedback</code> at line 6984. While this timer remains non-zero, lines 1868, 2368, and 8054 block closed-loop AIS updates, decel dashpot adjustments, and spark scatter.</p>
+<pre><code class="language-motorola6803">; --- HandleFuelStartRunStartTransfer (T-SMEC_v19.asm:6976-6988) ---
+	brclr *BitFlags_54, #b54_FuelEngineNotRunning, L1589	; branch if bit(s) clear
+	bclr *BitFlags_54, #b54_FuelEngineNotRunning | b54_JustStarted	  ; clear bits
+	staa KeyOnOrEngineRunningTime	 ; store a into memory
+	staa Counter_MainLoop	  ; store a into memory
+	staa Pulsewidth_PartThrottleEnrichment_HB    ; store a into memory
+	staa Pulsewidth_PartThrottleEnrichment_LB    ; store a into memory
+	staa ATMOffset	    ; store a into memory
+	ldaa AISDLY_DelayFromStartRunThatAisFeedbackDisabled	; load a with memory contents (data is 2d)
+	staa Timer_CountdownFromStartRunForAisFeedback	  ; store a into memory
+	ldaa AdaptiveRetardIndex    ; load a with memory contents
+	suba ARSUBC_AdaptiveRetardFactorSubtract    ;  (data is 40)
+	bcc  L1588	    ; branch if greater or equal
+	clra		    ; a = 0</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Global Gating Mechanism</strong>: <code>Timer_CountdownFromStartRunForAisFeedback</code> is checked across the codebase, effectively gating <code>CalculateAisPosition_MM</code>, <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>, and <code>HandleSparkScatter</code>.</li>
+<li><strong>Timer Resolution</strong>: Decrements every main loop or clock tick (~16 Hz, where 45 counts equals approximately 2.8 seconds).</li>
+<li><strong>Factory Value</strong>: 0x2D (45 counts).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>AISDLY</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THGAIN: CruiseControlThrottleGainFactor FromThrottle | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x162D</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Cruise Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Cruise_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>THGAIN: CruiseControlThrottleGainFactor FromThrottle</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>THGAIN</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>THGAIN_CruiseControlThrottleGainFactor_FromThrottle</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Cruise_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Cruise_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x162D</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2D Table / Curve)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">1 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Throttle Position Sensor (0 to 255 counts, 0 to 5.0 Volts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Gain Multiplier Scale Factor (0 to 255 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">counts TPS vs scale factor</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x01                       ;Number of points in table
+.byte 0xFF, 0x14                 ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5867-L5878"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8723"><code>CalculateVehicleSpeed</code></a> in <a href="../../T-SMEC_v19.asm.html#L8896"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>THGAIN</code> provides a progressive throttle position gain correction factor applied to the cruise servo command based on throttle opening angle above idle.</p>
+<p>Mechanical butterfly throttle bodies possess non-linear airflow characteristics: cracking the throttle blade open by 2 degrees at near-idle conditions yields a large percentage increase in engine airflow, whereas a 2-degree movement at 30 percent throttle yields a much smaller percentage airflow change. <code>THGAIN</code> compensates for this non-linear airflow curve by adjusting servo pulse authority as a function of throttle position sensor voltage, linearizing cruise control authority across all throttle angles.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8896-8902</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated on every active cruise calculation cycle.</li>
+<li>Evaluates throttle opening angle above minimum closed idle (<code>TpsVolts - MINTHR_LowestSessionTPS</code>).</li>
+<li><strong>Lookup &amp; Addition</strong>:</li>
+<li>Subtracts closed-throttle baseline <code>MINTHR_LowestSessionTPS</code> from current <code>TpsVolts</code>.</li>
+<li>Looks up <code>THGAIN</code> via <code>Lookup4ByteTable</code> at line 8901.</li>
+<li>Stores result in <code>Temp4</code>, which is added to <a href="../../7_-_Aux_Functions/Cruise_Control/SPGAIN_CruiseControlSpeedGainFactor_FromSpeed.html"><code>SPGAIN</code></a> at line 8909.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Aftermarket Throttle Bodies (52mm / 58mm)</strong>:</li>
+<li>Larger throttle bodies flow substantially more air at small opening angles.</li>
+<li>Lowering <code>THGAIN</code> prevents cruise control twitchiness and surging on oversized throttle setups.</li>
+<li><strong>High-Load Hill Climbing</strong>:</li>
+<li>Increasing <code>THGAIN</code> boosts servo pull authority as throttle angle increases, helping maintain speed up steep grades.</li>
+<li><strong>Additive Gain Matrix</strong>:</li>
+<li>The output of <code>THGAIN</code> is stored in scratch RAM <code>Temp4</code> and added directly to <a href="../../7_-_Aux_Functions/Cruise_Control/SPGAIN_CruiseControlSpeedGainFactor_FromSpeed.html"><code>SPGAIN</code></a> (speed gain factor) to generate combined servo gain <code>Temp3</code>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateVehicleSpeed</code> at line 8896, <code>#THGAIN_CruiseControlThrottleGainFactor_FromThrottle</code> is loaded into index register X. Line 8897 loads <code>TpsVolts</code> into accumulator A and subtracts <code>MINTHR_LowestSessionTPS</code> at line 8898 to obtain net throttle angle above idle. If borrow occurs, accumulator A is zeroed. Line 8901 calls <code>Lookup4ByteTable</code>, and line 8902 saves the gain multiplier to <code>Temp4</code>. This is combined with <a href="../../7_-_Aux_Functions/Cruise_Control/SPGAIN_CruiseControlSpeedGainFactor_FromSpeed.html"><code>SPGAIN</code></a> at line 8909 to produce total loop gain multiplier <code>Temp3</code>.</p>
+<pre><code class="language-motorola6803">; --- CalculateVehicleSpeed (T-SMEC_v19.asm:8896-8902) ---
+	ldx  #THGAIN_CruiseControlThrottleGainFactor_FromThrottle    ; load index with value
+	ldaa TpsVolts	    ; load a with memory contents
+	suba MINTHR_LowestSessionTPS
+	bcc  L1786	    ; branch if greater or equal
+	clra		    ; a = 0
+L1786:	jsr  Lookup4ByteTable	 ; call subroutine
+	staa Temp4	    ; store a into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Single-Point Factory Table</strong>: In stock calibrations, <code>THGAIN</code> is configured as a single-point table (Point 1: 255 counts TPS, 20 scale factor), providing a flat multiplier.</li>
+<li><strong>Custom Non-Linear Tuning</strong>: Tuners can expand <code>THGAIN</code> into a multi-point table in custom calibrations to shape progressive throttle response.</li>
+<li><strong>Companion Parameter</strong>: Combined directly with <a href="../../7_-_Aux_Functions/Cruise_Control/SPGAIN_CruiseControlSpeedGainFactor_FromSpeed.html"><code>SPGAIN_CruiseControlSpeedGainFactor_FromSpeed</code></a> to establish overall servo authority.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>THGAIN</code>
+        </footer>
+    </div>
+</body>
+</html>

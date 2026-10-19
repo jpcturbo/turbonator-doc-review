@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMPSWP: EngTempSwitchPointForSparkAdvance | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0346</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>2 - Spark ➔ A - Normal Advance</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>TMPSWP: EngTempSwitchPointForSparkAdvance</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>TMPSWP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>TMPSWP_EngTempSwitchPointForSparkAdvance</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>2_-_Spark\A_-_Normal_Advance\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0346</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">degF</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x92                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1028-L1038"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L7930"><code>CalculateSparkAdvance_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L7960"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>TMPSWP</code> defines the coolant temperature switch threshold that divides the engine controller's ignition advance logic between Cold Engine Mode and Warm Engine Mode.</p>
+<p>Cold engines have cold cylinder walls, reduced fuel vaporization, and slower combustion speeds, requiring the dedicated cold timing curve (<a href="../../2_-_Spark/A_-_Normal_Advance/CLDMAP_AdvanceFromMAPCold.html"><code>CLDMAP</code></a>) to maintain smooth operation. Once the engine coolant warms past <code>TMPSWP</code>, the controller transitions to its primary warm ignition advance curves (<a href="../../2_-_Spark/A_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a> and <a href="../../2_-_Spark/A_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP</code></a>). In factory calibrations, <code>TMPSWP</code> is configured to 146 counts, corresponding to approximately 147 degF, aligning with the engine warm-up curve as the thermostat begins to regulate coolant circulation.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateSparkAdvance_MM</code> (<code>T-SMEC_v19.asm:7959-7961</code>).</li>
+<li><strong>Input Variable</strong>: <code>CoolantTemp</code> (RAM address 0x0061).</li>
+<li><strong>Comparison &amp; Polarity</strong>:</li>
+<li><code>cmpb TMPSWP_EngTempSwitchPointForSparkAdvance</code> at line 7960.</li>
+<li>If <code>CoolantTemp</code> &gt;= <code>TMPSWP</code> (carry clear, <code>bcc</code>), branches to <code>SparkAdvance_TempAboveTMPSWP</code> (line 7980) for warm spark logic.</li>
+<li>If <code>CoolantTemp</code> &lt; <code>TMPSWP</code> (carry set), falls through to line 7962 to load <a href="../../2_-_Spark/A_-_Normal_Advance/CLDMAP_AdvanceFromMAPCold.html"><code>CLDMAP</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Thermostat Matching</strong>:</li>
+<li>When installing a cooler 160 degF thermostat, lower <code>TMPSWP</code> slightly (e.g., to 135-140 counts / ~130-135 degF) to ensure consistent entry into warm timing mode under cool ambient weather.</li>
+<li><strong>Extending Cold Timing for Large Cams</strong>:</li>
+<li>Raising <code>TMPSWP</code> keeps the engine on <a href="../../2_-_Spark/A_-_Normal_Advance/CLDMAP_AdvanceFromMAPCold.html"><code>CLDMAP</code></a> longer during warmup, which can stabilize cold drive-away on engines with aggressive camshaft profiles.</li>
+<li><strong>Lowering &amp; Premature Warm Mode</strong>:</li>
+<li>Setting <code>TMPSWP</code> excessively low causes the controller to switch to leaner, less aggressive warm timing before the combustion chambers are warm, resulting in cold flat spots or hesitation.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateSparkAdvance_MM</code> at line 7959, <code>ldab CoolantTemp</code> loads the current coolant temperature into accumulator B. Line 7960 executes <code>cmpb TMPSWP_EngTempSwitchPointForSparkAdvance</code>. If accumulator B is greater than or equal to <code>TMPSWP</code>, carry is clear and <code>bcc SparkAdvance_TempAboveTMPSWP</code> branches to line 7980 to execute warm ignition logic. If accumulator B is less than <code>TMPSWP</code>, the branch is not taken and execution continues at line 7962 to load <code>#CLDMAP_AdvanceFromMAPCold</code>.</p>
+<pre><code class="language-motorola6803">; --- CalculateSparkAdvance_MM (T-SMEC_v19.asm:7959-7963) ---
+	ldab CoolantTemp    ; load b with memory contents
+	cmpb TMPSWP_EngTempSwitchPointForSparkAdvance	 ; compare b with memory contents (data is 92)
+	bcc  SparkAdvance_TempAboveTMPSWP    ; branch if greater or equal
+	ldx  #CLDMAP_AdvanceFromMAPCold    ; load index with value
+	jsr  SparkAdvance_GetAdvanceFromTableUsingMap	 ; call subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Primary System Gateway</strong>: Serves as the master branch switch for the entire spark advance calculation subsystem.</li>
+<li><strong>Factory Value</strong>: 0x92 = 146 counts, corresponding to approximately 147 degF on Chrysler's non-linear coolant thermistor curve.</li>
+<li><strong>Companion Tables</strong>: Divides operation between <a href="../../2_-_Spark/A_-_Normal_Advance/CLDMAP_AdvanceFromMAPCold.html"><code>CLDMAP</code></a> (cold) versus <a href="../../2_-_Spark/A_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a> and <a href="../../2_-_Spark/A_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP</code></a> (warm).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>TMPSWP</code>
+        </footer>
+    </div>
+</body>
+</html>

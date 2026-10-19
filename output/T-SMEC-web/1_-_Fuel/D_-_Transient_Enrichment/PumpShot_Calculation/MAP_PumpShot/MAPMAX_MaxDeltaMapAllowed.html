@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAPMAX: MaxDeltaMapAllowed | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x08EA</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ D - Transient Enrichment ➔ PumpShot Calculation ➔ MAP PumpShot</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MAPMAX: MaxDeltaMapAllowed</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MAPMAX</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MAPMAX_MaxDeltaMapAllowed</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\D_-_Transient_Enrichment\PumpShot_Calculation\MAP_PumpShot\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x08EA</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Absolute Pressure Delta Clamp (0.0 to 29.4 psi, 0.115 psi / count)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x33                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L2472-L2483"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L6419"><code>TransFuel_CalculateIncreasingMAPTransientFuel</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L6423"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MAPMAX</code> sets the maximum allowable manifold pressure delta used when calculating a MAP-based acceleration enrichment pump shot.</p>
+<p>When the driver floors the accelerator from deep engine overrun, manifold pressure can transition from 20 inHg of vacuum to full atmospheric pressure or positive turbo boost in tens of milliseconds. Without a ceiling, multiplying this huge pressure swing by the enrichment slope would result in an excessive transient fuel pulse that floods the combustion chambers. <code>MAPMAX</code> limits the effective manifold pressure delta after the trigger threshold is subtracted.</p>
+<p>The factory setting of 51 counts caps the calculation at approximately 5.9 psi above the trigger level.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Enclosed in routine <code>TransFuel_CalculateIncreasingMAPTransientFuel</code> at lines 6419-6434 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Evaluated after <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/MAP_PumpShot/MAPTRG_DeltaMapTriggerLevel.html"><code>MAPTRG</code></a> subtraction at line 6421.</li>
+<li>Clamp comparison: Line 6423 executes <code>cmpa MAPMAX_MaxDeltaMapAllowed</code>.</li>
+<li>Polarity: If accumulator A is less than <code>MAPMAX</code>, branch <code>bcs L1547</code> keeps the calculated delta; if greater or equal, line 6425 executes <code>ldaa MAPMAX_MaxDeltaMapAllowed</code> to saturate the delta at the clamp.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Preventing Rich Tip-in Bog</strong>: Lowering <code>MAPMAX</code> caps the maximum transient fuel delivered during rapid manifold pressure spikes, preventing rich bogging when snapping the throttle open at low RPM.</li>
+<li><strong>Injector Upsizing Protection</strong>: Crucial when tuning engines with oversized injectors where un-clamped manifold deltas deliver far too much raw fuel.</li>
+<li><strong>3-Bar MAP Recalibration</strong>: Scale <code>MAPMAX</code> downward by approximately 33 percent when converting to a 3-bar MAP sensor so the clamp represents the same real-world pressure delta.</li>
+<li><strong>Large Intake Plenums</strong>: Engines with massive intercoolers and intake piping may require raising <code>MAPMAX</code> to support large air mass influx.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: Within <code>TransFuel_CalculateIncreasingMAPTransientFuel</code>, line 6421 subtracts <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/MAP_PumpShot/MAPTRG_DeltaMapTriggerLevel.html"><code>MAPTRG</code></a> from the MAP delta. Line 6423 compares accumulator A against <code>MAPMAX_MaxDeltaMapAllowed</code>. If accumulator A is less than <code>MAPMAX</code>, instruction <code>bcs L1547</code> branches ahead. If accumulator A is greater than or equal to <code>MAPMAX</code>, line 6425 executes <code>ldaa MAPMAX_MaxDeltaMapAllowed</code>, clamping the effective delta. Line 6426 stores the clamped delta into <code>Temp1</code>, which is then multiplied by <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/MAP_PumpShot/AESLOP_DeltaMAPEnrichmentPT.html"><code>AESLOP</code></a> at line 6431.</p>
+<pre><code class="language-motorola6803">; --- TransFuel_CalculateIncreasingMAPTransientFuel (T-SMEC_v19.asm:6419-6434) ---
+TransFuel_CalculateIncreasingMAPTransientFuel:
+	ldaa Temp0	    ; delta MAP
+	suba MAPTRG_DeltaMapTriggerLevel    ;  (data is 0b)
+	bcs  TransFuel_IncludeTPSTransients    ; branch if lower
+	cmpa MAPMAX_MaxDeltaMapAllowed	  ; compare a with memory contents (data is ff)
+	bcs  L1547	    ; branch if lower
+	ldaa MAPMAX_MaxDeltaMapAllowed	  ; load a with memory contents (data is ff)
+L1547:	staa Temp1	    ; store a into memory
+	ldaa CoolantTemp    ; load a with memory contents
+	ldx  #AESLOP_DeltaMAPEnrichmentPT    ; load index with value
+	jsr  Lookup4ByteTable	 ; call subroutine
+	ldaa Temp1	    ; load a with memory contents
+	mul		    ; multiply (d=a*b)
+	stD *Temp2	    ; store D to RAM
+	bra  TransFuel_IncludeTPSTransients    ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Mathematical Ceiling</strong>: Functions as a hard saturation ceiling preventing mathematical overflow and cylinder washdown.</li>
+<li><strong>Sensor Scaling Dependency</strong>: Must be scaled whenever the MAP sensor transfer function is altered (e.g. 2-bar to 3-bar conversions).</li>
+<li><strong>Companion Parameter</strong>: Works in direct conjunction with <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/MAP_PumpShot/MAPTRG_DeltaMapTriggerLevel.html"><code>MAPTRG</code></a>, <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/MAP_PumpShot/AESLOP_DeltaMAPEnrichmentPT.html"><code>AESLOP</code></a>, and <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/MAP_PumpShot/AETIME_EnrichmentTime_FromTemp.html"><code>AETIME</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MAPMAX</code>
+        </footer>
+    </div>
+</body>
+</html>

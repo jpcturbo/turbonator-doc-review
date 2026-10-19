@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMPHIG: OutOfRangeColdTooHighA2D | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1B8A</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>TMPHIG: OutOfRangeColdTooHighA2D</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>TMPHIG</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>TMPHIG_OutOfRangeColdTooHighA2D</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1B8A</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">volts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0xFD (253 counts ≈ 4.96 volts / -40 deg F open circuit)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7240-L7250"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L7647"><code>CheckCoolantTempSensor</code></a> in <a href="../../T-SMEC_v19.asm.html#L7650"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>TMPHIG</code> defines the upper electrical voltage boundary for the engine coolant temperature sensor analog input circuit.</p>
+<p>The engine controller uses an internal 5.0-volt pull-up resistor connected to the negative temperature coefficient coolant sensor thermistor. As coolant temperature increases, thermistor resistance drops, lowering the measured voltage. Conversely, if the sensor harness is unplugged, a wire breaks, or the sensor develops an internal open circuit, the input voltage is pulled up to the 5.0-volt rail.</p>
+<p>In factory calibrations, <code>TMPHIG</code> is configured to 253 counts, representing approximately 4.96 volts (equivalent to a sub-zero reading colder than -40 deg F). If sensor voltage equals or exceeds <code>TMPHIG</code>, the engine controller flags <strong>Fault Code 22</strong>, commands the radiator cooling fan to run continuously as a safeguard, and substitutes default temperature values.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>CheckCoolantTempSensor</code> (<code>T-SMEC_v19.asm:7647-7659</code>), instruction at line 7650.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated every main loop during sensor filtering.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li><code>RawCoolantTempVolts</code> loaded into accumulator A at line 7649.</li>
+<li><code>cmpa TMPHIG_OutOfRangeColdTooHighA2D</code> at line 7650 compares against 253 counts.</li>
+<li>If greater or equal (<code>bcc</code>), branches to <code>SetCoolantTempError</code> at line 7651.</li>
+<li>Sets <code>b45_IPL1</code> bit <code>b45_BadCoolantTemp</code> and throws non-critical error code.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Diagnostics &amp; Field Service</strong>:</li>
+<li>If the radiator cooling fan engages at high speed immediately upon key-on and Fault Code 22 is stored, check whether the two-pin coolant sensor plug is disconnected or corroded.</li>
+<li><strong>Cold Climate Headroom</strong>:</li>
+<li>Lowering <code>TMPHIG</code> risks triggering false open-circuit faults during extreme sub-zero winter starts (colder than -30 deg F).</li>
+<li><strong>Raising &amp; Edge Cases</strong>:</li>
+<li>Setting <code>TMPHIG</code> to 255 counts blinds the open-circuit detection logic.</li>
+<li>Setting <code>TMPHIG</code> lower than normal warm engine voltage locks the engine controller permanently into Fault Code 22 failsafe mode.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In routine <code>CheckCoolantTempSensor</code> (lines 7647-7659), <code>RawCoolantTempVolts</code> is loaded into accumulator A at line 7649 and compared against <code>TMPHIG_OutOfRangeColdTooHighA2D</code> (0xFD = 253 counts, 4.96 volts) at line 7650. If accumulator A is greater than or equal to <code>TMPHIG</code>, the carry bit is set and <code>bcc SetCoolantTempError</code> branches to line 7714. The fault handler calls <code>ThrowNonCriticalError</code> with error code 0x1F94 (Fault Code 22), latches bit <code>b45_BadCoolantTemp</code> in register <code>b45_IPL1</code>, and diverts execution to <code>SubstituteChargeTempForCoolantTemp</code>.</p>
+<pre><code class="language-motorola6803">; --- CheckCoolantTempSensor (T-SMEC_v19.asm:7647-7659) ---
+CheckCoolantTempSensor:
+        ldab #0x1f	    ; load b with value -00011111-
+	ldaa RawCoolantTempVolts    ; load a with memory contents
+	cmpa TMPHIG_OutOfRangeColdTooHighA2D    ; compare a with memory contents (data is fd)
+	bcc  SetCoolantTempError	    ; branch if greater or equal
+	decb
+	cmpa TMPLOW_OutOfRangeHotTooLowA2D	; compare a with memory contents (data is 1a)
+	bcs  SetCoolantTempError	    ; branch if lower
+	brclr *b45_IPL1, #b45_BadCoolantTemp, DetermineWhichCoolantTempScaleToUse	; branch if bit(s) clear
+	ldaa #0x02	    ; load a with value -00000010-
+	jsr  ResetErrorCodeIfTimerExpired    ; call subroutine
+	bra  SubstituteChargeTempForCoolantTemp    ; branch
+
+</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Pairs with <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/TMPLOW_OutOfRangeHotTooLowA2D.html"><code>TMPLOW</code></a> (lower voltage / hot short limit) and <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/DEFTMP_DefaultEngineTemp.html"><code>DEFTMP</code></a> (failsafe temperature substitution).</li>
+<li><strong>Diagnostic Code</strong>: DRB-II Fault Code 22 (coolant temperature sensor voltage too high / open circuit).</li>
+<li><strong>Failsafe Action</strong>: Flags <code>b45_BadCoolantTemp</code>, activates the radiator cooling fan continuously, and substitutes charge temperature or <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/DEFTMP_DefaultEngineTemp.html"><code>DEFTMP</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>TMPHIG</code>
+        </footer>
+    </div>
+</body>
+</html>

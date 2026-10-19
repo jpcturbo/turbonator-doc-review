@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DECAIS: RollingAisUpdateRate 01 03 07 0f 1f 3f 7f ff | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x101C</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DECAIS: RollingAisUpdateRate 01 03 07 0f 1f 3f 7f ff</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DECAIS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DECAIS_RollingAisUpdateRate_01_03_07_0f_1f_3f_7f_ff</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x101C</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">loop mask</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x7F                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4314-L4324"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L2080"><code>LoadDiagIdleSpeed</code></a> in <a href="../../T-SMEC_v19.asm.html#L2119"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DECAIS</code> defines the loop counter bitmask that paces how frequently the target idle speed decay step <a href="../../5_-_Idle/B_-_AIS_Decel/ISPDCY_RollingAisDecay.html"><code>ISPDCY</code></a> is applied during rolling idle mode.</p>
+<p>To prevent abrupt steps in engine speed while rolling or coasting, the reduction of target idle speed must occur across a measured time interval. DECAIS masks the main program loop counter to enforce a deliberate delay between each decay step.</p>
+<p>In factory calibrations, <code>DECAIS</code> is set to 127 counts, representing a binary bitmask allowing one decay step every 128 main loop passes, or approximately every 1.4 seconds.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>LoadDiagIdleSpeed</code> (<code>T-SMEC_v19.asm:2080-2133</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Rolling idle mode active (<code>b50_IdleSpeedMode</code> set at line 2117).</li>
+<li>Main loop counter masked with <code>DECAIS</code> at line 2119: <code>andb DECAIS_RollingAisUpdateRate; bne L1092</code>.</li>
+<li>When masked counter is non-zero, jumps to <code>L1092</code>, skipping the decay step.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Accelerating Rolling Decay</strong>:</li>
+<li>Lower <code>DECAIS</code> to 63 or 31 counts to step down elevated rolling idle twice or four times as fast.</li>
+<li><strong>Gradual Highway Coasting</strong>:</li>
+<li>Retain factory 127 counts (every 128th loop) for a slow, imperceptible return to base idle during long highway coast-downs.</li>
+<li><strong>Mask Formatting</strong>:</li>
+<li>Must be configured as a valid binary mask (15, 31, 63, 127, 255).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>, line 2118 loads <code>Counter_MainLoop</code> into accumulator B. Line 2119 executes <code>andb DECAIS_RollingAisUpdateRate_01_03_07_0f_1f_3f_7f_ff</code>. If any masked bit is non-zero (<code>bne L1092</code>), execution branches directly around the decay calculation. Only when the masked counter equals zero does line 2125 execute <code>suba ISPDCY_RollingAisDecay</code>.</p>
+<pre><code class="language-motorola6803">; --- LoadDiagIdleSpeed (T-SMEC_v19.asm:2117-2121) ---
+L1087:	brclr *BitFlags_50, #b50_IdleSpeedMode, L1089	 ; branch if bit(s) clear
+	ldab Counter_MainLoop	  ; load b with memory contents
+	andb DECAIS_RollingAisUpdateRate_01_03_07_0f_1f_3f_7f_ff    ;  (data is 7f)
+	bne  L1092	    ; branch if not equal (not zero)
+	staa Temp0	    ; store a into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Loop Clock Reference</strong>: Paced by <code>Counter_MainLoop</code> (~11 ms per tick).</li>
+<li><strong>Companion Parameter</strong>: Direct pacing partner to <a href="../../5_-_Idle/B_-_AIS_Decel/ISPDCY_RollingAisDecay.html"><code>ISPDCY</code></a>.</li>
+<li><strong>Factory Value</strong>: 0x7F (127 counts = every 128th loop execution).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>DECAIS</code>
+        </footer>
+    </div>
+</body>
+</html>

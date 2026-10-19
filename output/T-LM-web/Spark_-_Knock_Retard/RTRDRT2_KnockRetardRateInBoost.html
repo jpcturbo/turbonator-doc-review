@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RTRDRT2: KnockRetardRateInBoost | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x030D</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Spark - Knock Retard</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>RTRDRT2: KnockRetardRateInBoost</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>RTRDRT2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>RTRDRT2_KnockRetardRateInBoost</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Spark_-_Knock_Retard\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x030D</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Retard (0 to 128 deg)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x03 (3 decimal, 1.5° Crankshaft Retard per step)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L811-L823"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L4090"><code>HandleKnockRetard</code></a> in <a href="../T-LMv13.asm.html#L4227"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>RTRDRT2_KnockRetardRateInBoost</code> defines the <strong>step-size of knock retard applied when knock occurs under boost</strong> (above <a href="../Spark_-_Knock_Retard/KNKOFS_DeltaAboveBaroFor_RTRDRT_and_KNKCNT_and_KNKCOR_incremented.html"><code>KNKOFS</code></a>).</p>
+<p>Under positive manifold pressure (boost), pulling huge chunks of timing abruptly (such as 3° or 4° in a single cylinder firing) can cause a violent power drop, severe torque oscillation through the drivetrain, and skyrocket exhaust gas temperatures (EGTs). To manage boost detonation smoothly while preserving power delivery, <code>RTRDRT2</code> uses a finer step size (1.5° in stock calibrations) applied sequentially to each knocking cylinder.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<p><code>RTRDRT2</code> is selected when:
+1. Active knock is detected (<code>BitFlags_7f</code> bit 7 = <code>1</code>).
+2. Manifold pressure exceeds the boost threshold: <code>MapValue &gt; BaroPressure + KNKOFS</code>.</p>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Increasing the Value (Larger Retard Step in Boost):</strong></li>
+<li><strong>Effect on Total Timing:</strong> Pulls more timing (e.g., 2.0° or 2.5°) on each knock event under boost.</li>
+<li><strong>Real-World Driving Feel:</strong> Highly protective for high-boost setups (18+ psi) where detonation can crack piston ring lands in just a few cycles, but may feel slightly harsher when knock occurs.</li>
+<li><strong>Decreasing the Value (Finer Retard Step in Boost):</strong></li>
+<li><strong>Effect on Total Timing:</strong> Pulls smaller increments (e.g., 1.0°).</li>
+<li><strong>Real-World Driving Feel:</strong> Extremely smooth power delivery without sudden torque drops, but requires the calibration to be very close to optimal so small retard steps are sufficient to quell knock.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 4215–4228):</p>
+<pre><code class="language-motorola6803">LDE7C:  ldaa BaroPressure
+        adda KNKOFS_DeltaAboveBaroFor_RTRDRT_and_KNKCNT_and_KNKCOR_incremented
+        cmpa MapValue
+        ldaa RTRDRT_KnockRetardRateNoBoost
+        bcc  LDE98                         ; If not in boost, use RTRDRT
+        ...
+LDE95:  ldaa RTRDRT2_KnockRetardRateInBoost ; In boost: load RTRDRT2 (0x03 = 1.5°)
+LDE98:  aba                                ; Add to cylinder retard accumulator</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Scaling:</strong> 1 unit = 0.5 degrees crankshaft retard. <code>0x03</code> equals 3 × 0.5° = 1.5° of retard.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>RTRDRT2</code>
+        </footer>
+    </div>
+</body>
+</html>

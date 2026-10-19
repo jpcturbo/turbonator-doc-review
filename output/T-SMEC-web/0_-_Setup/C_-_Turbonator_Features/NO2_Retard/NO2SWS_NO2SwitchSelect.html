@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NO2SWS: NO2SwitchSelect | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1E7F</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ C - Turbonator Features ➔ NO2 Retard</strong> &nbsp;|&nbsp; Subsystem: <strong>Turbonator_Features</strong>
+        </div>
+        
+        <article class="content">
+            <h1>NO2SWS: NO2SwitchSelect</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>NO2SWS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>NO2SWS_NO2SwitchSelect</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Turbonator_Features</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\C_-_Turbonator_Features\NO2_Retard\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1E7F</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 5 (Bitfield / Configuration Mask)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Digital Input Switch Port Bitmask</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7997-L8008"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_v19.asm.html#L10347"><code>NO2_Polarity_Hi</code></a> in <a href="../../../T-SMEC_v19.asm.html#L10348"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>NO2SWS</code> selects the digital input switch bitmask that signals nitrous oxide activation to the engine controller.</p>
+<p>When nitrous oxide is sprayed into an engine, cylinder combustion pressure and flame speed rise sharply, requiring instantaneous ignition timing retard to prevent severe detonation. <code>NO2SWS</code> links a hardware input (such as a wide-open throttle switch, nitrous arming switch, or relay trigger) to the controller's nitrous timing retard routine.</p>
+<p>When the selected switch activates, the controller immediately subtracts the retard angle defined by <a href="../../../0_-_Setup/C_-_Turbonator_Features/NO2_Retard/NO2RET_NO2RetardConstant.html"><code>NO2RET</code></a> from total spark advance.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Enclosed in subroutine <code>CalculateNO2Retard_Routine_MM</code> at lines 10335-10366 of <code>cals/SMEC/T-SMEC_v19.asm</code> (invoked via main loop at line 7547).</li>
+<li>Requires custom option flag <code>opt_NO2Retard</code> (bit 2) enabled in <a href="../../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1_CalCustomOptionConfigFlags1</code></a> (line 10341).</li>
+<li>Polarity branch: Line 10345 checks <code>opt_NO2Pol</code> in <a href="../../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1</code></a>. If set, branches to <code>NO2_Polarity_Hi</code>; if clear, branches to <code>NO2_Polarity_Lo</code>.</li>
+<li>In <code>NO2_Polarity_Hi</code> (lines 10347-10350), <code>bitb NO2SWS_NO2SwitchSelect</code> branches to <code>LoadNO2Retard</code> if bit is zero (active-low).</li>
+<li>In <code>NO2_Polarity_Lo</code> (lines 10352-10355), <code>bitb NO2SWS_NO2SwitchSelect</code> branches to <code>LoadNO2Retard</code> if bit is non-zero (active-high).</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Hardware Input Selection</strong>: Select the digital input wired to your nitrous activation circuit (e.g., Speed Control On/Off, A/C Switch, or Brake Switch).</li>
+<li><strong>Polarity Configuration</strong>: Toggle <code>opt_NO2Pol</code> in <a href="../../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1</code></a> to match switch polarity (active-low ground signal vs. active-high 12V signal).</li>
+<li><strong>Safety Testing</strong>: Datalog <code>NO2Retard</code> in MPScan with the engine off to verify that the retard value activates when the nitrous switch engages and clears when released.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: At line 10335 in <code>CalculateNO2Retard_Routine_MM</code>, accumulator A is cleared. Line 10341 tests <a href="../../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1_CalCustomOptionConfigFlags1</code></a> for <code>opt_NO2Retard</code>. If set, accumulator B loads <code>SwitchPortAccessReg</code> at line 10344. Line 10345 checks <code>opt_NO2Pol</code>. In <code>NO2_Polarity_Hi</code>, line 10348 executes <code>bitb NO2SWS_NO2SwitchSelect</code>. If the selected bit is zero, <code>beq LoadNO2Retard</code> jumps to load <a href="../../../0_-_Setup/C_-_Turbonator_Features/NO2_Retard/NO2RET_NO2RetardConstant.html"><code>NO2RET_NO2RetardConstant</code></a>. In <code>NO2_Polarity_Lo</code>, line 10353 executes <code>bitb NO2SWS_NO2SwitchSelect</code>; if the bit is non-zero, <code>bne LoadNO2Retard</code> jumps to load the retard constant. Otherwise, accumulator A remains zero and line 10364 clears <code>NO2Retard</code>.</p>
+<pre><code class="language-motorola6803">; --- NO2_Polarity_Hi (T-SMEC_v19.asm:10343-10356) ---
+NO2_CheckSwitch:
+       ldab SwitchPortAccessReg    ; load b with memory contents
+       brclr 0, X, #opt_NO2Pol, NO2_Polarity_Lo ; check the switch polarity
+
+NO2_Polarity_Hi:
+       bitb NO2SWS_NO2SwitchSelect
+       beq  LoadNO2Retard	    ; branch if equal (zero)
+       bra  NO2_SaveRetardValue
+
+NO2_Polarity_Lo:
+       bitb NO2SWS_NO2SwitchSelect
+       bne  LoadNO2Retard	    ; branch if not equal (not zero)
+       bra  NO2_SaveRetardValue</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Polarity Pairing</strong>: Must be paired with <code>opt_NO2Pol</code> in <a href="../../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1</code></a> to ensure correct active-high or active-low interpretation.</li>
+<li><strong>Option Enable</strong>: Requires <code>opt_NO2Retard</code> in <a href="../../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1</code></a> to activate.</li>
+<li><strong>Companion Retard Value</strong>: Directly triggers the loading of timing retard constant <a href="../../../0_-_Setup/C_-_Turbonator_Features/NO2_Retard/NO2RET_NO2RetardConstant.html"><code>NO2RET</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>NO2SWS</code>
+        </footer>
+    </div>
+</body>
+</html>

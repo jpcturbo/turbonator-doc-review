@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHGHIG: ChargeTempOutOfRangeHigh | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1BFF</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CHGHIG: ChargeTempOutOfRangeHigh</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CHGHIG</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CHGHIG_ChargeTempOutOfRangeHigh</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1BFF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">volts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0xFD (253 counts ≈ 4.96 volts / -40 deg F open circuit)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7357-L7367"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L7608"><code>FilterAndStoreChargeTemp</code></a> in <a href="../../T-SMEC_v19.asm.html#L7614"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CHGHIG</code> establishes the upper electrical voltage boundary for the charge air temperature sensor circuit.</p>
+<p>Like the coolant sensor, the charge temperature input incorporates an internal 5.0-volt pull-up resistor inside the engine controller. If the sensor is disconnected, a wire breaks, or the thermistor element cracks internally, the input voltage is pulled up to the 5.0-volt supply rail.</p>
+<p>In factory calibrations, <code>CHGHIG</code> is configured to 253 counts, representing approximately 4.96 volts (equivalent to an extreme cold reading colder than -40 deg F). When measured sensor voltage exceeds <code>CHGHIG</code>, the engine controller flags <strong>Fault Code 23</strong>, latches a charge temperature sensor fault, and substitutes default value <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/DEFCHG_DefaultChargeTemp_Limpin.html"><code>DEFCHG</code></a>.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>FilterAndStoreChargeTemp</code> (<code>T-SMEC_v19.asm:7608-7620</code>), instruction at line 7614.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Active when <code>cfg_CTS</code> bit is enabled and <code>RawChargeTempVolts</code> passes <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/CHGLOW_ChargeTempOutOfRangeLow.html"><code>CHGLOW</code></a> test.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li>Register B incremented to <code>0x1D</code> at line 7613.</li>
+<li><code>cmpa CHGHIG_ChargeTempOutOfRangeHigh</code> at line 7614 compares accumulator A against 253 counts.</li>
+<li>If higher (<code>bhi</code>), branches to <code>SetChargeTempError</code> at line 7615.</li>
+<li>Flags <code>b45_IPL1</code> bit <code>b45_BadChargeTemp</code> and sets Fault Code 23.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Diagnostic Troubleshooting</strong>:</li>
+<li>If Fault Code 23 is set, inspect the charge air temperature sensor plug on the intake manifold for loose pins, corrosion, or disconnected wiring.</li>
+<li><strong>Cold Weather Headroom</strong>:</li>
+<li>Lowering <code>CHGHIG</code> below 250 counts risks false open-circuit fault triggers during sub-zero winter cold starts.</li>
+<li><strong>Raising &amp; Edge Cases</strong>:</li>
+<li>Setting <code>CHGHIG</code> to 255 counts disables open-circuit fault detection.</li>
+<li>Setting <code>CHGHIG</code> lower than normal operating sensor voltage locks the ECU into permanent Fault Code 23 limp-in mode.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In routine <code>FilterAndStoreChargeTemp</code> (lines 7608-7620), if <code>RawChargeTempVolts</code> is above <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/CHGLOW_ChargeTempOutOfRangeLow.html"><code>CHGLOW</code></a>, register B is incremented to 0x1D at line 7613. At line 7614, <code>cmpa CHGHIG_ChargeTempOutOfRangeHigh</code> compares accumulator A against 0xFD (253 counts, 4.96 volts). If accumulator A is strictly greater than <code>CHGHIG</code>, <code>bhi SetChargeTempError</code> branches to line 7639, calling <code>ThrowNonCriticalError</code> with code 0x1D94 (Fault Code 23) and latching <code>b45_BadChargeTemp</code> in register <code>b45_IPL1</code>.</p>
+<pre><code class="language-motorola6803">; --- FilterAndStoreChargeTemp (T-SMEC_v19.asm:7608-7620) ---
+FilterAndStoreChargeTemp:
+	ldab #0x1c	                  ; load b with value -00011100-
+	ldaa RawChargeTempVolts           ; load a with memory contents
+	cmpa CHGLOW_ChargeTempOutOfRangeLow    ; compare a with memory contents (data is 08)
+	bcs  SetChargeTempError	          ; branch if lower
+	incb
+	cmpa CHGHIG_ChargeTempOutOfRangeHigh	; compare a with memory contents (data is fd)
+	bhi  SetChargeTempError	          ; branch if higher
+	brclr *b45_IPL1, #b45_BadChargeTemp, FilterChargeTemp	 ; branch if bit(s) clear
+	ldaa #0x01	                  ; load a with value -00000001-
+	jsr  ResetErrorCodeIfTimerExpired ; call subroutine
+	bra  UseLimpinForChargeTemp       ; branch
+
+</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/CHGLOW_ChargeTempOutOfRangeLow.html"><code>CHGLOW</code></a> (short circuit limit) and <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/DEFCHG_DefaultChargeTemp_Limpin.html"><code>DEFCHG</code></a> (failsafe substitution value).</li>
+<li><strong>Diagnostic Code</strong>: DRB-II Fault Code 23 (charge air temperature sensor open circuit).</li>
+<li><strong>Clear Condition</strong>: When sensor voltage returns within bounds, <code>ResetErrorCodeIfTimerExpired</code> is called at line 7618.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>CHGHIG</code>
+        </footer>
+    </div>
+</body>
+</html>

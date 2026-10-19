@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDLTMP: Use IDLADD AboveThisTemp | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x05F6</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>2 - Spark ➔ C - Scatter Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>IDLTMP: Use IDLADD AboveThisTemp</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>IDLTMP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>IDLTMP_Use_IDLADD_AboveThisTemp</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>2_-_Spark\C_-_Scatter_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x05F6</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">degF</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x8A                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1716-L1726"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5936"><code>LookupInjectorLatency</code></a> in <a href="../../T-SMEC_v19.asm.html#L5951"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>IDLTMP</code> defines the minimum engine coolant temperature threshold required to activate <a href="../../2_-_Spark/C_-_Scatter_Control/IDLADD_FuelStabilization_FromDeltaRPM.html"><code>IDLADD</code></a> idle fuel stabilization.</p>
+<p>While the engine is cold, fuel puddle dynamics in the intake manifold runners are unstable and cold enrichment fuel multipliers are active. Modulating fuel pulsewidths based on idle speed fluctuations while the engine is cold could destabilize the fuel film and cause erratic fueling. In factory calibrations, <code>IDLTMP</code> is set to 138 counts, corresponding to approximately 176 degF, ensuring that fuel stabilization corrections are only permitted after the engine reaches fully warmed operating temperature.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>LookupInjectorLatency</code> (<code>T-SMEC_v19.asm:5950-5953</code>).</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li><code>ldaa CoolantTemp</code> loads coolant temperature.</li>
+<li><code>cmpa IDLTMP_Use_IDLADD_AboveThisTemp</code> at line 5951.</li>
+<li>If <code>CoolantTemp</code> &lt;= <code>IDLTMP</code> (<code>bls L1511</code>), execution branches to line 5955, bypassing fuel stabilization.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Thermostat Compensation</strong>:</li>
+<li>If running a 160 degF thermostat, lower <code>IDLTMP</code> to approximately 150 degF (125 counts) to allow idle fuel stabilization to engage.</li>
+<li><strong>Disabling Fuel Stabilization</strong>:</li>
+<li>Setting <code>IDLTMP</code> to 255 disables <a href="../../2_-_Spark/C_-_Scatter_Control/IDLADD_FuelStabilization_FromDeltaRPM.html"><code>IDLADD</code></a> across the board, isolating idle speed control purely to ignition scatter and the idle air motor.</li>
+<li><strong>Cold Fuel Stability</strong>:</li>
+<li>Keeping <code>IDLTMP</code> above 160 degF prevents fuel modulation while cold warm-up enrichment curves are still active.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>LookupInjectorLatency</code> at line 5950, <code>ldaa CoolantTemp</code> loads coolant temperature into accumulator A. Line 5951 executes <code>cmpa IDLTMP_Use_IDLADD_AboveThisTemp</code>. If accumulator A is lower than or equal to <code>IDLTMP</code>, carry is clear and <code>bls L1511</code> branches to line 5955, storing the base barometric offset without adding <a href="../../2_-_Spark/C_-_Scatter_Control/IDLADD_FuelStabilization_FromDeltaRPM.html"><code>IDLADD</code></a>. Only when coolant temperature strictly exceeds <code>IDLTMP</code> does execution continue to evaluate spark scatter flags.</p>
+<pre><code class="language-motorola6803">; --- LookupInjectorLatency (T-SMEC_v19.asm:5950-5955) ---
+	ldaa CoolantTemp    ; load a with memory contents
+	cmpa IDLTMP_Use_IDLADD_AboveThisTemp	; compare a with memory contents (data is 8a)
+	bls  L1511	    ; branch if lower or same
+	brset *BitFlags_50, #b50_IdleSpeedMode, L1511	 ; branch if bit(s) set
+	brset *BitFlags_55, #b55_UseSparkScatter, UsingSparkScatterToControlIdle    ; branch if bit(s) set
+L1511:	ldd  Temp0	    ; load d (a&amp;b) with memory contents</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Temperature Gate for IDLADD</strong>: Establishes the exact coolant temperature boundary enabling idle fuel stabilization.</li>
+<li><strong>Factory Value</strong>: 0x8A = 138 counts ≈ 176 degF on Chrysler thermistor curve.</li>
+<li><strong>Independent from SSTEMP</strong>: <code>IDLTMP</code> (176 degF) is set significantly higher than <a href="../../2_-_Spark/C_-_Scatter_Control/SSTEMP_TempAboveWhichSparkScatterIsActive.html"><code>SSTEMP</code></a> (122 degF), activating fuel stabilization only after spark scatter has long been active.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>IDLTMP</code>
+        </footer>
+    </div>
+</body>
+</html>

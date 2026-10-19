@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INCLIM: UpperLimitOnWastegateDutyCycleCorrection | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x12D5</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ B - WG Control ➔ T1 WG Control ➔ T1 WGDC Adaptives</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>INCLIM: UpperLimitOnWastegateDutyCycleCorrection</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>INCLIM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>INCLIM_UpperLimitOnWastegateDutyCycleCorrection</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\B_-_WG_Control\T1_WG_Control\T1_WGDC_Adaptives\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x12D5</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Offset Counts (Centered at 128 = 0%)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xFF                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5011-L5021"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L9698"><code>WGDC_IncrementWGAdaptive</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L9721"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>INCLIM</code> establishes the upper clamp boundary for adaptive wastegate cell values, capping the maximum positive duty cycle correction that the adaptive system can add on top of the base table.</p>
+<p>In Chrysler's 128-centered adaptive scheme, values above 128 add duty cycle to hold the wastegate closed and raise boost. <code>INCLIM</code> ensures that the adaptive learning loop cannot wind duty cycle up beyond a safe limit if a physical boost leak or wastegate actuator issue occurs. Shared between T1 and T2 control routines.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_IncrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9721-9723</code>) in T1, and <code>T2WGDC_IncrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9972-9974</code>) in T2.</li>
+<li><strong>Gating Conditions</strong>: Error timer must reach <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/INCPT_AdaptiveIncAfterThisTime.html"><code>INCPT</code></a>.</li>
+<li><strong>Clamp Comparison</strong>:</li>
+<li>Accumulator B holds the active adaptive cell byte.</li>
+<li>Line 9721 executes <code>cmpb INCLIM_UpperLimitOnWastegateDutyCycleCorrection</code>.</li>
+<li>If accumulator B is greater than or equal to <code>INCLIM</code> (<code>bcc</code>), execution branches to <code>WGDC_ClearBoostErrTimer</code>, preventing further increment.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Maximum Upward Adaptive Authority</strong>:</li>
+<li>Upper clamp ceiling on adaptive cell values (offset above 128 counts).</li>
+<li>Factory setting is 255 counts (+127 counts offset, or +63.5 percent maximum duty cycle addition).</li>
+<li><strong>Safety Clamping for Boost Leaks</strong>:</li>
+<li>Lowering <code>INCLIM</code> to 168 to 188 counts (+20% to +30% duty cycle) limits maximum runaway duty cycle if an intercooler coupler slips.</li>
+<li><strong>Shared Code Architecture</strong>:</li>
+<li>Referenced in both <code>CalcWGDutyCycleT1</code> (line 9721) and <code>CalcWGDutyCycleT2</code> (line 9972).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>WGDC_IncrementWGAdaptive</code> at line 9721, accumulator B holds the active adaptive cell byte. The instruction <code>cmpb INCLIM_UpperLimitOnWastegateDutyCycleCorrection</code> evaluates accumulator B against the upper limit. If accumulator B is greater than or equal to <code>INCLIM</code> (<code>bcc WGDC_ClearBoostErrTimer</code> at line 9722), the adaptive timer is cleared and no increment occurs. If accumulator B is below <code>INCLIM</code>, line 9723 executes <code>incb</code> and writes the updated byte to adaptive memory at line 9725.</p>
+<pre><code class="language-motorola6803">; --- WGDC_IncrementWGAdaptive (T-SMEC_v19.asm:9721-9723) ---
+	cmpb INCLIM_UpperLimitOnWastegateDutyCycleCorrection	; compare b with memory contents (data is ff)
+	bcc  WGDC_ClearBoostErrTimer	    ; branch if greater or equal
+	incb</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Offset Centering</strong>: 128 (0x80) represents 0% offset; 255 (0xFF) represents +63.5% duty cycle offset.</li>
+<li><strong>Dual Routine Usage</strong>: Enforces upper adaptive authority in both <code>CalcWGDutyCycleT1</code> and <code>CalcWGDutyCycleT2</code>.</li>
+<li><strong>Protection Boundary</strong>: Lowering <code>INCLIM</code> is highly recommended on modified high-boost engines to prevent max-duty cycle runaway.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>INCLIM</code>
+        </footer>
+    </div>
+</body>
+</html>

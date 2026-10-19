@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAPTHR: ThrottleSelfCalibrationMapDeltaThreshold | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1991</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ E - Throttle Calibration</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MAPTHR: ThrottleSelfCalibrationMapDeltaThreshold</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MAPTHR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MAPTHR_ThrottleSelfCalibrationMapDeltaThreshold</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\E_-_Throttle_Calibration\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1991</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">inHg vacuum</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x31                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6735-L6746"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L7885"><code>CheckThrottle_VehicleSpeedStillAboveDecelIdle</code></a> in <a href="../../T-SMEC_v19.asm.html#L7899"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MAPTHR</code> defines the manifold pressure ceiling required to permit upward adaptive learning of the closed-throttle baseline voltage.</p>
+<p>To maintain accurate idle and off-idle detection across temperature extremes and component aging, the engine controller dynamically learns the physical resting closed-throttle voltage. When the vehicle decelerates with the brake pedal pressed and engine speed above idle, the controller checks intake manifold vacuum. Configured in factory calibrations to forty-nine counts (approximately eighteen to nineteen inches of mercury vacuum, or five point six psi absolute), <code>MAPTHR</code> ensures the engine is pulling strong manifold vacuum before allowing the learned zero-throttle voltage baseline to increment upward.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CheckThrottle_VehicleSpeedStillAboveDecelIdle</code> (<code>T-SMEC_v19.asm:7885-7914</code>), instruction line 7899 (<code>cmpa MAPTHR_...</code>).</li>
+<li><strong>Interlock Conditions</strong>:</li>
+<li>Part throttle flag <code>b4f_PartThrottle</code> must be clear.</li>
+<li>Brake switch must be active (<code>sw2_Brake</code> set in <code>StartupSwitchMirror2</code>).</li>
+<li>Engine RPM must exceed <a href="../../0_-_Setup/E_-_Throttle_Calibration/RPMTHR_ThrottleSelfCalibrationRpmThreshold.html"><code>RPMTHR</code></a> (<code>EngineRpm_HB &gt;= RPMTHR</code>).</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Line 7899 executes <code>cmpa MAPTHR_ThrottleSelfCalibrationMapDeltaThreshold</code>.</li>
+<li>If manifold pressure is greater or equal (<code>bcc L1656</code>), learning is blocked.</li>
+<li>If manifold pressure is lower, execution advances to increment <code>MINTHR_LowestSessionTPS</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>High-Duration Camshaft Tuning</strong>:</li>
+<li>Performance camshafts produce lower manifold vacuum on deceleration; raise <code>MAPTHR</code> to sixty or seventy counts to ensure closed-throttle learning continues to function.</li>
+<li><strong>Adaptive Throttle Ratchet</strong>:</li>
+<li>If deceleration vacuum is deeper than <code>MAPTHR</code> and RPM is above <a href="../../0_-_Setup/E_-_Throttle_Calibration/RPMTHR_ThrottleSelfCalibrationRpmThreshold.html"><code>RPMTHR</code></a>, <code>MINTHR</code> increments toward the mechanical stop.</li>
+<li><strong>False Learning Protection</strong>:</li>
+<li>Setting <code>MAPTHR</code> too high on an engine with a binding throttle cable risks learning an artificially elevated idle voltage.</li>
+<li><strong>Factory Default</strong>:</li>
+<li>Set to forty-nine counts (~18-19 inHg vacuum / 5.6 psi absolute).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CheckThrottle_VehicleSpeedStillAboveDecelIdle</code> at lines 7892-7906, the controller tests deceleration learning prerequisites. Line 7894 checks the brake switch (<code>brclr *StartupSwitchMirror2, #sw2_Brake, L1656</code>). Line 7896 compares engine speed against <a href="../../0_-_Setup/E_-_Throttle_Calibration/RPMTHR_ThrottleSelfCalibrationRpmThreshold.html"><code>RPMTHR</code></a>. Line 7899 loads <code>MapValue</code> and executes <code>cmpa MAPTHR_ThrottleSelfCalibrationMapDeltaThreshold</code>. If <code>MapValue &lt; MAPTHR</code>, lines 7901-7906 increment <code>MINTHR_LowestSessionTPS</code> and clamp it to <a href="../../0_-_Setup/E_-_Throttle_Calibration/MTHRMX_ValueOf_MINTHR_WhenBatteryDisconnected.html"><code>MTHRMX</code></a>.</p>
+<pre><code class="language-motorola6803">; --- CheckThrottle_VehicleSpeedStillAboveDecelIdle (T-SMEC_v19.asm:7892-7906) ---
+	bitb #b4f_PartThrottle	    ;  -00001000-
+	bne  L1656	    ; branch if not equal (not zero)
+	brclr *StartupSwitchMirror2, #sw2_Brake, L1656    ; branch if bit(s) clear
+	ldaa EngineRpm_HB    ; load a with memory contents
+	cmpa RPMTHR_ThrottleSelfCalibrationRpmThreshold    ; compare a with memory contents (data is 30)
+	bcs  L1656	    ; branch if lower
+	ldaa MapValue	    ; load a with memory contents
+	cmpa MAPTHR_ThrottleSelfCalibrationMapDeltaThreshold	; compare a with memory contents (data is 20)
+	bcc  L1656	    ; branch if greater or equal
+	ldaa MINTHR_LowestSessionTPS	; load a with memory contents
+	inca		    ; increment a
+	cmpa MTHRMX_ValueOf_MINTHR_WhenBatteryDisconnected    ; compare a with memory contents (data is 5c)
+	bcs  L1655	    ; branch if lower
+	ldaa MTHRMX_ValueOf_MINTHR_WhenBatteryDisconnected    ; compare a with memory contents (data is 5c)
+L1655:	staa MINTHR_LowestSessionTPS	; store a into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Brake Switch Dependency</strong>: Self-calibration upward ratchet only occurs when the driver is actively applying the brakes.</li>
+<li><strong>Companion Threshold</strong>: Directly pairs with <a href="../../0_-_Setup/E_-_Throttle_Calibration/RPMTHR_ThrottleSelfCalibrationRpmThreshold.html"><code>RPMTHR_ThrottleSelfCalibrationRpmThreshold</code></a>.</li>
+<li><strong>Clamped by MTHRMX</strong>: The upward ratchet cannot exceed <a href="../../0_-_Setup/E_-_Throttle_Calibration/MTHRMX_ValueOf_MINTHR_WhenBatteryDisconnected.html"><code>MTHRMX_ValueOf_MINTHR_WhenBatteryDisconnected</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MAPTHR</code>
+        </footer>
+    </div>
+</body>
+</html>

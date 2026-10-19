@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCYCC: DecayRateForCurveC | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x08B5</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - Running</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DCYCC: DecayRateForCurveC</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DCYCC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DCYCC_DecayRateForCurveC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_Running\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x08B5</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">out desc (0 to 255 out)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x0D (13 decimal)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L2259-L2271"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L2829"><code>DealWithColdLoadEnrichment_MM</code></a> in <a href="../T-LMv13.asm.html#L2865"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DCYCC_DecayRateForCurveC</code> dictates the <strong>decay rate of intermediate warm-up enrichment (<a href="../Fuel_-_Running/CURVEC_FuelColdEnrichmentCurveC.html"><code>CURVEC</code></a>)</strong>.</p>
+<p>After intermediate enrichment is held for the duration specified by <a href="../Fuel_-_Running/CCURV_HoldTimeForCurveC.html"><code>CCURV</code></a>, <code>DCYCC</code> controls the speed at which Curve C's enrichment multiplier ramps down to zero.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Condition:</strong> Active once <code>KeyOnOrEngineRunningTime * 4 &gt;= CCURV</code> during phase 1 of <code>DealWithColdLoadEnrichment_MM</code>.</li>
+<li><strong>Decay Duration Formula:</strong></li>
+</ul>
+<p><code>Decay Duration (Seconds) ≈ (89.76 / DCYCC)</code></p>
+<p><code>(89.76 / 13) ≈ 6.9 seconds.</code></p>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Increasing the Value:</strong> Causes intermediate warm-up enrichment to decay faster (shorter duration).</li>
+<li><strong>Decreasing the Value:</strong> Causes intermediate warm-up enrichment to decay slower (longer duration).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 2863–2876):</p>
+<pre><code class="language-motorola6803">LD56B:  cmpa CCURV_HoldTimeForCurveC    ; compare a with memory contents (data is 0a)
+           bcs  LD585          ; branch if lower
+           ldab DCYCC_DecayRateForCurveC    ; load b with memory contents (data is 0d)
+   LD573:  ldaa TimerOverflowsBetweenDistPulses    ; load a with memory contents
+           bne  LD585          ; branch if not equal (not zero)
+           ldaa Counter_MainLoop1    ; load a with memory contents
+           bita #0x1f          ;  -00011111-
+           bne  LD585          ; branch if not equal (not zero)
+           ldaa Factor_ACVDCY_CurveACurveCDecayAfterRunModeReached    ; load a with memory contents
+           sba                 ; subtract (a=a-b)
+           bcc  LD583          ; branch if greater or equal
+           clra                ; a = 0
+   LD583:  staa Factor_ACVDCY_CurveACurveCDecayAfterRunModeReached    ; store a into memory
+   LD585:  rts                 ; return from subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Shared Decay Factor:</strong> Subtracts <code>DCYCC</code> from <code>Factor_ACVDCY_CurveACurveCDecayAfterRunModeReached</code> every 32nd main loop pass while the engine is running (<code>TimerOverflowsBetweenDistPulses == 0</code>).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>DCYCC</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RUNLMT: MaxAllowableTempFor RUNTMP | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x086A</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ C - Modifiers</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Base_Modifiers</strong>
+        </div>
+        
+        <article class="content">
+            <h1>RUNLMT: MaxAllowableTempFor RUNTMP</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>RUNLMT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>RUNLMT_MaxAllowableTempFor_RUNTMP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Base_Modifiers</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\C_-_Modifiers\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x086A</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">degrees F</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xA0 (160 counts ≈ 145°F)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L2344-L2354"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L6243"><code>AllowForHeatSoakAfterStall</code></a> in <a href="../../T-SMEC_v19.asm.html#L6245"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>RUNLMT</code> defines the maximum allowable coolant temperature ceiling below which post-stall heat soak temperature modeling (<a href="../../1_-_Fuel/C_-_Modifiers/RUNTMP_ModifierOf_ENGTMP_FromStalltime.html"><code>RUNTMP</code></a>) is permitted.</p>
+<p>If an engine stalls when coolant temperature is already above <code>RUNLMT</code>, the engine is recognized as fully warmed up, and heat soak modeling is bypassed completely. Additionally, <code>RUNLMT</code> serves as the upper clamp for the simulated temperature calculation, ensuring that adding <a href="../../1_-_Fuel/C_-_Modifiers/RUNTMP_ModifierOf_ENGTMP_FromStalltime.html"><code>RUNTMP</code></a> offset never raises effective temperature above normal warm operating levels.</p>
+<p>In factory calibrations, <code>RUNLMT</code> is set to 160 counts, representing approximately 145 degF.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>AllowForHeatSoakAfterStall</code> (<code>T-SMEC_v19.asm:6243-6256</code>), instruction lines 6245, 6251.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated in <code>AllowForHeatSoakAfterStall</code>.</li>
+<li>Tested against <code>CoolantTemp</code> at line 6245.</li>
+<li><strong>Branching &amp; Clamping</strong>:</li>
+<li>If <code>CoolantTemp &gt;= RUNLMT</code>, branches to <code>R1530</code> (returns raw coolant temp).</li>
+<li>If <code>CoolantTemp + RUNTMP &gt; RUNLMT</code>, clamps effective temperature to <code>RUNLMT</code> at lines 6251-6255.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Heat Soak Upper Ceiling</strong>:</li>
+<li>Sets the maximum coolant temperature threshold where post-stall heat soak modeling is allowed to operate.</li>
+<li><strong>Clamping Function</strong>:</li>
+<li>Clamps <code>CoolantTemp + RUNTMP</code> so simulated temperature cannot exceed <code>RUNLMT</code>.</li>
+<li><strong>Factory Setting Retention</strong>:</li>
+<li>160 counts (approx 145 degF) correctly bounds heat soak modeling to the warm-up transition phase.</li>
+<li><strong>Disabling Heat Soak Logic</strong>:</li>
+<li>Setting <code>RUNLMT</code> to zero disables heat soak addition entirely, causing the ECU to always use raw sensor temperature.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>AllowForHeatSoakAfterStall</code>, line 6244 loads <code>CoolantTemp</code> into accumulator A. Line 6245 executes <code>cmpa RUNLMT_MaxAllowableTempFor_RUNTMP</code>. If carry is clear (<code>bcc R1530</code>), coolant temperature is at or above <code>RUNLMT</code>, so the routine returns immediately without modifying temperature. If below <code>RUNLMT</code>, <a href="../../1_-_Fuel/C_-_Modifiers/RUNTMP_ModifierOf_ENGTMP_FromStalltime.html"><code>RUNTMP</code></a> is looked up and added to accumulator A. At line 6251, <code>ldab RUNLMT_MaxAllowableTempFor_RUNTMP</code> loads the clamp limit, and lines 6253-6255 clamp accumulator A to <code>RUNLMT</code> if an overflow or higher value occurs.</p>
+<pre><code class="language-motorola6803">; --- AllowForHeatSoakAfterStall (T-SMEC_v19.asm:6243-6256) ---
+AllowForHeatSoakAfterStall:
+	ldaa CoolantTemp    ; load a with memory contents
+	cmpa RUNLMT_MaxAllowableTempFor_RUNTMP	  ; compare a with memory contents (data is a0)
+	bcc  R1530	    ; branch if greater or equal
+	ldaa EngineRunningTimeBeforeStall    ; load a with memory contents
+	ldx  #RUNTMP_ModifierOf_ENGTMP_FromStalltime	; load index with value
+	jsr  Lookup4ByteTable	 ; call subroutine
+	adda CoolantTemp
+	ldab RUNLMT_MaxAllowableTempFor_RUNTMP	  ; load b with memory contents (data is a0)
+	bcs  L1529	    ; branch if lower
+	cba		
+	bcs  R1530	    ; branch if lower
+L1529:	tba		    ; a = b
+R1530:	rts		    ; return from subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Dual Role</strong>: Serves both as the entry gating threshold and the maximum output clamp ceiling for <code>AllowForHeatSoakAfterStall</code>.</li>
+<li><strong>Temperature Conversion</strong>: 160 counts (0xA0) corresponds to approximately 145 degF.</li>
+<li><strong>Companion Parameter</strong>: Direct companion to <a href="../../1_-_Fuel/C_-_Modifiers/RUNTMP_ModifierOf_ENGTMP_FromStalltime.html"><code>RUNTMP</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>RUNLMT</code>
+        </footer>
+    </div>
+</body>
+</html>

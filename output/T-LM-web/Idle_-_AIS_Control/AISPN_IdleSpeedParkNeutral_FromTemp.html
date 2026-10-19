@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AISPN: IdleSpeedParkNeutral FromTemp | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0A32</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>AISPN: IdleSpeedParkNeutral FromTemp</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>AISPN</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>AISPN_IdleSpeedParkNeutral_FromTemp</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0A32</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2D Table / Curve)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM (8 RPM per LSB) vs Coolant Temp (°F / raw ADC)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Number of points in table; .byte 0x7F, 0xAF, 0xFF, 0x2F     ;Point 1; .byte 0xCC, 0x70                 ;Point 2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L2640-L2654"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L5339"><code>DetermineTargetIdleSpeed_MM</code></a> in <a href="../T-LMv13.asm.html#L5361"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>AISPN</code> (IdleSpeedParkNeutral_FromTemp) is the foundational 2D calibration curve defining the target engine idle speed across operating coolant temperatures whenever the drivetrain is unloaded (Park/Neutral switch closed, or clutch switch / neutral switch grounded on manual vehicles).</p>
+<p>On manual transmission vehicles (such as this <code>T_LM_22_MTX_A171</code> calibration), the transmission park/neutral sense input on Port C (<code>Z83_PortCdata</code>, bit 3) is hard-tied to the unloaded state, meaning <code>AISPN</code> is the primary running idle target table used during all normal idle conditions. Cold engine temperatures command elevated idle speeds (~1,100 to 1,200 RPM) to accelerate catalytic converter light-off and prevent stall, smoothly declining to ~850-900 RPM at full operating temperature (180°F - 200°F).</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated within <code>DetermineTargetIdleSpeed_MM</code> at line 5361.</li>
+<li>Selected when bit 3 of <code>Z83_PortCdata</code> is cleared (signifying Park, Neutral, or Manual trans configuration).</li>
+<li>Indexed continuously by <code>CoolantTemp</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Setting Target Idle RPM</strong>: To raise your hot idle speed (e.g. for a lumpy aftermarket camshaft or higher alternator output), adjust the hot end of this table (right-side coordinate).</li>
+<li><strong>Big Cam Tuning</strong>: Large overlap camshafts (e.g. F2, F3, or custom grinds) produce weak manifold vacuum and misfire tendencies at stock 800-850 RPM idle. Raising the warm idle target in <code>AISPN</code> to 950 - 1,050 RPM significantly improves idle vacuum, oil pressure, and cabin vibration.</li>
+<li><strong>Lightweight Flywheels</strong>: Light aluminum flywheels lose rotational inertia quickly. Raising cold and warm points in <code>AISPN</code> by 100-150 RPM prevents sudden stalling when dipping the clutch during parking maneuvers.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- DetermineTargetIdleSpeed_MM (T-LMv13.asm:5357-5363) ---
+        ldx  #AISCLD_IdleSpeedDrive_FromTemp     ; Default pointer: In-Drive table
+        ldab Z83_PortCdata                       ; Read Port C hardware inputs
+        bitb #0x08                               ; Test bit 3 (Park/Neutral sense switch)
+        bne  LE6CE                               ; If in Drive (bit 3 set), use AISCLD
+        ldx  #AISPN_IdleSpeedParkNeutral_FromTemp ; Else load Park/Neutral table pointer ($0A32)
+LE6CE:  ldaa CoolantTemp                         ; Load engine coolant temperature
+        jsr  Lookup4ByteTable                    ; Perform 2D curve interpolation</code></pre>
+<p>The output byte from <code>Lookup4ByteTable</code> is subsequently shifted and saved into <code>TargetIdleSpeed_HB</code>.</p>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 5361</strong> (<code>DetermineTargetIdleSpeed_MM</code>): <code>ldx  #AISPN_IdleSpeedParkNeutral_FromTemp    ; load index with value</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Manual vs Automatic Transmissions</strong>: In manual calibrations (<code>MTX</code>), the hardware wiring pin is typically jumpered or configured so that bit 3 is zero, meaning <code>AISPN</code> is always the active table and <a href="../Idle_-_AIS_Control/AISCLD_IdleSpeedDrive_FromTemp.html"><code>AISCLD</code></a> is unused.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>AISPN</code>
+        </footer>
+    </div>
+</body>
+</html>

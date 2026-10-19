@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BARDFT: BaroReadDefaultValue | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x14DB</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Baro Read</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BARDFT: BaroReadDefaultValue</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BARDFT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BARDFT_BaroReadDefaultValue</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Baro_Read\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x14DB</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi absolute</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x7F                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5529-L5540"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L1541"><code>SaveBaroPressure</code></a> in <a href="../../T-SMEC_v19.asm.html#L1551"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BARDFT</code> defines the failsafe default atmospheric barometric pressure value loaded into memory whenever a measured barometric reading fails sensor plausibility verification.</p>
+<p>If an atmospheric reading falls below <a href="../../7_-_Aux_Functions/Baro_Read/BAROLO_BaroReadValidLowLimit.html"><code>BAROLO</code></a> or exceeds <a href="../../7_-_Aux_Functions/Baro_Read/BAROHI_BaroReadValidHighLimit.html"><code>BAROHI</code></a>, the engine controller identifies the measurement as untrustworthy and immediately substitutes <code>BARDFT</code>. In factory calibrations, <code>BARDFT</code> is set to 127 counts, corresponding to approximately 14.6 psi absolute (29.7 inHg), representing standard nominal sea level atmospheric pressure. This ensures that in the event of a pressure sensor disconnect, pinched hose, or solenoid failure, the engine continues running safely with predictable sea level fuel and spark parameters.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>SaveBaroPressure</code> (<code>T-SMEC_v19.asm:1541-1554</code>), instruction line 1551.</li>
+<li><strong>Activation Triggers</strong>:</li>
+<li>Sensor reading <code>&gt;= BAROHI_BaroReadValidHighLimit</code>.</li>
+<li>Sensor reading <code>&lt; BAROLO_BaroReadValidLowLimit</code>.</li>
+<li><strong>Execution</strong>:</li>
+<li>Loaded into accumulator B at line 1551 (<code>ldab BARDFT_BaroReadDefaultValue</code>).</li>
+<li>Stored directly into <code>BaroPressure</code> at line 1552.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Mandatory 3-Bar Rescaling</strong>:</li>
+<li>Set <code>BARDFT</code> to ~85 counts on 3-bar MAP conversions to represent standard 14.7 psi atmospheric pressure.</li>
+<li><strong>Failsafe Fueling Anchor</strong>:</li>
+<li>Acts as the emergency anchor for fuel, spark, and overboost protection if sensor wiring is damaged.</li>
+<li><strong>Elevation Bias Tuning</strong>:</li>
+<li>For vehicles operated exclusively at high elevation (e.g. Denver at 5,000 feet), <code>BARDFT</code> can be adjusted to 12.2 psi.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>SaveBaroPressure</code> at line 1551 (<code>L1029</code>), <code>ldab BARDFT_BaroReadDefaultValue</code> is executed whenever the converted sensor reading violates the <a href="../../7_-_Aux_Functions/Baro_Read/BAROHI_BaroReadValidHighLimit.html"><code>BAROHI</code></a> or <a href="../../7_-_Aux_Functions/Baro_Read/BAROLO_BaroReadValidLowLimit.html"><code>BAROLO</code></a> boundaries. At line 1552 (<code>L1030</code>), <code>stab BaroPressure</code> writes the failsafe value to RAM, ensuring all downstream routines operate with a stable, valid barometric pressure reference.</p>
+<pre><code class="language-motorola6803">; --- SaveBaroPressure (T-SMEC_v19.asm:1550-1554) ---
+	bcc  L1030	    ; branch if greater or equal
+L1029:	ldab BARDFT_BaroReadDefaultValue    ; load b with memory contents (data is 54)
+L1030:	stab BaroPressure    ; store b into memory
+	rts		    ; return from subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Nominal Atmospheric Datum</strong>: Factory value represents 14.6 psi absolute (127 counts on 2-bar).</li>
+<li><strong>Failsafe Protection</strong>: Prevents division-by-zero or negative delta calculations in boost routines when sensor is offline.</li>
+<li><strong>Subsystem Dependency</strong>: Used by fan control (<a href="../../6_-_Fan_Control/FANMAP_FanTurnsOnWhenMapAboveBaroPlusThis.html"><code>FANMAP</code></a>), overboost cutout (<a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a>), canister purge (<a href="../../7_-_Aux_Functions/Purge_Control/PURMAP_CannisterPurgeWhenBelowThisBaro.html"><code>PURMAP</code></a>), and EGR logic.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>BARDFT</code>
+        </footer>
+    </div>
+</body>
+</html>

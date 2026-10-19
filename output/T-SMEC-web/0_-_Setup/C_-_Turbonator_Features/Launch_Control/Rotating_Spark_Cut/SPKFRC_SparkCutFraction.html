@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPKFRC: SparkCutFraction | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0584</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ C - Turbonator Features ➔ Launch Control ➔ Rotating Spark Cut</strong> &nbsp;|&nbsp; Subsystem: <strong>Turbonator_Features</strong>
+        </div>
+        
+        <article class="content">
+            <h1>SPKFRC: SparkCutFraction</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>SPKFRC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>SPKFRC_SparkCutFraction</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Turbonator_Features</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\C_-_Turbonator_Features\Launch_Control\Rotating_Spark_Cut\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0584</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 6 (Enumerated Choice Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Cut Ratio Index (Choices 0 to 7 for 1/3 to 6/7 cut)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x03                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1601-L1613"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L10279"><code>SetBaseandPattern</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L10280"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>SPKFRC</code> selects the active spark cut fraction from the pre-programmed pattern tables for launch control.</p>
+<p>Rather than cutting fuel or indiscriminately dropping random cylinders, Turbonator launch control uses mathematically balanced rotating patterns to regulate engine speed and build boost on the starting line. <code>SPKFRC</code> acts as a selector pointer (values 0 through 7) that chooses the ratio of suppressed to delivered ignition sparks.</p>
+<p>The factory default setting is choice 3 (4/5 cut), which fires one cylinder out of every five events, holding launch RPM steady while delivering ample unburnt energy into the turbine housing.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Enclosed in subroutine <code>SetBaseandPattern</code> at lines 10279-10298 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Active when <code>opt_StageLim</code> and <code>opt_SprkRevLim</code> are enabled in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a> and launch control staging conditions are met.</li>
+<li>Serves as an offset value loaded into accumulator B at lines 10280 and 10292 to index <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Rotating_Spark_Cut/LNCBDT_BaseDataTable.html"><code>LNCBDT</code></a> and <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Rotating_Spark_Cut/LNCPDT_PatternDataTable.html"><code>LNCPDT</code></a>.</li>
+<li>Valid enumerated choices are integers 0 through 7.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Selection Guidelines</strong>: Choice 0 (1/3 cut) fires 66.7% of cylinders; Choice 2 (3/5 cut) fires 40.0% of cylinders; Choice 3 (4/5 cut, factory) fires 20.0% of cylinders; Choice 7 (6/7 cut) fires 14.3% of cylinders.</li>
+<li><strong>Large Turbochargers</strong>: Use 1/3 or 3/5 cut to deliver maximum thermal expansion into the turbine housing for quick boost response.</li>
+<li><strong>Small Turbochargers &amp; Traction Limited</strong>: Use 4/5 or 5/7 cut to cap flywheel torque and prevent wheelspin when staging.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: At line 10280 within <code>SetBaseandPattern</code>, accumulator B loads <code>SPKFRC_SparkCutFraction</code>. The CPU executes <code>aby</code> with index register Y pointing to <code>#LNCBDT_BaseDataTable</code>, reading the counter base value for that cut pattern. At line 10292 within <code>StoreSparkCutCounter</code>, accumulator B again loads <code>SPKFRC_SparkCutFraction</code> and executes <code>aby</code> against <code>#LNCPDT_PatternDataTable</code>, retrieving the 8-bit rotation bitmask. Values 0 to 7 correspond to 1/3 Cut, 2/3 Cut, 3/5 Cut, 4/5 Cut, 3/7 Cut, 4/7 Cut, 5/7 Cut, and 6/7 Cut.</p>
+<pre><code class="language-motorola6803">; --- SetBaseandPattern (T-SMEC_v19.asm:10279-10298) ---
+SetBaseandPattern:
+        ldab SPKFRC_SparkCutFraction ; this is now an offset value
+        ldy  #LNCBDT_BaseDataTable
+        aby
+        ldab 0x00, Y ; b now contains the base value
+
+        ;if the option for bang-bang is enabled, subtract 1 from B
+        ldx  #OPTN2_CalCustomOptionConfigFlags2
+        brclr 0x00, X, #opt_BangBang, StoreSparkCutCounter
+        decb
+        
+StoreSparkCutCounter:
+        stab Counter_SparkCut
+        ldab SPKFRC_SparkCutFraction ; this is now an offset value -- oops, this was left off, made the pattern wrong
+        ldy  #LNCPDT_PatternDataTable
+        aby
+        ldab 0x00, Y ; b now contains the pattern
+        stab Pattern_SparkCut 
+        bra  CalulateLaunchAdvance</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Pointer Enumeration</strong>: Translates to table offset index (0 to 7) in assembly.</li>
+<li><strong>Required Option Flags</strong>: Requires both <code>opt_StageLim</code> and <code>opt_SprkRevLim</code> set in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a>.</li>
+<li><strong>Companion Constants</strong>: Directly indexes into <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Rotating_Spark_Cut/LNCBDT_BaseDataTable.html"><code>LNCBDT</code></a> (base counters) and <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Rotating_Spark_Cut/LNCPDT_PatternDataTable.html"><code>LNCPDT</code></a> (pattern bitmasks).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>SPKFRC</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STGRON: StageLimiterRPMOnSetpoint | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1863</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ C - Turbonator Features ➔ Launch Control ➔ Launch Control RPM</strong> &nbsp;|&nbsp; Subsystem: <strong>Turbonator_Features</strong>
+        </div>
+        
+        <article class="content">
+            <h1>STGRON: StageLimiterRPMOnSetpoint</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>STGRON</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>STGRON_StageLimiterRPMOnSetpoint</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Turbonator_Features</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\C_-_Turbonator_Features\Launch_Control\Launch_Control_RPM\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1863</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM (0 to 8160 RPM, 32 RPM / count)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x77                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6433-L6443"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L10196"><code>LaunchControl_CheckLowerRPM</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L10198"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>STGRON</code> establishes the lower engine speed threshold where fuel injection and ignition spark are restored after being cut by launch control.</p>
+<p>When the staging rev limiter cuts spark at the upper ceiling, engine speed begins to decay. Once RPM falls below <code>STGRON</code>, the engine controller clears the cut flags and re-enables combustion. This two-threshold hysteresis design prevents rapid, erratic flutter by enforcing a controlled RPM cycle.</p>
+<p>The factory setting of 119 counts corresponds to approximately 3808 RPM, creating a 200 RPM staging window below the 4000 RPM cut ceiling.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Enclosed in subroutine <code>LaunchControl_CheckLowerRPM</code> at lines 10196-10205 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Evaluated when <code>Turbonator_Staging</code> is active and fuel or spark cut is currently in effect (<code>jmp LaunchControl_CheckLowerRPM</code> at line 10173).</li>
+<li>Comparison: <code>cmpa STGRON_StageLimiterRPMOnSetpoint</code> against <code>EngineRpm_HB</code> (line 10198).</li>
+<li>If <code>EngineRpm_HB &gt;= STGRON</code> (<code>bcc LaunchControl_Return</code>), cuts remain active.</li>
+<li>When <code>EngineRpm_HB &lt; STGRON</code>, execution falls through to <code>LaunchControl_AllowFuelSpark</code> (line 10202), clearing <code>Turbonator_FuelOff</code> and <code>Turbonator_SparkCut</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Hysteresis Bandwidth</strong>: Set roughly 150 to 250 RPM below <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_RPM/STGROF_StageLimiterRPMOffSetpoint.html"><code>STGROF</code></a> (factory gap is 192 RPM) for smooth, stable boost spooling.</li>
+<li><strong>Excessively Narrow Gap</strong>: Setting within 32-64 RPM of <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_RPM/STGROF_StageLimiterRPMOffSetpoint.html"><code>STGROF</code></a> creates harsh high-frequency vibration and unstable wastegate operation.</li>
+<li><strong>Excessively Wide Gap</strong>: Setting more than 400 RPM below <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_RPM/STGROF_StageLimiterRPMOffSetpoint.html"><code>STGROF</code></a> causes engine speed to sag noticeably, dropping boost pressure between cycles.</li>
+<li><strong>Calibration Ordering</strong>: Always ensure <code>STGRON</code> is strictly lower than <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_RPM/STGROF_StageLimiterRPMOffSetpoint.html"><code>STGROF</code></a>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: When launch cuts are active, <code>LaunchControl_DecideEngineOnOff</code> branches to <code>LaunchControl_CheckLowerRPM</code> at line 10173. Line 10197 loads <code>EngineRpm_HB</code> into accumulator A and compares it with <code>STGRON_StageLimiterRPMOnSetpoint</code> at line 10198. If engine speed remains greater than or equal to <code>STGRON</code>, the branch <code>bcc LaunchControl_Return</code> executes, preserving active spark and fuel cuts. Once engine speed drops below <code>STGRON</code>, line 10202 clears both <code>Turbonator_FuelOff</code> and <code>Turbonator_SparkCut</code> in <code>Turbonator_Flags</code>, re-enabling cylinder firing.</p>
+<pre><code class="language-motorola6803">; --- LaunchControl_CheckLowerRPM (T-SMEC_v19.asm:10196-10205) ---
+LaunchControl_CheckLowerRPM:
+        ldaa  EngineRpm_HB    ; load a with memory contents
+	cmpa  STGRON_StageLimiterRPMOnSetpoint  ; compare a with memory at index + value
+	bcc   LaunchControl_Return	       ; branch if RPM is higher than OFF point
+
+LaunchControl_AllowFuelSpark:
+        bclr  0, x, #Turbonator_FuelOff | Turbonator_SparkCut ; new T-SMEC Spark rev limiter
+
+LaunchControl_Return:
+	rts		                       ; return from subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>RPM Scaling</strong>: Scaled at 32 RPM per count. The factory setting of 119 counts corresponds to 3808 RPM.</li>
+<li><strong>Hysteresis Loop Floor</strong>: Operates as the lower restore boundary paired with upper cut ceiling <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_RPM/STGROF_StageLimiterRPMOffSetpoint.html"><code>STGROF</code></a>.</li>
+<li><strong>Cut Clearing</strong>: Restores both fuel and spark simultaneously when engine speed drops below threshold.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>STGRON</code>
+        </footer>
+    </div>
+</body>
+</html>

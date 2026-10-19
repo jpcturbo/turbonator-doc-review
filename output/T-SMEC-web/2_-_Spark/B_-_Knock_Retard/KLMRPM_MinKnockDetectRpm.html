@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KLMRPM: MinKnockDetectRpm | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0477</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>2 - Spark ➔ B - Knock Retard</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>KLMRPM: MinKnockDetectRpm</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>KLMRPM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>KLMRPM_MinKnockDetectRpm</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>2_-_Spark\B_-_Knock_Retard\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0477</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x20                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1333-L1343"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8225"><code>CalculateKnockRetard_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L8241"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>KLMRPM</code> defines the engine speed transition boundary that separates the restricted low-RPM knock retard limit (<a href="../../2_-_Spark/B_-_Knock_Retard/KNKLIM_MaxKnockRetard.html"><code>KNKLIM</code></a>) from the standard dynamic knock retard curve (<a href="../../2_-_Spark/B_-_Knock_Retard/RETMAX_MaxKnockRetardFromMap.html"><code>RETMAX</code></a>).</p>
+<p>While <a href="../../2_-_Spark/B_-_Knock_Retard/KNKRPM_MinRpmforKnockRetard.html"><code>KNKRPM</code></a> completely turns off knock retard below 1024 RPM, <code>KLMRPM</code> establishes the speed threshold below which the controller enforces the restricted low-RPM knock clamp (<a href="../../2_-_Spark/B_-_Knock_Retard/KNKLIM_MaxKnockRetard.html"><code>KNKLIM</code></a>) during high-throttle transitions. In factory calibrations, <code>KLMRPM</code> is calibrated to 32 counts, corresponding to 1024 RPM. Once engine speed meets or exceeds <code>KLMRPM</code>, the controller unlocks full knock retard authority using the load-dependent <a href="../../2_-_Spark/B_-_Knock_Retard/RETMAX_MaxKnockRetardFromMap.html"><code>RETMAX</code></a> curve.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateKnockRetard_MM</code> (<code>T-SMEC_v19.asm:8240-8242</code>).</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Reached when sensor faults are clear and throttle delta &gt;= <a href="../../2_-_Spark/B_-_Knock_Retard/THRKNK_DeltaAbove_MINTHR.html"><code>THRKNK</code></a>.</li>
+<li><code>ldab EngineRpm_HB</code> loads high byte of engine speed.</li>
+<li><code>cmpb KLMRPM_MinKnockDetectRpm</code> at line 8241.</li>
+<li>If <code>EngineRpm_HB</code> &gt;= <code>KLMRPM</code> (<code>bcc CalculateMaxAllowedRetard</code>), branches to line 8246 to use <a href="../../2_-_Spark/B_-_Knock_Retard/RETMAX_MaxKnockRetardFromMap.html"><code>RETMAX</code></a>.</li>
+<li>If <code>EngineRpm_HB</code> &lt; <code>KLMRPM</code>, execution falls through to line 8243 to load <a href="../../2_-_Spark/B_-_Knock_Retard/KNKLIM_MaxKnockRetard.html"><code>KNKLIM</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Extending False Knock Protection</strong>:</li>
+<li>On engines with noisy forged pistons or loud valvetrain assemblies, raise <code>KLMRPM</code> to 1500 RPM (47 counts) to suppress false knock retard during off-idle acceleration.</li>
+<li><strong>Unlocking Full Retard Sooner</strong>:</li>
+<li>For whisper-quiet stock engines, keeping <code>KLMRPM</code> low ensures full <a href="../../2_-_Spark/B_-_Knock_Retard/RETMAX_MaxKnockRetardFromMap.html"><code>RETMAX</code></a> retard authority is available as soon as the engine leaves idle.</li>
+<li><strong>Architecture Symmetry</strong>:</li>
+<li>In stock calibrations, <code>KLMRPM</code> and <a href="../../2_-_Spark/B_-_Knock_Retard/KNKRPM_MinRpmforKnockRetard.html"><code>KNKRPM</code></a> are both set to 1024 RPM (32 counts).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateKnockRetard_MM</code> at line 8240, <code>ldab EngineRpm_HB</code> loads engine speed. Line 8241 executes <code>cmpb KLMRPM_MinKnockDetectRpm</code>. If accumulator B is greater than or equal to <code>KLMRPM</code>, carry is clear and <code>bcc CalculateMaxAllowedRetard</code> branches to line 8246, where <a href="../../2_-_Spark/B_-_Knock_Retard/RETMAX_MaxKnockRetardFromMap.html"><code>RETMAX_MaxKnockRetardFromMap</code></a> is evaluated. If accumulator B is less than <code>KLMRPM</code>, the branch is not taken and line 8243 loads <a href="../../2_-_Spark/B_-_Knock_Retard/KNKLIM_MaxKnockRetard.html"><code>KNKLIM_MaxKnockRetard</code></a> into accumulator A.</p>
+<pre><code class="language-motorola6803">; --- CalculateKnockRetard_MM (T-SMEC_v19.asm:8240-8245) ---
+	ldab EngineRpm_HB    ; load b with memory contents
+	cmpb KLMRPM_MinKnockDetectRpm	 ; compare b with memory contents (data is 20)
+	bcc  CalculateMaxAllowedRetard	  ; branch if greater or equal
+	ldaa KNKLIM_MaxKnockRetard    ; load a with memory contents (data is 05)
+	bra  StoreMaxAllowedRetard    ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Transition Gateway</strong>: Governs the switch between fixed <a href="../../2_-_Spark/B_-_Knock_Retard/KNKLIM_MaxKnockRetard.html"><code>KNKLIM</code></a> clamp and dynamic <a href="../../2_-_Spark/B_-_Knock_Retard/RETMAX_MaxKnockRetardFromMap.html"><code>RETMAX</code></a> table.</li>
+<li><strong>High Byte Scaling</strong>: 1 count = 32 RPM. Factory setting 0x20 = 32 counts = 1024 RPM.</li>
+<li><strong>Fault Path Override</strong>: If sensor faults are present, this RPM check is bypassed directly to <a href="../../2_-_Spark/B_-_Knock_Retard/RETMAX_MaxKnockRetardFromMap.html"><code>RETMAX</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>KLMRPM</code>
+        </footer>
+    </div>
+</body>
+</html>

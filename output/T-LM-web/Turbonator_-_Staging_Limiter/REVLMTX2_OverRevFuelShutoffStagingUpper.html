@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REVLMTX2: OverRevFuelShutoffStagingUpper | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x14C9</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Turbonator - Staging Limiter</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Turbonator</strong>
+        </div>
+        
+        <article class="content">
+            <h1>REVLMTX2: OverRevFuelShutoffStagingUpper</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>REVLMTX2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>REVLMTX2_StagingModFuelShutoff</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Turbonator</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Turbonator_-_Staging_Limiter\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x14C9</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">16-Bit Distributor Pulse Period ($26F8 = ~3,500 RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0x26F8                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L5351-L5362"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;">Direct symbol reference or ROM header constant in <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>REVLMTX2</code> (StagingModFuelShutoff) establishes the secondary hysteresis recovery threshold for the Turbonator 2-step staging limiter.</p>
+<p>To prevent the engine from violently misfiring or jerking at a single knife-edge RPM, the fuel shutoff routine implements a dual-threshold hysteresis window. <a href="../Turbonator_-_Staging_Limiter/REVLMTX_OverRevFuelShutoffStagingLower.html"><code>REVLMTX</code></a> defines where fuel cut initiates, and <code>REVLMTX2</code> (located at offset <code>+2</code> from <a href="../Turbonator_-_Staging_Limiter/REVLMTX_OverRevFuelShutoffStagingLower.html"><code>REVLMTX</code></a>) defines the recovery period where fuel resumes. This hysteresis deadband smooths out the 2-step limiter sound and maintains stable cylinder temperatures on the starting line.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside subroutine <code>ControlEngineCutout_MM</code> at line 6478.</li>
+<li>Accessed as indexed offset <code>0x02,x</code> from <a href="../Turbonator_-_Staging_Limiter/REVLMTX_OverRevFuelShutoffStagingLower.html"><code>REVLMTX</code></a> pointer.</li>
+<li>Controls the fuel-resume threshold of the staging rev limiter.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Limiter Cadence</strong>: Spacing <a href="../Turbonator_-_Staging_Limiter/REVLMTX_OverRevFuelShutoffStagingLower.html"><code>REVLMTX</code></a> and <code>REVLMTX2</code> by roughly 150-200 RPM creates a rapid, machine-gun stutter on the 2-step, ideal for building consistent manifold boost.</li>
+<li><strong>Synchronized Tuning</strong>: Always adjust <code>REVLMTX2</code> proportionally whenever <a href="../Turbonator_-_Staging_Limiter/REVLMTX_OverRevFuelShutoffStagingLower.html"><code>REVLMTX</code></a> is moved to a new launch RPM.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- ControlEngineCutout_MM (T-LMv13.asm:6477-6481) ---
+        ldd  DistributorFallingEdgePulsewidth_HB        ; Reload distributor period
+        subd 0x02,x                                     ; Compare against REVLMTX2 ($14C9, offset +2 from REVLMTX)
+        bcs  SetFuelShutoffFlag                         ; If above limit, cut injector pulses</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Indexed Structure</strong>: In assembly, the X register points to <a href="../Turbonator_-_Staging_Limiter/REVLMTX_OverRevFuelShutoffStagingLower.html"><code>REVLMTX</code></a>, and <code>subd 0x02,x</code> directly reads <code>REVLMTX2</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>REVLMTX2</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAUDLO: DRBBaudRateLow | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1E58</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ F - Baud Rate</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BAUDLO: DRBBaudRateLow</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BAUDLO</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BAUDLO_DRBBaudRateLo</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\F_-_Baud_Rate\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1E58</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 6 (Enumerated Choice Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Baud</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x22                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7958-L7969"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L3541"><code>DRBIISerialCommunications_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L3551"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BAUDLO</code> defines the initial serial communication baud rate loaded into the on-chip serial communications interface during standard diagnostic tool communication.</p>
+<p>Configured in factory calibrations to thirty-four counts, <code>BAUDLO</code> configures a data rate of seventy-eight twelve baud (7812 baud). This data rate represents the standard initialization and handshake speed used by Chrysler diagnostic readout box scan tools to query diagnostic trouble codes, actuate actuators, and inspect live vehicle sensor data.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>DRBIISerialCommunications_MM</code> (<code>T-SMEC_v19.asm:3541-3564</code>), instruction lines 3551 and 3553. Also line 7316.</li>
+<li><strong>Baud Rate Enforcement</strong>:</li>
+<li>Evaluated when fast serial and byte mode are inactive (<code>DRBSerialMode</code> bits clear).</li>
+<li>Compares <code>CPU_SerialBaudRate</code> against <code>BAUDLO_DRBBaudRateLo</code>.</li>
+<li>If unequal, stores <code>BAUDLO</code> into <code>CPU_SerialBaudRate</code> and returns to allow baud rate stabilization.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Preserve 7812 Baud Rate</strong>:</li>
+<li>Retain factory setting of thirty-four counts (7812 Baud) for scan tool compatibility.</li>
+<li><strong>Scan Tool Lockout Prevention</strong>:</li>
+<li>Modifying <code>BAUDLO</code> breaks communications with handheld diagnostic scan tools.</li>
+<li><strong>Standard Handshake Speed</strong>:</li>
+<li>Governs initial connection before any high-speed datalogging command is issued.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>DRBIISerialCommunications_MM</code> at lines 3549-3555, the CPU reads <code>CPU_SerialBaudRate</code> and masks relevant baud bits (<code>anda #0x37</code>). Line 3551 executes <code>cmpa BAUDLO_DRBBaudRateLo</code>. If equal (<code>beq L1254</code>), execution proceeds to check for incoming data. If unequal, line 3553 loads <code>ldaa BAUDLO_DRBBaudRateLo</code>, writes it to <code>CPU_SerialBaudRate</code> at line 3554, and executes <code>rts</code>.</p>
+<pre><code class="language-motorola6803">; --- DRBIISerialCommunications_MM (T-SMEC_v19.asm:3549-3556) ---
+	ldaa CPU_SerialBaudRate    ; Load current baud rate register
+	anda #0x37	    ; Mask to check relevant baud bits
+	cmpa BAUDLO_DRBBaudRateLo	    ; Compare against standard DRB low-speed baud rate
+	beq  L1254	    ; If already correct, branch to check for received data
+	ldaa BAUDLO_DRBBaudRateLo	    ; Load standard DRB baud rate
+	staa CPU_SerialBaudRate     ; Set the baud rate register
+	rts		    ; Return to allow baud rate change to take effect</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>68HC11 SCI Hardware</strong>: Value 0x22 configures prescaler and divider for 7812.5 Baud from a 2.0 MHz E-clock.</li>
+<li><strong>Enumerated Choices</strong>: Supported by <code>;mpchoices</code> in MPTune (977, 1200, 9608, 7812, 62500, 12500 Baud).</li>
+<li><strong>Companion Constant</strong>: Pairs with <a href="../../0_-_Setup/F_-_Baud_Rate/BAUDHI_DRBBaudRateHi.html"><code>BAUDHI_DRBBaudRateHi</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>BAUDLO</code>
+        </footer>
+    </div>
+</body>
+</html>

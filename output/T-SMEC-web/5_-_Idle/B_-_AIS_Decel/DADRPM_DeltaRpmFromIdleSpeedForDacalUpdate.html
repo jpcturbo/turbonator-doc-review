@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DADRPM: DeltaRpmFromIdleSpeedForDacalUpdate | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0F02</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DADRPM: DeltaRpmFromIdleSpeedForDacalUpdate</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DADRPM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DADRPM_DeltaRpmFromIdleSpeedForDacalUpdate</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0F02</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x04                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4032-L4042"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L1859"><code>CalculateAisPosition_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L1940"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DADRPM</code> defines the engine speed error deadband window within which adaptive idle airflow learning is permitted to operate.</p>
+<p>If engine speed is significantly above or below target idle, the engine is experiencing a transient disturbance (such as an accessory load engaging or disengaging) rather than reflecting true steady-state mechanical airflow needs. Allowing adaptive learning to adjust idle trim during an RPM disturbance would skew the learned calibration in the wrong direction.</p>
+<p><code>DADRPM</code> enforces an RPM stability window: only when actual engine speed is within <code>DADRPM</code> of target idle speed will the controller adjust the adaptive trim integrator.</p>
+<p>In factory calibrations, <code>DADRPM</code> is set to 4 counts, representing an RPM deadband window of 32 RPM.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1977</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Pacing mask <a href="../../5_-_Idle/B_-_AIS_Decel/DCALRT_DacalUpdateRate01_03_07_0f_1f_3f_7f_ff.html"><code>DCALRT</code></a> must clear at line 1935.</li>
+<li>Computes absolute RPM error delta at lines 1936-1939: <code>TargetIdleSpeed_HB - EngineRpm_HB</code>.</li>
+<li>Compares absolute error against <code>DADRPM</code> at line 1940. If error is greater than <code>DADRPM</code> (<code>bhi L1072</code>), learning is bypassed.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Lumpy Camshaft Idle Accommodation</strong>:</li>
+<li>Increase <code>DADRPM</code> to 8 to 12 counts (64 to 96 RPM) on engines with significant valve overlap to allow adaptive learning to tolerate normal lope dither.</li>
+<li><strong>Stock Camshaft Tightness</strong>:</li>
+<li>Retain factory 4 counts (32 RPM) on smooth-idling stock or mild street camshafts.</li>
+<li><strong>Excessive Window Warning</strong>:</li>
+<li>Do not widen <code>DADRPM</code> beyond 16 counts (128 RPM), as the ECU may mistake an active idle flare or sag for a stable idle condition.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateAisPosition_MM</code>, lines 1936-1939 calculate the absolute difference between <code>TargetIdleSpeed_HB</code> and <code>EngineRpm_HB</code> in accumulator B. Line 1940 executes <code>cmpb DADRPM_DeltaRpmFromIdleSpeedForDacalUpdate</code>. If the error exceeds <code>DADRPM</code>, the branch <code>bhi L1072</code> skips the integrator update. If within <code>DADRPM</code>, lines 1943-1950 compare <code>MapValue</code> against the control MAP and increment or decrement <code>Timer_DacalCountdown</code>.</p>
+<pre><code class="language-motorola6803">; --- CalculateAisPosition_MM (T-SMEC_v19.asm:1936-1942) ---
+	ldab TargetIdleSpeed_HB	; load b with memory contents
+	subb EngineRpm_HB    ; b = b-memory contents
+	bcc  L1069	    ; branch if greater or equal
+	negb		
+L1069:	cmpb DADRPM_DeltaRpmFromIdleSpeedForDacalUpdate    ; compare b with memory contents (data is 04)
+	bhi  L1072	    ; branch if higher
+	ldab Timer_DacalCountdown	    ; load b with memory contents</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Scaling</strong>: 1 count = 8 RPM on the high byte scale (4 counts = 32 RPM).</li>
+<li><strong>Companion Parameter</strong>: Gates updates to <code>Timer_DacalCountdown</code> alongside <a href="../../5_-_Idle/B_-_AIS_Decel/DCALRT_DacalUpdateRate01_03_07_0f_1f_3f_7f_ff.html"><code>DCALRT</code></a>.</li>
+<li><strong>Factory Value</strong>: 0x04 (4 counts = 32 RPM).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>DADRPM</code>
+        </footer>
+    </div>
+</body>
+</html>

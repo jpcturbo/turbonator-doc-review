@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACTIM2: TimeBeforeAcEnabledAndFullDeltaUsed2 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x10EC</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ACTIM2: TimeBeforeAcEnabledAndFullDeltaUsed2</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ACTIM2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ACTIM2_TimeBeforeAcEnabledAndFullDeltaUsed2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x10EC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">seconds</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x24                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4522-L4532"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L2170"><code>HandleAcCutout</code></a> in <a href="../../T-SMEC_v19.asm.html#L2291"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ACTIM2</code> defines the secondary transition delay timer utilized during alternate air conditioning clutch engagement paths.</p>
+<p>During certain operational transitions (such as re-engaging the compressor following a part-throttle cutout or recovering from overrun), the idle air motor requires a calibrated blending delay to smoothly integrate the A/C idle air offset.</p>
+<p><code>ACTIM2</code> reloads the A/C transition timer upon entering the secondary engagement branch, ensuring that airflow transitions remain gradual and do not induce driveline shudder.</p>
+<p>In factory calibrations, <code>ACTIM2</code> is set to 36 counts, providing an engagement blending window of approximately 2.25 seconds.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2298</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Alternate A/C engagement branch entered at line 2290 (<code>L1113</code>).</li>
+<li>Sets bit <code>b0c_bit4</code> in <code>BitFlags_AIS</code> at line 2290.</li>
+<li>Loads <code>ACTIM2</code> into accumulator A at line 2291 and stores into <code>Timer_AisOrO2Sensor</code> at line 2292.</li>
+<li>Advances to line 2294 to evaluate <code>MapValue</code> against <a href="../../5_-_Idle/B_-_AIS_Decel/DCLMN2_NoAisControlIfMapAndControlMapBelowThis.html"><code>DCLMN2</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Mirroring ACTIME</strong>:</li>
+<li>Keep <code>ACTIM2</code> matched to <a href="../../5_-_Idle/B_-_AIS_Decel/ACTIME_TimeBeforeAcEnabledAndFullDeltaUsed.html"><code>ACTIME</code></a> to maintain consistent transition timing across all engagement paths.</li>
+<li><strong>Smoothing Re-Engagement Shudder</strong>:</li>
+<li>Lengthen <code>ACTIM2</code> to 3.0 seconds if compressor re-engagement after decel produces driveline shudder.</li>
+<li><strong>Timer Operation</strong>:</li>
+<li>Loaded into <code>Timer_AisOrO2Sensor</code>, which decrements every loop tick.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>HandleAcCutout</code>, line 2290 sets <code>b0c_bit4</code> in <code>BitFlags_AIS</code>. Line 2291 loads <code>ACTIM2_TimeBeforeAcEnabledAndFullDeltaUsed2</code> into accumulator A. Line 2292 stores accumulator A into <code>Timer_AisOrO2Sensor</code>. While this timer counts down, lines 2243-2249 manage the gradual transition into full A/C offset.</p>
+<pre><code class="language-motorola6803">; --- HandleAcCutout (T-SMEC_v19.asm:2290-2298) ---
+L1113:	bset *BitFlags_AIS, #b0c_bit4	 ; set bits
+	ldaa ACTIM2_TimeBeforeAcEnabledAndFullDeltaUsed2    ; load a with memory contents (data is 24)
+	staa Timer_AisOrO2Sensor    ; store a into memory
+	brset *BitFlags_4f, #b4f_OffIdle, L1116    ; branch if bit(s) set
+	ldaa MapValue	    ; load a with memory contents
+	cmpa DCLMN2_NoAisControlIfMapAndControlMapBelowThis    ; compare a with memory contents (data is 0d)
+	bls  L1114	    ; branch if lower or same
+	ldaa AC4KCK_AcClutchKickOpenBeforeAcEnabled2	; load a with memory contents (data is fa)
+	bra  L1115	    ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Dual-Timer Strategy</strong>: Complements <a href="../../5_-_Idle/B_-_AIS_Decel/ACTIME_TimeBeforeAcEnabledAndFullDeltaUsed.html"><code>ACTIME</code></a>, providing identical transition timing in the alternate branch.</li>
+<li><strong>Timer Resolution</strong>: Decrements every loop tick (~16 Hz, 36 counts = ~2.25 seconds).</li>
+<li><strong>Factory Value</strong>: 0x24 (36 counts).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>ACTIM2</code>
+        </footer>
+    </div>
+</body>
+</html>

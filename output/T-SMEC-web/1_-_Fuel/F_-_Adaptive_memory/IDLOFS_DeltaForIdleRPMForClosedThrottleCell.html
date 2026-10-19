@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDLOFS: DeltaForIdleRPMForClosedThrottleCell | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0B86</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ F - Adaptive memory</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>IDLOFS: DeltaForIdleRPMForClosedThrottleCell</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>IDLOFS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>IDLOFS_DeltaForIdleRPMForClosedThrottleCell</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\F_-_Adaptive_memory\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0B86</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x04 (4 counts ≈ 128 RPM above target idle)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3140-L3150"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L3350"><code>AdaptiveMemory_DetermineWhichCellApplies_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L3359"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>IDLOFS</code> defines the engine speed window above the target idle speed that qualifies the engine to use Cell 12, the dedicated closed-throttle idle adaptive fuel trim cell.</p>
+<p>When the throttle is closed, the engine controller checks whether actual engine speed is below target idle speed plus <code>IDLOFS</code>. If engine speed is below this calculated ceiling, Cell 12 is selected; if engine speed exceeds it (such as during closed-throttle coasting at speed), the controller bypasses Cell 12 and uses the regular MAP-RPM grid cells.</p>
+<p>In factory calibrations, <code>IDLOFS</code> is set to 4 counts, corresponding to 128 RPM above target idle speed.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code> (<code>T-SMEC_v19.asm:3350-3373</code>), instruction line 3359.</li>
+<li><strong>Gating Conditions</strong>: Throttle closed (<code>BitFlags_4f</code> bit <code>b4f_OffIdle</code> clear).</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Line 3358 loads <code>TargetIdleSpeed_HB</code> into register A.</li>
+<li>Line 3359 executes <code>adda IDLOFS_DeltaForIdleRPMForClosedThrottleCell</code>.</li>
+<li>Line 3363 compares the sum against <code>EngineRpm_HB</code> via <code>cmpa EngineRpm_HB</code>.</li>
+<li>If <code>sum &lt; EngineRpm_HB</code> (<code>bcs</code>), execution branches to <code>ONTHROTTLE_OR_RPMTOOHIGHFORIDLE</code> (line 3374) to select cruise cells.</li>
+<li>If <code>sum &gt;= EngineRpm_HB</code>, execution branches to <code>L1250</code> (line 3365), selecting Cell 12.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Camshaft Tuning &amp; Idle Flaring</strong>:</li>
+<li>High-duration camshafts with choppy idle require raising <code>IDLOFS</code> to 5-7 counts (160-224 RPM) to prevent idle flare-ups from kicking the ECU out of Cell 12.</li>
+<li><strong>Idle Cell Qualification</strong>:</li>
+<li>Defines the maximum engine speed allowed above target idle speed (<code>TargetIdleSpeed + IDLOFS</code>) to engage Cell 12.</li>
+<li><strong>Coasting Fuel Trim Isolation</strong>:</li>
+<li>Keeps high-speed closed-throttle coastdown from corrupting the stationary idle fuel trim cell.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code>, line 3355 checks <code>BitFlags_4f</code>. When <code>b4f_OffIdle</code> is clear, line 3357 sets register B to 12 (<code>0x0C</code>, idle cell). Line 3358 loads <code>TargetIdleSpeed_HB</code> into accumulator A. Line 3359 executes <code>adda IDLOFS_DeltaForIdleRPMForClosedThrottleCell</code>. If the engine is already in Cell 12, line 3362 also adds <a href="../../1_-_Fuel/F_-_Adaptive_memory/HYTRPM_HysteresisFor_IDLOFS.html"><code>HYTRPM</code></a>. At line 3363, <code>cmpa EngineRpm_HB</code> compares the threshold against actual RPM. If <code>EngineRpm_HB</code> is higher, carry is set and <code>bcs ONTHROTTLE_OR_RPMTOOHIGHFORIDLE</code> exits to the cruise grid. Otherwise, line 3365 branches to store Cell 12 into <code>PointerIntoAdaptiveMemory</code>.</p>
+<pre><code class="language-motorola6803">; --- AdaptiveMemory_DetermineWhichCellApplies_MM (T-SMEC_v19.asm:3357-3366) ---
+	ldab #0x0c	    ; load b with value -00001100- (Cell 12 is the Idle Cell)
+	ldaa TargetIdleSpeed_HB	; load a with memory contents
+	adda IDLOFS_DeltaForIdleRPMForClosedThrottleCell    ;  (data is 04)
+	cmpb PointerIntoAdaptiveMemory
+	bne  L1244	    ; branch if not equal (not zero) (If already in Cell 12, add hysteresis)
+	adda HYTRPM_HysteresisFor_IDLOFS    ;  (data is 02)
+L1244:	cmpa EngineRpm_HB    ; compare a with memory contents (Check if RPM is below threshold for idle cell)
+	bcs  ONTHROTTLE_OR_RPMTOOHIGHFORIDLE	; branch if lower (If RPM is too high, it&#x27;s not idle, use run cells)
+	bra  L1250	    ; branch (RPM is low enough, set cell to 12)</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Works directly with <a href="../../1_-_Fuel/F_-_Adaptive_memory/HYTRPM_HysteresisFor_IDLOFS.html"><code>HYTRPM</code></a> (idle hysteresis) and <code>TargetIdleSpeed_HB</code>.</li>
+<li><strong>Cell Target</strong>: Exclusively controls qualification for AutoCal Cell 12.</li>
+<li><strong>Units</strong>: High-byte engine speed scaling (1 count = 32 RPM; 4 counts = 128 RPM).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>IDLOFS</code>
+        </footer>
+    </div>
+</body>
+</html>

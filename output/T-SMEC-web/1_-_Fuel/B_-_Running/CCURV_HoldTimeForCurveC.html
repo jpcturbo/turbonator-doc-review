@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCURV: HoldTimeForCurveC | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x07DF</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ B - Running</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Base_Modifiers</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CCURV: HoldTimeForCurveC</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CCURV</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CCURV_HoldTimeForCurveC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Base_Modifiers</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\B_-_Running\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x07DF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">seconds</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x07 (7 counts ≈ 4.9 seconds)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L2205-L2215"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5992"><code>CalculateSumOfAllFuelModifiers_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L6022"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CCURV</code> defines the hold duration for intermediate warm-up enrichment (Curve C).</p>
+<p>In Chrysler's tripartite cold enrichment strategy, intermediate enrichment supplies supplementary fuel between initial start-to-run decay and full engine warm-up. <code>CCURV</code> specifies the number of seconds that Curve C enrichment remains locked at 100% full intensity before beginning its decay to zero.</p>
+<p>In factory calibrations, <code>CCURV</code> is set to 7 counts, corresponding to approximately 4.9 seconds of hold time.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateSumOfAllFuelModifiers_MM</code> (<code>T-SMEC_v19.asm:6022-6025</code>), instruction line 6023.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Active when <code>b50_FuelCurveACToggle</code> is clear (Curve C mode).</li>
+<li>Evaluated against <code>KeyOnOrEngineRunningTime</code> shifted left twice.</li>
+<li><strong>Indexed Offset</strong>:</li>
+<li><code>ldx #DCYTMC_CurveAColdDecayTime</code>.</li>
+<li><code>cmpa 0x02,x</code> compares elapsed running time against <code>DCYTMC + 2</code> = <code>CCURV</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Extending Intermediate Dwell</strong>:</li>
+<li>Increasing <code>CCURV</code> to 10-15 counts (7 to 10 seconds) prevents hesitation when pulling away in freezing weather.</li>
+<li><strong>Hold Duration Formula</strong>:</li>
+<li>Duration in seconds equals counts multiplied by 0.704 seconds (7 counts = 4.9 seconds).</li>
+<li><strong>Tripartite Coordination</strong>:</li>
+<li>Works with <a href="../../1_-_Fuel/B_-_Running/DCYCC_DecayRateForCurveC.html"><code>DCYCC</code></a> (Curve C decay rate) and <a href="../../1_-_Fuel/B_-_Running/CURVEC_FuelColdEnrichmentCurveC.html"><code>CURVEC</code></a> (intermediate enrichment curve).</li>
+<li><strong>Timing Parameter Clustering</strong>:</li>
+<li>Positioned alongside <a href="../../1_-_Fuel/B_-_Running/DCYTMC_CurveAColdDecayTime.html"><code>DCYTMC</code></a> and <a href="../../1_-_Fuel/B_-_Running/DCYCC_DecayRateForCurveC.html"><code>DCYCC</code></a> to manage intermediate warmup dwell time.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateSumOfAllFuelModifiers_MM</code>, when <code>b50_FuelCurveACToggle</code> is clear, line 6022 loads <code>ldx #DCYTMC_CurveAColdDecayTime</code>. Accumulator A contains elapsed running time. Line 6023 executes <code>cmpa 0x02,x</code>, comparing against offset <code>DCYTMC + 2</code> = <code>CCURV</code>. If running time is greater or equal (<code>bcc L1515</code>), hold time has expired and execution branches to begin decay; otherwise it branches to <code>ClearTemp0ForResultStorage</code>.</p>
+<pre><code class="language-motorola6803">; --- CalculateSumOfAllFuelModifiers_MM (T-SMEC_v19.asm:6022-6026) ---
+	ldx  #DCYTMC_CurveAColdDecayTime    ; load index with value
+	cmpa 0x02,x	    ; compare a with memory at index + value
+	bcc  L1515	    ; branch if greater or equal
+	bra  ClearTemp0ForResultStorage    ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Offset in ROM</strong>: Stored at address <code>DCYTMC + 2</code> (0x82B5); accessed via indexed operand <code>0x02,x</code>.</li>
+<li><strong>Timer Units</strong>: Scaled at 0.704 seconds per count, identical to <a href="../../1_-_Fuel/B_-_Running/CLDHLD_CurveAColdHoldTime.html"><code>CLDHLD</code></a> and <a href="../../1_-_Fuel/B_-_Running/HOTHLD_CurveAHotHoldTime.html"><code>HOTHLD</code></a>.</li>
+<li><strong>Handoff to Decay</strong>: Once <code>CCURV</code> expires, decay rate is governed by <a href="../../1_-_Fuel/B_-_Running/DCYCC_DecayRateForCurveC.html"><code>DCYCC</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>CCURV</code>
+        </footer>
+    </div>
+</body>
+</html>

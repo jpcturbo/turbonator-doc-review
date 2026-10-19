@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WOTDLT: DeltaThrottleFrom MINTHR ToDetermineFullThrottle | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x11A9</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Setup - Transfer Functions</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>WOTDLT: DeltaThrottleFrom MINTHR ToDetermineFullThrottle</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>WOTDLT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>WOTDLT_DeltaThrottleFrom_MINTHR_ToDetermineFullThrottle</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Setup_-_Transfer_Functions\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x11A9</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">TPS ADC Counts (0x85 = 133 counts; approx 2.60 Volts above MINTHR)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x85                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L4551-L4563"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L3062"><code>HandleO2Processing_MM</code></a> in <a href="../T-LMv13.asm.html#L3064"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>WOTDLT</code> (DeltaThrottleFrom_MINTHR_ToDetermineFullThrottle) establishes the throttle threshold for Wide Open Throttle (WOT) power enrichment and open-loop operation.</p>
+<p>Rather than looking for a fixed absolute voltage (e.g. 4.0V), the ECU adds <code>WOTDLT</code> (stock calibration = 133 counts / ~2.60V) to the learned closed-throttle baseline <code>MINTHR</code>. For example, if learned idle is 0.85V, WOT activates at 0.85V + 2.60V = 3.45V (approximately 70% to 75% accelerator pedal travel). Upon crossing this threshold:
+- Closed-loop oxygen sensor fuel feedback is instantly suspended.
+- Fueling transitions to the high-output <a href="../Fuel_-_Running/WOTTBL_FuelFullThrottle.html"><code>WOTTBL</code></a> fuel curve.
+- Full electronic boost control targets (<a href="../Boost_-_Target_Lookup/WSGRPM_AllowedBoost_FromRpm.html"><code>WSGRPM</code></a> / <a href="../Boost_-_WG_Control/RPMBST_MinimumRpmToTrackBoostCreep.html"><code>RPMBST</code></a>) are unleashed.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside subroutine <code>HandleO2Processing_MM</code> at line 3064 and <code>CheckThrottle_ErrorAlreadyFlagged</code> at line 6734.</li>
+<li>Added to <code>MINTHR_LowestSessionTPS</code>: <code>Threshold = MINTHR + WOTDLT</code>.</li>
+<li>Triggers WOT flag in <code>BitFlags_81</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Earlier Power Enrichment</strong>: If you want WOT fueling and max boost to engage earlier in the pedal travel (e.g. at 60% throttle for a more responsive feel), reduce <code>WOTDLT</code> to <code>0x70</code> (~2.2V above idle).</li>
+<li><strong>Highway Cruise Economy</strong>: If high-speed cruising with a heavy load or headwind accidentally dips into WOT enrichment (wasting fuel), increase <code>WOTDLT</code> to <code>0x95</code> (~2.9V above idle) so WOT only triggers when the pedal is pressed firmly toward the floor.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CheckThrottle_ErrorAlreadyFlagged (T-LMv13.asm:6733-6736) ---
+        ldaa MINTHR_LowestSessionTPS             ; Load learned closed-throttle idle baseline
+        adda WOTDLT_DeltaThrottleFrom_MINTHR_ToDetermineFullThrottle ; Add WOT delta ($11A9, data 0x85 = +2.6V)
+        cmpa TpsVolts                            ; Compare against live throttle voltage
+        bcs  LF0F4                               ; If TpsVolts &gt; Threshold, set WOT FLAG!</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 3064</strong> (<code>HandleO2Processing_MM</code>): <code>ldab WOTDLT_DeltaThrottleFrom_MINTHR_ToDetermineFullThrottle    ; load b with memory contents (data is 85)</code></li>
+<li><strong>Line 6734</strong> (<code>CheckThrottle_ErrorAlreadyFlagged</code>): <code>adda WOTDLT_DeltaThrottleFrom_MINTHR_ToDetermineFullThrottle    ;  (data is 85)</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Relative Thresholding</strong>: Because it references <code>MINTHR</code>, WOT triggers at the exact same physical pedal percentage regardless of minor sensor mounting shifts.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>WOTDLT</code>
+        </footer>
+    </div>
+</body>
+</html>

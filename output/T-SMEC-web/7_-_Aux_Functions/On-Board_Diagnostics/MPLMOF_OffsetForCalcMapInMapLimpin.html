@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPLMOF: OffsetForCalcMapInMapLimpin | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1B6F</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MPLMOF: OffsetForCalcMapInMapLimpin</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MPLMOF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MPLMOF_OffsetForCalcMapInMapLimpin</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1B6F</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x20 (32 counts ≈ 3.7 psi / 7.5 inHg vacuum offset)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7213-L7224"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L4569"><code>SimulateMapReadingFromTps</code></a> in <a href="../../T-SMEC_v19.asm.html#L4588"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MPLMOF</code> establishes a baseline pressure offset added directly to the interpolated manifold absolute pressure value during throttle-based limp-home operation.</p>
+<p>When the manifold pressure sensor is flagged as defective, the engine controller derives an approximate load value from throttle position using a reference curve. However, because an engine idling or decelerating with closed throttle still sustains a measurable minimum absolute pressure, a baseline offset must be added to the looked-up curve value.</p>
+<p>In factory calibrations, <code>MPLMOF</code> is configured to 32 counts, representing approximately 3.7 psi absolute pressure (or roughly 7.5 inHg of vacuum offset). This ensures that even if throttle calculation drops to zero, the engine controller schedules sufficient fuel pulse width and appropriate base spark timing to prevent stalling.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>SimulateMapReadingFromTps</code> (<code>T-SMEC_v19.asm:4569-4589</code>), instruction at line 4588.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Active only when <code>b45_IPL1</code> bit <code>b45_MapBadSignal</code> is set.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li>Follows <code>jsr Lookup4ByteTable</code> on <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/LMPINN_LimpinTableForMapFromThrottle.html"><code>LMPINN_LimpinTableForMapFromThrottle</code></a>.</li>
+<li>Accumulator A contains interpolated pressure counts from <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/LMPINN_LimpinTableForMapFromThrottle.html"><code>LMPINN</code></a>.</li>
+<li>CPU executes <code>adda MPLMOF_OffsetForCalcMapInMapLimpin</code>, adding 32 counts.</li>
+<li>Result returned directly in accumulator A as synthesized <code>MapValue</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Raising for Radical Camshafts</strong>:</li>
+<li>Engines with high-duration camshafts generate lower idle vacuum, requiring a higher baseline offset in <code>MPLMOF</code> to prevent emergency limp-in stalling.</li>
+<li><strong>3-Bar MAP Sensor Scaling</strong>:</li>
+<li>Rescale <code>MPLMOF</code> down by multiplying by 0.667 (from 32 counts down to 21 counts) when upgrading to a 3-bar MAP sensor.</li>
+<li><strong>Lowering &amp; Edge Cases</strong>:</li>
+<li>Lowering <code>MPLMOF</code> leans out the emergency fuel schedule and advances spark timing.</li>
+<li>Setting <code>MPLMOF</code> to zero causes the engine to stall on closed-throttle decel when the MAP sensor faults, while setting it to maximum produces heavy rich fouling.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In routine <code>SimulateMapReadingFromTps</code> at line 4588, immediately following the table lookup of <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/LMPINN_LimpinTableForMapFromThrottle.html"><code>LMPINN</code></a> at line 4587, the CPU executes <code>adda MPLMOF_OffsetForCalcMapInMapLimpin</code>. Accumulator A contains the raw curve interpolation result, to which <code>MPLMOF</code> (0x20 = 32 counts) is added. This sum represents the final synthesized manifold absolute pressure value returned to the main engine fuel and spark scheduling routines.</p>
+<pre><code class="language-motorola6803">; --- SimulateMapReadingFromTps (T-SMEC_v19.asm:4580-4589) ---
+	tab		    ; b = a
+	ldaa TpsVolts	    ; load a with memory contents
+	adda THROFF_OffsetAddedToCalcThrottle	 ;  (data is 0b)
+	sba		    ; subtract (a=a-b)
+	bcc  L1340	    ; branch if greater or equal
+	clra		    ; a = 0
+L1340:	ldx  #LMPINN_LimpinTableForMapFromThrottle    ; load index with value
+	jsr  Lookup4ByteTable	 ; call subroutine
+	adda MPLMOF_OffsetForCalcMapInMapLimpin    ;  (data is 20)
+	rts		    ; return from subroutine
+</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works in tandem with <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/LMPINN_LimpinTableForMapFromThrottle.html"><code>LMPINN</code></a> (table) and <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/THROFF_OffsetAddedToCalcThrottle.html"><code>THROFF</code></a> (throttle offset).</li>
+<li><strong>Diagnostic Code</strong>: DRB-II Fault Code 14 (MAP sensor electrical failure).</li>
+<li><strong>3-Bar Rescaling</strong>: Multiply by 2/3 (0.667) when converting to a 3-bar MAP sensor to avoid artificial load elevation.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MPLMOF</code>
+        </footer>
+    </div>
+</body>
+</html>

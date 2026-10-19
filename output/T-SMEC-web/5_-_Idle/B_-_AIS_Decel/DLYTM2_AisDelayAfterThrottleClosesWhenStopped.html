@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DLYTIM2: AisDelayAfterThrottleClosesWhenStopped | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0F6B</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DLYTIM2: AisDelayAfterThrottleClosesWhenStopped</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DLYTIM2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DLYTM2_AisDelayAfterThrottleClosesWhenStopped</code> (Alias: <code>DLYTIM2</code> / <code>DLYTIM2_AisDelayAfterThrottleClosesWhenStopped</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0F6B</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">seconds</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x6D                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4137-L4147"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a> &nbsp;|&nbsp; <a href="../../T-SMEC_22_ATX_S-IV.tpl.html#L4042-L4052"><code>T-SMEC_22_ATX_S-IV.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L7867"><code>CheckThrottle_AtIdle</code></a> in <a href="../../T-SMEC_v19.asm.html#L7872"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DLYTIM2</code> defines the time delay that the engine controller holds the idle air stepper motor in open dashpot position after the throttle snaps shut while the vehicle is stopped or moving at low speed with engine RPM below <a href="../../5_-_Idle/B_-_AIS_Decel/DLYRPM_RpmTriggerForAisDelay.html"><code>DLYRPM</code></a>.</p>
+<p>When the driver revs or blips the throttle at a standstill, or when coming to a halt at a stoplight, the throttle plate snaps closed. Holding the idle air valve open for a calibrated period cushions the engine's return to idle and prevents the descending crankshaft speed from plunging into an undershoot stall.</p>
+<p>Whenever closed throttle is detected at speeds below <a href="../../5_-_Idle/B_-_AIS_Decel/MPHREF_SwitchPointForDecelIdleAisControl.html"><code>MPHREF</code></a> and engine speed is below <a href="../../5_-_Idle/B_-_AIS_Decel/DLYRPM_RpmTriggerForAisDelay.html"><code>DLYRPM</code></a>, the controller loads <code>DLYTIM2</code> into the feedback lockout countdown timer.</p>
+<p>In factory calibrations, <code>DLYTIM2</code> is set to 18 counts, providing approximately 1.1 seconds of dashpot hold time.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CheckThrottle_AtIdle</code> (<code>T-SMEC_v19.asm:7867-7895</code>) within <code>CheckThrottleRoutine_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Throttle must be closed (<code>b4f_OffIdle</code> clear at line 7868).</li>
+<li>Vehicle speed must be less than or equal to <a href="../../5_-_Idle/B_-_AIS_Decel/MPHREF_SwitchPointForDecelIdleAisControl.html"><code>MPHREF</code></a> at line 7878.</li>
+<li>Engine RPM must be lower than <a href="../../5_-_Idle/B_-_AIS_Decel/DLYRPM_RpmTriggerForAisDelay.html"><code>DLYRPM</code></a> at line 7883 (<code>cmpb DLYRPM; bcc L1652</code> fails).</li>
+<li>When RPM is below <a href="../../5_-_Idle/B_-_AIS_Decel/DLYRPM_RpmTriggerForAisDelay.html"><code>DLYRPM</code></a>, execution falls through to line 7885 with index X pointing to <code>DLYTIM + 1</code> (accessed via <code>inx</code> at line 7880), loading <code>DLYTIM2</code> into accumulator A via <code>ldaa 0x00,x</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stationary Blip Stall Fix</strong>:</li>
+<li>Increase <code>DLYTIM2</code> from 1.1 to 1.8 to 2.2 seconds to eliminate stalling when blipping the throttle in neutral or rolling to a stop.</li>
+<li><strong>Lightweight Flywheel Inertia</strong>:</li>
+<li>Engines with lightened rotating mass lose speed rapidly; extending <code>DLYTIM2</code> provides a softer landing into idle.</li>
+<li><strong>Reducing Neutral Hang</strong>:</li>
+<li>If idle lingers above target for several seconds after free-revving in neutral, lower <code>DLYTIM2</code> to 12 to 14 counts (~0.8 seconds).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CheckThrottle_AtIdle</code>, when vehicle speed is below <a href="../../5_-_Idle/B_-_AIS_Decel/MPHREF_SwitchPointForDecelIdleAisControl.html"><code>MPHREF</code></a> at line 7878, line 7880 executes <code>inx</code>, advancing index register X from <a href="../../5_-_Idle/B_-_AIS_Decel/DLYTIM_AisDelayAfterThrottleClosesWhenMoving.html"><code>DLYTIM</code></a> to point directly to <code>DLYTIM2</code>. Line 7883 compares <code>EngineRpm_HB</code> against <a href="../../5_-_Idle/B_-_AIS_Decel/DLYRPM_RpmTriggerForAisDelay.html"><code>DLYRPM</code></a>. If RPM is below <a href="../../5_-_Idle/B_-_AIS_Decel/DLYRPM_RpmTriggerForAisDelay.html"><code>DLYRPM</code></a>, the branch <code>bcc L1652</code> is not taken. Execution falls through to line 7886: <code>ldaa 0x00,x</code>, which loads <code>DLYTIM2</code> into accumulator A. Lines 7887-7889 store accumulator A into <code>Timer_CountdownFromStartRunForAisFeedback</code>.</p>
+<pre><code class="language-motorola6803">; --- CheckThrottle_AtIdle (T-SMEC_v19.asm:7872-7890) ---
+L1651:	ldx  #DLYTIM_AisDelayAfterThrottleClosesWhenMoving	    ; load index with value
+	stab Temp0	    ; store b into memory
+	ldd  VehicleSpeed_HB	; load d (a&amp;b) with memory contents
+	asld		    ; shift left (d=d*2)
+	asld		    ; shift left (d=d*2)
+	asld		    ; shift left (d=d*2)
+	cmpa MPHREF_SwitchPointForDecelIdleAisControl	 ; compare a with memory contents (data is 07)
+	bhi  CheckThrottle_VehicleSpeedStillAboveDecelIdle    ; branch if higher
+	inx		    ; increment index (x=x+1)
+	ldaa DLYTM3_AisDelayAfterThrottleClosesWhenRpmAbove_DLYRPM    ; load a with memory contents (data is ff)
+	ldab EngineRpm_HB    ; load b with memory contents
+	cmpb DLYRPM_RpmTriggerForAisDelay    ; compare b with memory contents (data is da)
+	bcc  L1652	    ; branch if greater or equal
+CheckThrottle_VehicleSpeedStillAboveDecelIdle:
+	ldaa 0x00,x	    ; load a with memory at index + value
+L1652:	cmpa Timer_CountdownFromStartRunForAisFeedback	  ; compare a with memory contents
+	bls  L1653	    ; branch if lower or same
+	staa Timer_CountdownFromStartRunForAisFeedback	  ; store a into memory
+L1653:	ldab Temp0	    ; load b with memory contents</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Indexed Assembly Access</strong>: In <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a> at line 7880, <code>DLYTIM2</code> is accessed via <code>inx; ldaa 0x00,x</code> off base pointer <a href="../../5_-_Idle/B_-_AIS_Decel/DLYTIM_AisDelayAfterThrottleClosesWhenMoving.html"><code>DLYTIM</code></a>, rather than by direct symbol name.</li>
+<li><strong>Template Spelling Discrepancy</strong>: In stock template <code>T-SMEC_25_ATX_A283_Stock.tpl:4137</code>, the label is spelled <code>DLYTM2_AisDelayAfterThrottleClosesWhenStopped:</code>, while in Stage IV it is spelled <code>DLYTIM2</code>.</li>
+<li><strong>Factory Value</strong>: 0x12 (18 counts = approximately 1.1 seconds).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>DLYTIM2</code>
+        </footer>
+    </div>
+</body>
+</html>

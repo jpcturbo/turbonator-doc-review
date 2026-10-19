@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BARAIS: BaroCompensation FromBaro | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0E27</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ A - AIS Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BARAIS: BaroCompensation FromBaro</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BARAIS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BARAIS_AISBaroCompensation</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\A_-_AIS_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0E27</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2D Table / Curve)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">2 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Barometric Pressure (0.0 to 14.7 psi atmospheric, 0.0 to 29.9 inHg absolute)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">AIS Altitude Compensation Factor (0.0 to 1.0 multiplier)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">factor vs. psi</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Number of points in table
+.byte 0x5E, 0x26, 0xFC, 0x8C     ;Point 1
+.byte 0x69, 0x00                 ;Point 2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3813-L3826"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L2064"><code>SetDFCFlag</code></a> in <a href="../../T-SMEC_v19.asm.html#L2071"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BARAIS</code> is a 2D calibration curve that provides barometric pressure compensation for idle and air conditioning stepper motor adjustments.</p>
+<p>At higher altitudes, atmospheric pressure drops, reducing air density and oxygen mass per unit volume of intake air. To achieve the exact same mass airflow required to maintain target idle speed or absorb accessory loads, the idle air stepper motor must open further at high elevation than at sea level.</p>
+<p><code>BARAIS</code> looks up an altitude scaling factor from barometric pressure that is stored in temporary memory and applied to downstream idle step calculations.</p>
+<p>In factory calibrations, <code>BARAIS</code> scales from a positive compensation multiplier at high altitudes (low barometric pressure) down to zero correction at sea level (14.7 psi absolute / 29.9 inHg).</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>SetDFCFlag</code> (<code>T-SMEC_v19.asm:2064-2074</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated on every pass through <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at line 2070.</li>
+<li>Loads <code>BaroPressure</code> into accumulator A.</li>
+<li>Calls <code>Lookup4ByteTable</code> using index <code>#BARAIS_AISBaroCompensation</code> at lines 2071-2072.</li>
+<li>Stores the returned altitude scaling factor into temporary RAM <code>Temp1</code> at line 2073 for subsequent step multiplier routines.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>High-Altitude Stall Prevention</strong>:</li>
+<li>If operating at elevations above 4000 feet and experiencing accessory load idle sag, elevate the low-pressure cells in <code>BARAIS</code> to increase stepper motor compensation.</li>
+<li><strong>Sea-Level Baseline</strong>:</li>
+<li>Factory calibrations flatten to zero compensation near standard sea-level atmospheric pressure (14.7 psi).</li>
+<li><strong>Table Verification</strong>:</li>
+<li>Ensure points are monotonically decreasing as barometric pressure increases toward sea level.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at line 2070, the CPU loads <code>BaroPressure</code> into accumulator A. At line 2071, it executes <code>ldx #BARAIS_AISBaroCompensation</code> and calls <code>jsr Lookup4ByteTable</code> at line 2072. At line 2073, the interpolated altitude factor is stored in <code>Temp1</code> (<code>staa Temp1</code>). Downstream subroutines <code>MultiplyTempvar1ByA</code> (line 2498) and <code>L1156</code> (line 2489) multiply this factor against A/C and gear kick step deltas to scale airflow appropriately for atmospheric density.</p>
+<pre><code class="language-motorola6803">; --- SetDFCFlag (T-SMEC_v19.asm:2070-2074) ---
+L1082:	ldaa BaroPressure    ; load a with memory contents
+	ldx  #BARAIS_AISBaroCompensation    ; load index with value
+	jsr  Lookup4ByteTable	 ; call subroutine
+	staa Temp1	    ; store a into memory
+	ldaa DRBPointer1    ; load a with memory contents</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Multiplier Storage</strong>: Output is held in <code>Temp1</code> and acts as a dynamic multiplier across multiple idle subroutines.</li>
+<li><strong>Companion Parameter</strong>: Works alongside <a href="../../5_-_Idle/B_-_AIS_Decel/BARFLR_OffsetCorrectionTo_MAPFLR_FromBaro.html"><code>BARFLR</code></a>, which applies barometric correction to decel control MAP.</li>
+<li><strong>Table Resolution</strong>: 2 points (Baro pressure vs altitude factor).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>BARAIS</code>
+        </footer>
+    </div>
+</body>
+</html>

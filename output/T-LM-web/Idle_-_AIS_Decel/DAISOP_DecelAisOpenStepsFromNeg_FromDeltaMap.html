@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAISOP: DecelAisOpenStepsFromNeg FromDeltaMap | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0B1D</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DAISOP: DecelAisOpenStepsFromNeg FromDeltaMap</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DAISOP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DAISOP_DecelAisOpenStepsFromNeg_FromDeltaMap</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0B1D</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 2 (2D Table / Curve)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Stepper Motor Steps (Open) vs Negative Delta MAP (-dMAP)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Number of points in table; .byte 0x01, 0x00, 0x00, 0xBA     ;Point 1; .byte 0x0C, 0x08                 ;Point 2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L2875-L2890"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L3503"><code>CalculateAisPosition_MM</code></a> in <a href="../T-LMv13.asm.html#L3663"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DAISOP</code> (DecelAisOpenStepsFromNeg_FromDeltaMap) is a dynamic anti-stall table that responds directly to the rate of manifold vacuum increase (negative Delta MAP).</p>
+<p>When the driver suddenly snaps the throttle shut at high RPM, manifold pressure plunges downward at an extreme rate (-Δ MAP). If the ECU waits for the standard closed-loop idle speed routine to detect an RPM drop, the engine will already have stalled before the stepper motor can travel. <code>DAISOP</code> detects this sharp negative pressure drop and instantly commands the AIS motor to step open by a calibrated count, arresting the pressure drop and catching the falling engine speed smoothly.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside <code>CalculateAisPosition_MM</code> at line 3663.</li>
+<li>Triggered when manifold pressure is below the controlled MAP floor (<code>suba MapValue; bcc LDAA7</code>).</li>
+<li>Active during decel transient events when <code>Timer_AisChanges &gt;= DCLRFQ</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Sudden Lift Stalling (Blow-Off / Vent-to-Atmosphere Valves)</strong>: Turbo cars that stall immediately when shifting gears or snapping the throttle shut under boost often suffer from sudden vacuum collapse. Increasing <code>DAISOP</code> commands a quicker, larger air cushion to catch the RPM drop.</li>
+<li><strong>Lightweight Aluminum Flywheels</strong>: Ultra-light rotating assemblies drop RPM much faster than stock heavy cast flywheels. Increase <code>DAISOP</code> by 3 to 6 steps at high delta MAP inputs to catch the rapid engine deceleration.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateAisPosition_MM (T-LMv13.asm:3660-3668) ---
+        cmpa DCLMIN_MinLimitOnDecelAisControlledMap ; Check against minimum decel MAP floor
+        bcc  LDA9C
+        ldaa DCLMIN_MinLimitOnDecelAisControlledMap
+LDA9C:  ldx  #DAISOP_DecelAisOpenStepsFromNeg_FromDeltaMap ; Pointer to negative delta table ($0B1D)
+        suba MapValue                            ; Subtract live MAP (calculates -dMAP)
+        bcc  LDAA7                               ; If positive delta, proceed to lookup
+        nega                                     ; If negative, invert
+        ldx  #DAISCL_DecelAisOpenStepsFromPos_FromDeltaMap ; Pointer to positive delta table ($0B2D)
+LDAA7:  jsr  Lookup4ByteTable                    ; Look up dynamic step correction
+        jsr  StoreAndLimitDesiredAisPosition     ; Apply and limit new AIS step position</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 3663</strong> (<code>CalculateAisPosition_MM</code>): <code>LDA9C:  ldx  #DAISOP_DecelAisOpenStepsFromNeg_FromDeltaMap    ; load index with value</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Dual Function Branch</strong>: Notice the assembly structure: if the delta MAP calculation is positive, it uses <code>DAISOP</code>; if negative, it negates the accumulator and switches pointer to <a href="../Idle_-_AIS_Decel/DAISCL_DecelAisOpenStepsFromPos_FromDeltaMap.html"><code>DAISCL</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>DAISOP</code>
+        </footer>
+    </div>
+</body>
+</html>

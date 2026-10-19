@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRMSK6: CruiseMask6 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1741</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Cruise Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Cruise_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CRMSK6: CruiseMask6</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CRMSK6</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CRMSK6_CruiseMask6</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Cruise_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Cruise_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1741</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">counts clamp limit</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x1E (+30 counts positive integrator clamp)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6143-L6153"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8723"><code>CalculateVehicleSpeed</code></a> in <a href="../../T-SMEC_v19.asm.html#L8777"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CRMSK6</code> defines the positive clamp ceiling for the adaptive integrator trim.</p>
+<p>In closed-loop cruise control, integral windup occurs if the controller continues incrementing its learned trim indefinitely when the vehicle cannot maintain speed (such as on an extremely steep mountain pass). Without an upper ceiling, the integrator would build up massive throttle authority that would keep the throttle held wide open long after reaching flat ground. <code>CRMSK6</code> caps learned positive integrator authority at +30 counts, preventing integrator windup and ensuring safe throttle boundaries.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8777-8780</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated whenever <code>BitFlags_27</code> is incremented by <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK7_CruiseMask7.html"><code>CRMSK7</code></a>.</li>
+<li>Incremented value held in accumulator B.</li>
+<li><strong>Comparison &amp; Clamp</strong>:</li>
+<li>Compares accumulator B against <code>CRMSK6</code> via <code>cmpb CRMSK6</code> at line 8777.</li>
+<li>If less or equal (<code>ble L1763</code>), stores result; if greater, line 8779 reloads <code>CRMSK6</code> into B before storing.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Integrator Windup Prevention</strong>:</li>
+<li>Caps positive learned trim <code>BitFlags_27</code> at +30 counts.</li>
+<li>Prevents the controller from holding excessive throttle open after climbing steep mountains.</li>
+<li><strong>Mountain &amp; Towing Tuning</strong>:</li>
+<li>Increasing to 40 or 45 counts provides additional steady-state climbing authority for heavy vehicles.</li>
+<li><strong>Symmetrical Clamping</strong>:</li>
+<li>Forms the positive boundary paired with negative boundary <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK5_CruiseMask5.html"><code>CRMSK5</code></a> (-30 counts).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateVehicleSpeed</code> at line 8777, <code>cmpb CRMSK6_CruiseMask6</code> evaluates accumulator B against upper clamp limit +30 . If accumulator B is less than or equal to <code>CRMSK6</code> (<code>ble L1763</code>), the updated value is accepted. If accumulator B exceeds <code>CRMSK6</code>, line 8779 executes <code>ldab CRMSK6_CruiseMask6</code>, clamping the integrator before storing to <code>BitFlags_27</code> at line 8780.</p>
+<pre><code class="language-motorola6803">; --- CalculateVehicleSpeed (T-SMEC_v19.asm:8776-8780) ---
+L1762:	addb CRMSK7_CruiseMask7    ;  (data is 01)
+	cmpb CRMSK6_CruiseMask6    ; compare b with memory contents (data is 1e)
+	ble  L1763	    ; branch if less or equal
+	ldab CRMSK6_CruiseMask6    ; load b with memory contents (data is 1e)
+L1763:	stab BitFlags_27    ; store b into memory</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Ceiling Value</strong>: Factory set to 0x1E (+30 decimal counts).</li>
+<li><strong>Windup Protection</strong>: Strictly enforces maximum steady-state adaptive authority.</li>
+<li><strong>Companion Parameter</strong>: Coordinates with lower clamp limit <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK5_CruiseMask5.html"><code>CRMSK5_CruiseMask5</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>CRMSK6</code>
+        </footer>
+    </div>
+</body>
+</html>

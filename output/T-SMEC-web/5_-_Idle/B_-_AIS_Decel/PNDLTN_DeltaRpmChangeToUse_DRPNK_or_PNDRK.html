@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PNDLT: DeltaRpmChangeToUse DRPNK or PNDRK A | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0F9F</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PNDLT: DeltaRpmChangeToUse DRPNK or PNDRK A</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PNDLT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>PNDLTN_DeltaRpmChangeToUse_DRPNK_or_PNDRK</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0F9F</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0x0190                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4189-L4199"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L2170"><code>HandleAcCutout</code></a> in <a href="../../T-SMEC_v19.asm.html#L2351"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PNDLT</code> defines the engine speed error deadband threshold required before the controller triggers the automatic transmission Park/Neutral to Drive kick opening table.</p>
+<p>When the driver shifts an automatic transmission from Park or Neutral into Drive or Reverse, the transmission hydraulic clutches engage and the torque converter impeller suddenly loads the crankshaft. To prevent the resulting mechanical drag from causing a severe engine stumble or stall, the ECU monitors the RPM drop.</p>
+<p>If the difference between actual engine speed and target idle speed exceeds <code>PNDLT</code>, the controller advances its memory pointer to index the <a href="../../5_-_Idle/B_-_AIS_Decel/PNDRK_ParkNeutralToDriveKicks_FromTemp.html"><code>PNDRK</code></a> opening step table.</p>
+<p>In factory calibrations, <code>PNDLT</code> is configured to 400 counts, representing an RPM delta trigger threshold of approximately 200 RPM.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2365</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Automatic transmission gear change active: <code>b0c_ATXChngGear</code> set in <code>BitFlags_AIS</code> at line 2344.</li>
+<li>Shifting into gear: <code>b0c_ATXInGear</code> clear at line 2345 (branches to <code>L1126</code>).</li>
+<li>Loads index X with <code>#PNDLTN_DeltaRpmChangeToUse_DRPNK_or_PNDRK</code> at line 2351.</li>
+<li>Calculates RPM drop: <code>ldd EngineRpm_HB; subd TargetIdleSpeed_HB</code>.</li>
+<li>Compares delta against <code>PNDLT</code> at line 2355: <code>subd 0x00,x</code>. If delta exceeds <code>PNDLT</code> (carry clear), advances via <code>inx; inx</code> to look up <a href="../../5_-_Idle/B_-_AIS_Decel/PNDRK_ParkNeutralToDriveKicks_FromTemp.html"><code>PNDRK</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Earlier In-Gear Catch</strong>:</li>
+<li>Lower <code>PNDLT</code> from 200 RPM down to 100 to 140 RPM to trigger the <a href="../../5_-_Idle/B_-_AIS_Decel/PNDRK_ParkNeutralToDriveKicks_FromTemp.html"><code>PNDRK</code></a> kick sooner if the engine dips heavily when shifted into Drive.</li>
+<li><strong>High-Stall Torque Converters</strong>:</li>
+<li>High-stall converters generate less initial drag; <code>PNDLT</code> can be elevated to prevent unnecessary step kicks on gear selection.</li>
+<li><strong>Threshold Minimum</strong>:</li>
+<li>Do not lower <code>PNDLT</code> below 50 RPM to avoid false triggering from natural idle lope.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>, line 2345 branches to label <code>L1126</code> when shifting into gear. Line 2351 loads index X with <code>#PNDLTN_DeltaRpmChangeToUse_DRPNK_or_PNDRK</code>. Lines 2352-2353 compute <code>ldd EngineRpm_HB; subd TargetIdleSpeed_HB</code>. At line 2355, the CPU subtracts the 16-bit word pointed to by X: <code>subd 0x00,x</code>. If carry is set (<code>bcs L1130</code>), the RPM error is below <code>PNDLT</code> and the kick is skipped. If carry is clear, lines 2358-2359 execute <code>inx; inx</code> to advance index X past the 2-byte <code>PNDLT</code> word to point directly to <a href="../../5_-_Idle/B_-_AIS_Decel/PNDRK_ParkNeutralToDriveKicks_FromTemp.html"><code>PNDRK</code></a>.</p>
+<pre><code class="language-motorola6803">; --- HandleAcCutout (T-SMEC_v19.asm:2350-2362) ---
+
+L1126:	ldx  #PNDLTN_DeltaRpmChangeToUse_DRPNK_or_PNDRK    ; load index with value
+	ldd  EngineRpm_HB    ; load d (a&amp;b) with memory contents
+	subd TargetIdleSpeed_HB	; d = d - memory contents
+L1127:	bcs  L1130	    ; branch if lower
+	subd 0x00,x	
+	bcs  L1130	    ; branch if lower
+	ldaa CoolantTemp    ; load a with memory contents
+	inx		    ; increment index (x=x+1)
+	inx		    ; increment index (x=x+1)
+	jsr  Lookup4ByteTable	 ; call subroutine
+	bmi  L1128	    ; branch if minus(hi bit 1)
+	jsr  MultiplyTempvar1ByA    ; call subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Label Spelling</strong>: Identified as <code>PNDLT</code> in template headers and <a href="../../5_-_Idle/B_-_AIS_Decel/PNDLTN_DeltaRpmChangeToUse_DRPNK_or_PNDRK.html"><code>PNDLTN_DeltaRpmChangeToUse_DRPNK_or_PNDRK</code></a> in ROM labels.</li>
+<li><strong>Pointer Architecture</strong>: Sits immediately prior to <a href="../../5_-_Idle/B_-_AIS_Decel/PNDRK_ParkNeutralToDriveKicks_FromTemp.html"><code>PNDRK</code></a> in ROM memory; the CPU steps directly from <code>PNDLT</code> into <a href="../../5_-_Idle/B_-_AIS_Decel/PNDRK_ParkNeutralToDriveKicks_FromTemp.html"><code>PNDRK</code></a> via <code>inx; inx</code>.</li>
+<li><strong>Word-Length Constant</strong>: Type 4 (16-bit word), factory value 0x0190 (400 counts = ~200 RPM).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>PNDLT</code>
+        </footer>
+    </div>
+</body>
+</html>

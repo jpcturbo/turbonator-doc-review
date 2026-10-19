@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNLOAD: DeltaThrottleFrom MINTHR ToUnloadCrankingFuel | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x15BA</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ E - Throttle Calibration</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>UNLOAD: DeltaThrottleFrom MINTHR ToUnloadCrankingFuel</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>UNLOAD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>UNLOAD_DeltaThrottleFrom_MINTHR_ToUnloadCrankingFuel</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\E_-_Throttle_Calibration\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x15BA</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Volts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x85                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5752-L5762"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5546"><code>CalculateInjectorPulsewidthForStarting_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L5558"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>UNLOAD</code> establishes the throttle position sensor delta threshold that activates clear-flood mode during engine cranking.</p>
+<p>When an engine fails to start due to saturated cylinders or fuel-fouled spark plugs, pressing the accelerator pedal to the floor signals the controller to purge excess fuel. Configured in factory calibrations to one hundred thirty-three counts (approximately two point six one volts above closed throttle), <code>UNLOAD</code> is evaluated by the starting fuel calculation routine. If throttle position sensor voltage exceeds the learned closed-throttle baseline by <code>UNLOAD</code> while cranking, the controller branches to clear-flood mode, cutting fuel injection pulsewidths to zero so fresh air can clear the combustion chambers.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateInjectorPulsewidthForStarting_MM</code> (<code>T-SMEC_v19.asm:5546-5575</code>), instruction line 5558 (<code>cmpa UNLOAD_...</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Active only during engine cranking (<code>b54_FuelEngineNotRunning</code> is set).</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Checks absolute throttle voltage against 0xD0 (<code>cmpa #0xd0; bcc ThrottleFlooredWhileStarting_UnloadFuel</code>).</li>
+<li>Subtracts <code>MINTHR_LowestSessionTPS</code> from <code>TpsVolts</code>.</li>
+<li>Line 5558 compares delta against <code>UNLOAD_DeltaThrottleFrom_MINTHR_ToUnloadCrankingFuel</code>.</li>
+<li>If higher or equal (<code>bcc</code>), branches to <code>ThrottleFlooredWhileStarting_UnloadFuel</code>, setting starting pulsewidth to zero.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Clear-Flood Protection</strong>:</li>
+<li>Flooring the throttle while cranking cuts fuel delivery, allowing flooded engines to purge raw fuel.</li>
+<li><strong>Aftermarket Throttle Bodies</strong>:</li>
+<li>Verify that aftermarket throttle linkages produce enough voltage sweep to cross <code>UNLOAD</code> at full pedal depression.</li>
+<li><strong>Lower Limit Warning</strong>:</li>
+<li>Setting <code>UNLOAD</code> below eighty counts risks cutting cranking fuel during light-throttle starting attempts.</li>
+<li><strong>Factory Setting</strong>:</li>
+<li>Set to one hundred thirty-three counts (~2.61 Volts delta) in factory calibrations.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateInjectorPulsewidthForStarting_MM</code> at lines 5553-5559, accumulator A loads <code>TpsVolts</code>. If <code>TpsVolts &gt;= 0xD0</code>, line 5555 branches to <code>ThrottleFlooredWhileStarting_UnloadFuel</code>. Otherwise, line 5556 executes <code>suba MINTHR_LowestSessionTPS</code> and line 5558 executes <code>cmpa UNLOAD_DeltaThrottleFrom_MINTHR_ToUnloadCrankingFuel</code>. If carry is clear (<code>bcc</code>), the throttle delta exceeds <code>UNLOAD</code>, branching to unload cranking fuel.</p>
+<pre><code class="language-motorola6803">; --- CalculateInjectorPulsewidthForStarting_MM (T-SMEC_v19.asm:5553-5560) ---
+	ldaa TpsVolts	    ; load a with memory contents
+	cmpa #0xd0	    ; compare a with value -11010000-
+	bcc  ThrottleFlooredWhileStarting_UnloadFuel	; branch if greater or equal
+	suba MINTHR_LowestSessionTPS
+	bls  L1476	    ; branch if lower or same
+	cmpa UNLOAD_DeltaThrottleFrom_MINTHR_ToUnloadCrankingFuel    ; compare a with memory contents (data is 85)
+	bcc  ThrottleFlooredWhileStarting_UnloadFuel	; branch if greater or equal
+L1476:	jsr  AllowForHeatSoakAfterStall    ; call subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Starting Subsystem Only</strong>: Evaluated exclusively while cranking before the engine reaches run state.</li>
+<li><strong>Dual Trigger Criteria</strong>: Reached either via absolute voltage (&gt;= 0xD0) or relative delta (&gt;= <code>UNLOAD</code>).</li>
+<li><strong>Pairing</strong>: Mirrored identically to <a href="../../0_-_Setup/E_-_Throttle_Calibration/WOTDLT_DeltaThrottleFrom_MINTHR_ToDetermineFullThrottle.html"><code>WOTDLT</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>UNLOAD</code>
+        </footer>
+    </div>
+</body>
+</html>

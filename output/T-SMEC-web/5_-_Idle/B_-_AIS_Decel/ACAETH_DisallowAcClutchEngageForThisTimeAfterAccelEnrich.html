@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACAETH: DisallowAcClutchEngageForThisTimeAfterAccelEnrich | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1091</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ACAETH: DisallowAcClutchEngageForThisTimeAfterAccelEnrich</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ACAETH</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ACAETH_DisallowAcClutchEngageForThisTimeAfterAccelEnrich</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1091</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">seconds</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x2D                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4431-L4441"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L2170"><code>HandleAcCutout</code></a> in <a href="../../T-SMEC_v19.asm.html#L2221"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ACAETH</code> defines the lockout delay timer that prevents the air conditioning compressor clutch from engaging immediately following an acceleration enrichment transient.</p>
+<p>When the driver steps into the throttle to accelerate, the fuel injection system delivers acceleration enrichment to prevent a lean tip-in stumble. If the air conditioning clutch were permitted to snap shut in the middle of this throttle tip-in transient, the sudden mechanical load shock would absorb engine torque, causing a perceptible hesitation or stumble.</p>
+<p><code>ACAETH</code> enforces a mandatory waiting delay: whenever acceleration enrichment is active, the controller reloads the clutch restriction timer with <code>ACAETH</code>, keeping the compressor disengaged until fueling and combustion stabilize.</p>
+<p>In factory calibrations, <code>ACAETH</code> is set to 45 counts, enforcing a tip-in lockout delay of approximately 2.8 seconds.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2223</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluates A/C clutch transition state at lines 2208-2211.</li>
+<li>Checks for active acceleration enrichment at lines 2217-2220: <code>Pulsewidth_PartThrottleEnrichment_HB</code> or <code>_LB</code> non-zero.</li>
+<li>If acceleration enrichment is active, loads <code>ACAETH</code> into accumulator A at line 2221 and stores into <code>Timer_AcClutchEngageRestrictionTimer</code> at line 2222.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Curing Tip-In Acceleration Stumble</strong>:</li>
+<li>Increase <code>ACAETH</code> from 2.8 to 3.5 to 4.5 seconds if the vehicle hesitates when stepping on the throttle with the A/C running.</li>
+<li><strong>Low Setting Drivability Hazard</strong>:</li>
+<li>Setting <code>ACAETH</code> below 1.0 second allows the compressor to engage during turbo spool-up, causing an annoying torque sag.</li>
+<li><strong>Timer Operation</strong>:</li>
+<li>Loaded into <code>Timer_AcClutchEngageRestrictionTimer</code>, which decrements every loop clock tick.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>HandleAcCutout</code>, lines 2217-2220 check the part-throttle acceleration enrichment pulsewidth registers. If enrichment is active, line 2221 executes <code>ldaa ACAETH_DisallowAcClutchEngageForThisTimeAfterAccelEnrich</code>. Line 2222 stores accumulator A into <code>Timer_AcClutchEngageRestrictionTimer</code>. While this restriction timer remains non-zero, line 2280 blocks execution of the A/C clutch engagement logic, preventing the compressor from energizing.</p>
+<pre><code class="language-motorola6803">; --- HandleAcCutout (T-SMEC_v19.asm:2217-2223) ---
+L1101:	ldaa Pulsewidth_PartThrottleEnrichment_HB    ; load a with memory contents
+	bne  L1102	    ; branch if not equal (not zero)
+	ldaa Pulsewidth_PartThrottleEnrichment_LB    ; load a with memory contents
+	beq  L1111	    ; branch if equal (zero)
+L1102:	ldaa ACAETH_DisallowAcClutchEngageForThisTimeAfterAccelEnrich	 ; load a with memory contents (data is 2d)
+	staa Timer_AcClutchEngageRestrictionTimer    ; store a into memory
+L1103:	jmp  L1119</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Transient Decoupling</strong>: Ensures fuel enrichment transients and mechanical compressor clutch load transients never coincide.</li>
+<li><strong>Timer Decrement</strong>: Paced by the foreground clock (~16 Hz, where 45 counts equals approximately 2.8 seconds).</li>
+<li><strong>Factory Value</strong>: 0x2D (45 counts).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>ACAETH</code>
+        </footer>
+    </div>
+</body>
+</html>

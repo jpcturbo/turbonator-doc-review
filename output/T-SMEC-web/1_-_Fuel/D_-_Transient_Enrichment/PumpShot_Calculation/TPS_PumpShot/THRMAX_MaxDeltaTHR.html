@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THRMAX: MaxDeltaTHR | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x08BE</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ D - Transient Enrichment ➔ PumpShot Calculation ➔ TPS PumpShot</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>THRMAX: MaxDeltaTHR</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>THRMAX</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>THRMAX_MaxDeltaTHR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\D_-_Transient_Enrichment\PumpShot_Calculation\TPS_PumpShot\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x08BE</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Throttle Position Sensor Delta Voltage Clamp (0.0 to 5.0 Volts, 0.02 Volts / count)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x23                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L2428-L2438"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SMEC_v19.asm.html#L6484"><code>TransFuel_IncludeTPSTransients</code></a> in <a href="../../../../T-SMEC_v19.asm.html#L6498"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>THRMAX</code> defines the maximum allowable throttle position sensor delta voltage used to compute the throttle-based acceleration enrichment pump shot.</p>
+<p>When the accelerator is rapidly floored from idle, the throttle sensor voltage can jump by more than 3.5 volts in a fraction of a second. If this entire voltage swing were multiplied by the enrichment slope, the controller would inject a massive flood of fuel that would bog or drown the engine. <code>THRMAX</code> clamps the effective throttle opening delta after the trigger threshold is subtracted, capping the maximum allowable transient pulse width.</p>
+<p>The factory setting of 35 counts limits the active calculation range to approximately 0.70 volts above the trigger threshold.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Enclosed in routine <code>TransFuel_IncludeTPSTransients</code> at lines 6484-6510 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Evaluated immediately after <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/POSTRG_PositiveTransientTriggerLevel.html"><code>POSTRG</code></a> subtraction at line 6496.</li>
+<li>Clamp comparison: Line 6498 executes <code>cmpa THRMAX_MaxDeltaTHR</code>.</li>
+<li>Limiting logic: If accumulator A is less than <code>THRMAX</code>, branch <code>bcs L1554</code> skips the cap; if greater or equal, line 6500 loads <code>THRMAX</code> directly into accumulator A before storing into <code>Temp1</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Curing Rich Tip-in Bog</strong>: Lowering <code>THRMAX</code> limits the maximum volume of fuel that a rapid throttle depression can deliver, which is especially critical when running high-flow aftermarket fuel injectors that deliver substantially more fuel per millisecond.</li>
+<li><strong>Eliminating Exhaust Smoke</strong>: If aggressive off-idle throttle stomps produce a momentary rich stumble with black exhaust smoke, lowering <code>THRMAX</code> cures the bog.</li>
+<li><strong>High-Flow Manifolds</strong>: Raising <code>THRMAX</code> permits larger transient pump shots during violent wide-open throttle transitions, which may be required on engines with high-flow intake manifolds or dry nitrous transitions.</li>
+<li><strong>Injector Rescaling Rule</strong>: When doubling injector flow capacity, reduce <code>THRMAX</code> by roughly 25 to 40 percent alongside <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/POSSLP_DeltaTPSEnrichment_FromTemp.html"><code>POSSLP</code></a>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: Within <code>TransFuel_IncludeTPSTransients</code>, line 6496 subtracts <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/POSTRG_PositiveTransientTriggerLevel.html"><code>POSTRG</code></a> from <code>Temp0</code>. Line 6498 compares accumulator A against <code>THRMAX_MaxDeltaTHR</code>. If accumulator A is less than <code>THRMAX</code>, instruction <code>bcs L1554</code> branches ahead. If accumulator A exceeds <code>THRMAX</code>, line 6500 executes <code>ldaa THRMAX_MaxDeltaTHR</code>, capping the effective delta. Line 6501 stores accumulator A into <code>Temp1</code>, which is subsequently multiplied by <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/POSSLP_DeltaTPSEnrichment_FromTemp.html"><code>POSSLP_DeltaTPSEnrichment_FromTemp</code></a> at line 6506.</p>
+<pre><code class="language-motorola6803">; --- TransFuel_IncludeTPSTransients (T-SMEC_v19.asm:6484-6510) ---
+TransFuel_IncludeTPSTransients:
+	ldaa CoolantTemp    ; load a with memory contents
+	ldab TpsVolts	    ; load b with memory contents
+	subb AverageTPSVolts    ; b = b-memory contents
+	stab Temp0	    ; store b into memory
+	bcs  TransFuel_CalculateDecreasingTPSTransientFuel    ; branch if lower
+	ldx  #THRTCN_EnrichmentTime_FromTemp    ; load index with value
+	jsr  Lookup4ByteTable	 ; call subroutine
+	staa Factor_LeanoutOrEnrichTime_TPS    ; store a into memory
+	clra		    ; a = 0
+	staa Factor_DecelLeanoutWhenThrottleDecreasing	  ; store a into memory
+	ldaa Temp0	    ; load a with memory contents
+	suba POSTRG_PositiveTransientTriggerLevel    ;  (data is 03)
+	bcs  L1560	    ; branch if lower
+	cmpa THRMAX_MaxDeltaTHR    ; compare a with memory contents (data is 26)
+	bcs  L1554	    ; branch if lower
+	ldaa THRMAX_MaxDeltaTHR    ; load a with memory contents (data is 26)
+L1554:	staa Temp1	    ; store a into memory
+	ldaa CoolantTemp    ; load a with memory contents
+	ldx  #POSSLP_DeltaTPSEnrichment_FromTemp    ; load index with value
+	jsr  Lookup4ByteTable	 ; call subroutine
+	ldaa Temp1	    ; load a with memory contents
+	mul		    ; multiply (d=a*b)
+	addd Temp2	    ; d = d + memory contents
+	stD *Temp2	    ; store D to RAM
+	bra  L1560	    ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Math Ceiling</strong>: Operates as a hard saturation ceiling on the throttle delta before multiplication.</li>
+<li><strong>Template Differences</strong>: Stock 2.5 ATX uses 0x23 (35 counts = ~0.70V), while some performance templates use 0x26 (38 counts = ~0.76V).</li>
+<li><strong>Companion Parameter</strong>: Operates directly with <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/POSTRG_PositiveTransientTriggerLevel.html"><code>POSTRG</code></a> and <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/POSSLP_DeltaTPSEnrichment_FromTemp.html"><code>POSSLP</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>THRMAX</code>
+        </footer>
+    </div>
+</body>
+</html>

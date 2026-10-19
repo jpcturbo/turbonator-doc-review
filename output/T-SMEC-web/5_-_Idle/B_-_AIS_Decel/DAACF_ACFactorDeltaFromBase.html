@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAACF: ACFactorDeltaFromBase | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0F0F</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DAACF: ACFactorDeltaFromBase</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DAACF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DAACF_ACFactorDeltaFromBase</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0F0F</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">counts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x0A                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4045-L4055"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L1859"><code>CalculateAisPosition_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L1891"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DAACF</code> defines the additional manifold pressure offset added to the deceleration control calculation whenever the air conditioning compressor clutch is engaged.</p>
+<p>When the air conditioner is running, the mechanical compressor pump imposes a continuous parasitic torque load on the engine crankshaft. If the driver lifts off the throttle abruptly with the A/C clutch engaged, this additional parasitic drag causes engine speed to fall much more rapidly than normal, increasing the likelihood of an undershoot stall.</p>
+<p><code>DAACF</code> elevates the calculated decel control manifold pressure whenever the A/C clutch is active, which commands extra opening steps from <a href="../../5_-_Idle/B_-_AIS_Decel/DAISOP_DecelAisOpenStepsFromNeg_FromDeltaMap.html"><code>DAISOP</code></a> during throttle lift-off to cushion the compressor load.</p>
+<p>In factory calibrations, <code>DAACF</code> is set to 18 counts (approximately 2.1 psi absolute / 4.2 inHg), providing a dedicated decel dashpot buffer for air conditioning operation.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1996</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Fall-to-idle deceleration flag <code>b50_FallToIdle</code> must be set in <code>BitFlags_50</code> at line 1877.</li>
+<li>Air conditioning clutch flag <code>sw2_ACclutch</code> in <code>StartupSwitchMirror2</code> is tested at line 1890.</li>
+<li>If clutch is engaged (bit clear), execution continues to line 1891, adding <code>DAACF</code> directly to accumulator A.</li>
+<li>If clutch is disengaged (bit set), branches around line 1891 directly to <code>L1065</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Curing A/C Decel Stalls</strong>:</li>
+<li>Increase <code>DAACF</code> from 18 to 22 to 26 counts if the engine stalls on throttle lift-off only when the air conditioning is engaged.</li>
+<li><strong>Eliminating A/C Decel Hang</strong>:</li>
+<li>If engine speed refuses to come down cleanly when decelerating with the A/C on, reduce <code>DAACF</code> slightly.</li>
+<li><strong>Parasitic Drag Compensation</strong>:</li>
+<li>Directly counteracts compressor torque absorption on the crankshaft during closed-throttle overrun.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateAisPosition_MM</code>, line 1890 tests <code>brset *StartupSwitchMirror2, #sw2_ACclutch, L1065</code>. If the A/C clutch is active (active-low signal), the branch is not taken. Line 1891 executes <code>adda DAACF_ACFactorDeltaFromBase</code>. If the addition does not overflow (<code>bcc L1065</code>), execution continues to line 1894; if overflow occurs, line 1893 saturates accumulator A to 255 counts (<code>ldaa #0xff</code>).</p>
+<pre><code class="language-motorola6803">; --- CalculateAisPosition_MM (T-SMEC_v19.asm:1889-1894) ---
+	bcs  L1064	    ; branch if lower
+	brset *StartupSwitchMirror2, #sw2_ACclutch, L1065    ; branch if bit(s) set
+	adda DAACF_ACFactorDeltaFromBase    ;  (data is 12)
+	bcc  L1065	    ; branch if greater or equal
+L1064:	ldaa #0xff	    ; load a with value -11111111-
+L1065:	ldab DistributorFallingEdgePulsewidth_HB    ; load b with memory contents</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Active-Low Sensing</strong>: In Chrysler hardware, <code>sw2_ACclutch</code> is clear when the clutch is actively energized.</li>
+<li><strong>Companion Parameters</strong>: Blended directly with <a href="../../5_-_Idle/B_-_AIS_Decel/DANOM_Base_nominalCal.html"><code>DANOM</code></a>, <a href="../../5_-_Idle/B_-_AIS_Decel/TIMEDC_AISDecelBaseAirflowCurveOffset.html"><code>TIMEDC</code></a>, and <a href="../../5_-_Idle/B_-_AIS_Decel/TEMPDC_AISDecel_FromTemp.html"><code>TEMPDC</code></a>.</li>
+<li><strong>Factory Value</strong>: 0x12 (18 counts = approximately 2.1 psi absolute).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>DAACF</code>
+        </footer>
+    </div>
+</body>
+</html>

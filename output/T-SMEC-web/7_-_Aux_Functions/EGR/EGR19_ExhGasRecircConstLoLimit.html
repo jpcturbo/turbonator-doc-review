@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EGR19: ExhGasRecircConstLoLimit19 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1A48</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ EGR</strong> &nbsp;|&nbsp; Subsystem: <strong>EGR_Emissions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>EGR19: ExhGasRecircConstLoLimit19</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>EGR19</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>EGR19_ExhGasRecircConstLoLimit</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">EGR_Emissions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\EGR\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1A48</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Throttle delta counts (0 to 255; approx 0.0196V per count; factory 8 counts = ~0.16V above idle)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x08                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6918-L6928"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5470"><code>EGR_ResetEGRVars</code></a> in <a href="../../T-SMEC_v19.asm.html#L5495"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>EGR19</code> (ExhGasRecircConstLoLimit) establishes the lower throttle position threshold for the Phase 2 Exhaust Gas Recirculation diagnostic flow verification window (Fault Code 32).</p>
+<p>During Phase 2, the engine controller commands the EGR valve closed and observes whether closed-loop oxygen sensor feedback shifts lean in response. For this shift to be detected reliably, the engine must produce enough exhaust gas volume and intake airflow for EGR shutoff to create a measurable change.</p>
+<p>At line 5495, relative throttle opening is checked against <code>EGR19</code>. The factory setting of 8 counts corresponds to approximately 0.16 volts (roughly 3 percent throttle opening), slightly higher than the Phase 1 entry gate, ensuring that the engine remains under positive load throughout the verification phase.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5495.</li>
+<li><strong>Subroutine Called</strong>: <code>EGR_CheckHiLoLimits</code> (line 5462).</li>
+<li><strong>State Condition</strong>: Phase 2 active (<code>EGRVar2</code> bit 7 set).</li>
+<li><strong>Input Variable</strong>: <code>TpsVolts - MINTHR_LowestSessionTPS</code> evaluated in accumulator A.</li>
+<li><strong>Branch Behavior</strong>: If throttle delta is less than <code>EGR19</code> (<code>bcs L1464</code>), subroutine pulls stack and jumps to <code>EGR_ResetEGRVars</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Raising EGR19</strong>: Enforces higher minimum throttle opening during Phase 2 flow verification. Enhances diagnostic signal-to-noise ratio on high-overlap camshaft setups where exhaust backpressure at light throttle is weak.</li>
+<li><strong>Lowering EGR19</strong>: Permits Phase 2 testing at lighter pedal angles. Avoid lowering below 5 counts to prevent coast-down deceleration from disrupting the oxygen sensor comparison.</li>
+<li><strong>Phase 1 Coordination</strong>: Factory setting (8 counts) is deliberately calibrated slightly higher than Phase 1 (<a href="../../7_-_Aux_Functions/EGR/EGR14_ExhGasRecircConstFromTPSVoltsLoLimit.html"><code>EGR14</code></a>, 5 counts) to ensure robust engine load during the active shutoff test.</li>
+<li><strong>Stock Setting</strong>: 8 counts (approx 0.16 volts / ~3 percent throttle) is optimal for production engines.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>ExhGasRecirc_MM</code> during Phase 2, line 5492 loads <code>TpsVolts</code>, and line 5493 subtracts <code>MINTHR_LowestSessionTPS</code>. If the relative throttle angle is zero or negative, line 5494 branches via <code>bls EGR_ResetEGRVars</code>. At line 5495, index register X is loaded with <code>#EGR19_ExhGasRecircConstLoLimit</code>, and <code>EGR_CheckHiLoLimits</code> is called via <code>bsr</code>. Inside <code>EGR_CheckHiLoLimits</code>, <code>cmpa 0x00,x</code> compares relative throttle against <code>EGR19</code> (factory 0x08 = 8 counts). If accumulator A is lower, <code>bcs L1464</code> at line 5464 branches to <code>pulx</code> and <code>EGR_ResetEGRVars</code>, terminating the test. If A meets or exceeds <code>EGR19</code>, execution advances to line 5465 to test upper limit <a href="../../7_-_Aux_Functions/EGR/EGR19a_ExhGasRecircConstHiLimit.html"><code>EGR19A</code></a>.</p>
+<pre><code class="language-motorola6803">; --- ExhGasRecirc_MM (T-SMEC_v19.asm:5492-5499) ---
+	ldaa TpsVolts	    ; load a with memory contents
+	suba MINTHR_LowestSessionTPS
+	bls  EGR_ResetEGRVars	 ; branch if lower or same
+	ldx  #EGR19_ExhGasRecircConstLoLimit	; load index with value
+	bsr  EGR_CheckHiLoLimits    ; call subroutine
+	ldaa EngineRpm_HB    ; load a with memory contents
+	ldx  #EGR17_ExhGasRecircConstLoLimit	; load index with value
+	bsr  EGR_CheckHiLoLimits    ; call subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Paired Calibration Entry</strong>: Forms an indexed low/high limit pair with companion constant <a href="../../7_-_Aux_Functions/EGR/EGR19a_ExhGasRecircConstHiLimit.html"><code>EGR19A</code></a> located at adjacent ROM address 0x1A55 (org 0x8828).</li>
+<li><strong>Hysteresis Logic</strong>: Calibrated 3 counts higher than Phase 1 lower limit <a href="../../7_-_Aux_Functions/EGR/EGR14_ExhGasRecircConstFromTPSVoltsLoLimit.html"><code>EGR14</code></a> to prevent marginal throttle flutter from triggering Phase 2.</li>
+<li><strong>Relative Scaling</strong>: 1 count represents 0.0196 volts above learned idle minimum.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>EGR19</code>
+        </footer>
+    </div>
+</body>
+</html>

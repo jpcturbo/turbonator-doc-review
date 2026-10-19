@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RNFPRD: FuelStartRunTransferPointRpm | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x07D9</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Spark - Start to Run Transfer</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark (Start-to-Run Transfer Group)</strong>
+        </div>
+        
+        <article class="content">
+            <h1>RNFPRD: FuelStartRunTransferPointRpm</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>RNFPRD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>RNFPRD_FuelStartRunTransferPointRpm</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark (Start-to-Run Transfer Group)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Spark_-_Start_to_Run_Transfer\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x07D9</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">EPPs (0 to 65535 epps)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x00A7 (167 decimal, ~705 RPM)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L2039-L2051"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;">Fuel Pulse Width Calculation in T-LMv13.asm in <a href="../T-LMv13.asm.html#L4927"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>RNFPRD_FuelStartRunTransferPointRpm</code> is the <strong>fuel injection start-to-run transfer RPM threshold</strong>.</p>
+<p>During cranking, injectors deliver rich, fixed-duration priming pulses designed to wet the intake ports and cylinders so the engine can catch fire. Once the engine catches and spins up past <code>RNFPRD</code> (approximately 705 RPM), the ECU cuts off cranking fuel and switches to normal running fuel calculations (speed-density speed/MAP lookup). Grouped under <code>Spark_-_Start_to_Run_Transfer\</code> in the template along with the spark transfer constants, <code>RNFPRD</code> synchronizes the fueling transition with the ignition transition.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<p><code>RNFPRD</code> is evaluated in the fuel calculation loop when determining whether to deliver cranking pulse widths or speed-density running pulse widths:
+* If <code>TimerOverflowsBetweenDistPulses &lt; RNFPRD</code> (engine speed &gt; ~705 RPM):
+  The ECU branches to execute running fuel logic.</p>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Increasing the Value (Lower RPM Threshold):</strong></li>
+<li><strong>Effect:</strong> Cuts off cranking enrichment at a lower RPM (e.g., 550 RPM).</li>
+<li><strong>Real-World Driving Feel:</strong> Prevents engine flooding on warm restarts or when running oversized fuel injectors. However, setting it too low on freezing cold starts can cut cranking enrichment before the engine is warm enough to run on speed-density fuel, causing it to die immediately after catching.</li>
+<li><strong>Decreasing the Value (Higher RPM Threshold):</strong></li>
+<li><strong>Effect:</strong> Extends cranking enrichment to higher engine speeds (e.g., 850 RPM).</li>
+<li><strong>Real-World Driving Feel:</strong> Helps cold starts catch solidly by delivering rich fuel until the engine flares fully, but risks loading up spark plugs with excess raw fuel on warm restarts.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 4926–4930):</p>
+<pre><code class="language-motorola6803">LE390:  ldx  TimerOverflowsBetweenDistPulses
+        cpx  RNFPRD_FuelStartRunTransferPointRpm ; Compare period to RNFPRD (0x00A7 ~ 705 RPM)
+        bcs  LE3A4                               ; If period &lt; RNFPRD (RPM &gt; 705), transfer to Running Fuel!
+        cpx  STFPRD_FuelRunStartTransferPointRpm ; Else check stall hysteresis
+        bcs  LE3DA
+        ...</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Coupled with <a href="../Spark_-_Start_to_Run_Transfer/STFPRD_FuelRunStartTransferPointRpm.html"><code>STFPRD</code></a>:</strong> <code>RNFPRD</code> forms a hysteresis pair with <a href="../Spark_-_Start_to_Run_Transfer/STFPRD_FuelRunStartTransferPointRpm.html"><code>STFPRD</code></a> (~450 RPM).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>RNFPRD</code>
+        </footer>
+    </div>
+</body>
+</html>

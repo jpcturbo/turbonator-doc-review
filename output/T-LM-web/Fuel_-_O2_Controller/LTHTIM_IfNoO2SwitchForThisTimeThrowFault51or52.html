@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LTHTIM: IfNoO2SwitchForThisTimeThrowFault51or52 | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1048</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - O2 Controller</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel</strong>
+        </div>
+        
+        <article class="content">
+            <h1>LTHTIM: IfNoO2SwitchForThisTimeThrowFault51or52</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>LTHTIM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>LTHTIM_IfNoO2SwitchForThisTimeThrowFault51or52</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_O2_Controller\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1048</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Timer Increments ($1 \text{ count} = 2.8 \text{ seconds}$)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0xFE (254 counts $\approx 711.2\text{ seconds} \approx 11.85\text{ minutes}$)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L4198-L4210"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L3200"><code>EraseAdaptiveMemory_possiblySetErrorBit</code></a> in <a href="../T-LMv13.asm.html#L3202"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>LTHTIM_IfNoO2SwitchForThisTimeThrowFault51or52</code> sets the <strong>diagnostic fault timeout</strong> for detecting a permanently stuck or unresponsive oxygen sensor during closed-loop operation.</p>
+<p>If an oxygen sensor fails to toggle across stoichiometric for a sustained period while closed loop is active, it indicates an unrecoverable air/fuel control failureâ€”such as a massive vacuum leak, failed fuel pressure regulator, clogged injector, or dead sensor. When the inactivity timer reaches <code>LTHTIM</code>, the ECU logs <strong>Fault 51</strong> (stuck lean) or <strong>Fault 52</strong> (stuck rich), erases all learned adaptive fuel memory cells, and locks out closed-loop trimming.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Inactivity Counter Accumulation:</strong></li>
+<li>Evaluated inside <code>EraseAdaptiveMemory_possiblySetErrorBit</code>.</li>
+<li><code>Counter_AdaptiveMem_Erase</code> increments every 2.8 seconds whenever the O2 sensor remains on one side of stoichiometry without a cross-count toggle.</li>
+<li><strong>Fault Trigger Threshold:</strong></li>
+<li>When <code>Counter_AdaptiveMem_Erase &gt;= LTHTIM</code>:<ul>
+<li>Evaluates whether the sensor was stuck rich or lean.</li>
+<li>Calls <code>ThrowNonCriticalError</code> with Fault 51 (lean) or Fault 52 (rich).</li>
+<li>Executes <code>EraseAdaptiveMemoryLocations</code>, resetting all 14 adaptive fuel memory cells (<code>AutoCalCell0</code> through <code>AutoCalCell12idle</code>) back to baseline neutral.</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stock Setting:</strong> <code>0xFE</code> (254 counts × 2.8 s ≈ 711 seconds ≈ 11.9 minutes).</li>
+<li><strong>Diagnostic Ramifications:</strong></li>
+<li>When Fault 51 or 52 is set, your learned adaptive fuel trims are <strong>instantly wiped out</strong>. The car will revert to pure baseline open-loop tables until the fault condition clears.</li>
+<li><strong>Tuning with Wideband / Open Loop Only:</strong></li>
+<li>If you disable closed-loop control or run an aftermarket standalone/piggyback wideband without narrow-band emulation, the inactivity timer will eventually expire if closed-loop flags remain set. Ensure closed-loop is cleanly disabled or that <code>LTHTIM</code> is configured to prevent erroneous CEL triggers.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 3200â€“3231):</p>
+<pre><code class="language-motorola6803">EraseAdaptiveMemory_possiblySetErrorBit:
+        ldaa Counter_AdaptiveMem_Erase    ; Inactivity counter
+        cmpa LTHTIM_IfNoO2SwitchForThisTimeThrowFault51or52 ; Compare with 0xFE
+        bcs  IncrementAdaptiveMemEraseCount ; If &lt; LTHTIM, keep waiting
+        ; TIMEOUT REACHED!
+        ...
+        jsr  ThrowNonCriticalError        ; Trigger Fault 51 or Fault 52!
+        ldx  #AutoCalCell0                ; Reset adaptive fuel cells
+EraseAdaptiveMemoryLocations:
+        staa 0x00,x                       ; Overwrite cell memory
+        inx                 
+        cpx  #ChargeTempVolts             
+        bne  EraseAdaptiveMemoryLocations ; Clear all cells</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li>Setting <code>LTHTIM = 0xFF</code> (or disabling closed loop) prevents false fault code triggering during protracted dynamometer steady-state tuning sessions.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>LTHTIM</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FANTMP3: FanTurnOnTempBelow35MPH | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1503</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>6 - Fan Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>FANTMP3: FanTurnOnTempBelow35MPH</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>FANTMP3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>FANTMP3_FanTurnOnTempBelow35MPH</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>6_-_Fan_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1503</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">degF</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xE3                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T-SMEC_25_ATX_A283_Stock.tpl.html#L5569-L5579"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SMEC_v19.asm.html#L1711"><code>PreventRadSteaming</code></a> in <a href="../T-SMEC_v19.asm.html#L1729"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>FANTMP3</code> defines the coolant temperature threshold that energizes the radiator cooling fan during low-speed driving or idle conditions below 35 MPH.</p>
+<p>When stopped in traffic or driving at low vehicle speeds, no ram airflow enters the front grille to cool the radiator and intercooler cores. Underhood temperatures quickly rise from the turbocharger turbine housing and exhaust manifold. In factory calibrations, <code>FANTMP3</code> is set to 227 counts, corresponding to approximately 199 °F. When coolant temperature exceeds this threshold, the controller turns on the electric cooling fan to draw airflow through the cooling pack, preventing engine overheating during city operation.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ControlFan_MM</code> / <code>PreventRadSteaming</code> (<code>T-SMEC_v19.asm:1707-1755</code>), instruction lines 1729, 1737-1738.</li>
+<li><strong>Speed Condition</strong>:</li>
+<li>Low road speed: <code>VehicleSpeed_HB &gt;= FNSPHI_FanControlSpeedHi</code> (long pulse period; below ~35 MPH).</li>
+<li><strong>Pointer Step</strong>:</li>
+<li>Lines 1737-1738 execute <code>inx; inx;</code>, advancing pointer from base by +2 to point to <code>FANTMP3</code>.</li>
+<li><strong>Fan Off State</strong>:</li>
+<li>With fan currently off, <code>0x00,x</code> evaluates <code>FANTMP3</code> against <code>CoolantTemp</code> at line 1754.</li>
+<li>If <code>CoolantTemp &gt; FANTMP3</code>, branches to <code>TurnFanOn</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Primary Fan Tuning Target</strong>:</li>
+<li>Most frequently adjusted cooling parameter; controls stationary idle and slow-traffic engine temperature.</li>
+<li><strong>Thermostat Calibration</strong>:</li>
+<li>180 °F thermostat: calibrate <code>FANTMP3</code> between 188 °F and 192 °F.</li>
+<li>160 °F thermostat: calibrate <code>FANTMP3</code> between 172 °F and 176 °F.</li>
+<li><strong>Detonation Resistance</strong>:</li>
+<li>Keeping city idle coolant temperatures below 195 °F sharply reduces manifold heat soak and launch knock.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>PreventRadSteaming</code>, the controller tests <code>VehicleSpeed_HB</code> against <a href="../6_-_Fan_Control/FNSPHI_FanControlSpeedHi.html"><code>FNSPHI_FanControlSpeedHi</code></a> at line 1731. At low speeds, execution branches to <code>Above36MPH</code> (or sets <code>b51_SpeedUnder40</code>), which executes <code>inx; inx;</code> at lines 1737-1738. This adds 2 to the base index <code>#FANTMP_FanTurnOnTempAbove45Mph</code>, positioning the pointer directly at <code>FANTMP3</code>. If the fan is off, line 1754 compares <code>CoolantTemp</code> to <code>FANTMP3</code>. If higher, it branches to <code>TurnFanOn</code>.</p>
+<pre><code class="language-motorola6803">; --- PreventRadSteaming (T-SMEC_v19.asm:1729-1741) ---
+	ldx  #FANTMP_FanTurnOnTempAbove45Mph	    ; load index with value
+	ldaa VehicleSpeed_HB	; load a with memory contents
+	cmpa FNSPHI_FanControlSpeedHi	    ; compare a with value 0x0b
+	bcc  Below44MPH     ; branch if greater or equal
+	cmpa FNSPLO_FanControlSpeedLo	    ; compare a with value 0x09
+	bcs  Above36MPH     ; branch if lower
+	brset *BitFlags_51, #b51_SpeedUnder40, L1049    ; branch if bit(s) set
+Above36MPH:
+	inx		    ; increment index (x=x+1)
+	inx		    ; increment index (x=x+1)
+	bclr *BitFlags_51, #b51_SpeedUnder40    ; clear bits
+	bra  L1049	    ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Indexed Offset</strong>: Stored at offset +2 from <code>FANTMP_FanTurnOnTempAbove45Mph</code>.</li>
+<li><strong>Companion Parameter</strong>: Works directly with <a href="../6_-_Fan_Control/FANTMP4_FanTurnOffTempBelow35MPH.html"><code>FANTMP4_FanTurnOffTempBelow35MPH</code></a> for low-speed hysteresis.</li>
+<li><strong>A/C Interaction</strong>: When air conditioning is active, the fan is commanded on regardless of <code>FANTMP3</code> unless engine is off.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>FANTMP3</code>
+        </footer>
+    </div>
+</body>
+</html>

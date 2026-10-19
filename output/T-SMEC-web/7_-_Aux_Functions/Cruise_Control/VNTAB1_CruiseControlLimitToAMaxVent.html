@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VNTAB1: CruiseControlLimitToAMaxVent | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x164A</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Cruise Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Cruise_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>VNTAB1: CruiseControlLimitToAMaxVent</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>VNTAB1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>VNTAB1_CruiseControlLimitToAMaxVent</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Cruise_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Cruise_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x164A</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">counts speed error</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0xFF (255 counts ≈ 127.5 MPH error)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5896-L5906"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8723"><code>CalculateVehicleSpeed</code></a> in <a href="../../T-SMEC_v19.asm.html#L8870"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>VNTAB1</code> defines the maximum overspeed error threshold above which the cruise control system bypasses proportional vent curve calculations and forces continuous maximum vent solenoid pulse duration.</p>
+<p>When vehicle speed exceeds the target setpoint by an extreme margin, such as during severe downhill coasting or following aggressive driver wide-open throttle acceleration, proportional modulation is insufficient to slow the car down quickly. In factory calibrations, <code>VNTAB1</code> is configured to 255 counts, corresponding to approximately 127.5 miles per hour of speed error. If speed error exceeds this ceiling, the controller bypasses normal table lookup and commands maximum vent pulse duration to drop throttle angle immediately.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8870-8872</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Reached only when vehicle speed exceeds setpoint (<code>VehicleSpeed &gt; CruiseSpeedSetpoint</code>).</li>
+<li>Absolute overspeed difference evaluated in accumulator B after right shifting.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Compares overspeed delta against <code>VNTAB1</code> via <code>cmpb VNTAB1_CruiseControlLimitToAMaxVent</code> at line 8870.</li>
+<li>If higher or equal (<code>bcc L1776</code>), branches to load fixed maximum vent pulse 0x8F, bypassing <a href="../../7_-_Aux_Functions/Cruise_Control/VENTRG_CruiseControlVentRegularGainCurve_FromDeltaSpeed.html"><code>VENTRG</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Full-Vent Cutout Ceiling</strong>:</li>
+<li>Establishes the hard overspeed threshold where proportional venting is abandoned in favor of maximum vent solenoid duty cycle.</li>
+<li>Factory setting of 255 counts reserves this mode for extreme overspeed events.</li>
+<li><strong>Mountain Grade Retardation</strong>:</li>
+<li>Lowering <code>VNTAB1</code> to 30 to 40 counts provides assertive engine braking on steep downhill slopes by venting the servo immediately.</li>
+<li><strong>Edge Cases &amp; Driveline Lash</strong>:</li>
+<li>Setting <code>VNTAB1</code> excessively low produces harsh throttle closure when driver accelerates slightly past set speed to pass a vehicle.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateVehicleSpeed</code>, when vehicle speed exceeds target speed, accumulator B holds the positive speed error. At line 8870, <code>cmpb VNTAB1_CruiseControlLimitToAMaxVent</code> evaluates the error. If carry is clear (<code>bcc L1776</code>), indicating the error equals or exceeds <code>VNTAB1</code>, execution branches to line 8844, loading fixed value 0x0F into accumulator A and ORing 0x80 to produce maximum vent command 0x8F in <code>CruiseControlVar3</code>, bypassing <a href="../../7_-_Aux_Functions/Cruise_Control/VENTRG_CruiseControlVentRegularGainCurve_FromDeltaSpeed.html"><code>VENTRG</code></a>.</p>
+<pre><code class="language-motorola6803">; --- CalculateVehicleSpeed (T-SMEC_v19.asm:8866-8872) ---
+L1780:	lsrd		    ; shift right (d=d/2)
+	lsrd		    ; shift right (d=d/2)
+	tsta		    ; test a
+	bne  L1776	    ; branch if not equal (not zero)
+	cmpb VNTAB1_CruiseControlLimitToAMaxVent    ; compare b with memory contents (data is ff)
+	bcc  L1776	    ; branch if greater or equal</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Multi-Stage Vent Hierarchy</strong>: Serves as the top tier above <a href="../../7_-_Aux_Functions/Cruise_Control/VNTAB2_CruiseControlLimitToHalfMaxVent.html"><code>VNTAB2</code></a> (half-maximum vent) and <a href="../../7_-_Aux_Functions/Cruise_Control/VENTRG_CruiseControlVentRegularGainCurve_FromDeltaSpeed.html"><code>VENTRG</code></a> (proportional vent curve).</li>
+<li><strong>Forced Vent Command</strong>: When triggered, stores 0x8F into <code>CruiseControlVar3</code>, driving bit 7 of <code>PIA1_A_Buffer</code> active to vent servo vacuum continuously.</li>
+<li><strong>Factory Configuration</strong>: Stock setting is 0xFF (255 counts ≈ 127.5 mph error).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>VNTAB1</code>
+        </footer>
+    </div>
+</body>
+</html>

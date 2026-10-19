@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDLSET: ConstantSparkAdvanceWhenSettingMinThrottleOpening | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0AC3</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ C - Special setup</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>IDLSET: ConstantSparkAdvanceWhenSettingMinThrottleOpening</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>IDLSET</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>IDLSET_ConstantSparkAdvanceWhenSettingMinThrottleOpening</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\C_-_Special_setup\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0AC3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">degrees BTDC</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x0C                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L2945-L2955"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L8177"><code>DoUseSparkScatter</code></a> in <a href="../../T-SMEC_v19.asm.html#L8185"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>IDLSET</code> defines the fixed spark advance angle commanded when the engine controller enters DRB diagnostic service mode for minimum throttle airflow adjustment.</p>
+<p>To properly set the mechanical throttle plate stop screw, engine speed must reflect only physical air passing through the throttle bore, without interference from electronic spark advance hunting or spark scatter idle stabilization.</p>
+<p>When the technician selects DRB service mode 14/10, the engine controller disables normal MAP advance lookups and locks ignition timing precisely to <code>IDLSET</code>.</p>
+<p>In factory calibrations, <code>IDLSET</code> is configured to 12 degrees BTDC.</p>
+<p>Locking ignition advance to 12 degrees BTDC provides a rock-steady spark reference angle, allowing the technician to accurately adjust the mechanical stop screw to achieve the required base idle airflow.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleSparkScatter</code> (<code>T-SMEC_v19.asm:8106-8188</code>), specifically at <code>DoUseSparkScatter</code> (line 8177).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Spark scatter is active or being bypassed; execution reaches <code>DoUseSparkScatter</code> at line 8177.</li>
+<li>DRB diagnostic mode pointers are tested: <code>DRBPointer1</code> must equal 0x14 at line 8180, and <code>DRBPointer2</code> must equal 0x10 at line 8183.</li>
+<li>If both DRB mode pointers match, the CPU loads <code>IDLSET</code> at line 8185, stores it into <code>Temp5</code>, and clears <code>BitFlags_55</code> bit <code>b55_UseSparkScatter</code> at line 8187.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Calibration Reference</strong>:</li>
+<li>Keep <code>IDLSET</code> at 12 degrees BTDC to preserve the standard factory reference condition for minimum throttle opening adjustment.</li>
+<li><strong>Throttle Body Stop Setting</strong>:</li>
+<li>Changing <code>IDLSET</code> alters engine torque during the adjustment procedure, leading to an incorrect mechanical screw position that robs the stepper motor of its dynamic authority.</li>
+<li><strong>Hunting Prevention</strong>:</li>
+<li>Spark scatter is automatically disabled while <code>IDLSET</code> is active, ensuring RPM changes during service reflect only throttle blade adjustments.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>HandleSparkScatter</code> at line 8177 (<code>DoUseSparkScatter</code>), the CPU zeroes <code>SparkScatter</code>. It then checks the DRB diagnostic state by loading <code>DRBPointer1</code> and comparing against 0x14 at line 8180. If equal, it checks <code>DRBPointer2</code> against 0x10 at line 8183. If both match, line 8185 executes <code>ldab IDLSET_ConstantSparkAdvanceWhenSettingMinThrottleOpening</code>. At line 8186, it stores accumulator B into <code>Temp5</code>, and at line 8187, it clears <code>BitFlags_55</code> bit <code>b55_UseSparkScatter</code> (<code>bclr *BitFlags_55, #b55_UseSparkScatter</code>), completely locking timing advance.</p>
+<pre><code class="language-motorola6803">; --- HandleSparkScatter (T-SMEC_v19.asm:8175-8188) ---
+DontUseSparkScatter:
+	clra		    ; a = 0
+DoUseSparkScatter:
+	staa SparkScatter    ; store a into memory
+	ldaa DRBPointer1    ; load a with memory contents
+	cmpa #0x14	    ; compare a with value -00010100-
+	bne  R1682	    ; branch if not equal (not zero)
+	ldaa DRBPointer2    ; load a with memory contents
+	cmpa #0x10	    ; compare a with value -00010000-
+	bne  R1682	    ; branch if not equal (not zero)
+	ldab IDLSET_ConstantSparkAdvanceWhenSettingMinThrottleOpening	 ; load b with memory contents (data is 0c)
+	stab Temp5	    ; store b into memory
+	bclr *BitFlags_55, #b55_UseSparkScatter    ; clear bits
+R1682:	rts		    ; return from subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameter</strong>: Works alongside <a href="../../5_-_Idle/C_-_Special_setup/RIDLST_OpenLoopEnrichFactorWhenSettingMinThrottleOpening.html"><code>RIDLST</code></a>, which supplies diagnostic fuel enrichment during throttle body stop screw alignment.</li>
+<li><strong>Spark Scatter Interaction</strong>: Explicitly clears <code>b55_UseSparkScatter</code> to ensure no spark dither occurs during minimum airflow setup.</li>
+<li><strong>Factory Value</strong>: 0x0C (12 counts = 12 degrees BTDC).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>IDLSET</code>
+        </footer>
+    </div>
+</body>
+</html>

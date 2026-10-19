@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AISHLM: AisHighLimitMaxOpenSteps | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x112D</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>AISHLM: AisHighLimitMaxOpenSteps</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>AISHLM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>AISHLM_AisHighLimitMaxOpenSteps</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x112D</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">steps</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xA0                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4587-L4597"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L1775"><code>TurnFanOn</code></a> in <a href="../../T-SMEC_v19.asm.html#L1785"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>AISHLM</code> establishes the absolute high limit clamp for the maximum number of open steps that can ever be commanded on the automatic idle speed stepper motor.</p>
+<p>The Chrysler 4-wire stepper motor actuator physically drives a tapered pintle in and out of an auxiliary throttle bypass passage. If the controller were to continuously increment stepper opening steps without an upper limit, the motor mechanism could unscrew the pintle shaft from its internal worm gear drive or jam the actuator against its mechanical end stops, causing lost steps and permanent positioning calibration errors.</p>
+<p>Furthermore, beyond approximately 160 steps, the annular bypass opening around the pintle is completely unrestricted, and additional opening steps provide zero incremental airflow.</p>
+<p>In factory calibrations, <code>AISHLM</code> is configured to 160 counts, locking maximum stepper opening at exactly 160 steps across all idle, startup, decel, and air conditioning routines.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>StoreAndLimitDesiredAisPosition</code> (<code>T-SMEC_v19.asm:2522-2531</code>), <code>TurnFanOn</code> (<code>T-SMEC_v19.asm:1785-1787</code>), <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2472-2474</code>), and <code>HandleSparkScatter</code> (<code>T-SMEC_v19.asm:8167-8172</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>In <code>StoreAndLimitDesiredAisPosition</code>, positive step deltas are added to <code>DesiredNewAisPosition</code> at line 2525.</li>
+<li>Compares new position against <code>AISHLM</code> at line 2528.</li>
+<li>If position exceeds <code>AISHLM</code>, branches to line 2530 and clamps <code>DesiredNewAisPosition</code> to <code>AISHLM</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stock Throttle Body Saturation</strong>:</li>
+<li>Keep <code>AISHLM</code> at 160 steps on factory throttle bodies; the bypass passage is fully open by 150 steps and additional travel yields zero extra air.</li>
+<li><strong>Extended-Stroke Aftermarket Housings</strong>:</li>
+<li>For custom high-flow idle air valve housings designed for extended travel, <code>AISHLM</code> can be safely raised to 180 to 200 steps.</li>
+<li><strong>Mechanical Disassembly Hazard</strong>:</li>
+<li>Setting <code>AISHLM</code> above 240 steps can cause the stepper motor screw to unthread or bind against physical stops, causing total idle control failure.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In the shared helper <code>StoreAndLimitDesiredAisPosition</code> at line 2522, accumulator A contains the signed step delta. If positive, line 2525 executes <code>adda DesiredNewAisPosition</code>. Line 2526 loads accumulator B with <code>AISHLM_AisHighLimitMaxOpenSteps</code>. If addition overflows carry (<code>bcs L1161</code>), or if <code>cmpa AISHLM</code> determines accumulator A exceeds B, execution branches to <code>L1161</code> at line 2530: <code>stab DesiredNewAisPosition</code>, clamping the motor position to <code>AISHLM</code>. Identical clamps are enforced in <code>TurnFanOn</code> (line 1785), <code>HandleAcCutout</code> (line 2472), and <code>HandleSparkScatter</code> (line 8167).</p>
+<pre><code class="language-motorola6803">; --- StoreAndLimitDesiredAisPosition (T-SMEC_v19.asm:2522-2531) ---
+StoreAndLimitDesiredAisPosition:
+	tsta		    ; test a
+	bmi  L1162	    ; branch if minus(hi bit 1)
+	adda DesiredNewAisPosition
+	ldab AISHLM_AisHighLimitMaxOpenSteps	; load b with memory contents (data is a0)
+	bcs  L1161	    ; branch if lower
+	cba		
+	bcs  L1163	    ; branch if lower
+L1161:	stab DesiredNewAisPosition    ; store b into memory
+	rts		    ; return from subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Global Architecture Ceiling</strong>: Enforced uniformly across all routines that add steps to <code>DesiredNewAisPosition</code>.</li>
+<li><strong>Physical Stepper Limit</strong>: The Chrysler 4-wire stepper motor has an effective physical mechanical travel span of 0 to 200 steps.</li>
+<li><strong>Factory Value</strong>: 0xA0 (160 counts = 160 steps).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>AISHLM</code>
+        </footer>
+    </div>
+</body>
+</html>

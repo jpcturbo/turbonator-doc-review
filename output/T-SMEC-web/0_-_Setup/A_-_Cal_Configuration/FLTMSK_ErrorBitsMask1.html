@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FLTMSK: ErrorBitsMask1 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0271</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ A - Cal Configuration</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>FLTMSK: ErrorBitsMask1</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>FLTMSK</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>FLTMSK_ErrorBitsMask1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\A_-_Cal_Configuration\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0271</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Diagnostic Error Offset</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x00                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L815-L825"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L4440"><code>ThrowNonCriticalError</code></a> in <a href="../../T-SMEC_v19.asm.html#L4441"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>FLTMSK</code> defines the first configurable error suppression slot in the engine controller diagnostic subsystem.</p>
+<p>In Chrysler nineteen eighty-nine engine controllers, diagnostic fault logging is managed through an internal fault code table. When an electronic sensor or actuator fault is detected, the error recording routine searches a sequential suppression array starting at <code>FLTMSK</code>. If an internal diagnostic code matching the detected fault is stored in this byte, the controller bypasses error recording completely, preventing the fault from being logged in memory or flashed on the check engine lamp. In factory calibrations, <code>FLTMSK</code> is initialized to zero, leaving all diagnostic fault reporting active.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ThrowNonCriticalError</code> (<code>T-SMEC_v19.asm:4440-4475</code>), instruction line 4441 (<code>ldx #FLTMSK_ErrorBitsMask1</code>).</li>
+<li><strong>Search Loop Mechanics</strong>:</li>
+<li>The error routine iterates across the mask array starting at <code>FLTMSK_ErrorBitsMask1</code>.</li>
+<li>If the array entry is zero (<code>brclr 0, X, #$%11111111, L1321</code>), the loop terminates and the error is processed.</li>
+<li>If the entry matches the incoming error code (<code>cmpa 0x00,x; beq L1323</code>), the error is suppressed and the routine exits immediately.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Selective Fault Code Suppression</strong>:</li>
+<li>Entering an internal error offset into <code>FLTMSK</code> prevents the controller from recording the corresponding diagnostic trouble code or illuminating the dashboard lamp for that failure.</li>
+<li><strong>Common Suppression Targets</strong>:</li>
+<li>Wastegate solenoid elimination (Code 36): enter thirteen counts.</li>
+<li>EGR solenoid elimination (Code 32): enter seventeen counts.</li>
+<li>Baro read solenoid deletion (Code 37): enter twelve counts.</li>
+<li>Purge solenoid deletion (Code 31): enter eighteen counts.</li>
+<li><strong>Factory Default</strong>:</li>
+<li>Set to zero counts, keeping all factory fault reporting active.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>ThrowNonCriticalError</code> at lines 4440-4456, index register X is loaded with <code>#FLTMSK_ErrorBitsMask1</code>. At line 4442, <code>brclr 0, X, #$%11111111, L1321</code> checks if the current byte is zero; if so, the end of the suppression list is reached and execution branches to store the error. Line 4443 executes <code>cmpa 0x00,x</code>; if accumulator A matches the mask entry, <code>beq L1323</code> branches directly to <code>clra; rts</code>, completely suppressing error logging.</p>
+<pre><code class="language-motorola6803">; --- ThrowNonCriticalError (T-SMEC_v19.asm:4440-4456) ---
+ThrowNonCriticalError:
+	ldx  #FLTMSK_ErrorBitsMask1    ; load index with value
+L1320:	brclr  0, X, #$%11111111, L1321    ; branch if bit(s) clear
+	cmpa 0x00,x	    ; compare a with memory at index + value
+	beq  L1323	    ; branch if equal (zero)
+	inx		    ; increment index (x=x+1)
+	bra  L1320	    ; branch
+
+L1321:	tstb
+	bmi  L1324	    ; branch if minus(hi bit 1)
+	cmpa ErrorBitRegisterStored3	; compare a with memory contents
+	beq  L1322	    ; branch if equal (zero)
+	cmpa ErrorBitRegisterStored2	; compare a with memory contents
+	bne  L1324	    ; branch if not equal (not zero)
+L1322:	clr  ErrorCodeUpdateKeyOnCount	  ; zero byte at memory location
+L1323:	clra		    ; a = 0
+	rts		    ; return from subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Base of Mask Table</strong>: Anchors the 8-byte suppression array (<code>FLTMSK</code> through <a href="../../0_-_Setup/A_-_Cal_Configuration/FLTMSKX_ErrorBitsMaskTerminator.html"><code>FLTMSKX</code></a>).</li>
+<li><strong>Internal Code Mapping</strong>: Internal codes represent table offsets into <code>ErrorCodesToDash_Table</code>.</li>
+<li><strong>Array Sequencing</strong>: Evaluated first before <a href="../../0_-_Setup/A_-_Cal_Configuration/FLTMSK2_ErrorBitsMask2.html"><code>FLTMSK2</code></a> through <a href="../../0_-_Setup/A_-_Cal_Configuration/FLTMSK7_ErrorBitsMask7.html"><code>FLTMSK7</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>FLTMSK</code>
+        </footer>
+    </div>
+</body>
+</html>

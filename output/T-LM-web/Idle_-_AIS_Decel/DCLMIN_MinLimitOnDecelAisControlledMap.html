@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCLMIN: MinLimitOnDecelAisControlledMap | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0BE1</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DCLMIN: MinLimitOnDecelAisControlledMap</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DCLMIN</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DCLMIN_MinLimitOnDecelAisControlledMap</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0BE1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Absolute Pressure Clamping Floor (raw ADC / Volts; 0x14 = ~15 kPa)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x14                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L3071-L3083"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L3503"><code>CalculateAisPosition_MM</code></a> in <a href="../T-LMv13.asm.html#L3660"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DCLMIN</code> (MinLimitOnDecelAisControlledMap) provides a hard minimum lower clamp for the calculated deceleration target MAP floor.</p>
+<p>During trailing-throttle overrun at high engine speeds, the calculated target MAP floor might theoretically calculate to an unrealistically low value. If this value were subtracted directly from live manifold pressure, it could produce an unintended negative delta. <code>DCLMIN</code> clamps the target MAP floor so that it can never fall below this absolute lower bound (stock calibration = <code>0x14</code> / ~15 kPa / ~25.5 inHg vacuum), guaranteeing consistent and bounded inputs to the <a href="../Idle_-_AIS_Decel/DAISOP_DecelAisOpenStepsFromNeg_FromDeltaMap.html"><code>DAISOP</code></a> anti-stall table.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li>Evaluated inside <code>CalculateAisPosition_MM</code> at line 3660-3662.</li>
+<li>Compares intermediate target MAP floor in Register A against <code>DCLMIN</code>.</li>
+<li>If Register A is less than <code>DCLMIN</code>, it is overwritten with <code>DCLMIN</code>: <code>ldaa DCLMIN_MinLimitOnDecelAisControlledMap</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stock Value</strong>: <code>0x14</code> (~15 kPa).</li>
+<li><strong>Extreme High-Vacuum Engines</strong>: Highly efficient tight-tolerance race engines with high static compression can pull massive vacuum on decel. Raising <code>DCLMIN</code> slightly (e.g. to <code>0x1C</code> = ~21 kPa) provides an earlier air cushion on trailing throttle to catch aggressive decel drops.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateAisPosition_MM (T-LMv13.asm:3660-3662) ---
+        cmpa DCLMIN_MinLimitOnDecelAisControlledMap ; Compare computed MAP floor with minimum clamp ($0BE1)
+        bcc  LDA9C                               ; If above clamp, proceed
+        ldaa DCLMIN_MinLimitOnDecelAisControlledMap ; Else clamp to minimum value (data 0x14)
+LDA9C:  ldx  #DAISOP_DecelAisOpenStepsFromNeg_FromDeltaMap</code></pre>
+<h3>Assembly Cross-References:</h3>
+<ul>
+<li><strong>Line 3660</strong> (<code>CalculateAisPosition_MM</code>): <code>cmpa DCLMIN_MinLimitOnDecelAisControlledMap    ; compare a with memory contents (data is 14)</code></li>
+<li><strong>Line 3662</strong> (<code>CalculateAisPosition_MM</code>): <code>ldaa DCLMIN_MinLimitOnDecelAisControlledMap    ; load a with memory contents (data is 14)</code></li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Safety Floor</strong>: Functions identically to an electrical diode or lower clamping rail on the MAP floor calculation.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>DCLMIN</code>
+        </footer>
+    </div>
+</body>
+</html>

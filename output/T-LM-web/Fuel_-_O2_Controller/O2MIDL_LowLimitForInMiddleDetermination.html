@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O2MIDL: LowLimitForInMiddleDetermination | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x04A6</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - O2 Controller</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel</strong>
+        </div>
+        
+        <article class="content">
+            <h1>O2MIDL: LowLimitForInMiddleDetermination</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>O2MIDL</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>O2MIDL_LowLimitForInMiddleDetermination</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_O2_Controller\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x04A6</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">ADC Raw Voltage Steps ($1 \text{ count} \approx 19.5\text{ mV}$)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x12 (18 counts $\approx 0.352\text{ V}$)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L1220-L1307"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L1052"><code>VerifyOperationOfO2Sensor</code></a> in <a href="../T-LMv13.asm.html#L1072"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>O2MIDL_LowLimitForInMiddleDetermination</code> defines the <strong>lower voltage boundary of the O2 sensor "stuck-in-the-middle" fault zone</strong>.</p>
+<p>Combined with <a href="../Fuel_-_O2_Controller/O2MIDH_HighLimitForInMiddleDetermination.html"><code>O2MIDH</code></a>, it creates the diagnostic window used to identify dead, disconnected, or unheated O2 sensors. When the O2 sensor output stays between <code>O2MIDL</code> and <a href="../Fuel_-_O2_Controller/O2MIDH_HighLimitForInMiddleDetermination.html"><code>O2MIDH</code></a> for longer than the allowable timeout, the ECU aborts closed-loop operation, sets <strong>Fault 21</strong>, and reverts to open-loop default fueling.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Stuck-Sensor Detection:</strong></li>
+<li>Active continuously during closed loop.</li>
+<li>If <code>O2SensorVolts &lt; O2MIDL</code> (&lt; 0.352V), the sensor is considered successfully active on the lean side.</li>
+<li>If <code>O2SensorVolts &gt;= O2MIDL</code> and <code>&lt; O2MIDH</code>, the sensor is marked as resting in the dead zone.</li>
+<li><strong>Scan Tool / Miller Diagnostics:</strong></li>
+<li>Used by diagnostic routines to output O2 sensor state levels to Miller diagnostic tools and DRB scan tools.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stock Value:</strong> <code>0x12</code> (18 counts ≈ 0.352V).</li>
+<li><strong>Troubleshooting Fault 21:</strong></li>
+<li>If Fault 21 occurs after installing an aftermarket exhaust, check if the O2 sensor is placed too far downstream without a heated element. At idle, exhaust temperature drops below the sensor's threshold, causing its voltage to freeze between 0.352V and 0.547V.</li>
+<li>Converting to a 3-wire or 4-wire heated sensor cures this issue immediately.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 3121â€“3124):</p>
+<pre><code class="language-motorola6803">ldaa O2SensorVolts    ; Read O2 ADC voltage
+        cmpa O2MIDH_HighLimitForInMiddleDetermination    ; Check upper bound (0x1C)
+        bcc  LD70D          ; If &gt;= 0x1C, sensor is actively Rich -&gt; OK!
+        cmpa O2MIDL_LowLimitForInMiddleDetermination     ; Check lower bound (0x12)
+        bcs  LD70D          ; If &lt; 0x12, sensor is actively Lean -&gt; OK!
+        ; Trapped between 0x12 and 0x1C: Increment stall timer!</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><code>O2MIDL</code> is distinct from <a href="../Fuel_-_O2_Controller/O2LSWP_LowLimitForO2RampSwitching.html"><code>O2LSWP</code></a> (<code>0x18</code> / 0.469V). <a href="../Fuel_-_O2_Controller/O2LSWP_LowLimitForO2RampSwitching.html"><code>O2LSWP</code></a> is the switching point for stoichiometric feedback control; <code>O2MIDL</code> is an outer diagnostic boundary for sensor failure detection.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>O2MIDL</code>
+        </footer>
+    </div>
+</body>
+</html>

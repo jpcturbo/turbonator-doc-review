@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAPDEC: NoCellUpdateAndO2CNTRHeldBelowThisMap | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0BE2</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ F - Adaptive memory</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MAPDEC: NoCellUpdateAndO2CNTRHeldBelowThisMap</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MAPDEC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MAPDEC_NoCellUpdateAndO2CNTRHeldBelowThisMap</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\F_-_Adaptive_memory\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0BE2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi absolute (inHg vacuum)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x14 (20 counts ≈ 2.3 psia / 25.3 inHg vac)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L3232-L3243"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L2970"><code>HandleO2Processing_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L2973"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MAPDEC</code> defines the minimum manifold absolute pressure floor below which closed-loop oxygen sensor feedback is held in open loop and adaptive cell updates are blocked.</p>
+<p>During deep deceleration overrun, manifold pressure drops to high vacuum levels where combustion is unstable and deceleration fuel cutoff or extreme leanout may occur. The narrowband oxygen sensor reads false lean during overrun, which would corrupt adaptive trims if feedback remained active.</p>
+<p>In factory calibrations, <code>MAPDEC</code> is set to 20 counts, corresponding to approximately 2.3 psia or 25.3 inHg of vacuum.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> (<code>T-SMEC_v19.asm:2970-2980</code> and <code>3076-3080</code>), instruction lines 2973 and 3079.</li>
+<li><strong>Gating Conditions</strong>: Evaluated at the very entrance of O2 feedback processing on every main loop pass.</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li><code>MapValue</code> is loaded into register B and compared against <code>MAPDEC_NoCellUpdateAndO2CNTRHeldBelowThisMap</code> via <code>cmpb</code>.</li>
+<li>If <code>MapValue &lt;= MAPDEC</code> (<code>bls</code>), execution branches to <code>O2_SetStayOpenLoopFlag</code> (line 2985), setting bit <code>b50_StayOpenLoop</code>.</li>
+<li>In <code>O2Signal_BelowToggle</code> (line 3079), if <code>MapValue &lt;= MAPDEC</code> (<code>bls</code>), execution branches to <code>SwitchOrStayOpenLoop</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>High-Vacuum Deceleration Overrun</strong>:</li>
+<li>When lifting off the throttle at speed, manifold pressure plunges below <code>MAPDEC</code>, forcing open loop and freezing the O2 feedback counter to prevent false lean trims.</li>
+<li><strong>Disabling Closed-Loop Globally</strong>:</li>
+<li>Setting <code>MAPDEC</code> to 255 counts locks the engine permanently in open loop across all operating conditions.</li>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
+<li>On a 3-bar sensor, 2.3 psia sits at approximately 13 counts; failing to rescale causes the decel threshold to shift upward into light cruise vacuum.</li>
+<li><strong>Camshaft Upgrades</strong>:</li>
+<li>If a high-overlap cam reduces overrun vacuum, raise <code>MAPDEC</code> slightly to ensure deceleration fuel cut and open-loop lockout engage cleanly.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: At the entry of <code>HandleO2Processing_MM</code>, line 2971 clears accumulator A and line 2972 loads <code>MapValue</code> into accumulator B. Line 2973 executes <code>cmpb MAPDEC_NoCellUpdateAndO2CNTRHeldBelowThisMap</code>. If <code>MapValue</code> is lower than or equal to <code>MAPDEC</code>, <code>bls O2_SetStayOpenLoopFlag</code> branches to line 2985, setting <code>b50_StayOpenLoop</code> in <code>BitFlags_50</code> and zeroing <code>Counter_PrimaryRamp</code>. Later, at line 3079 in <code>O2Signal_BelowToggle</code>, <code>MapValue</code> is tested again against <code>MAPDEC</code>; if below or equal, <code>bls SwitchOrStayOpenLoop</code> forces <code>b50_OpenLoop</code> to block adaptive cell updates.</p>
+<pre><code class="language-motorola6803">; --- HandleO2Processing_MM (T-SMEC_v19.asm:2970-2976) ---
+HandleO2Processing_MM:
+	clra		    ; a = 0
+	ldab MapValue	    ; load b with memory contents
+	cmpb MAPDEC_NoCellUpdateAndO2CNTRHeldBelowThisMap    ; compare b with memory contents (data is 0d)
+	bls  O2_SetStayOpenLoopFlag	    ; branch if lower or same
+	ldab Timer_O2InhibitSwitchingRichIdleToClosedLoop    ; load b with memory contents
+	bne  O2_SetStayOpenLoopFlag	    ; branch if not equal (not zero)</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Directly gates <code>Counter_PrimaryRamp</code> and works with <a href="../../1_-_Fuel/F_-_Adaptive_memory/MAPLIM_NoCellUpdateAboveThisMAP.html"><code>MAPLIM</code></a> (upper MAP limit) and <a href="../../1_-_Fuel/E_-_O2_Controller/BOOSTP_AdjustO2ResponseForPTEWhenMapAboveThis.html"><code>BOOSTP</code></a>.</li>
+<li><strong>Global Open-Loop Hack</strong>: Setting <code>MAPDEC</code> to 255 counts (0xFF) holds <code>b50_StayOpenLoop</code> permanently set, providing a clean method to run full open loop.</li>
+<li><strong>Sensor Scaling</strong>: 20 counts represents 2.3 psia (25.3 inHg vac) on a 2-bar sensor, and 3.5 psia on a 3-bar sensor.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>MAPDEC</code>
+        </footer>
+    </div>
+</body>
+</html>

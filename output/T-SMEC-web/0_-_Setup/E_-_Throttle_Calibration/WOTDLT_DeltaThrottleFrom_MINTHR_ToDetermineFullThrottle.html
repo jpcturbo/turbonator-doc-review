@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WOTDLT: DeltaThrottleFrom MINTHR ToDetermineFullThrottle | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x15AD</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ E - Throttle Calibration</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>WOTDLT: DeltaThrottleFrom MINTHR ToDetermineFullThrottle</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>WOTDLT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>WOTDLT_DeltaThrottleFrom_MINTHR_ToDetermineFullThrottle</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\E_-_Throttle_Calibration\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x15AD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Volts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x85                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L5739-L5749"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L7792"><code>CheckThrottle_ErrorAlreadyFlagged</code></a> in <a href="../../T-SMEC_v19.asm.html#L7799"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>WOTDLT</code> defines the throttle position sensor voltage delta required to command wide-open throttle mode.</p>
+<p>Rather than relying on a fixed absolute voltage that could be skewed by sensor wear, thermal drift, or bracket flex, the engine controller measures throttle position relative to the dynamically learned closed-throttle baseline. Factory calibrations set <code>WOTDLT</code> to one hundred thirty-three counts, which corresponds to approximately two point six one volts above closed throttle. When throttle position sensor voltage exceeds the learned closed-throttle baseline by this delta, the controller declares wide-open throttle, disabling closed-loop oxygen sensor feedback and engaging maximum target boost and rich power enrichment fueling.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CheckThrottle_ErrorAlreadyFlagged</code> (<code>T-SMEC_v19.asm:7792-7817</code>), instruction line 7799 and line 7806.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Staging limiter check: if <code>Turbonator_Staging</code> is active, forces immediate branch to <code>CheckThrottle_AtFullThrottle</code>.</li>
+<li><strong>Comparison &amp; Hysteresis</strong>:</li>
+<li>Sums <code>MINTHR_LowestSessionTPS + WOTDLT</code> in register B, clamped to maximum 0xD0 (~4.07V).</li>
+<li>If already at full throttle (<code>b4f_FullThrottle</code> set), subtracts 3 counts from threshold for hysteresis.</li>
+<li>Compares throttle volts in accumulator A against B (<code>cba</code>). If higher (<code>bhi</code>), branches to <code>CheckThrottle_AtFullThrottle</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Earlier Power Enrichment</strong>:</li>
+<li>Lowering <code>WOTDLT</code> to one hundred ten or one hundred twenty counts (~2.1 to 2.3 Volts) triggers wide-open throttle fueling and max boost earlier in pedal travel for heightened throttle response.</li>
+<li><strong>Preventing Premature Enrichment</strong>:</li>
+<li>Setting <code>WOTDLT</code> too low drops the ECU out of stoichiometric closed-loop cruising during moderate highway grades, increasing fuel consumption.</li>
+<li><strong>Hysteresis Mechanics</strong>:</li>
+<li>The firmware incorporates a three-count (~0.059V) hysteresis window below <code>WOTDLT</code> to prevent rapid flickering at the wide-open throttle boundary.</li>
+<li><strong>Factory Setting</strong>:</li>
+<li>Set to one hundred thirty-three counts (~2.61 Volts delta) in factory calibrations.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CheckThrottle_ErrorAlreadyFlagged</code> at lines 7806-7816, register B loads <code>WOTDLT_DeltaThrottleFrom_MINTHR_ToDetermineFullThrottle</code> and adds <code>MINTHR_LowestSessionTPS</code>. Line 7808 clamps the sum to a ceiling of 0xD0 via <code>cmpb #0xd0; bls L1642; ldab #0xd0</code>. At line 7811, if <code>b4f_FullThrottle</code> is already set, <code>subb #0x03</code> applies hysteresis. Line 7813 executes <code>cba</code>; if <code>TpsVolts</code> in accumulator A is higher (<code>bhi</code>), execution branches to <code>CheckThrottle_AtFullThrottle</code> to set <code>b4f_FullThrottle</code>.</p>
+<pre><code class="language-motorola6803">; --- CheckThrottle_ErrorAlreadyFlagged (T-SMEC_v19.asm:7806-7819) ---
+	ldab WOTDLT_DeltaThrottleFrom_MINTHR_ToDetermineFullThrottle	; load b with memory contents (data is 85)
+	addb MINTHR_LowestSessionTPS	; b=b+memory contents
+	cmpb #0xd0	    ;  -11010000-
+	bls  L1642	    ; branch if lower or same
+	ldab #0xd0	    ; load b with value -11010000-
+L1642:	brclr *BitFlags_4f, #b4f_FullThrottle, L1643	; branch if bit(s) clear
+	subb #0x03	    ;  -00000011-
+L1643:	cba
+	bhi  CheckThrottle_AtFullThrottle    ; branch if higher
+	bclr *BitFlags_4f, #b4f_FullThrottle	; clear bits
+	bra  L1644	    ; branch
+
+CheckThrottle_AtFullThrottle:
+	bset *BitFlags_4f, #b4f_FullThrottle	; set bits</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Adaptive Relative Reference</strong>: Always evaluated relative to learned <code>MINTHR_LowestSessionTPS</code>.</li>
+<li><strong>Absolute Ceiling</strong>: Hard-clamped in firmware at 0xD0 (208 counts / ~4.07 Volts).</li>
+<li><strong>Companion Constant</strong>: Identically calibrated to <a href="../../0_-_Setup/E_-_Throttle_Calibration/UNLOAD_DeltaThrottleFrom_MINTHR_ToUnloadCrankingFuel.html"><code>UNLOAD_DeltaThrottleFrom_MINTHR_ToUnloadCrankingFuel</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>WOTDLT</code>
+        </footer>
+    </div>
+</body>
+</html>

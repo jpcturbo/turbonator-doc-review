@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTUMP3: PTUMAPThresholdForLock3 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x17D7</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ PTU Control ➔ Entry Conditions</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PTUMP3: PTUMAPThresholdForLock3</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PTUMP3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>PTUMP3_PTUMAPThresholdForLock3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\PTU_Control\Entry_Conditions\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x17D7</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">psi</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x78                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_25_ATX_A283_Stock.tpl.html#L6293-L6304"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-SMEC_v19.asm.html#L10402"><code>PTU_CheckThrottleForLock</code></a> in <a href="../../../T-SMEC_v19.asm.html#L10421"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PTUMP3</code> defines the immediate manifold pressure spike threshold for low-speed Part Throttle Unlock lockup engagement.</p>
+<p>When vehicle speed is below <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMSP_PTUMinLockSpeed.html"><code>PTUMSP</code></a> (under 45 MPH), the engine is capable of generating sudden torque spikes as turbocharger boost builds at lower road speeds. If the driver depresses the throttle and manifold pressure rises rapidly relative to the previous evaluation sample (stored in <code>Temp0</code>), allowing the converter clutch to slip could overheat or glaze the friction lining. In factory calibrations, <code>PTUMP3</code> is configured to 120 counts, corresponding to approximately 13.8 psi delta on the 0 to 29.4 psi MAP scale. If manifold pressure jumps by more than <code>PTUMP3</code> at low vehicle speeds, the controller immediately forces the torque converter to lock.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ControlPTU_MM</code> / <code>PTU_CheckThrottleForLock</code> (<code>T-SMEC_v19.asm:10416-10423</code>), instruction line 10421.</li>
+<li><strong>Low-Speed Gate</strong>: Evaluated exclusively when vehicle speed is below <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMSP_PTUMinLockSpeed.html"><code>PTUMSP_PTUMinLockSpeed</code></a>.</li>
+<li><strong>Delta Calculation &amp; Branch</strong>:</li>
+<li>Computes <code>MapValue - Temp0</code> (current MAP minus previous sample).</li>
+<li>Compares delta against <code>PTUMP3_PTUMAPThresholdForLock3</code> at line 10421.</li>
+<li>If delta <code>&gt;= PTUMP3</code> (<code>bcc PTU_SetPTUBits</code>), branches to force lockup.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Low-Speed Boost Protection</strong>:</li>
+<li>Forces immediate torque converter lockup when manifold pressure spikes rapidly below <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMSP_PTUMinLockSpeed.html"><code>PTUMSP</code></a>.</li>
+<li><strong>Stall Torque Multiplication</strong>:</li>
+<li>Raise <code>PTUMP3</code> to 140 to 160 counts to allow higher stall torque multiplication before lockup engages.</li>
+<li><strong>3-Bar MAP Conversion</strong>:</li>
+<li>Rescale <code>PTUMP3</code> to ~80 counts on 3-bar MAP setups to prevent hair-trigger lockup on partial boost.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>PTU_CheckThrottleForLock</code> at line 10416, when vehicle speed is below <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMSP_PTUMinLockSpeed.html"><code>PTUMSP_PTUMinLockSpeed</code></a>, line 10418 loads <code>MapValue</code> into accumulator A and line 10419 subtracts <code>Temp0</code> (previous MAP sample). If carry is set (<code>bcs</code>), manifold pressure is falling and it branches to <code>PTU_CheckMAPThresholdsForLock</code>. If rising, line 10421 executes <code>cmpa PTUMP3_PTUMAPThresholdForLock3</code>. If accumulator A is greater than or equal (<code>bcc</code>), execution branches to <code>PTU_SetPTUBits</code> at line 10425 to lock the converter.</p>
+<pre><code class="language-motorola6803">; --- ControlPTU_MM (T-SMEC_v19.asm:10418-10424) ---
+	ldaa MapValue       ; load a with memory contents
+	suba Temp0
+	bcs  PTU_CheckMAPThresholdsForLock          ; branch if lower
+	cmpa PTUMP3_PTUMAPThresholdForLock3          ; compare a with memory contents (data is 20)
+	bcc  PTU_SetPTUBits          ; branch if greater or equal
+	bra  LD63A          ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Low-Speed Exclusive</strong>: Evaluated only when road speed is below <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMSP_PTUMinLockSpeed.html"><code>PTUMSP_PTUMinLockSpeed</code></a>.</li>
+<li><strong>Baseline Storage</strong>: Relies on <code>Temp0</code>, which is refreshed every <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUCNI_PTUCounterTimerIntervalForLoop.html"><code>PTUCNI</code></a> loop passes.</li>
+<li><strong>Bypass Path</strong>: If manifold pressure change is negative (deceleration), branches directly to normal threshold evaluation.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>PTUMP3</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O2HSWP: HighLimitForO2RampSwitching | Chrysler Logic Module (T-LM) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0465</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - O2 Controller</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel</strong>
+        </div>
+        
+        <article class="content">
+            <h1>O2HSWP: HighLimitForO2RampSwitching</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>O2HSWP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>O2HSWP_HighLimitForO2RampSwitching</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_O2_Controller\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0465</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">ADC Raw Voltage Steps ($1 \text{ count} \approx 19.5\text{ mV}$)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>0x19 (25 counts $\approx 0.488\text{ V}$)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T_LM_22_MTX_A171_Stock.tpl.html#L1155-L1167"><code>T_LM_22_MTX_A171_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-LMv13.asm.html#L3103"><code>CheckIfO2SensorDataIsValid</code></a> in <a href="../T-LMv13.asm.html#L3133"><code>T-LMv13.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>O2HSWP_HighLimitForO2RampSwitching</code> is the <strong>upper voltage switching threshold</strong> used by the closed-loop air/fuel ratio controller to detect when the exhaust mixture has transitioned to the <strong>RICH</strong> side of stoichiometric (14.7:1 AFR for gasoline).</p>
+<p>A narrow-band zirconia oxygen sensor outputs a non-linear S-curve voltage: typically 0.1V when lean and 0.9V when rich, with an extremely steep cliff around 0.45V to 0.50V. When the sensor voltage climbs equal to or above <code>O2HSWP</code>, the ECU confirms that excess fuel is present in the exhaust gas and immediately initiates fuel enleanment ramps to drive the mixture back toward stoichiometry.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<p><code>O2HSWP</code> is active whenever the fuel feedback loop is closed:
+* <strong>Closed-Loop Active:</strong> Bit 4 of <code>BitFlags_81</code> is set (warm engine, delay expired, sensor valid).
+* <strong>Part-Throttle / Idle Cruise:</strong> Engine is operating within closed-loop MAP limits (not at WOT or under high-boost power enrichment).
+* <strong>Sensor Voltage Evaluation:</strong> Evaluated on every O2 sampling loop. If <code>O2SensorVolts &gt;= O2HSWP</code>, branch to <code>O2Signal_AboveToggle</code>.</p>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Pairing with <a href="../Fuel_-_O2_Controller/O2LSWP_LowLimitForO2RampSwitching.html"><code>O2LSWP</code></a>:</strong> <code>O2HSWP</code> (<code>0x19</code> ≈ 0.488V) works as a tight hysteresis pair with <a href="../Fuel_-_O2_Controller/O2LSWP_LowLimitForO2RampSwitching.html"><code>O2LSWP</code></a> (<code>0x18</code> ≈ 0.469V). This tight 19mV window ensures rapid, responsive switching around the narrow-band midpoint.</li>
+<li><strong>Raising <code>O2HSWP</code> (e.g., to <code>0x22</code> / 0.66V):</strong></li>
+<li>The sensor must reach a higher voltage before the ECU acknowledges a rich condition.</li>
+<li><strong>Real-World Effect:</strong> Shifts the average closed-loop stoichiometric target slightly richer (e.g., 14.3:1 â€“ 14.5:1 AFR), which can reduce lean misfire or improve tip-in smoothness on aggressive camshafts.</li>
+<li><strong>Lowering <code>O2HSWP</code>:</strong></li>
+<li>Narrowing the gap between high and low switch points makes the feedback loop twitchy, increasing susceptibility to electrical noise in the sensor wiring.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 3132â€“3141):</p>
+<pre><code class="language-motorola6803">clrb                ; Clear accumulator B
+        cmpa O2HSWP_HighLimitForO2RampSwitching    ; Compare O2 ADC reading with O2HSWP (0x19)
+        bcc  O2Signal_AboveToggle    ; If O2Volts &gt;= O2HSWP, jump to rich handling!
+        cmpa O2LSWP_LowLimitForO2RampSwitching    ; Else test lean switch point
+        bcs  O2Signal_BelowToggle    ; If O2Volts &lt; O2LSWP, jump to lean handling!
+        rts                 ; Within hysteresis deadband: no change</code></pre>
+<ul>
+<li>When <code>bcc O2Signal_AboveToggle</code> fires:</li>
+<li>Register B is decremented (<code>decb</code>, indicating rich).</li>
+<li>The controller toggles the closed-loop state bit in <code>BitFlags_81</code> (bit 2).</li>
+<li>The primary step ramp (<a href="../Fuel_-_O2_Controller_Ramps/PRIRMP_PrimaryRamp.html"><code>PRIRMP</code></a>) executes to immediately pull out fuel.</li>
+</ul>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>ADC Scaling:</strong> The 6803 ADC scales 0 to 5.0V across 8 bits (0â€“255), where each count is (5.0 / 256) ≈ 0.01953 V (19.53 mV). Therefore:</li>
+</ul>
+<p><code>Voltage = 0x19 × 0.01953 V = 25 × 0.01953 V ≈ 0.488 V</code></p>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Chrysler Logic Module (T-LM) Calibration Reference &bull; Generated from <code>O2HSWP</code>
+        </footer>
+    </div>
+</body>
+</html>

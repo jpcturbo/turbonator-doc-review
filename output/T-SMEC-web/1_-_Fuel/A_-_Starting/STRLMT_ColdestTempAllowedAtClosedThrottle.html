@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STRLMT: ColdestTempAllowedAtClosedThrottle | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x067F</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ A - Starting</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Base_Modifiers</strong>
+        </div>
+        
+        <article class="content">
+            <h1>STRLMT: ColdestTempAllowedAtClosedThrottle</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>STRLMT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>STRLMT_ColdestTempAllowedAtClosedThrottle</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Base_Modifiers</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\A_-_Starting\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x067F</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">degrees F</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x69 (105 counts ≈ 38°F)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1853-L1863"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5546"><code>CalculateInjectorPulsewidthForStarting_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L5562"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>STRLMT</code> defines the minimum coolant temperature floor permitted for cranking fuel calculations when starting at closed throttle.</p>
+<p>Because the <a href="../../1_-_Fuel/A_-_Starting/STRTFL_FuelStartFromCoolantTemp.html"><code>STRTFL</code></a> starting fuel calculation squares the table lookup result, unconstrained sub-zero temperature sensor readings could command excessive injector pulsewidths that flood the cylinders. In factory calibrations, <code>STRLMT</code> is set to 105 counts, corresponding to approximately 38 degF.</p>
+<p>If an engine is cranked with the throttle closed at temperatures colder than 38 degF, the controller clamps the input temperature to 38 degF, preventing excessive cranking fuel accumulation.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateInjectorPulsewidthForStarting_MM</code> (<code>T-SMEC_v19.asm:5560-5565</code>), instruction lines 5562, 5564.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated only during cranking (<code>b54_FuelEngineNotRunning</code> set).</li>
+<li>Evaluated only when throttle is closed (<code>b4f_OffIdle</code> in <code>BitFlags_4f</code> is clear).</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li><code>cmpa STRLMT_ColdestTempAllowedAtClosedThrottle</code> compares current coolant temperature.</li>
+<li>If <code>CoolantTemp &gt;= STRLMT</code> (<code>bcc L1477</code>), the actual temperature is preserved.</li>
+<li>If <code>CoolantTemp &lt; STRLMT</code>, <code>STRLMT</code> is loaded into accumulator A at line 5564.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Cold Cranking Protection</strong>:</li>
+<li>Raising <code>STRLMT</code> caps the maximum cranking pulsewidth, preventing wet-fouling on large injectors in freezing weather.</li>
+<li><strong>Sub-Zero &amp; E85 Cold Starts</strong>:</li>
+<li>Lowering <code>STRLMT</code> allows richer fueling below 38 degF for cold northern climates or E85 conversions.</li>
+<li><strong>Closed-Throttle Gating</strong>:</li>
+<li><code>STRLMT</code> is only applied when the throttle is fully closed; cracking the throttle off-idle bypasses the clamp immediately.</li>
+<li><strong>Stock Calibration Matching</strong>:</li>
+<li>Factory setting of 105 counts (38 degF) balances cold fuel vaporization against the risk of unburned fuel flooding.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateInjectorPulsewidthForStarting_MM</code>, after calling <code>AllowForHeatSoakAfterStall</code>, the code checks closed-throttle status with <code>brset *BitFlags_4f, #b4f_OffIdle, L1477</code>. If closed-throttle is confirmed, <code>cmpa STRLMT_ColdestTempAllowedAtClosedThrottle</code> is executed at line 5562. If carry is clear (<code>bcc</code>), the temperature is above <code>STRLMT</code> and execution branches to table lookup. If carry is set, <code>ldaa STRLMT_ColdestTempAllowedAtClosedThrottle</code> at line 5564 overwrites accumulator A with the clamp value.</p>
+<pre><code class="language-motorola6803">; --- CalculateInjectorPulsewidthForStarting_MM (T-SMEC_v19.asm:5560-5566) ---
+L1476:	jsr  AllowForHeatSoakAfterStall    ; call subroutine
+	brset *BitFlags_4f, #b4f_OffIdle, L1477    ; branch if bit(s) set
+	cmpa STRLMT_ColdestTempAllowedAtClosedThrottle	  ; compare a with memory contents (data is 69)
+	bcc  L1477	    ; branch if greater or equal
+	ldaa STRLMT_ColdestTempAllowedAtClosedThrottle	  ; load a with memory contents (data is 69)
+L1477:	ldx  #STRTFL_FuelStartFromCoolantTemp	 ; load index with value
+	jsr  Lookup4ByteTable	 ; call subroutine</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Off-Idle Bypass</strong>: Drivers who pump or crack the throttle while cranking set <code>b4f_OffIdle</code>, which bypasses <code>STRLMT</code> and allows full table enrichment down to raw sensor temperature.</li>
+<li><strong>Heat Soak Interaction</strong>: Follows <code>AllowForHeatSoakAfterStall</code>, so simulated heat soak increases are evaluated before this lower clamp.</li>
+<li><strong>Raw Value</strong>: 105 counts (0x69) equates to 38 degF on Chrysler's standard -200 degF to 260 degF temperature transfer curve.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>STRLMT</code>
+        </footer>
+    </div>
+</body>
+</html>

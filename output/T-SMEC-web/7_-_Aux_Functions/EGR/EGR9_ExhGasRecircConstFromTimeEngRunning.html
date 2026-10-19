@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EGR9: ExhGasRecircConstFromTimeEngRunning9 | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1B19</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ EGR</strong> &nbsp;|&nbsp; Subsystem: <strong>EGR_Emissions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>EGR9: ExhGasRecircConstFromTimeEngRunning9</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>EGR9</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>EGR9_ExhGasRecircConstFromTimeEngRunning</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">EGR_Emissions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\EGR\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1B19</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Seconds (0 to 255 seconds; factory 128 counts = ~128 seconds / ~2 minutes)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x80                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L7127-L7137"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5389"><code>EGR_CheckForAutoTrans</code></a> in <a href="../../T-SMEC_v19.asm.html#L5403"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>EGR9</code> (ExhGasRecircConstFromTimeEngRunning) establishes the post-start engine running time delay before closed-throttle idle EGR shutoff logic becomes active.</p>
+<p>During engine warmup and the initial period following key-on, the engine controller skips closed-throttle EGR shutoff checks while core engine timers and sensor readings stabilize.</p>
+<p>At line 5403, the controller compares total engine running time against <code>EGR9</code>. The factory calibration setting of 128 counts corresponds to approximately 128 seconds (roughly 2 minutes) of engine operation. Once the engine has been running for at least 128 seconds, the controller actively monitors the off-idle throttle switch bit. If the throttle closes to idle after this delay, the controller immediately commands the EGR solenoid off, preventing exhaust gas recirculation from causing rough idle or engine stalling.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5403.</li>
+<li><strong>Input Variable</strong>: <code>KeyOnOrEngineRunningTime</code> (RAM address 0x0041) evaluated in accumulator A.</li>
+<li><strong>Comparison</strong>: <code>cmpa EGR9_ExhGasRecircConstFromTimeEngRunning</code> at line 5403.</li>
+<li><strong>Warmup Branch</strong>: If <code>RunningTime &lt; EGR9</code> (<code>bcs L1459</code>), skips idle check and branches ahead.</li>
+<li><strong>Idle Action</strong>: If <code>RunningTime &gt;= EGR9</code> and <code>b4f_OffIdle</code> is clear, lines 5406–5407 set bit 4 in <code>EGRVar2</code> and jump to <code>EGR_SetEGRtoOff</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Lowering EGR9</strong>: Engages closed-throttle EGR shutoff sooner after engine start. Setting to 0 enforces idle EGR shutoff immediately from key-on.</li>
+<li><strong>Raising EGR9</strong>: Extends the post-start window before idle EGR shutoff checks begin. Rarely needed unless diagnosing cold-start emissions cycles.</li>
+<li><strong>Idle Protection Mechanics</strong>: Once <code>RunningTime &gt;= EGR9</code>, any transition to closed throttle (<code>b4f_OffIdle</code> clear) sets bit 4 of <code>EGRVar2</code> and jumps directly to <code>EGR_SetEGRtoOff</code>.</li>
+<li><strong>Factory Setting</strong>: 128 counts (approx 128 seconds / ~2 minutes) aligns with primary coolant warmup transitions.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>ExhGasRecirc_MM</code>, after evaluating transmission type and MTX RPM/MAP gates, execution reaches <code>L1456</code> at line 5402. Accumulator A loads <code>KeyOnOrEngineRunningTime</code> and line 5403 executes <code>cmpa EGR9_ExhGasRecircConstFromTimeEngRunning</code> (factory 0x80 = 128 counts). If accumulator A is less than <code>EGR9</code>, carry is set, and line 5404 branches via <code>bcs L1459</code> (skipping the idle test). If A meets or exceeds <code>EGR9</code>, line 5405 tests <code>b4f_OffIdle</code> (<code>brset *BitFlags_4f, #b4f_OffIdle, L1458</code>). If the throttle is closed, line 5406 sets bit 4 in <code>EGRVar2</code> (<code>bset *EGRVar2, #bit_bit4</code>) and line 5407 executes <code>jmp EGR_SetEGRtoOff</code>, shutting off the EGR solenoid output.</p>
+<pre><code class="language-motorola6803">; --- ExhGasRecirc_MM (T-SMEC_v19.asm:5402-5408) ---
+L1456:	ldaa KeyOnOrEngineRunningTime	 ; load a with memory contents
+	cmpa EGR9_ExhGasRecircConstFromTimeEngRunning	  ; compare a with memory contents (data is 80)
+	bcs  L1459	    ; branch if lower
+	brset *BitFlags_4f, #b4f_OffIdle, L1458    ; branch if bit(s) set
+L1457:	bset *EGRVar2, #bit_bit4	  ; set bits
+	jmp  EGR_SetEGRtoOff</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Single-Byte Type 3 Constant</strong>: Located at calibration address 0x1B19 (calculated ROM address 0x86EF / template org 0x8837).</li>
+<li><strong>Clock Resolution</strong>: Increments once per second via foreground timing interrupts.</li>
+<li><strong>Stall Prevention</strong>: Crucial parameter for preventing EGR-induced engine stumbling during return-to-idle after warmup.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>EGR9</code>
+        </footer>
+    </div>
+</body>
+</html>

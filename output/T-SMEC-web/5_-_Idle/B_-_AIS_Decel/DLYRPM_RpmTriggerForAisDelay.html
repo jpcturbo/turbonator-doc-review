@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DLYRPM: RpmTriggerForAisDelay | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0F85</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DLYRPM: RpmTriggerForAisDelay</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DLYRPM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DLYRPM_RpmTriggerForAisDelay</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0F85</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (Single Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">RPM</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x5E                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L4163-L4173"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L7867"><code>CheckThrottle_AtIdle</code></a> in <a href="../../T-SMEC_v19.asm.html#L7883"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DLYRPM</code> defines the engine speed threshold that switches the stationary closed-throttle dashpot delay between the standard low-RPM timer <a href="../../5_-_Idle/B_-_AIS_Decel/DLYTM2_AisDelayAfterThrottleClosesWhenStopped.html"><code>DLYTIM2</code></a> and the extended high-RPM timer <a href="../../5_-_Idle/B_-_AIS_Decel/DLYTM3_AisDelayAfterThrottleClosesWhenRpmAbove_DLYRPM.html"><code>DLYTM3</code></a>.</p>
+<p>When the accelerator pedal is released at a standstill, the severity of the deceleration depends heavily on engine speed. If the engine was merely idling or gently revved below <code>DLYRPM</code>, a brief dashpot delay (<a href="../../5_-_Idle/B_-_AIS_Decel/DLYTM2_AisDelayAfterThrottleClosesWhenStopped.html"><code>DLYTIM2</code></a>) is sufficient to catch the engine smoothly. However, if the engine was revved to high RPM above <code>DLYRPM</code>, the extended dashpot delay (<a href="../../5_-_Idle/B_-_AIS_Decel/DLYTM3_AisDelayAfterThrottleClosesWhenRpmAbove_DLYRPM.html"><code>DLYTM3</code></a>) is required to ensure safe recovery.</p>
+<p>In factory calibrations, <code>DLYRPM</code> is set to 94 counts, corresponding to an engine speed threshold of approximately 1504 RPM (nominally 1500 RPM).</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CheckThrottle_AtIdle</code> (<code>T-SMEC_v19.asm:7867-7895</code>) within <code>CheckThrottleRoutine_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Closed throttle detected at low vehicle speed (&lt;= <a href="../../5_-_Idle/B_-_AIS_Decel/MPHREF_SwitchPointForDecelIdleAisControl.html"><code>MPHREF</code></a>).</li>
+<li>Loads <code>EngineRpm_HB</code> into accumulator B at line 7882.</li>
+<li>Compares accumulator B against <code>DLYRPM</code> at line 7883 (<code>cmpb DLYRPM_RpmTriggerForAisDelay</code>).</li>
+<li>If RPM &gt;= <code>DLYRPM</code> (<code>bcc</code>), uses <a href="../../5_-_Idle/B_-_AIS_Decel/DLYTM3_AisDelayAfterThrottleClosesWhenRpmAbove_DLYRPM.html"><code>DLYTM3</code></a>; if RPM &lt; <code>DLYRPM</code>, falls through to load <a href="../../5_-_Idle/B_-_AIS_Decel/DLYTM2_AisDelayAfterThrottleClosesWhenStopped.html"><code>DLYTIM2</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Split Point Optimization</strong>:</li>
+<li>Raise <code>DLYRPM</code> to 1800 to 2000 RPM to keep light throttle blips quick and responsive on the shorter <a href="../../5_-_Idle/B_-_AIS_Decel/DLYTM2_AisDelayAfterThrottleClosesWhenStopped.html"><code>DLYTIM2</code></a> timer.</li>
+<li><strong>Camshaft Stall Buffer</strong>:</li>
+<li>If an aggressive camshaft tends to stall when revved past 1400 RPM, keep <code>DLYRPM</code> at or below 1500 RPM so extended dashpot protection engages early.</li>
+<li><strong>Scaling Mechanics</strong>:</li>
+<li>1 count = 16 RPM on the 8-bit scale (94 counts = 1504 RPM).</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CheckThrottle_AtIdle</code>, line 7881 loads accumulator A with <a href="../../5_-_Idle/B_-_AIS_Decel/DLYTM3_AisDelayAfterThrottleClosesWhenRpmAbove_DLYRPM.html"><code>DLYTM3</code></a>. Line 7882 loads <code>EngineRpm_HB</code> into accumulator B and line 7883 executes <code>cmpb DLYRPM_RpmTriggerForAisDelay</code>. If <code>EngineRpm_HB</code> is &gt;= <code>DLYRPM</code>, the branch <code>bcc L1652</code> is taken, retaining <a href="../../5_-_Idle/B_-_AIS_Decel/DLYTM3_AisDelayAfterThrottleClosesWhenRpmAbove_DLYRPM.html"><code>DLYTM3</code></a> in accumulator A. If lower, execution falls through to line 7886 (<code>ldaa 0x00,x</code>), loading <a href="../../5_-_Idle/B_-_AIS_Decel/DLYTM2_AisDelayAfterThrottleClosesWhenStopped.html"><code>DLYTIM2</code></a> instead.</p>
+<pre><code class="language-motorola6803">; --- CheckThrottle_AtIdle (T-SMEC_v19.asm:7880-7885) ---
+	inx		    ; increment index (x=x+1)
+	ldaa DLYTM3_AisDelayAfterThrottleClosesWhenRpmAbove_DLYRPM    ; load a with memory contents (data is ff)
+	ldab EngineRpm_HB    ; load b with memory contents
+	cmpb DLYRPM_RpmTriggerForAisDelay    ; compare b with memory contents (data is da)
+	bcc  L1652	    ; branch if greater or equal
+CheckThrottle_VehicleSpeedStillAboveDecelIdle:</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Bridges the decision logic between <a href="../../5_-_Idle/B_-_AIS_Decel/DLYTM2_AisDelayAfterThrottleClosesWhenStopped.html"><code>DLYTIM2</code></a> and <a href="../../5_-_Idle/B_-_AIS_Decel/DLYTM3_AisDelayAfterThrottleClosesWhenRpmAbove_DLYRPM.html"><code>DLYTM3</code></a>.</li>
+<li><strong>Factory Value</strong>: 0x5E (94 counts = 1504 RPM / ~1500 RPM).</li>
+<li><strong>Scale Factor</strong>: 16 RPM per count.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>DLYRPM</code>
+        </footer>
+    </div>
+</body>
+</html>

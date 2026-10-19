@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STFTMP: FuelStartFuelFromCoolant | Single Module Engine Controller (T-SMEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x069C</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ A - Starting</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Base_Modifiers</strong>
+        </div>
+        
+        <article class="content">
+            <h1>STFTMP: FuelStartFuelFromCoolant</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>STFTMP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>STFTMP_FuelStartFuelFromCoolant</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Base_Modifiers</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\A_-_Starting\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x069C</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2D Table / Curve)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">2 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Coolant Temperature (-200 to 260 °F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Fuel Reduction Factor (0.000 to 0.996 factor)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Fuel Reduction Factor (0.000 to 0.996 factor) vs. Coolant Temperature (-200 to 260 °F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02 (2 points: 60°F: 1.00x reduction factor, 175°F: 0.00x reduction factor)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_25_ATX_A283_Stock.tpl.html#L1882-L1894"><code>T-SMEC_25_ATX_A283_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SMEC_v19.asm.html#L5546"><code>CalculateInjectorPulsewidthForStarting_MM</code></a> in <a href="../../T-SMEC_v19.asm.html#L5580"><code>T-SMEC_v19.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>STFTMP</code> defines a temperature-dependent reduction factor that subtracts fuel from the cranking calculation as the engine warms up.</p>
+<p>While <a href="../../1_-_Fuel/A_-_Starting/STRTFL_FuelStartFromCoolantTemp.html"><code>STRTFL</code></a> sets the cold base starting fuel, warm and hot engines require significantly less fuel to start because hot metal surfaces promote immediate fuel vaporization.</p>
+<p>Working in direct multiplication with the barometric reduction factor (<a href="../../1_-_Fuel/A_-_Starting/STFBAR_FuelStartReductionFromBaro.html"><code>STFBAR</code></a>), <code>STFTMP</code> calculates a combined reduction percentage. This percentage subtracts fuel from the cranking pulsewidth, ensuring hot restarts are clean and rapid without flooding or black smoke.</p>
+<hr />
+<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateInjectorPulsewidthForStarting_MM</code> (<code>T-SMEC_v19.asm:5579-5590</code>), instruction line 5580.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Active during cranking (<code>b54_FuelEngineNotRunning</code> set).</li>
+<li>Executed after <a href="../../1_-_Fuel/A_-_Starting/STFBAR_FuelStartReductionFromBaro.html"><code>STFBAR</code></a> has looked up barometric reduction into <code>Temp4</code>.</li>
+<li><strong>Math &amp; Multiplier</strong>:</li>
+<li>Multiplied against <code>Temp4</code> via <code>mul; adca #0x00</code>.</li>
+<li>If result is non-zero, negated (<code>nega</code>) and used to scale <code>Temp0</code> via <code>ScaleYbyA</code>, implementing <code>Temp0 * (1 - STFBAR * STFTMP)</code>.</li>
+</ul>
+<hr />
+<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Warm Restart Flooding</strong>:</li>
+<li>Increasing <code>STFTMP</code> values at warm temperatures (above 140 degF) removes excess cranking fuel, curing hot restart flooding.</li>
+<li><strong>Lean Hot-Start Pop</strong>:</li>
+<li>Lowering <code>STFTMP</code> values retains more cranking pulsewidth if warm restarts pop lean or crank excessively before catching.</li>
+<li><strong>Altitude Compounding</strong>:</li>
+<li>Because <code>STFTMP</code> is multiplied by <a href="../../1_-_Fuel/A_-_Starting/STFBAR_FuelStartReductionFromBaro.html"><code>STFBAR</code></a>, changes here interact directly with high-elevation starting behavior.</li>
+<li><strong>Injector Upgrades</strong>:</li>
+<li>When running large aftermarket injectors, higher <code>STFTMP</code> reduction factors prevent rich hot-cranking stumbles.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>: In <code>CalculateInjectorPulsewidthForStarting_MM</code>, after <a href="../../1_-_Fuel/A_-_Starting/STFBAR_FuelStartReductionFromBaro.html"><code>STFBAR</code></a> lookup stores its result in <code>Temp4</code>, the code loads <code>CoolantTemp</code> into accumulator A at line 5579. At line 5580, <code>ldx #STFTMP_FuelStartFuelFromCoolant</code> points to the table and <code>Lookup4ByteTable</code> interpolates the factor. Accumulator A is multiplied by <code>Temp4</code> via <code>mul</code> at line 5583. If the product is non-zero, <code>nega</code> inverts the byte to represent <code>(1 - reduction)</code>, and <code>ScaleYbyA</code> scales <code>Temp0</code>, subtracting the combined barometric-temperature reduction from the cranking pulsewidth.</p>
+<pre><code class="language-motorola6803">; --- CalculateInjectorPulsewidthForStarting_MM (T-SMEC_v19.asm:5578-5590) ---
+	staa Temp4	    ; store a into memory
+	ldaa CoolantTemp    ; load a with memory contents
+	ldx  #STFTMP_FuelStartFuelFromCoolant	 ; load index with value
+	jsr  Lookup4ByteTable	 ; call subroutine
+	ldaa Temp4	    ; load a with memory contents
+	mul		    ; multiply (d=a*b)
+	adca #0x00	    ;  -00000000-
+	beq  L1478	    ; branch if equal (zero)
+	nega		    ; negate a (set high bit)
+	ldY Temp0	    ; load Y index
+	jsr  ScaleYbyA	    ; call subroutine
+	xgDY		    ; exchange D and Y
+	bra  L1479	    ; branch</code></pre>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Subtractive Product</strong>: The reduction factor functions as <code>(1 - STFBAR * STFTMP)</code>. At cold temperatures where <code>STFTMP</code> is zero, no reduction occurs.</li>
+<li><strong>Pairing</strong>: Always calibrated in tandem with <a href="../../1_-_Fuel/A_-_Starting/STFBAR_FuelStartReductionFromBaro.html"><code>STFBAR</code></a>.</li>
+<li><strong>Factory Curve</strong>: Zero reduction at sub-freezing temperatures, ramping to full reduction by 160 to 180 degF.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Module Engine Controller (T-SMEC) Calibration Reference &bull; Generated from <code>STFTMP</code>
+        </footer>
+    </div>
+</body>
+</html>
