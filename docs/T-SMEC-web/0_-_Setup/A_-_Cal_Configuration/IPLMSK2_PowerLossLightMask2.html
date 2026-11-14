@@ -116,18 +116,7 @@
 <p><code>IPLMSK2</code> defines the second dashboard warning lamp mask register, focusing on actuator circuit failures and major system diagnostic faults.</p>
 <p>Configured in factory calibrations to two hundred sixteen counts, <code>IPLMSK2</code> evaluates error flags stored in memory register b46_IPL2. The switches in <code>IPLMSK2</code> control dashboard check engine light illumination for turbocharger wastegate solenoid circuit faults, fuel injector driver failures, and major powertrain electrical faults. By evaluating <code>IPLMSK2</code> after sensor faults in <a href="../../0_-_Setup/A_-_Cal_Configuration/IPLMSK_PowerLossLightMask.html"><code>IPLMSK</code></a> have been verified, the controller ensures that severe hardware failures alert the driver immediately.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>DetermineEngineRunningCELStatus</code> (<code>T-SMEC_v19.asm:4631-4654</code>), instruction line 4645 (<code>bita IPLMSK2_PowerLossLightMask2</code>).</li>
-<li><strong>Gating Logic</strong>:</li>
-<li>Checked after <a href="../../0_-_Setup/A_-_Cal_Configuration/IPLMSK_PowerLossLightMask.html"><code>IPLMSK</code></a> sensor faults evaluate clear.</li>
-<li>If <code>cfg_EGR</code> is clear in <a href="../../0_-_Setup/A_-_Cal_Configuration/CONFIG_ConfigurationFlags.html"><code>CONFIG</code></a>, bits 7 and <code>b46_MajorFault</code> are masked out (<code>anda #~(b46_bit7 | b46_MajorFault)</code>).</li>
-<li><strong>Comparison &amp; Branch</strong>:</li>
-<li>If <code>bita IPLMSK2_PowerLossLightMask2</code> is zero (<code>beq TurnCheckEngineLightOnAndOff</code>), light is turned off.</li>
-<li>If non-zero, falls through to <code>clrb</code>, illuminating the warning light.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Wastegate Solenoid Elimination</strong>:</li>
 <li>Clearing the wastegate bit prevents the open-circuit condition from illuminating the dashboard check engine light when running an aftermarket boost controller.</li>
@@ -137,6 +126,18 @@
 <li>The routine checks <code>cfg_EGR</code> in <a href="../../0_-_Setup/A_-_Cal_Configuration/CONFIG_ConfigurationFlags.html"><code>CONFIG</code></a>; if EGR is disabled, major fault bits are masked out before checking <code>IPLMSK2</code>.</li>
 <li><strong>Factory Setting</strong>:</li>
 <li>Set to two hundred sixteen counts in stock calibrations.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during active fault condition monitoring, defining which secondary diagnostic error codes trigger illumination of the Power Loss / Check Engine dash light.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>DetermineEngineRunningCELStatus</code> (<code>T-SMEC_v19.asm:4631-4654</code>), instruction line 4645 (<code>bita IPLMSK2_PowerLossLightMask2</code>).</li>
+<li><strong>Gating Logic</strong>:</li>
+<li>Checked after <a href="../../0_-_Setup/A_-_Cal_Configuration/IPLMSK_PowerLossLightMask.html"><code>IPLMSK</code></a> sensor faults evaluate clear.</li>
+<li>If <code>cfg_EGR</code> is clear in <a href="../../0_-_Setup/A_-_Cal_Configuration/CONFIG_ConfigurationFlags.html"><code>CONFIG</code></a>, bits 7 and <code>b46_MajorFault</code> are masked out (<code>anda #~(b46_bit7 | b46_MajorFault)</code>).</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>If <code>bita IPLMSK2_PowerLossLightMask2</code> is zero (<code>beq TurnCheckEngineLightOnAndOff</code>), light is turned off.</li>
+<li>If non-zero, falls through to <code>clrb</code>, illuminating the warning light.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -118,17 +118,7 @@
 <p>Whenever closed throttle is detected at low vehicle speed (below <a href="../../5_-_Idle/B_-_AIS_Decel/MPHREF_SwitchPointForDecelIdleAisControl.html"><code>MPHREF</code></a>) and engine speed is at or above <a href="../../5_-_Idle/B_-_AIS_Decel/DLYRPM_RpmTriggerForAisDelay.html"><code>DLYRPM</code></a>, the controller loads <code>DLYTM3</code> into the feedback lockout timer.</p>
 <p>In factory calibrations, <code>DLYTM3</code> is set to 255 counts, providing a prolonged dashpot hold of approximately 16 seconds until engine speed settles safely.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>CheckThrottle_AtIdle</code> (<code>T-SMEC_v19.asm:7867-7895</code>) within <code>CheckThrottleRoutine_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Closed throttle detected (<code>b4f_OffIdle</code> clear at line 7868).</li>
-<li>Vehicle speed must be less than or equal to <a href="../../5_-_Idle/B_-_AIS_Decel/MPHREF_SwitchPointForDecelIdleAisControl.html"><code>MPHREF</code></a> at line 7878.</li>
-<li>Compares <code>EngineRpm_HB</code> against <a href="../../5_-_Idle/B_-_AIS_Decel/DLYRPM_RpmTriggerForAisDelay.html"><code>DLYRPM</code></a> at line 7883.</li>
-<li>If engine RPM is greater than or equal to <a href="../../5_-_Idle/B_-_AIS_Decel/DLYRPM_RpmTriggerForAisDelay.html"><code>DLYRPM</code></a> (<code>bcc L1652</code>), accumulator A already holds <code>DLYTM3</code> from line 7881, jumping to line 7887 to store into <code>Timer_CountdownFromStartRunForAisFeedback</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Crisper Free-Rev RPM Return</strong>:</li>
 <li>Lower <code>DLYTM3</code> from 255 counts (~16 seconds) down to 50 to 80 counts (~3 to 5 seconds) to eliminate excessive idle hang after revving the engine in neutral.</li>
@@ -136,6 +126,17 @@
 <li>Ensure <code>DLYTM3</code> remains at or above 40 counts (~2.5 seconds) so aggressive camshafts have adequate time to catch descending revs.</li>
 <li><strong>Threshold Trigger</strong>:</li>
 <li>Only triggers when engine speed exceeds <a href="../../5_-_Idle/B_-_AIS_Decel/DLYRPM_RpmTriggerForAisDelay.html"><code>DLYRPM</code></a> (factory ~1500 RPM) at standstill.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the throttle snaps shut from elevated RPM, extending the idle air dashpot hold delay before resuming closed-loop idle control.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CheckThrottle_AtIdle</code> (<code>T-SMEC_v19.asm:7867-7895</code>) within <code>CheckThrottleRoutine_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Closed throttle detected (<code>b4f_OffIdle</code> clear at line 7868).</li>
+<li>Vehicle speed must be less than or equal to <a href="../../5_-_Idle/B_-_AIS_Decel/MPHREF_SwitchPointForDecelIdleAisControl.html"><code>MPHREF</code></a> at line 7878.</li>
+<li>Compares <code>EngineRpm_HB</code> against <a href="../../5_-_Idle/B_-_AIS_Decel/DLYRPM_RpmTriggerForAisDelay.html"><code>DLYRPM</code></a> at line 7883.</li>
+<li>If engine RPM is greater than or equal to <a href="../../5_-_Idle/B_-_AIS_Decel/DLYRPM_RpmTriggerForAisDelay.html"><code>DLYRPM</code></a> (<code>bcc L1652</code>), accumulator A already holds <code>DLYTM3</code> from line 7881, jumping to line 7887 to store into <code>Timer_CountdownFromStartRunForAisFeedback</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

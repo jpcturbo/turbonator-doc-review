@@ -117,21 +117,22 @@
 <p>During Phase 2, the engine controller commands the EGR valve closed to observe whether closed-loop oxygen sensor feedback registers a corresponding shift. In the adaptive memory calculation at line 6180, if Phase 2 is active, the controller adds <code>ADMEMA</code> directly to the closed-loop integrator before applying final fuel pulsewidth scaling.</p>
 <p>The factory calibration setting of 0 counts injects zero offset, allowing the closed-loop feedback loop to respond naturally to the change in cylinder gas composition without artificial fuel trim bias.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Raising ADMEMA</strong>: Injects positive fuel trim offset into the closed-loop integrator during Phase 2 flow verification, enriching injector pulsewidth during the test.</li>
+<li><strong>Diagnostic Impact</strong>: Artificially inflating the integrator during Phase 2 distorts the delta calculation (<a href="../../7_-_Aux_Functions/EGR/EGR7_ExhGasRecircConst.html"><code>EGR7</code></a>), creating a risk of false pass results on vehicles with inoperative or blocked EGR valves.</li>
+<li><strong>Overflow Clamping</strong>: The assembly math clamps at 127 counts (signed 8-bit positive ceiling) if addition overflows the signed 8-bit limit.</li>
+<li><strong>Factory Recommendation</strong>: Keep at 0 counts to maintain accurate stoichiometric closed-loop feedback.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect continuously during running fuel calculation, applying a calibration offset adder to the learned adaptive fuel memory cell value.</p>
 <ul>
 <li><strong>Enclosing Routine</strong>: <code>INCLUDE_ADAPTIVE_MEMORY</code> (lines 6160–6200), inside <code>CalculateSumOfAllFuelModifiers_MM</code>.</li>
 <li><strong>Instruction Line</strong>: Line 6180 (<code>addb ADMEMA_ValueFromAdaptivememoryAdder1</code>).</li>
 <li><strong>Precondition Flag</strong>: Bit 7 of <code>EGRVar2</code> set (<code>brclr *EGRVar2, #bit_bit7, L1527</code> falls through to line 6180).</li>
 <li><strong>Input Variable</strong>: <code>Counter_PrimaryAndSecondaryRamp</code> (RAM address 0x002B) loaded in accumulator B.</li>
 <li><strong>Clamping Logic</strong>: If addition overflows (<code>bvc L1527</code> not taken), clamps accumulator B to 127 (<code>ldab #0x7f</code>).</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Raising ADMEMA</strong>: Injects positive fuel trim offset into the closed-loop integrator during Phase 2 flow verification, enriching injector pulsewidth during the test.</li>
-<li><strong>Diagnostic Impact</strong>: Artificially inflating the integrator during Phase 2 distorts the delta calculation (<a href="../../7_-_Aux_Functions/EGR/EGR7_ExhGasRecircConst.html"><code>EGR7</code></a>), creating a risk of false pass results on vehicles with inoperative or blocked EGR valves.</li>
-<li><strong>Overflow Clamping</strong>: The assembly math clamps at 127 counts (signed 8-bit positive ceiling) if addition overflows the signed 8-bit limit.</li>
-<li><strong>Factory Recommendation</strong>: Keep at 0 counts to maintain accurate stoichiometric closed-loop feedback.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -116,7 +116,19 @@
 <p><code>CRMSK4</code> defines the step decrement subtracted from the adaptive integrator trim when accumulated servo error is below <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK3_CruiseMask3.html"><code>CRMSK3</code></a>.</p>
 <p>When cresting a highway hill, the extra throttle opening learned during the climb is no longer needed. To prevent downhill runaway, the controller sheds learned trim by subtracting <code>CRMSK4</code> on each evaluation pass. In factory calibrations, <code>CRMSK4</code> is configured to 2 counts, establishing an asymmetrical strategy where learned throttle trim is shed twice as fast as it is accumulated.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Asymmetrical Recovery Strategy</strong>:</li>
+<li>Calibrated to 2 counts, shedding trim twice as fast as <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK7_CruiseMask7.html"><code>CRMSK7</code></a> adds it (2 counts down vs 1 count up).</li>
+<li>Prevents downhill speed creep after cresting highway summits.</li>
+<li><strong>Downhill Responsiveness</strong>:</li>
+<li>Increasing <code>CRMSK4</code> dumps learned throttle trim faster when entering descents.</li>
+<li><strong>Clamp Boundary</strong>:</li>
+<li>Bounded at the bottom by negative clamp floor <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK5_CruiseMask5.html"><code>CRMSK5</code></a> (-30 counts).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when cresting a highway hill, the extra throttle opening learned during the climb is no longer needed.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8770-8774</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -126,17 +138,6 @@
 <li>Subtracts <code>CRMSK4</code> from accumulator B via <code>subb CRMSK4</code> at line 8770.</li>
 <li>Compares against <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK5_CruiseMask5.html"><code>CRMSK5</code></a> at line 8771; clamps if below floor.</li>
 <li>Stores result into <code>BitFlags_27</code> at line 8780.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Asymmetrical Recovery Strategy</strong>:</li>
-<li>Calibrated to 2 counts, shedding trim twice as fast as <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK7_CruiseMask7.html"><code>CRMSK7</code></a> adds it (2 counts down vs 1 count up).</li>
-<li>Prevents downhill speed creep after cresting highway summits.</li>
-<li><strong>Downhill Responsiveness</strong>:</li>
-<li>Increasing <code>CRMSK4</code> dumps learned throttle trim faster when entering descents.</li>
-<li><strong>Clamp Boundary</strong>:</li>
-<li>Bounded at the bottom by negative clamp floor <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK5_CruiseMask5.html"><code>CRMSK5</code></a> (-30 counts).</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

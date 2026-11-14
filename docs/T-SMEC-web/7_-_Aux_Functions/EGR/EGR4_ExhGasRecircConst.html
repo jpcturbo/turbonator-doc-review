@@ -117,21 +117,22 @@
 <p>During Phase 2 flow verification, if the diagnostic timer expires without detecting the required oxygen sensor shift, the controller increments a dedicated failure counter in RAM (<code>EGRVar1</code>).</p>
 <p>At line 5520, the controller compares this failure counter against <code>EGR4</code>. The factory setting of 235 attempts provides substantial filtering against transient driving disturbances, requiring the EGR monitor to fail repeatedly across multiple driving sequences before setting an active trouble code.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Raising EGR4 (to 255)</strong>: Maximizes fault filtering, requiring 255 failed test cycles before setting Fault Code 32. Effective for silencing intermittent fault codes on high-mileage EGR valves or modified camshaft engines.</li>
+<li><strong>Lowering EGR4</strong>: Speeds up fault reporting. Setting this parameter to 1 or 2 causes Fault Code 32 to trigger on the very first or second failed test attempt.</li>
+<li><strong>EGR Delete Applications</strong>: Setting <code>EGR4</code> to 255 complements physical EGR block-off plates, preventing Fault Code 32 from latching during normal driving.</li>
+<li><strong>Factory Calibration</strong>: 235 attempts provides factory-grade noise immunity against road and load fluctuations.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle cruising, modulating the exhaust gas recirculation (EGR) solenoid duty cycle to control combustion temperatures.</p>
 <ul>
 <li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5520.</li>
 <li><strong>Trigger Condition</strong>: Phase 2 diagnostic timer timeout (<code>EGRVar3 &gt;= EGR6_ExhGasRecircConst</code> at line 5485) branching to <code>L1470</code>.</li>
 <li><strong>State Counter</strong>: <code>EGRVar1</code> (RAM address 0x00A0), incremented at line 5518.</li>
 <li><strong>Comparison</strong>: <code>cmpa EGR4_ExhGasRecircConst</code> at line 5520.</li>
 <li><strong>Fault Trigger</strong>: If <code>EGRVar1 &gt;= EGR4</code>, executes <code>ThrowNonCriticalError</code> with error code <code>0x2E01</code> (Fault Code 32) and sets bit 7 of <code>b46_IPL2</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Raising EGR4 (to 255)</strong>: Maximizes fault filtering, requiring 255 failed test cycles before setting Fault Code 32. Effective for silencing intermittent fault codes on high-mileage EGR valves or modified camshaft engines.</li>
-<li><strong>Lowering EGR4</strong>: Speeds up fault reporting. Setting this parameter to 1 or 2 causes Fault Code 32 to trigger on the very first or second failed test attempt.</li>
-<li><strong>EGR Delete Applications</strong>: Setting <code>EGR4</code> to 255 complements physical EGR block-off plates, preventing Fault Code 32 from latching during normal driving.</li>
-<li><strong>Factory Calibration</strong>: 235 attempts provides factory-grade noise immunity against road and load fluctuations.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

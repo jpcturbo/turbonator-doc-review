@@ -130,21 +130,22 @@
 <p>When the driver lifts off the accelerator pedal at speed, manifold airflow drops immediately, leaving residual fuel film on the intake runner walls that can cause excessively rich mixtures and exhaust popping if fuel delivery is not cut back. When qualifying throttle-drop triggers are met, the engine controller looks up <code>LOTTHR</code> and applies it as a fractional multiplier to base pulse width.</p>
 <p>In the factory calibration for automatic-transmission calibrations, the table contains a factor of zero representing a neutral 1.00 multiplier, effectively keeping throttle-based decel lean-out disabled.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Enabling Deceleration Lean-out</strong>: Increasing table values above zero engages deceleration fuel leaning, multiplying the base fuel pulse width by less than 1.00 to reduce fuel consumption and prevent rich exhaust burble on deceleration.</li>
+<li><strong>Manual Transmission Braking</strong>: In manual transmission performance calibrations, enabling subtle throttle decel lean-out improves engine braking and reduces tailpipe emissions.</li>
+<li><strong>Preventing Shift Bucking</strong>: Setting this factor too aggressively can cause bucking, lean surging, or exhaust backfiring when getting back on the throttle after a shift.</li>
+<li><strong>Exhaust Crackle Tunes</strong>: Leave at zero if using aggressive crackle-pop exhaust tunes or if low-RPM deceleration stalling occurs.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the driver lifts off the accelerator pedal at speed, manifold airflow drops immediately, leaving residual fuel film on the intake runner walls that can cause excessively rich mixtures and exhaust popping if fuel delivery is not cut back.</p>
 <ul>
 <li>Enclosed in routine <code>TransFuel_CalculateDecreasingTPSTransientFuel</code> at lines 6511-6537 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
 <li>Evaluated when <code>TpsVolts &lt; AverageTPSVolts</code> (line 6489).</li>
 <li>Preconditions: <code>KeyOnOrEngineRunningTime</code> must be non-zero (line 6515), vehicle speed must meet or exceed 0x80 (approximately 2 to 3 mph, lines 6516-6518), and throttle drop delta must exceed <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_TPS_LO/LOTRG2_SecondDecelLeanoutTrigger.html"><code>LOTRG2</code></a> (line 6526).</li>
 <li>Looked up via <code>jsr Lookup4ByteTable</code> at line 6530 using <code>CoolantTemp</code> with pointer <code>ldx #LOTTHR_DecelLeanoutFactor_FromTemp</code>.</li>
 <li>Result stored in <code>Factor_DecelLeanoutWhenThrottleDecreasing</code> at line 6541, which scales base fuel via <code>ScaleYbyA</code> at line 6152.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Enabling Deceleration Lean-out</strong>: Increasing table values above zero engages deceleration fuel leaning, multiplying the base fuel pulse width by less than 1.00 to reduce fuel consumption and prevent rich exhaust burble on deceleration.</li>
-<li><strong>Manual Transmission Braking</strong>: In manual transmission performance calibrations, enabling subtle throttle decel lean-out improves engine braking and reduces tailpipe emissions.</li>
-<li><strong>Preventing Shift Bucking</strong>: Setting this factor too aggressively can cause bucking, lean surging, or exhaust backfiring when getting back on the throttle after a shift.</li>
-<li><strong>Exhaust Crackle Tunes</strong>: Leave at zero if using aggressive crackle-pop exhaust tunes or if low-RPM deceleration stalling occurs.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

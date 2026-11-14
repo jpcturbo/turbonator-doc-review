@@ -116,17 +116,7 @@
 <p><code>BAROLO</code> defines the minimum credible atmospheric pressure threshold used during barometric pressure validation.</p>
 <p>When the engine controller reads ambient barometric pressure, it verifies that the measurement is above <code>BAROLO</code> before storing it into RAM. Atmospheric pressure at 14,000 feet elevation (such as Pikes Peak highway) is approximately 8.6 psi absolute (17.5 inHg). In factory calibrations, <code>BAROLO</code> is set to 69 counts, representing approximately 7.9 psi absolute (16.1 inHg). Any ambient reading below <code>BAROLO</code> indicates a defective sensor, pinched vacuum line, or a baro read solenoid that failed to open to atmosphere. If a reading falls below <code>BAROLO</code>, it is rejected and <a href="../../7_-_Aux_Functions/Baro_Read/BARDFT_BaroReadDefaultValue.html"><code>BARDFT</code></a> is loaded instead.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>SaveBaroPressure</code> (<code>T-SMEC_v19.asm:1541-1554</code>), instruction line 1549.</li>
-<li><strong>Evaluation Chain</strong>: Checked after confirming reading does not exceed <a href="../../7_-_Aux_Functions/Baro_Read/BAROHI_BaroReadValidHighLimit.html"><code>BAROHI</code></a>.</li>
-<li><strong>Comparison &amp; Branch</strong>:</li>
-<li>Compares converted pressure in accumulator B against <code>BAROLO_BaroReadValidLowLimit</code> at line 1549.</li>
-<li>If accumulator B is less than <code>BAROLO</code> (carry set), falls through to <code>L1029</code> to load <a href="../../7_-_Aux_Functions/Baro_Read/BARDFT_BaroReadDefaultValue.html"><code>BARDFT</code></a>.</li>
-<li>If valid (<code>bcc L1030</code>), stores measured value directly to <code>BaroPressure</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>3-Bar MAP High-Altitude Operation</strong>:</li>
 <li>Rescale <code>BAROLO</code> to ~44 to 46 counts on 3-bar sensors to prevent false fault substitution when driving above 6,000 feet.</li>
@@ -134,6 +124,17 @@
 <li>Setting <code>BAROLO</code> too low allows a stuck-shut baro solenoid to feed engine vacuum into <code>BaroPressure</code> undetected.</li>
 <li><strong>Default Substitution</strong>:</li>
 <li>Rejection of a reading below <code>BAROLO</code> forces immediate fallback to <a href="../../7_-_Aux_Functions/Baro_Read/BARDFT_BaroReadDefaultValue.html"><code>BARDFT</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during key-on and in-flight barometric pressure reads, establishing the acceptable low voltage limit for a valid atmospheric reading.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>SaveBaroPressure</code> (<code>T-SMEC_v19.asm:1541-1554</code>), instruction line 1549.</li>
+<li><strong>Evaluation Chain</strong>: Checked after confirming reading does not exceed <a href="../../7_-_Aux_Functions/Baro_Read/BAROHI_BaroReadValidHighLimit.html"><code>BAROHI</code></a>.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Compares converted pressure in accumulator B against <code>BAROLO_BaroReadValidLowLimit</code> at line 1549.</li>
+<li>If accumulator B is less than <code>BAROLO</code> (carry set), falls through to <code>L1029</code> to load <a href="../../7_-_Aux_Functions/Baro_Read/BARDFT_BaroReadDefaultValue.html"><code>BARDFT</code></a>.</li>
+<li>If valid (<code>bcc L1030</code>), stores measured value directly to <code>BaroPressure</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

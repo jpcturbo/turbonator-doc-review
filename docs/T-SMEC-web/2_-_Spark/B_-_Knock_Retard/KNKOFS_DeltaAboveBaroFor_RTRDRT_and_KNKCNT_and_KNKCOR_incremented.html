@@ -116,17 +116,7 @@
 <p><code>KNKOFS</code> defines the positive manifold boost pressure offset above barometric pressure that divides knock retard into non-boost versus in-boost operational modes.</p>
 <p>Combustion knock occurring under light engine load requires a different correction strategy than detonation occurring under heavy turbocharger boost. In factory calibrations, <code>KNKOFS</code> is set to 35 counts, corresponding to approximately 5.0 psi of positive boost above atmospheric pressure. When knock is detected below this threshold, the controller applies the non-boost retard step size (<a href="../../2_-_Spark/B_-_Knock_Retard/RTRDRT_KnockRetardRateNoBoost.html"><code>RTRDRT</code></a>). When manifold pressure exceeds barometric pressure plus <code>KNKOFS</code>, the controller switches to the in-boost retard step size (<a href="../../2_-_Spark/B_-_Knock_Retard/RTRDRT2_KnockRetardRateInBoost.html"><code>RTRDRT2</code></a>) and sets the boost flag to accumulate boost knock history.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CHECK_FOR_OVER5PSIBOOST</code> (<code>T-SMEC_v19.asm:6793-6801</code>), called from <code>CALC_SPARK_RETARD_BASED_ON_KNOCK_VOLT</code>.</li>
-<li><strong>Comparison &amp; Polarity</strong>:</li>
-<li><code>BaroPressure</code> is added to <code>KNKOFS_DeltaAboveBaroFor_RTRDRT_and_KNKCNT_and_KNKCOR_incremented</code> at line 6795.</li>
-<li><code>cmpa MapValue</code> compares threshold against manifold pressure.</li>
-<li>If threshold &gt;= <code>MapValue</code> (<code>bcc SUM_ADDITIONAL_RETARD</code>), <a href="../../2_-_Spark/B_-_Knock_Retard/RTRDRT_KnockRetardRateNoBoost.html"><code>RTRDRT</code></a> (no boost) is loaded.</li>
-<li>If <code>MapValue</code> &gt; threshold, bit <code>b55_BoostOver5psi</code> is set in <code>BitFlags_55</code> and <a href="../../2_-_Spark/B_-_Knock_Retard/RTRDRT2_KnockRetardRateInBoost.html"><code>RTRDRT2</code></a> (in boost) is loaded.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Transition Pressure Tuning</strong>:</li>
 <li>Factory setting of 5.0 psi boost represents the boundary where cylinder pressures begin to climb steeply.</li>
@@ -134,6 +124,17 @@
 <li>On a 3-bar MAP sensor, rescale <code>KNKOFS</code> from 35 counts down to approximately 23 counts to maintain the same 5.0 psi boost switch point.</li>
 <li><strong>Boost History Flag</strong>:</li>
 <li>Crossing above <code>BaroPressure + KNKOFS</code> sets the boost flag that drives adaptive retard learning and wastegate boost reduction.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when knock is detected below this threshold, the controller applies the non-boost retard step size (RTRDRT).</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CHECK_FOR_OVER5PSIBOOST</code> (<code>T-SMEC_v19.asm:6793-6801</code>), called from <code>CALC_SPARK_RETARD_BASED_ON_KNOCK_VOLT</code>.</li>
+<li><strong>Comparison &amp; Polarity</strong>:</li>
+<li><code>BaroPressure</code> is added to <code>KNKOFS_DeltaAboveBaroFor_RTRDRT_and_KNKCNT_and_KNKCOR_incremented</code> at line 6795.</li>
+<li><code>cmpa MapValue</code> compares threshold against manifold pressure.</li>
+<li>If threshold &gt;= <code>MapValue</code> (<code>bcc SUM_ADDITIONAL_RETARD</code>), <a href="../../2_-_Spark/B_-_Knock_Retard/RTRDRT_KnockRetardRateNoBoost.html"><code>RTRDRT</code></a> (no boost) is loaded.</li>
+<li>If <code>MapValue</code> &gt; threshold, bit <code>b55_BoostOver5psi</code> is set in <code>BitFlags_55</code> and <a href="../../2_-_Spark/B_-_Knock_Retard/RTRDRT2_KnockRetardRateInBoost.html"><code>RTRDRT2</code></a> (in boost) is loaded.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

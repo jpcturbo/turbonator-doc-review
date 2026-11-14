@@ -117,20 +117,21 @@
 <p>When manifold boost drops below this point during deceleration or between gear changes, the engine controller shuts off the secondary injection solenoid. <code>AKI2OF</code> provides the lower boundary of a hysteresis loop, preventing solenoid flutter and preserving steady fueling when engine boost fluctuates around the secondary turn-on threshold.</p>
 <p>The factory setting is 255 counts (disabled).</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Hysteresis Gap</strong>: Calibrate roughly 1 to 2 psi below <a href="../../../0_-_Setup/C_-_Turbonator_Features/Alky_Injection/AKI2ON_AlkyInj2OnSetpointFromMAP.html"><code>AKI2ON</code></a> to prevent solenoid chattering under boost fluctuations.</li>
+<li><strong>Threshold Ordering</strong>: <code>AKI2OF</code> must always be calibrated lower than <a href="../../../0_-_Setup/C_-_Turbonator_Features/Alky_Injection/AKI2ON_AlkyInj2OnSetpointFromMAP.html"><code>AKI2ON</code></a>.</li>
+<li><strong>Deactivation Baseline</strong>: Factory setting of 255 counts keeps stage two turned off.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect as high boost recedes, commanding the secondary high-flow water/methanol injection nozzle solenoid closed.</p>
 <ul>
 <li>Enclosed in subroutine <code>AlkyInj2_CheckHysteresisAndTurnOff</code> at lines 10629-10636 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
 <li>Evaluated in <code>AlkyInj_CheckInj2</code> when manifold pressure drops below <a href="../../../0_-_Setup/C_-_Turbonator_Features/Alky_Injection/AKI2ON_AlkyInj2OnSetpointFromMAP.html"><code>AKI2ON</code></a>.</li>
 <li>In active firmware, this subroutine is commented out with semicolons in <a href="../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a> (as documented in <code>smec_anomaly.md</code>), meaning the controller does not execute these instructions unless uncommented in source.</li>
 <li>Comparison: <code>cmpa AKI2OF_AlkyInj2OffSetpointFromMAP</code> against <code>MapValue</code> (line 10630).</li>
 <li>If <code>MapValue &gt;= AKI2OF</code> (<code>bcc AlkyInj_Return</code>), secondary injection remains active. If <code>MapValue &lt; AKI2OF</code>, line 10632 clears <code>PortA_CruiseVac</code> to de-energize the solenoid.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Hysteresis Gap</strong>: Calibrate roughly 1 to 2 psi below <a href="../../../0_-_Setup/C_-_Turbonator_Features/Alky_Injection/AKI2ON_AlkyInj2OnSetpointFromMAP.html"><code>AKI2ON</code></a> to prevent solenoid chattering under boost fluctuations.</li>
-<li><strong>Threshold Ordering</strong>: <code>AKI2OF</code> must always be calibrated lower than <a href="../../../0_-_Setup/C_-_Turbonator_Features/Alky_Injection/AKI2ON_AlkyInj2OnSetpointFromMAP.html"><code>AKI2ON</code></a>.</li>
-<li><strong>Deactivation Baseline</strong>: Factory setting of 255 counts keeps stage two turned off.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

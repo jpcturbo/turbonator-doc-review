@@ -116,18 +116,7 @@
 <p><code>KDCINC</code> establishes the incremental duty cycle reduction step added to the knock reduction penalty each time detonation is detected while operating under boost in T1 control.</p>
 <p>In T1 bleed-style wastegate systems, reducing solenoid duty cycle bleeds less air away from the actuator canister, allowing boost pressure to push the wastegate open and lower intake manifold pressure. When knocking occurs above 5 psi of boost, the controller adds <code>KDCINC</code> counts to the knock reduction penalty counter to lower duty cycle and reduce boost, providing emergency relief alongside ignition timing retard.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_LookupWGDutyCycleBase</code> (<code>T-SMEC_v19.asm:9621-9626</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Bit <code>b55_BoostOver5psi</code> in <code>BitFlags_55</code> must be set (line 9621).</li>
-<li><strong>Knock Accumulator Update</strong>:</li>
-<li>Line 9622 clears <code>b55_BoostOver5psi</code>.</li>
-<li>Accumulator B loads <code>WastegateDutyCycleIncreaseFromKnock</code> and executes <code>addb KDCINC_WastegateDutyCycleIncreaseStepWhenKnocking</code> at line 9624.</li>
-<li>Accumulator B is clamped against overflow at line 9626 and evaluated against <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Knock_Adj/KDCMAX_WastegateDutyCycleIncreaseMaxWhenKnocking.html"><code>KDCMAX</code></a> and <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Knock_Adj/KDCMIN_WastegateDutyCycleIncreaseMinWhenKnocking.html"><code>KDCMIN</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Knock Step Reduction Rate</strong>:</li>
 <li>Sets the duty cycle decrement added to the knock reduction penalty per confirmed detonation event under boost.</li>
@@ -138,6 +127,18 @@
 <li>If aggressive forged pistons or valvetrain noise trigger false knock, lower <code>KDCINC</code> to 4 counts to avoid harsh power cutouts.</li>
 <li><strong>T1 Bleed Subtraction Mechanics</strong>:</li>
 <li>The knock penalty value is subtracted from final WGDC at line 9746, reducing solenoid bleed and opening the gate.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under boost when spark knock is detected, controlling the duty cycle reduction steps applied to the wastegate solenoid to bleed off boost.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_LookupWGDutyCycleBase</code> (<code>T-SMEC_v19.asm:9621-9626</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Bit <code>b55_BoostOver5psi</code> in <code>BitFlags_55</code> must be set (line 9621).</li>
+<li><strong>Knock Accumulator Update</strong>:</li>
+<li>Line 9622 clears <code>b55_BoostOver5psi</code>.</li>
+<li>Accumulator B loads <code>WastegateDutyCycleIncreaseFromKnock</code> and executes <code>addb KDCINC_WastegateDutyCycleIncreaseStepWhenKnocking</code> at line 9624.</li>
+<li>Accumulator B is clamped against overflow at line 9626 and evaluated against <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Knock_Adj/KDCMAX_WastegateDutyCycleIncreaseMaxWhenKnocking.html"><code>KDCMAX</code></a> and <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Knock_Adj/KDCMIN_WastegateDutyCycleIncreaseMinWhenKnocking.html"><code>KDCMIN</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

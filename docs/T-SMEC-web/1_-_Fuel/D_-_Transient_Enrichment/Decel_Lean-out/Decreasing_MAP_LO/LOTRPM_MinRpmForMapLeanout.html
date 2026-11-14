@@ -117,20 +117,21 @@
 <p>When coasting down toward a stop, the engine controller must restore full fueling before the engine reaches idle speed to prevent rough running, RPM dipping, or stalling. If engine speed drops below <code>LOTRPM</code>, the controller clears the deceleration lean-out factor and resumes standard fuel delivery.</p>
 <p>The factory setting of 62 counts corresponds to approximately 1984 RPM, ensuring that fuel delivery is fully normalized well before the engine settles into its target idle range.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li>Enclosed in routine <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> at lines 6435-6476 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
-<li>Evaluated when <code>MapValue &lt; AverageMAPValue</code> and full throttle flag <code>b4f_FullThrottle</code> is clear (lines 6407, 6439).</li>
-<li>Comparison: Line 6440 loads <code>EngineRpm_HB</code> and line 6441 executes <code>cmpa LOTRPM_MinRpmForMapLeanout</code>.</li>
-<li>Polarity: If <code>EngineRpm_HB &lt; LOTRPM</code>, instruction <code>bcs ClearDecelLOMAPFactor</code> branches to line 6474, clearing <code>Factor_DecelLeanoutWhenMAPDecreasing</code> to zero.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Preventing Clutch-in Stalling</strong>: In manual transmission setups with lightweight flywheels, raising <code>LOTRPM</code> to 2200 to 2400 RPM gives the engine more time to recover full fueling, eliminating RPM dipping and stalling when pushing the clutch pedal in.</li>
 <li><strong>Automatic Transmission Optimization</strong>: In automatic transmission vehicles, <code>LOTRPM</code> can be lowered closer to 1600 to 1800 RPM to maximize fuel cutoff duration and fuel economy.</li>
 <li><strong>Lower Limit Rule</strong>: Do not set <code>LOTRPM</code> below the target idle speed, as cutting fuel during idle recovery causes stalling.</li>
 <li><strong>Camshaft Matching</strong>: High-overlap performance camshafts with unstable low-RPM vacuum benefit from raising <code>LOTRPM</code> to prevent rough low-speed coast-down.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when coasting down toward a stop, the engine controller must restore full fueling before the engine reaches idle speed to prevent rough running, RPM dipping, or stalling.</p>
+<ul>
+<li>Enclosed in routine <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> at lines 6435-6476 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Evaluated when <code>MapValue &lt; AverageMAPValue</code> and full throttle flag <code>b4f_FullThrottle</code> is clear (lines 6407, 6439).</li>
+<li>Comparison: Line 6440 loads <code>EngineRpm_HB</code> and line 6441 executes <code>cmpa LOTRPM_MinRpmForMapLeanout</code>.</li>
+<li>Polarity: If <code>EngineRpm_HB &lt; LOTRPM</code>, instruction <code>bcs ClearDecelLOMAPFactor</code> branches to line 6474, clearing <code>Factor_DecelLeanoutWhenMAPDecreasing</code> to zero.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

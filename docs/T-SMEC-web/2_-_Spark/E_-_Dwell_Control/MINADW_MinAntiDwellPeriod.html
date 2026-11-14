@@ -116,7 +116,18 @@
 <p><code>MINADW</code> defines the minimum anti-dwell period (time between spark firing and the start of the next coil charge cycle) enforced by the engine controller.</p>
 <p>After the ignition driver transistor opens to collapse the coil primary magnetic field and fire the spark plug, the coil secondary winding produces a high-voltage spark arc across the plug gap that burns for a distinct physical duration (typically 0.8 to 1.5 milliseconds). If the controller were to turn the coil primary back on before the spark arc fully extinguishes, the arc would be cut short, leading to incomplete combustion, and the driver transistor would suffer thermal overlap stress. In factory calibrations, <code>MINADW</code> is calibrated to 200 counts, corresponding to approximately 400 microseconds, enforcing an absolute minimum non-conductive rest time for the coil between firing events.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Hardware Protection Floor</strong>:</li>
+<li><code>MINADW</code> protects the ignition coil and ECU power transistor from 100% duty cycle lockup at high engine speeds.</li>
+<li><strong>High-RPM Dwell Clamping</strong>:</li>
+<li>If total cylinder pulse period minus desired dwell drops below <code>MINADW</code>, dwell is automatically reduced so anti-dwell never falls below this floor.</li>
+<li><strong>Retain Factory Setting</strong>:</li>
+<li>Maintain 400 microseconds (200 counts) unless utilizing specialized external capacitive discharge ignition (CDI) modules.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if the controller were to turn the coil primary back on before the spark arc fully extinguishes, the arc would be cut short, leading to incomplete combustion, and the driver transistor would suffer thermal overlap stress.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>SETTOLOOKFOR_RISINGEDGE_AND_CALCULATE_DWELL</code> (<code>T-SMEC_v19.asm:7030-7039</code>).</li>
 <li><strong>Math &amp; Comparison</strong>:</li>
@@ -126,16 +137,6 @@
 <li>If remaining time &gt;= <code>MINADW</code> (<code>bcc StoreAntiDwell</code>), the calculated floating anti-dwell is used.</li>
 <li>If remaining time &lt; <code>MINADW</code>, <code>MINADW</code> is loaded into register D.</li>
 <li>Stored into <code>AntiDwellTime_HB</code> (address 0x00AA-0x00AB).</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Hardware Protection Floor</strong>:</li>
-<li><code>MINADW</code> protects the ignition coil and ECU power transistor from 100% duty cycle lockup at high engine speeds.</li>
-<li><strong>High-RPM Dwell Clamping</strong>:</li>
-<li>If total cylinder pulse period minus desired dwell drops below <code>MINADW</code>, dwell is automatically reduced so anti-dwell never falls below this floor.</li>
-<li><strong>Retain Factory Setting</strong>:</li>
-<li>Maintain 400 microseconds (200 counts) unless utilizing specialized external capacitive discharge ignition (CDI) modules.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

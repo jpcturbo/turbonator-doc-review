@@ -116,17 +116,7 @@
 <p><code>ARCMS3</code> defines the subtraction decrement value applied to the boost knock persistence timer (<code>Timer_Over5PsiBoostMaxFF</code>) whenever all cylinders are clear of knock retard.</p>
 <p>When no cylinders are experiencing detonation, the controller decrements the boost knock timer to eliminate accumulated history. In factory calibrations, <code>ARCMS3</code> is set to 255 counts (maximum). Subtracting 255 instantly resets <code>Timer_Over5PsiBoostMaxFF</code> to zero on the very first non-knocking loop pass, ensuring that the timer only accumulates when knock is truly continuous and unbroken.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_LookAtCylRetards</code> (<code>T-SMEC_v19.asm:9545-9551</code>), called from <code>CalcWGDutyCycleT1</code>.</li>
-<li><strong>Execution Flow</strong>:</li>
-<li>Reached when all cylinders have zero knock retard and <a href="../../2_-_Spark/D_-_Adaptive_Retard/ARCMS2_AdaptiveRetardCounterMask2_00.html"><code>ARCMS2</code></a> mask test passes.</li>
-<li><code>ldaa Timer_Over5PsiBoostMaxFF</code> loads the current timer.</li>
-<li><code>suba ARCMS3_AdaptiveRetardCounterMask3_FF</code> at line 9546.</li>
-<li>If carry clear (<code>bcc WGDC_Store5psiBoostTimer</code>), remaining value is stored; if carry set (underflow), branches to clear timer to 0.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Instant Timer Clearing</strong>:</li>
 <li>Factory setting of 255 resets <code>Timer_Over5PsiBoostMaxFF</code> to zero immediately when knock ceases, preventing intermittent ping from accumulating.</li>
@@ -134,6 +124,17 @@
 <li>Lowering <code>ARCMS3</code> to a small value (e.g., 1 to 5 counts) allows the timer to decay gradually, linking intermittent knock events together.</li>
 <li><strong>Standard Recommendation</strong>:</li>
 <li>Retain factory setting of 255 for predictable, reliable adaptive knock behavior.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during adaptive knock retard processing, defining the timing counter mask that paces adaptive knock retard updates.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_LookAtCylRetards</code> (<code>T-SMEC_v19.asm:9545-9551</code>), called from <code>CalcWGDutyCycleT1</code>.</li>
+<li><strong>Execution Flow</strong>:</li>
+<li>Reached when all cylinders have zero knock retard and <a href="../../2_-_Spark/D_-_Adaptive_Retard/ARCMS2_AdaptiveRetardCounterMask2_00.html"><code>ARCMS2</code></a> mask test passes.</li>
+<li><code>ldaa Timer_Over5PsiBoostMaxFF</code> loads the current timer.</li>
+<li><code>suba ARCMS3_AdaptiveRetardCounterMask3_FF</code> at line 9546.</li>
+<li>If carry clear (<code>bcc WGDC_Store5psiBoostTimer</code>), remaining value is stored; if carry set (underflow), branches to clear timer to 0.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

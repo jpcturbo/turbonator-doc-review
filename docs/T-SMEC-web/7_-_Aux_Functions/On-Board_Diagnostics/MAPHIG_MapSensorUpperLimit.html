@@ -117,7 +117,20 @@
 <p>Under maximum turbocharger boost pressure, a 2-bar manifold pressure sensor generates output voltages approaching 4.60 volts. If the sensor signal wire chafes and shorts directly to the 5.0-volt supply rail or if the sensor develops an internal electrical short circuit, the signal voltage saturates near 5.0 volts.</p>
 <p>In factory calibrations, <code>MAPHIG</code> is set to 238 counts, corresponding to approximately 4.67 volts (roughly 14.2 psi boost on a 2-bar sensor). When sensor voltage equals or exceeds <code>MAPHIG</code>, the engine controller flags <strong>Fault Code 14</strong>, latches an electrical MAP failure, illuminates the check engine lamp, and activates emergency throttle-based limp-in mode.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>High Boost Spikes &amp; 2-Bar Limits</strong>:</li>
+<li>On aggressive 2-bar calibrations running 14+ psi boost, momentary boost spikes can drive sensor voltage above 4.67 volts.</li>
+<li>Elevating <code>MAPHIG</code> to 248 counts (4.86 volts) prevents false Fault Code 14 triggers during boost overshoot.</li>
+<li><strong>3-Bar MAP Headroom</strong>:</li>
+<li>On 3-bar MAP conversions, <code>MAPHIG</code> at 238 counts represents 28.5 psi boost, eliminating false over-voltage fault codes for typical street boost levels.</li>
+<li><strong>Lowering &amp; Edge Cases</strong>:</li>
+<li>Lowering <code>MAPHIG</code> causes premature limp-home triggering under moderate boost.</li>
+<li>Setting <code>MAPHIG</code> to 255 counts disables short-to-reference fault logging.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect continuously during sensor diagnostic checks, flagging fault codes if the MAP sensor voltage shorts to 5V.</p>
 <ul>
 <li><strong>Routine &amp; Line Numbers</strong>: <code>VerifyOperationOfMapSensor_MM</code> (<code>T-SMEC_v19.asm:4893-4946</code>), instruction at line 4933.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -128,18 +141,6 @@
 <li><code>cmpa MAPHIG_MapSensorUpperLimit</code> compares against 238 counts at line 4933.</li>
 <li>If greater or equal (<code>bcc</code>), branches to <code>L1386</code> at line 4934.</li>
 <li>Loads error code <code>0x2594</code> (Fault Code 14) and sets <code>b45_IPL1</code> bit <code>b45_MapBadSignal</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>High Boost Spikes &amp; 2-Bar Limits</strong>:</li>
-<li>On aggressive 2-bar calibrations running 14+ psi boost, momentary boost spikes can drive sensor voltage above 4.67 volts.</li>
-<li>Elevating <code>MAPHIG</code> to 248 counts (4.86 volts) prevents false Fault Code 14 triggers during boost overshoot.</li>
-<li><strong>3-Bar MAP Headroom</strong>:</li>
-<li>On 3-bar MAP conversions, <code>MAPHIG</code> at 238 counts represents 28.5 psi boost, eliminating false over-voltage fault codes for typical street boost levels.</li>
-<li><strong>Lowering &amp; Edge Cases</strong>:</li>
-<li>Lowering <code>MAPHIG</code> causes premature limp-home triggering under moderate boost.</li>
-<li>Setting <code>MAPHIG</code> to 255 counts disables short-to-reference fault logging.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

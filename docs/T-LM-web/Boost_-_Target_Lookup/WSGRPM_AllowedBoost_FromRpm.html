@@ -128,16 +128,7 @@
 <p><code>WSGRPM_AllowedBoost_FromRpm</code> defines the <strong>baseline target boost pressure curve as a function of engine RPM</strong>.</p>
 <p>In the Chrysler Logic Module boost control architecture, target boost is not a fixed static number; it is calculated dynamically to match the compressor map and torque curve of the engine. <code>WSGRPM</code> forms the initial foundation of this target: it commands lower boost at low RPM to prevent turbocharger compressor surge and driveline strain, and tapers or holds boost at higher RPMs where cylinder filling and turbocharger efficiency are optimal.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>The Foundation of Boost Targeting:</strong></li>
-<li>In <code>CalcTargetBoost_MM</code>, <code>WSGRPM</code> is the very first table queried.</li>
-<li>Engine speed high-byte (<code>EngineRpm_HB</code>) is multiplied by 2 and looked up in <code>WSGRPM</code>.</li>
-<li>The resulting boost value is stored in scratch memory (<code>Temp4</code>) as the initial baseline boost goal.</li>
-<li>Subsequent tables (<a href="../Boost_-_Target_Lookup/WSGTIM_AllowedBoost_FromTime.html"><code>WSGTIM</code></a>, <a href="../Boost_-_Target_Lookup/WSGCLT_AllowedBoost_FromTemp.html"><code>WSGCLT</code></a>, <a href="../Boost_-_Target_Lookup/WSGCHG_AllowedBoost_FromChargeTemp.html"><code>WSGCHG</code></a>) can only <strong>reduce</strong> this boost goal via <code>LookupAndKeepSmallerBoostGoal</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Target vs. Actual Boost:</strong> <code>WSGRPM</code> sets the <em>target goal</em> (in psi above baro). The wastegate duty cycle algorithm (<a href="../Boost_-_WG_Control/DCWOT_FullThrottleWastegateDutyCycle_C8is100Percent_FromMap.html"><code>DCWOT</code></a>) modulates the wastegate solenoid to bring manifold absolute pressure up to match this target plus barometric pressure.</li>
 <li><strong>Raising <code>WSGRPM</code>:</strong></li>
@@ -145,6 +136,16 @@
 <li>To raise boost to 14 psi, 18 psi, or higher, raise the Y-axis boost values in <code>WSGRPM</code>.</li>
 <li><strong>Crucial Prerequisite:</strong> Overboost fuel shutoff limits (<a href="../OB,_Speed,_and_Rev_Limiter/MPSHFA_OverboostFuelShutoffEnablePointFromMap_Absolute.html"><code>MPSHFA</code></a> / <a href="../OB,_Speed,_and_Rev_Limiter/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a>) must also be raised, or the ECU will cut fuel when boost exceeds the factory overboost ceiling!</li>
 <li><strong>Compressor Surge Prevention:</strong> Keep boost moderate under 2800 RPM to avoid putting large Garrett or Mitsubishi turbos into surge.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during boost control, defining the primary target boost curve across engine RPM.</p>
+<ul>
+<li><strong>The Foundation of Boost Targeting:</strong></li>
+<li>In <code>CalcTargetBoost_MM</code>, <code>WSGRPM</code> is the very first table queried.</li>
+<li>Engine speed high-byte (<code>EngineRpm_HB</code>) is multiplied by 2 and looked up in <code>WSGRPM</code>.</li>
+<li>The resulting boost value is stored in scratch memory (<code>Temp4</code>) as the initial baseline boost goal.</li>
+<li>Subsequent tables (<a href="../Boost_-_Target_Lookup/WSGTIM_AllowedBoost_FromTime.html"><code>WSGTIM</code></a>, <a href="../Boost_-_Target_Lookup/WSGCLT_AllowedBoost_FromTemp.html"><code>WSGCLT</code></a>, <a href="../Boost_-_Target_Lookup/WSGCHG_AllowedBoost_FromChargeTemp.html"><code>WSGCHG</code></a>) can only <strong>reduce</strong> this boost goal via <code>LookupAndKeepSmallerBoostGoal</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

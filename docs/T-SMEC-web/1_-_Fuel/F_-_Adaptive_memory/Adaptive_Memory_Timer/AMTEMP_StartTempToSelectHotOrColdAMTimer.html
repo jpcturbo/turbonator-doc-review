@@ -117,7 +117,18 @@
 <p>Before long-term adaptive fuel trim cells are permitted to learn and update, the engine must reach thermal equilibrium so that temporary cold warmup enrichment does not distort learned fuel tables.</p>
 <p>In factory calibrations, <code>AMTEMP</code> is configured to 205 counts, corresponding to approximately 196 degF. When coolant temperature is below <code>AMTEMP</code>, the controller repeatedly reloads the adaptive delay timer from the coolant temperature curve; once coolant temperature reaches or reaches beyond <code>AMTEMP</code>, the delay timer decrements toward zero to unlock adaptive cell learning.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Thermostat Compatibility</strong>:</li>
+<li>When replacing the factory 195 degF thermostat with a 180 degF or 160 degF unit, <code>AMTEMP</code> must be lowered to approximately 170 to 175 degF (185 to 190 counts); otherwise, the engine will never enable adaptive learning.</li>
+<li><strong>Locking Out Adaptive Learning</strong>:</li>
+<li>Setting <code>AMTEMP</code> to 255 counts prevents adaptive trims from updating under any operating temperature, functioning as a global lock on long-term trim updates.</li>
+<li><strong>Lowering the Threshold</strong>:</li>
+<li>Allows adaptive memory to start adapting sooner during warmup, but setting it below 160 degF risks corrupting fuel trims with uncalibrated warmup enrichment.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during engine startup and warm-up, establishing the coolant temperature threshold that switches between hot and cold adaptive learning timers.</p>
 <ul>
 <li><strong>Enclosing Subroutine</strong>: <code>HandleAmTimer_MM</code> / <code>AmTimer_EngineRunning</code> (<code>T-SMEC_v19.asm:3406-3424</code>), instruction line 3410.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -127,16 +138,6 @@
 <li><code>CoolantTemp</code> is loaded into register A and compared against <code>AMTEMP_StartTempToSelectHotOrColdAMTimer</code> via <code>cmpa</code>.</li>
 <li>If <code>CoolantTemp &lt; AMTEMP</code> (<code>bcs</code>), execution branches to line 3418 (<code>L1252</code>), reloading the timer from <a href="../../../1_-_Fuel/F_-_Adaptive_memory/Adaptive_Memory_Timer/AMTPSW_TempPointToEnableSelectedAMTimer.html"><code>AMTPSW</code></a>.</li>
 <li>If <code>CoolantTemp &gt;= AMTEMP</code>, execution decrements <code>Timer_O2CNTR_CountdownFromAbove196FtoEnableClosedLoop</code> toward zero.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Thermostat Compatibility</strong>:</li>
-<li>When replacing the factory 195 degF thermostat with a 180 degF or 160 degF unit, <code>AMTEMP</code> must be lowered to approximately 170 to 175 degF (185 to 190 counts); otherwise, the engine will never enable adaptive learning.</li>
-<li><strong>Locking Out Adaptive Learning</strong>:</li>
-<li>Setting <code>AMTEMP</code> to 255 counts prevents adaptive trims from updating under any operating temperature, functioning as a global lock on long-term trim updates.</li>
-<li><strong>Lowering the Threshold</strong>:</li>
-<li>Allows adaptive memory to start adapting sooner during warmup, but setting it below 160 degF risks corrupting fuel trims with uncalibrated warmup enrichment.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -129,14 +129,7 @@
 <p>At WOT, volumetric efficiency is maximized, cylinder pressures are at their peak, and combustion chamber temperatures rise rapidly—especially under turbocharger boost. Because high charge density drastically accelerates flame front speeds, ignition timing must be retarded under boost to keep peak cylinder pressure (PCP) safely timed after top dead center (typically ~14–17° ATDC) and prevent destructive detonation.</p>
 <p>In addition to serving as the WOT ignition curve, <code>WOTMAP</code> serves as the <strong>absolute minimum advance floor</strong> for warm part-throttle boost timing via the <a href="../Spark_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a> blending logic.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<p><code>WOTMAP</code> is engaged under the following conditions:
-1. <strong>Engine is Warm:</strong> Coolant temperature is at or above <a href="../Spark_-_Normal_Advance/TMPSWP_EngTempSwitchPointForSparkAdvance.html"><code>TMPSWP</code></a> (≥ 166°F / 74°C).
-2. <strong>Throttle is Wide-Open (WOT):</strong> Bit 0 of <code>BitFlags_81</code> is <code>1</code> (Full Throttle flag set).
-   - In this mode, the part-throttle blending calculation (<a href="../Spark_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a> and <a href="../Spark_-_Adaptive_Retard/ARADVR_AdaptiveRetardAdvanceRatioFromMAP.html"><code>ARADVR</code></a>) is completely bypassed.
-3. <strong>Part-Throttle Floor:</strong> During part throttle under boost, if <a href="../Spark_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a> minus the <a href="../Spark_-_Adaptive_Retard/ARADVR_AdaptiveRetardAdvanceRatioFromMAP.html"><code>ARADVR</code></a> retard drops below <code>WOTMAP</code>, the ECU clamps timing to <code>WOTMAP</code>.</p>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <p>Total full-throttle ignition timing is calculated as the base RPM advance (<a href="../Spark_-_Normal_Advance/GOVNER_AdvanceFromRPM.html"><code>GOVNER</code></a>) plus the MAP advance from <code>WOTMAP</code>:</p>
 <p><code>Total WOT Advance ≈ GOVNER(RPM) + WOTMAP(MAP) - AntiLagRetard - KnockRetard ± BaroTrims</code></p>
 <ul>
@@ -148,6 +141,14 @@
 <li><strong>Effect on Total Timing:</strong> Retards full-throttle ignition timing under boost.</li>
 <li><strong>Real-World Driving Feel:</strong> Produces a safe, knock-resistant tune (ideal for low-octane fuel or high boost), but excessive retard causes sluggish power delivery and very high exhaust gas temperatures (EGTs), which can overheat turbochargers and exhaust valves.</li>
 </ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect across engine operating conditions to establish ignition advance for AdvanceFromMAPWarmFull.</p>
+<p><code>WOTMAP</code> is engaged under the following conditions:
+1. <strong>Engine is Warm:</strong> Coolant temperature is at or above <a href="../Spark_-_Normal_Advance/TMPSWP_EngTempSwitchPointForSparkAdvance.html"><code>TMPSWP</code></a> (≥ 166°F / 74°C).
+2. <strong>Throttle is Wide-Open (WOT):</strong> Bit 0 of <code>BitFlags_81</code> is <code>1</code> (Full Throttle flag set).
+   - In this mode, the part-throttle blending calculation (<a href="../Spark_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a> and <a href="../Spark_-_Adaptive_Retard/ARADVR_AdaptiveRetardAdvanceRatioFromMAP.html"><code>ARADVR</code></a>) is completely bypassed.
+3. <strong>Part-Throttle Floor:</strong> During part throttle under boost, if <a href="../Spark_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a> minus the <a href="../Spark_-_Adaptive_Retard/ARADVR_AdaptiveRetardAdvanceRatioFromMAP.html"><code>ARADVR</code></a> retard drops below <code>WOTMAP</code>, the ECU clamps timing to <code>WOTMAP</code>.</p>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>
 <p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 6587–6599):</p>

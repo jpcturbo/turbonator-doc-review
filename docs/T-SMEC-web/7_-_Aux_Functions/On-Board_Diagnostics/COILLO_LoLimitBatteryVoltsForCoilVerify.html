@@ -118,7 +118,20 @@
 <p>If the ignition coil driver fails to fire the primary winding, combustion ceases and the expected manifold pressure pulsation disappears.</p>
 <p>In factory calibrations, <code>COILLO</code> is configured to 5 counts, corresponding to approximately 0.58 psi of pressure difference. If battery voltage is in the low-voltage test window and the manifold pressure deviation equals or exceeds <code>COILLO</code>, the controller flags <strong>Fault Code 43</strong>.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
+<li>Multiply <code>COILLO</code> by 0.667 (from 5 counts down to 3 counts) when converting from a 2-bar to a 3-bar MAP sensor.</li>
+<li><strong>Aggressive Camshaft Tuning</strong>:</li>
+<li>High-overlap performance camshafts generate erratic intake pressure pulses that can trigger false Fault Code 43 codes.</li>
+<li>Raise <code>COILLO</code> to 7 or 8 counts (0.80 to 0.92 psi delta) to filter out camshaft-induced pressure fluctuations.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Setting <code>COILLO</code> to zero flags Fault Code 43 on nearly every low-voltage cranking cycle.</li>
+<li>Setting <code>COILLO</code> to maximum (255 counts) disables this secondary ignition coil verification test.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during engine cranking and low battery voltage operation, every successful ignition firing produces a distinct intake valve depression and manifold pressure ripple.</p>
 <ul>
 <li><strong>Routine &amp; Line Numbers</strong>: <code>VerifyOperationOfIgnitionCoilDriver2_MM</code> (<code>T-SMEC_v19.asm:5150-5185</code>), instruction at line 5179.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -130,18 +143,6 @@
 <li><code>cmpa COILLO_LoLimitBatteryVoltsForCoilVerify</code> at line 5179 compares delta against 5 counts.</li>
 <li>If lower (<code>bcs</code>), branches to <code>R1424</code> at line 5180, exiting without error.</li>
 <li>If higher or equal, throws non-critical error <code>0x2814</code> (Fault Code 43) at line 5182.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
-<li>Multiply <code>COILLO</code> by 0.667 (from 5 counts down to 3 counts) when converting from a 2-bar to a 3-bar MAP sensor.</li>
-<li><strong>Aggressive Camshaft Tuning</strong>:</li>
-<li>High-overlap performance camshafts generate erratic intake pressure pulses that can trigger false Fault Code 43 codes.</li>
-<li>Raise <code>COILLO</code> to 7 or 8 counts (0.80 to 0.92 psi delta) to filter out camshaft-induced pressure fluctuations.</li>
-<li><strong>Edge Cases</strong>:</li>
-<li>Setting <code>COILLO</code> to zero flags Fault Code 43 on nearly every low-voltage cranking cycle.</li>
-<li>Setting <code>COILLO</code> to maximum (255 counts) disables this secondary ignition coil verification test.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -129,17 +129,7 @@
 <p>When the engine first fires and engine speed exceeds the cranking threshold, intake manifold airflow undergoes a sudden surge while manifold vacuum is not yet stable. <code>SFDCAY</code> provides a rich fuel bridge that decays smoothly into the steady-state running fuel tables, cushioning the abrupt physical transition and preventing lean hesitation, idle sag, or stall.</p>
 <p>The initial decay value is looked up based on engine coolant temperature.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ThrottleFlooredWhileStarting_UnloadFuel</code> (<code>T-SMEC_v19.asm:5595-5606</code>), instruction line 5601.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Executed at the conclusion of starting pulsewidth calculations before returning from <code>CalculateInjectorPulsewidthForStarting_MM</code>.</li>
-<li>Uses <code>CoolantTemp</code> as the lookup index.</li>
-<li><strong>Destination Register</strong>:</li>
-<li>Interpolated value is stored into <code>Factor_StartFuelDecayIntoRunFuel</code> to be decremented across subsequent running loops.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Curing Start-and-Stall</strong>:</li>
 <li>If an engine starts readily but immediately stumbles or dies when the key returns to the run position, increase <code>SFDCAY</code> at that coolant temperature.</li>
@@ -149,6 +139,17 @@
 <li>Scale <code>SFDCAY</code> downward when installing higher-flow injectors to prevent rich loading upon start-to-run transition.</li>
 <li><strong>Warm Restart Drivability</strong>:</li>
 <li>Lowering values above 140 degF cleans up exhaust smell and stabilizes hot idle flare.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect immediately when the engine catches and enters run mode, smoothly decaying heavy startup fuel enrichment down toward normal running fuel levels based on coolant temperature.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ThrottleFlooredWhileStarting_UnloadFuel</code> (<code>T-SMEC_v19.asm:5595-5606</code>), instruction line 5601.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Executed at the conclusion of starting pulsewidth calculations before returning from <code>CalculateInjectorPulsewidthForStarting_MM</code>.</li>
+<li>Uses <code>CoolantTemp</code> as the lookup index.</li>
+<li><strong>Destination Register</strong>:</li>
+<li>Interpolated value is stored into <code>Factor_StartFuelDecayIntoRunFuel</code> to be decremented across subsequent running loops.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

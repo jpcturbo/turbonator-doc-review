@@ -132,17 +132,7 @@
 <p>Under normal driving, the idle air stepper motor is held partially open off-idle to soften deceleration and prevent driveline bucking. However, when the driver actively presses the brake pedal to slow or stop the vehicle, auxiliary dashpot air is undesirable because it fights the vehicle brakes and reduces engine braking vacuum assist.</p>
 <p>When the brake switch contacts close, the SMEC references <code>BRKRPM</code> using throttle position sensor voltage delta. If engine speed is above the looked-up threshold, the controller overrides the off-idle stepper opening floor and closes the bypass passage, restoring maximum engine braking.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2335</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Vehicle must be off-idle (<code>b4f_OffIdle</code> set in <code>BitFlags_4f</code> at line 2325).</li>
-<li>Brake pedal switch <code>sw2_Brake</code> in <code>StartupSwitchMirror2</code> must be active at line 2327.</li>
-<li>Computes throttle delta (<code>TpsVolts - MINTHR</code>) at line 2330 and calls <code>Lookup4ByteTable</code> on <code>BRKRPM</code> at line 2331.</li>
-<li>If <code>EngineRpm_HB</code> exceeds returned threshold (<code>bcc L1122</code>), bypasses off-idle dashpot floor, restoring closed-air braking.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Stronger Engine Braking</strong>:</li>
 <li>Lower <code>BRKRPM</code> thresholds if the vehicle resists deceleration or pushes forward against the service brakes during firm stops.</li>
@@ -150,6 +140,17 @@
 <li>Keep low-throttle points above 1000 RPM to prevent the engine from stalling when stopping abruptly from highway speeds.</li>
 <li><strong>Switch Activation</strong>:</li>
 <li>Only evaluates when the hydraulic brake pressure switch or brake pedal switch is actively closed.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under normal driving, the idle air stepper motor is held partially open off-idle to soften deceleration and prevent driveline bucking.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2335</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Vehicle must be off-idle (<code>b4f_OffIdle</code> set in <code>BitFlags_4f</code> at line 2325).</li>
+<li>Brake pedal switch <code>sw2_Brake</code> in <code>StartupSwitchMirror2</code> must be active at line 2327.</li>
+<li>Computes throttle delta (<code>TpsVolts - MINTHR</code>) at line 2330 and calls <code>Lookup4ByteTable</code> on <code>BRKRPM</code> at line 2331.</li>
+<li>If <code>EngineRpm_HB</code> exceeds returned threshold (<code>bcc L1122</code>), bypasses off-idle dashpot floor, restoring closed-air braking.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

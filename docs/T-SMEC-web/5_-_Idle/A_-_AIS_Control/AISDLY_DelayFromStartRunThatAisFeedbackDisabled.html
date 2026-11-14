@@ -118,16 +118,7 @@
 <p>To prevent this hunting behavior, when transitioning from cranking to run mode, the controller loads <code>AISDLY</code> into a countdown timer.</p>
 <p>In factory calibrations, <code>AISDLY</code> is set to 45 counts, representing a feedback lockout period of approximately 2.8 seconds.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>HandleFuelStartRunStartTransfer</code> (<code>T-SMEC_v19.asm:6972-6991</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Engine transitions from cranking to running state: <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/STFPRD_FuelRunStartTransferPointRpm.html"><code>STFPRD_FuelRunStartTransferPointRpm</code></a> threshold crossed.</li>
-<li>Clears start flags <code>b54_FuelEngineNotRunning</code> and <code>b54_JustStarted</code> in <code>BitFlags_54</code> at line 6977.</li>
-<li>Loads <code>AISDLY</code> into accumulator A at line 6983 and stores it into <code>Timer_CountdownFromStartRunForAisFeedback</code> at line 6984.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Curing Post-Start RPM Dips</strong>:</li>
 <li>Increase <code>AISDLY</code> from 2.8 seconds up to 4.0 to 5.0 seconds if the engine catches with a flare and then immediately dies as the stepper motor prematurely steps shut.</li>
@@ -135,6 +126,16 @@
 <li>If post-start idle hangs at high RPM for an annoying length of time, trim <code>AISDLY</code> down to 2.0 seconds to bring closed-loop idle regulation online earlier.</li>
 <li><strong>Stability Margin</strong>:</li>
 <li>Do not set <code>AISDLY</code> below 1.5 seconds, as early closed-loop feedback during the flare transient will trigger severe idle surging.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect immediately after the engine starts, disabling closed-loop idle speed stepper feedback for a brief delay while the startup idle flare stabilizes.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleFuelStartRunStartTransfer</code> (<code>T-SMEC_v19.asm:6972-6991</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Engine transitions from cranking to running state: <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/STFPRD_FuelRunStartTransferPointRpm.html"><code>STFPRD_FuelRunStartTransferPointRpm</code></a> threshold crossed.</li>
+<li>Clears start flags <code>b54_FuelEngineNotRunning</code> and <code>b54_JustStarted</code> in <code>BitFlags_54</code> at line 6977.</li>
+<li>Loads <code>AISDLY</code> into accumulator A at line 6983 and stores it into <code>Timer_CountdownFromStartRunForAisFeedback</code> at line 6984.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -116,17 +116,18 @@
 <p><code>ENDITM</code> (ECU_ID) is a critical 16-bit calibration identifier placed at the very beginning of the calibration ROM table structure (address <code>$C000</code>, offset <code>$0092</code>). </p>
 <p>This 2-byte word represents the engineering calibration release ID (in this stock binary, <code>0xA171</code>). When a factory Chrysler diagnostic readout box (DRB-II) or modern scan tool queries the ECU over the serial communications interface (SCI), the diagnostic subroutine <code>DRB_SendROMSerial_MM</code> transmits <code>ENDITM</code> to identify the engine displacement, transmission type, model year, and emissions calibration family. Furthermore, the ECU's power-on self-test routine <code>ResetStartup</code> uses <code>ENDITM</code> to verify ROM integrity by calculating an 8-bit additive checksum of the entire calibration table space.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Tuning Usage</strong>: When modifying custom calibrations in MPTune, updating or modifying this identifier is typically handled automatically or left intact. Changing this identifier alters what model number displays on scan tools (e.g. Snap-on MT2500 or DRB-II).</li>
+<li><strong>Checksum Verification</strong>: During power-on boot, the ECU adds all calibration bytes and subtracts the second byte of <code>ENDITM</code> (<code>subb ENDITM_ECUID+1</code>). If the calculated sum does not equal zero, the ECU flags a memory checksum fault (<code>ThrowNonCriticalError</code>), storing Fault Code 53 / 8-bit error flag in <code>ErrorBitRegisterStored0</code>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during diagnostic scan-tool communications (DRB-II / MPScan), reporting the firmware calibration part number and ECU identifier.</p>
 <ul>
 <li>Accessed during system reset in <code>ResetStartup</code> (line 688) and <code>ChecksumLoop</code> (line 694).</li>
 <li>Queried during serial diagnostic sessions in <code>DRB_SendROMSerial_MM</code> (line 2501).</li>
 <li>Permanent ROM constant stored at <code>$C000</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Tuning Usage</strong>: When modifying custom calibrations in MPTune, updating or modifying this identifier is typically handled automatically or left intact. Changing this identifier alters what model number displays on scan tools (e.g. Snap-on MT2500 or DRB-II).</li>
-<li><strong>Checksum Verification</strong>: During power-on boot, the ECU adds all calibration bytes and subtracts the second byte of <code>ENDITM</code> (<code>subb ENDITM_ECUID+1</code>). If the calculated sum does not equal zero, the ECU flags a memory checksum fault (<code>ThrowNonCriticalError</code>), storing Fault Code 53 / 8-bit error flag in <code>ErrorBitRegisterStored0</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

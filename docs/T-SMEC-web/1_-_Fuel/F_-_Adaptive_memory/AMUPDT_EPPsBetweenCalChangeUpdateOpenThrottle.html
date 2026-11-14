@@ -117,7 +117,18 @@
 <p>On a four-cylinder engine, two distributor pulses occur per crankshaft revolution. In stock calibrations, <code>AMUPDT</code> is set to 26 counts, which corresponds to 13 crankshaft revolutions.</p>
 <p>This update interval ensures that the short-term oxygen sensor feedback counter has integrated multiple combustion cycles before transferring a trim step into long-term memory.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Cruising Adaptation Pace</strong>:</li>
+<li>Increasing <code>AMUPDT</code> slows down part-throttle learning, requiring longer steady-state operation before trims shift.</li>
+<li><strong>Rapid Calibration Learning</strong>:</li>
+<li>Lowering <code>AMUPDT</code> to 10-15 counts enables faster learning during tuning sessions.</li>
+<li><strong>Distributor Pulse Units</strong>:</li>
+<li>Measured in distributor rising edges (2 edges per crankshaft revolution on a 4-cylinder engine; 26 counts = 13 revolutions).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect while operating off-idle before the controller is permitted to update the active adaptive fuel memory cell.</p>
 <ul>
 <li><strong>Enclosing Subroutine</strong>: <code>AdaptiveMemory_UpdateCellIfRequired_MM</code> (<code>T-SMEC_v19.asm:3291-3349</code>), instruction line 3297.</li>
 <li><strong>Gating Conditions</strong>: Off-idle flag set (<code>BitFlags_4f</code> bit <code>b4f_OffIdle</code> set).</li>
@@ -126,16 +137,6 @@
 <li>Line 3298 branches via <code>brset *BitFlags_4f, #b4f_OffIdle, UpdateAdaptive_OffIdle</code> to line 3300.</li>
 <li>In <code>UpdateAdaptive_OffIdle</code>, register B is subtracted from <code>AdaptiveCellUpdateTimer</code> at line 3310 via <code>sba</code>.</li>
 <li>If <code>timer &lt; AMUPDT</code> (<code>bcs</code>), execution branches to <code>DontUpdateCellOrTimer</code> (line 3335).</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Cruising Adaptation Pace</strong>:</li>
-<li>Increasing <code>AMUPDT</code> slows down part-throttle learning, requiring longer steady-state operation before trims shift.</li>
-<li><strong>Rapid Calibration Learning</strong>:</li>
-<li>Lowering <code>AMUPDT</code> to 10-15 counts enables faster learning during tuning sessions.</li>
-<li><strong>Distributor Pulse Units</strong>:</li>
-<li>Measured in distributor rising edges (2 edges per crankshaft revolution on a 4-cylinder engine; 26 counts = 13 revolutions).</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

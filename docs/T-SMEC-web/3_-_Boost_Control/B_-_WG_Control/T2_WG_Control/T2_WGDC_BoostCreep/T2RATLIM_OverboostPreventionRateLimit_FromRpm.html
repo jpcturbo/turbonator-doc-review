@@ -130,19 +130,7 @@
 <p><code>T2RATLIM</code> establishes the maximum allowable rate of turbocharger boost pressure rise as a function of engine speed in T2 control.</p>
 <p>If wastegate port flow is restrictive or exhaust volume surges quickly, manifold boost can rise faster than closed-loop feedback can control, causing dangerous boost creep and overboost spikes. The controller continuously calculates the delta of boost change between successive loops (<code>BoostDelta_Signed</code>); if the positive rate of boost rise exceeds <code>T2RATLIM</code>, the controller immediately bypasses normal duty cycle calculations and clamps duty cycle to <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_BoostCreep/T2PRTMAX_MaxWastegateDutyCycleforPartThrottleBoostCreep.html"><code>T2PRTMAX</code></a> to halt the creep instantly.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9812-9819</code>), called from <code>CalcWGDutyCycle_MM</code> (<code>T-SMEC_v19.asm:9506-9510</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Active when <code>BoostDelta_Signed</code> (<code>Temp1</code>) is positive (boost rising, line 9813).</li>
-<li><strong>Table Lookup &amp; Rate Check</strong>:</li>
-<li>Line 9814 loads <code>EngineRpm_HB</code> into accumulator A and index X loads <code>#T2RATLIM_OverboostPreventionRateLimit_FromRpm</code> (line 9815).</li>
-<li><code>Lookup4ByteTable</code> computes allowed rate limit.</li>
-<li>Line 9818 executes <code>cba</code> comparing <code>Temp0</code> (<code>|BoostDelta_Signed|</code>) against allowed rate.</li>
-<li>If <code>Temp0 &gt;= T2RATLIM</code> (carry clear in <code>bcs L7746</code>), execution proceeds to line 9820 to clamp duty cycle to <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_BoostCreep/T2PRTMAX_MaxWastegateDutyCycleforPartThrottleBoostCreep.html"><code>T2PRTMAX</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Boost Creep Rate Limiter Table</strong>:</li>
 <li>Maximum permitted rate of boost rise per main program loop pass vs. engine speed.</li>
@@ -153,6 +141,19 @@
 <li>If boost creeps uncontrollably near redline due to small wastegate ports, lower high-RPM points to force early wastegate venting.</li>
 <li><strong>Emergency Intervention Mechanism</strong>:</li>
 <li>When exceeded, the routine immediately stores <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_BoostCreep/T2PRTMAX_MaxWastegateDutyCycleforPartThrottleBoostCreep.html"><code>T2PRTMAX</code></a> (100% duty cycle) and exits <code>CalcWGDutyCycleT2</code>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if wastegate port flow is restrictive or exhaust volume surges quickly, manifold boost can rise faster than closed-loop feedback can control, causing dangerous boost creep and overboost spikes.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9812-9819</code>), called from <code>CalcWGDutyCycle_MM</code> (<code>T-SMEC_v19.asm:9506-9510</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Active when <code>BoostDelta_Signed</code> (<code>Temp1</code>) is positive (boost rising, line 9813).</li>
+<li><strong>Table Lookup &amp; Rate Check</strong>:</li>
+<li>Line 9814 loads <code>EngineRpm_HB</code> into accumulator A and index X loads <code>#T2RATLIM_OverboostPreventionRateLimit_FromRpm</code> (line 9815).</li>
+<li><code>Lookup4ByteTable</code> computes allowed rate limit.</li>
+<li>Line 9818 executes <code>cba</code> comparing <code>Temp0</code> (<code>|BoostDelta_Signed|</code>) against allowed rate.</li>
+<li>If <code>Temp0 &gt;= T2RATLIM</code> (carry clear in <code>bcs L7746</code>), execution proceeds to line 9820 to clamp duty cycle to <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_BoostCreep/T2PRTMAX_MaxWastegateDutyCycleforPartThrottleBoostCreep.html"><code>T2PRTMAX</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

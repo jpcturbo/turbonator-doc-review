@@ -117,18 +117,7 @@
 <p>An internal 5.0-volt pull-up resistor inside the engine controller biases the circuit so that a broken wire, loose connector pin, or disconnected sensor pulls the signal to 5.0 volts.</p>
 <p>In factory calibrations, <code>AMBHIG</code> is configured to 250 counts, representing approximately 4.90 volts (equivalent to extreme sub-freezing temperatures below -30 deg F). If measured ambient temperature sensor voltage exceeds <code>AMBHIG</code>, the engine controller flags <strong>Fault Code 44</strong>, logs an ambient temperature sensor fault, and substitutes the fixed 13.8-volt default charging target.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Routine &amp; Line Numbers</strong>: <code>DetermineTargetBatteryVoltage_MM</code> (<code>T-SMEC_v19.asm:1659-1687</code>), instruction at line 1663.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Checked when <code>AmbientAirTempVolts &gt;= AMBLOW</code> at line 1661.</li>
-<li><strong>Math &amp; Comparison</strong>:</li>
-<li><code>cmpa AMBHIG_BattTempHighWhenCold</code> at line 1663 compares accumulator A against 250 counts.</li>
-<li>If higher (<code>bhi</code>), branches to <code>AmbientTempSensorFault</code> at line 1666.</li>
-<li>If lower or equal (<code>bls</code>), branches to <code>AmbientTempSensorValid</code> at line 1664 to calculate temperature-compensated target voltage.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Open Circuit Diagnostics</strong>:</li>
 <li>If Fault Code 44 is present, verify that the battery temperature sensor located under the battery tray is plugged in securely.</li>
@@ -137,6 +126,18 @@
 <li><strong>Edge Cases</strong>:</li>
 <li>Setting <code>AMBHIG</code> to 255 counts disables open-circuit detection.</li>
 <li>Setting <code>AMBHIG</code> lower than normal ambient temperature voltage locks the charging system permanently into fallback mode.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if measured ambient temperature sensor voltage exceeds AMBHIG, the engine controller flags Fault Code 44, logs an ambient temperature sensor fault, and substitutes the fixed 13.8-volt default charging target.</p>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>DetermineTargetBatteryVoltage_MM</code> (<code>T-SMEC_v19.asm:1659-1687</code>), instruction at line 1663.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Checked when <code>AmbientAirTempVolts &gt;= AMBLOW</code> at line 1661.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li><code>cmpa AMBHIG_BattTempHighWhenCold</code> at line 1663 compares accumulator A against 250 counts.</li>
+<li>If higher (<code>bhi</code>), branches to <code>AmbientTempSensorFault</code> at line 1666.</li>
+<li>If lower or equal (<code>bls</code>), branches to <code>AmbientTempSensorValid</code> at line 1664 to calculate temperature-compensated target voltage.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

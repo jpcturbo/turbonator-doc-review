@@ -129,18 +129,7 @@
 <p>Electromagnetic fuel injectors require a measurable time interval (dead time, typically 0.6 to 1.5 milliseconds) for the solenoid coil to build magnetic flux and pull the pintle off its seat before fuel begins spraying. As battery voltage decreases, solenoid opening velocity slows down significantly.</p>
 <p><code>BATOFF</code> adds an offset pulsewidth that grows larger as system voltage sags, ensuring that effective fuel delivery remains constant regardless of alternator output or electrical accessories cycling on.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>LookupInjectorLatency</code> (<code>T-SMEC_v19.asm:5936-5942</code>), instruction line 5940.</li>
-<li><strong>Fault Flag Check</strong>:</li>
-<li>Evaluates <code>b45_Bad_BatVolts</code> in <code>b45_IPL1</code> at line 5938.</li>
-<li>If battery voltage fault is set, loads default 14.1 Volts (0xE2 counts).</li>
-<li>If voltage is valid, reads live <code>BatteryVolts</code> sensor channel.</li>
-<li><strong>Storage</strong>:</li>
-<li>Resulting latency byte is stored into <code>InjectorLatency</code> to be added into total injector pulsewidth.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Aftermarket Injector Characterization</strong>:</li>
 <li>Populate <code>BATOFF</code> with manufacturer-supplied voltage offset data when upgrading injectors to ensure stable air-fuel ratios.</li>
@@ -150,6 +139,18 @@
 <li>At idle and low load, dead time represents a large percentage of total pulsewidth; precise <code>BATOFF</code> calibration is vital for idle stability.</li>
 <li><strong>Failsafe Voltage Backup</strong>:</li>
 <li>If battery voltage reading is flagged faulty, the ECU automatically falls back to a 14.1 Volt default calibration index.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect continuously on every fuel injection pulse, adding battery voltage offset (dead time) to compensate for injector mechanical opening delays.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>LookupInjectorLatency</code> (<code>T-SMEC_v19.asm:5936-5942</code>), instruction line 5940.</li>
+<li><strong>Fault Flag Check</strong>:</li>
+<li>Evaluates <code>b45_Bad_BatVolts</code> in <code>b45_IPL1</code> at line 5938.</li>
+<li>If battery voltage fault is set, loads default 14.1 Volts (0xE2 counts).</li>
+<li>If voltage is valid, reads live <code>BatteryVolts</code> sensor channel.</li>
+<li><strong>Storage</strong>:</li>
+<li>Resulting latency byte is stored into <code>InjectorLatency</code> to be added into total injector pulsewidth.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

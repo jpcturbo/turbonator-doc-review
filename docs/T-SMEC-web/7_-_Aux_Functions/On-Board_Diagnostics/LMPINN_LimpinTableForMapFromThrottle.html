@@ -129,7 +129,21 @@
 <p>Because turbocharged engines rely heavily on manifold pressure to calculate mass airflow demand, a failed pressure sensor would normally render the fuel and ignition algorithms inoperative. When an electrical open circuit or short circuit is detected on the sensor circuit, the engine controller flags <strong>Fault Code 14</strong> and transitions to limp-home operation.</p>
 <p>During this emergency mode, the controller calculates engine speed and throttle opening, then looks up <code>LMPINN</code> to estimate manifold density across five reference points from closed throttle at deep idle vacuum (-14.7 psi gauge or 0.0 psi absolute) up to approximately 27 percent throttle at light cruising load (-3.3 psi gauge or 11.4 psi absolute). This synthetic manifold pressure table allows the driver to safely navigate the vehicle to a service facility rather than being stranded by a sensor fault.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
+<li>When converting from a factory 2-bar sensor to a 3-bar MAP sensor, the sensor voltage span expands from 29.4 psi absolute to 44.1 psi absolute.</li>
+<li>Multiply all table pressure output values by 0.667 to maintain factory-equivalent limp-in manifold pressure estimates.</li>
+<li><strong>Camshaft and Throttle Body Modifications</strong>:</li>
+<li>Large throttle bodies flow substantially more air at small opening angles, requiring higher intermediate points in <code>LMPINN</code> to avoid lean flat spots.</li>
+<li>High-duration performance camshafts with reduced idle vacuum may require raising the lower table points to match the engine's true airflow.</li>
+<li><strong>Lowering &amp; Edge Cases</strong>:</li>
+<li>Lowering table points leans out limp-home fueling and advances ignition timing.</li>
+<li>Setting points to zero produces severe lean misfires when the sensor faults, while setting points to maximum creates rich flooding.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when a MAP sensor failure is detected, substituting a calculated manifold pressure lookup from throttle position to allow limp-in driving.</p>
 <ul>
 <li><strong>Routine &amp; Line Numbers</strong>: <code>SimulateMapReadingFromTps</code> (<code>T-SMEC_v19.asm:4569-4589</code>), instruction at line 4586.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -141,19 +155,6 @@
 <li><code>TpsVolts</code> is loaded, added with <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/THROFF_OffsetAddedToCalcThrottle.html"><code>THROFF_OffsetAddedToCalcThrottle</code></a>, and subtracted by register B (<code>sba</code>).</li>
 <li>Result clamped to zero if negative, then used as index into 4-byte 2D curve <code>LMPINN</code> via <code>Lookup4ByteTable</code>.</li>
 <li>Output added with <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPLMOF_OffsetForCalcMapInMapLimpin.html"><code>MPLMOF_OffsetForCalcMapInMapLimpin</code></a> at line 4588 before returning.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
-<li>When converting from a factory 2-bar sensor to a 3-bar MAP sensor, the sensor voltage span expands from 29.4 psi absolute to 44.1 psi absolute.</li>
-<li>Multiply all table pressure output values by 0.667 to maintain factory-equivalent limp-in manifold pressure estimates.</li>
-<li><strong>Camshaft and Throttle Body Modifications</strong>:</li>
-<li>Large throttle bodies flow substantially more air at small opening angles, requiring higher intermediate points in <code>LMPINN</code> to avoid lean flat spots.</li>
-<li>High-duration performance camshafts with reduced idle vacuum may require raising the lower table points to match the engine's true airflow.</li>
-<li><strong>Lowering &amp; Edge Cases</strong>:</li>
-<li>Lowering table points leans out limp-home fueling and advances ignition timing.</li>
-<li>Setting points to zero produces severe lean misfires when the sensor faults, while setting points to maximum creates rich flooding.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

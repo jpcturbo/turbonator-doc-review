@@ -116,7 +116,19 @@
 <p><code>ACLRST</code> defines the vehicle speed deficit threshold below which the accelerated cruise mode flag is cleared, returning the cruise servo loop from high-gain <a href="../../7_-_Aux_Functions/Cruise_Control/VACACC_CruiseControlVacAcceleratedGainCurve_FromDeltaSpeed.html"><code>VACACC</code></a> to standard <a href="../../7_-_Aux_Functions/Cruise_Control/VACREG_CruiseControlVacRegularGainGurve_FromDeltaSpeed.html"><code>VACREG</code></a> operation.</p>
 <p>When the vehicle is accelerating back toward its setpoint during resume, the engine controller commands aggressive vacuum duty cycles via <a href="../../7_-_Aux_Functions/Cruise_Control/VACACC_CruiseControlVacAcceleratedGainCurve_FromDeltaSpeed.html"><code>VACACC</code></a>. As road speed approaches the target setting, high acceleration must be tapered off before reaching the setpoint to avoid overshooting and surging. <code>ACLRST</code> establishes this handoff threshold, calibrated in stock calibrations to 9 counts, corresponding to approximately 4.5 miles per hour below target speed.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Overshoot Suppression</strong>:</li>
+<li>Increasing <code>ACLRST</code> drops out of accelerated cruise earlier, tapering throttle before the vehicle reaches target speed.</li>
+<li>Recommended if the vehicle consistently pulls 2 to 4 mph past the set speed when resuming.</li>
+<li><strong>Aggressive Resume Pull</strong>:</li>
+<li>Lowering <code>ACLRST</code> sustains high vacuum pull closer to the target setpoint, sharp for heavy vehicles.</li>
+<li><strong>Factory Setting</strong>:</li>
+<li>Set to 9 counts (≈ 4.5 mph) in production calibrations, offering balanced handoff without perceptible throttle hunting.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during cruise control acceleration or resume, disengaging accelerated pull-up mode and returning to regular cruise gain once speed error drops below this threshold.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8886-8888</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -126,17 +138,6 @@
 <li>Compares remaining speed deficit against <code>ACLRST</code> via <code>cmpb ACLRST</code> at line 8886.</li>
 <li>If deficit is greater or equal (<code>bcc L1784</code>), bit 6 remains set.</li>
 <li>If deficit is smaller, clears bit 6 (<code>bclr *CruiseStatus, #$%01000000</code>) at line 8888, returning to <a href="../../7_-_Aux_Functions/Cruise_Control/VACREG_CruiseControlVacRegularGainGurve_FromDeltaSpeed.html"><code>VACREG</code></a> on next cycle.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Overshoot Suppression</strong>:</li>
-<li>Increasing <code>ACLRST</code> drops out of accelerated cruise earlier, tapering throttle before the vehicle reaches target speed.</li>
-<li>Recommended if the vehicle consistently pulls 2 to 4 mph past the set speed when resuming.</li>
-<li><strong>Aggressive Resume Pull</strong>:</li>
-<li>Lowering <code>ACLRST</code> sustains high vacuum pull closer to the target setpoint, sharp for heavy vehicles.</li>
-<li><strong>Factory Setting</strong>:</li>
-<li>Set to 9 counts (≈ 4.5 mph) in production calibrations, offering balanced handoff without perceptible throttle hunting.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

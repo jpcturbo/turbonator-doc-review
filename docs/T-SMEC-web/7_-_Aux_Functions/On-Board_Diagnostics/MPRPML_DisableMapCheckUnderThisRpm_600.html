@@ -117,7 +117,19 @@
 <p>To confirm that the MAP sensor is operating accurately and providing trustworthy load signals, the engine controller validates the sensor reading against expected manifold pressure boundaries under steady idle and light cruising conditions. However, during engine cranking, initial startup flare, or unstable low-speed chugging below normal idle speed, manifold vacuum fluctuates wildly.</p>
 <p>In factory calibrations, <code>MPRPML</code> is configured to 4800 counts, corresponding to exactly 600 RPM. If engine speed is below <code>MPRPML</code>, the controller suspends steady-state sensor validation, preventing false rationality errors during engine start.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Camshaft &amp; High Idle Tuning</strong>:</li>
+<li>If installing performance camshafts that require an elevated idle target (e.g., 950 RPM), raise <code>MPRPML</code> from 600 RPM to 750 RPM to avoid erratic validation during lope.</li>
+<li><strong>Startup Stability</strong>:</li>
+<li>Keeping <code>MPRPML</code> above cranking speed (600 RPM vs 200-250 RPM cranking) prevents false rationality judgments during engine startup.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Zeroing <code>MPRPML</code> forces validation during engine cranking when manifold vacuum is completely unstable.</li>
+<li>Setting <code>MPRPML</code> higher than normal cruising RPM disables MAP steady-state validation entirely.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if engine speed is below MPRPML, the controller suspends steady-state sensor validation, preventing false rationality errors during engine start.</p>
 <ul>
 <li><strong>Routine &amp; Line Numbers</strong>: <code>StoreAntiDwell</code> (<code>T-SMEC_v19.asm:7040-7063</code>), instruction at line 7052.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -128,17 +140,6 @@
 <li><code>EngineRpm_HB</code> loaded into register D at line 7051.</li>
 <li><code>cmpD MPRPML_DisableMapCheckUnderThisRpm_600</code> at line 7052 compares 16-bit RPM against 4800 counts (600 RPM).</li>
 <li>If lower (<code>bcs</code>), branches to <code>L1595</code> at line 7053, bypassing assertion of <code>b47_MapOK</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Camshaft &amp; High Idle Tuning</strong>:</li>
-<li>If installing performance camshafts that require an elevated idle target (e.g., 950 RPM), raise <code>MPRPML</code> from 600 RPM to 750 RPM to avoid erratic validation during lope.</li>
-<li><strong>Startup Stability</strong>:</li>
-<li>Keeping <code>MPRPML</code> above cranking speed (600 RPM vs 200-250 RPM cranking) prevents false rationality judgments during engine startup.</li>
-<li><strong>Edge Cases</strong>:</li>
-<li>Zeroing <code>MPRPML</code> forces validation during engine cranking when manifold vacuum is completely unstable.</li>
-<li>Setting <code>MPRPML</code> higher than normal cruising RPM disables MAP steady-state validation entirely.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

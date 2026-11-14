@@ -117,17 +117,7 @@
 <p>When cold, a zirconium oxygen sensor has very high internal electrical impedance and generates an inert mid-range voltage. Once the sensor heats up and begins generating an active voltage swing above <code>O2HIGH</code>, the engine controller confirms the sensor is fully operational and immediately enables closed loop without waiting for delay timers.</p>
 <p>In stock calibrations, <code>O2HIGH</code> is set to 38 counts, corresponding to approximately 0.74 volts.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> / <code>O2_FullThrottle</code> (<code>T-SMEC_v19.asm:3008-3018</code>), instruction line 3009.</li>
-<li><strong>Gating Conditions</strong>: Engine running, coolant temperature meets <a href="../../1_-_Fuel/F_-_Adaptive_memory/Adaptive_Memory_Timer/CLTEMP_TempToStartCLTIMETimer.html"><code>CLTEMP</code></a>, and startup closed-loop timer satisfied.</li>
-<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
-<li>Line 3008 loads <code>O2SensorValue</code> into register B.</li>
-<li>Line 3009 executes <code>cmpb O2HIGH_HighLimitForImmediateSwitchToClosedLoop</code>.</li>
-<li>If <code>O2SensorValue &gt;= O2HIGH</code> (<code>bcc</code>), execution branches to <code>O2_ValidSignal_OutsideMiddleRange</code> (line 3013), setting bit <code>b4f_O2Valid</code> in <code>BitFlags_4f</code> immediately.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Heated Sensor Upgrades</strong>:</li>
 <li>When converting to a heated 4-wire oxygen sensor, lowering <code>O2HIGH</code> slightly allows faster closed-loop engagement after cold starts.</li>
@@ -135,6 +125,17 @@
 <li>On unheated single-wire setups, keeping <code>O2HIGH</code> at 38 counts (0.74V) prevents electrical ground noise from prematurely triggering closed loop.</li>
 <li><strong>Setting Too High</strong>:</li>
 <li>If set above 0.85V, cool idle exhaust temperatures may prevent the sensor from ever satisfying immediate closed-loop entry.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during oxygen sensor signal validation, setting the upper (rich) voltage threshold that verifies the O2 sensor is active and switching.</p>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> / <code>O2_FullThrottle</code> (<code>T-SMEC_v19.asm:3008-3018</code>), instruction line 3009.</li>
+<li><strong>Gating Conditions</strong>: Engine running, coolant temperature meets <a href="../../1_-_Fuel/F_-_Adaptive_memory/Adaptive_Memory_Timer/CLTEMP_TempToStartCLTIMETimer.html"><code>CLTEMP</code></a>, and startup closed-loop timer satisfied.</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Line 3008 loads <code>O2SensorValue</code> into register B.</li>
+<li>Line 3009 executes <code>cmpb O2HIGH_HighLimitForImmediateSwitchToClosedLoop</code>.</li>
+<li>If <code>O2SensorValue &gt;= O2HIGH</code> (<code>bcc</code>), execution branches to <code>O2_ValidSignal_OutsideMiddleRange</code> (line 3013), setting bit <code>b4f_O2Valid</code> in <code>BitFlags_4f</code> immediately.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

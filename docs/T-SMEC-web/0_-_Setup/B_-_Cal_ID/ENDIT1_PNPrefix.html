@@ -116,7 +116,18 @@
 <p><code>ENDIT1</code> stores the high-order part number prefix in the Chrysler engine controller read-only calibration header.</p>
 <p>In factory Chrysler electronics, each engine control computer is assigned a distinctive seven-digit Mopar part number. <code>ENDIT1</code> contains the first four numerical digits of that part number, configured in the factory calibration as fifty-two thirty-five to represent production part number series 5235xxx. During diagnostic serial communications, when an external diagnostic scan tool requests vehicle identification using the diagnostic readout box protocol, the engine controller reads this sixteen-bit header word and transmits it across the serial line so technicians can verify the controller hardware and calibration series.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Diagnostic Identification Only</strong>:</li>
+<li>Modifying <code>ENDIT1</code> alters the four-digit part number prefix transmitted to diagnostic scan tools, with zero impact on fueling calculations, spark timing, or boost control.</li>
+<li><strong>Custom Signatures &amp; Stock Cloning</strong>:</li>
+<li>Most tuners leave <code>ENDIT1</code> set to the stock factory digits unless cloning a specific original part number or leaving an identifiable calibrator mark.</li>
+<li><strong>Checksum Recalculation Requirement</strong>:</li>
+<li>Changing this word shifts the overall memory sum; tuning suites like MPTune automatically adjust <a href="../../0_-_Setup/B_-_Cal_ID/CHKFIX_ChecksumFixupValue.html"><code>CHKFIX</code></a> to ensure internal diagnostics pass without setting fault code 53.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during diagnostic scan tool communications (DRB-II / MPScan), transmitting the ECU calibration part number prefix.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>SendECUIDToSCI</code> (<code>T-SMEC_v19.asm:3829-3845</code>) and <code>CaculateChecksum</code> (<code>T-SMEC_v19.asm:4141-4178</code>).</li>
 <li><strong>Diagnostic Trigger</strong>:</li>
@@ -126,16 +137,6 @@
 <li>The requested string index from <code>DRBPointer2</code> is added to X via <code>abx</code> to sequentially transmit each ASCII character.</li>
 <li><strong>Checksum Verification</strong>:</li>
 <li>Also serves as the starting address for the ROM checksum verification loop in <code>CaculateChecksum</code> (<code>ldx #ENDIT1_PNPrefix</code>).</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Diagnostic Identification Only</strong>:</li>
-<li>Modifying <code>ENDIT1</code> alters the four-digit part number prefix transmitted to diagnostic scan tools, with zero impact on fueling calculations, spark timing, or boost control.</li>
-<li><strong>Custom Signatures &amp; Stock Cloning</strong>:</li>
-<li>Most tuners leave <code>ENDIT1</code> set to the stock factory digits unless cloning a specific original part number or leaving an identifiable calibrator mark.</li>
-<li><strong>Checksum Recalculation Requirement</strong>:</li>
-<li>Changing this word shifts the overall memory sum; tuning suites like MPTune automatically adjust <a href="../../0_-_Setup/B_-_Cal_ID/CHKFIX_ChecksumFixupValue.html"><code>CHKFIX</code></a> to ensure internal diagnostics pass without setting fault code 53.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

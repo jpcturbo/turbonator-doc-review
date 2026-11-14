@@ -128,13 +128,7 @@
 <p><code>ABCBAS_AdvanceBaroCompensationBaseFromRPM</code> provides the RPM-dependent baseline ceiling for the ECU's barometric pressure spark compensation calculation.</p>
 <p>At higher elevations (lower barometric ambient pressure), air is less dense and cylinder filling is reduced at any given throttle position. While naturally aspirated engines can often tolerate additional advance at altitude due to lower charge density, turbocharged engines operating under boost at high elevation face hotter intake charges (since the turbocharger must spin faster and work harder at a higher pressure ratio to achieve target boost) and lower exhaust backpressure ratios. <code>ABCBAS</code>, in conjunction with <a href="../Spark_-_Normal_Advance/ABCFBR_AdvanceBaroCompensationFactorFromBaro.html"><code>ABCFBR</code></a> and <a href="../Spark_-_Normal_Advance/ABCFRP_AdvanceBaroCompensationFactorFromRPM.html"><code>ABCFRP</code></a>, provides an altitude-sensitive ignition timing ceiling.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<p><code>ABCBAS</code> is calculated on every execution pass of <code>CalculateSparkAdvance_MM</code> immediately after the base MAP advance calculation:
-1. <strong>Engine Warm:</strong> Coolant temperature is at or above <a href="../Spark_-_Normal_Advance/TMPSWP_EngTempSwitchPointForSparkAdvance.html"><code>TMPSWP</code></a>.
-2. <strong>Evaluated Input:</strong> Engine speed (<code>EngineRpm_HB</code>).
-3. <strong>Clamping Role:</strong> The resulting baro compensation value is evaluated against the current base MAP advance (<code>Temp0</code>). If the baro-calculated advance ceiling is lower than <code>Temp0</code>, it pulls <code>Temp0</code> down to this calculated baro limit (floored at <a href="../Spark_-_Normal_Advance/MINADV_MinimumAdvance.html"><code>MINADV</code></a>).</p>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <p>The barometric calculation determines a maximum allowable MAP advance ceiling ($A$):</p>
 <p><code>A = ABCBAS(RPM) - [(ABCFRP(RPM) × ABCFBR(BaroPressure) / 256)]</code></p>
 <p>If A &lt; Temp0, the ECU clamps base MAP advance to $A$ (provided A ≥ MINADV).</p>
@@ -148,6 +142,13 @@
 <li><strong>Sea-Level Operation:</strong></li>
 <li>At sea level (~14.7 psi baro / <code>0x78</code>), <a href="../Spark_-_Normal_Advance/ABCFBR_AdvanceBaroCompensationFactorFromBaro.html"><code>ABCFBR</code></a> drops to <code>0</code>, making the subtraction term zero and allowing <code>ABCBAS</code> to act as an absolute RPM-based MAP advance limiter.</li>
 </ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect across engine speed and atmospheric pressure, applying barometric altitude advance compensation to optimize spark timing in thin air.</p>
+<p><code>ABCBAS</code> is calculated on every execution pass of <code>CalculateSparkAdvance_MM</code> immediately after the base MAP advance calculation:
+1. <strong>Engine Warm:</strong> Coolant temperature is at or above <a href="../Spark_-_Normal_Advance/TMPSWP_EngTempSwitchPointForSparkAdvance.html"><code>TMPSWP</code></a>.
+2. <strong>Evaluated Input:</strong> Engine speed (<code>EngineRpm_HB</code>).
+3. <strong>Clamping Role:</strong> The resulting baro compensation value is evaluated against the current base MAP advance (<code>Temp0</code>). If the baro-calculated advance ceiling is lower than <code>Temp0</code>, it pulls <code>Temp0</code> down to this calculated baro limit (floored at <a href="../Spark_-_Normal_Advance/MINADV_MinimumAdvance.html"><code>MINADV</code></a>).</p>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>
 <p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 6632–6650):</p>

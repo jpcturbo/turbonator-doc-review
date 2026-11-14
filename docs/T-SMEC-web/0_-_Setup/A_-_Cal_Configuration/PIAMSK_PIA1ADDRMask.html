@@ -116,18 +116,7 @@
 <p><code>PIAMSK</code> defines the diagnostic output driver circuit mask for Port A of the Peripheral Interface Adapter.</p>
 <p>In Chrysler SMEC engine controllers, high-current inductive drivers and relays are driven through a 6821 Peripheral Interface Adapter. To detect open wiring harnesses, blown solenoid coils, or shorted circuits, the controller periodically cycles each driver line and reads back the electrical logic level. Configured in factory calibrations to fifty-eight counts, <code>PIAMSK</code> establishes which output driver circuits on Port A are actively evaluated for electrical continuity faults. Monitored circuits include the radiator fan relay, air conditioning clutch relay, automatic shutdown relay, canister purge solenoid, check engine light, part throttle unlock solenoid, and cruise control solenoids.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>UPDATE_PIA1_A_PDR_DDR_REGISTER</code> (<code>T-SMEC_v19.asm:4331-4375</code>), instruction line 4349 (<code>bita PIAMSK_PIA1ADDRMask</code>).</li>
-<li><strong>Hardware Feedback Loop</strong>:</li>
-<li>Port A pins are pulsed and read back during main loop passes.</li>
-<li>Loop counter bits (<code>Counter_MainLoop &amp; 0x07</code>) select which driver pin is verified.</li>
-<li><strong>Comparison &amp; Branch</strong>:</li>
-<li>If <code>bita PIAMSK_PIA1ADDRMask</code> is zero (<code>beq L1314</code>), diagnostic error testing for that pin is bypassed.</li>
-<li>If unmasked and the read-back level indicates a circuit fault, branches to <code>ThrowCriticalError</code> or <code>ThrowNonCriticalError</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Auxiliary Driver Deletions</strong>:</li>
 <li>Clearing specific bits in <code>PIAMSK</code> disables hardware circuit integrity tests on removed relays or solenoids.</li>
@@ -137,6 +126,18 @@
 <li>Prevents open-circuit error codes when eliminating comfort accessories or evaporative purge hardware.</li>
 <li><strong>Factory Default</strong>:</li>
 <li>Set to fifty-eight counts, actively monitoring purge, fan, A/C, and ASD circuits.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during hardware initialization at key-on, configuring the input and output pin directions for peripheral interface adapter 1 Port A.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>UPDATE_PIA1_A_PDR_DDR_REGISTER</code> (<code>T-SMEC_v19.asm:4331-4375</code>), instruction line 4349 (<code>bita PIAMSK_PIA1ADDRMask</code>).</li>
+<li><strong>Hardware Feedback Loop</strong>:</li>
+<li>Port A pins are pulsed and read back during main loop passes.</li>
+<li>Loop counter bits (<code>Counter_MainLoop &amp; 0x07</code>) select which driver pin is verified.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>If <code>bita PIAMSK_PIA1ADDRMask</code> is zero (<code>beq L1314</code>), diagnostic error testing for that pin is bypassed.</li>
+<li>If unmasked and the read-back level indicates a circuit fault, branches to <code>ThrowCriticalError</code> or <code>ThrowNonCriticalError</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

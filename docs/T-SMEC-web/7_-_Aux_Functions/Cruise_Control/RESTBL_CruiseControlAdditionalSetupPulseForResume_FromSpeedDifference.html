@@ -134,7 +134,19 @@
 <p><code>RESTBL</code> defines the manifold absolute pressure compensation curve applied to the cruise setup pulse during set and resume engagement.</p>
 <p>The rate at which the cruise servo bellows fills with vacuum depends heavily on available engine intake manifold vacuum. At high vacuum (light throttle cruising), the servo draws vacuum rapidly; under low vacuum or positive boost conditions, the servo fills much more slowly. <code>RESTBL</code> evaluates manifold gauge pressure relative to barometric pressure to scale the initial setup pulse, guaranteeing consistent throttle pickup regardless of prevailing engine load or altitude.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Compensating for Camshaft Vacuum Loss</strong>:</li>
+<li>Performance camshafts produce lower manifold vacuum at cruising engine speeds.</li>
+<li>Increasing <code>RESTBL</code> values compensates for reduced vacuum draw, ensuring the servo bellows pre-charges firmly.</li>
+<li><strong>Altitude Adaptation</strong>:</li>
+<li>The routine subtracts barometric pressure from manifold pressure, ensuring true gauge vacuum is evaluated across varying altitudes.</li>
+<li><strong>Integration with Adaptive Trim</strong>:</li>
+<li>The product of <a href="../../7_-_Aux_Functions/Cruise_Control/SETPW_CruiseControlSetupPulseForSet_FromSpeed.html"><code>SETPW</code></a> and <code>RESTBL</code> is added to <code>BitFlags_27</code> (the learned adaptive mechanical cable trim), tailoring engagement to linkage slack.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect the instant the driver presses RESUME, adding extra vacuum pulse duration based on the speed deficit between current and memorized cruise speed.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>CruiseBumpUpSpeedBy2Mph</code> (<code>T-SMEC_v19.asm:8663-8673</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8620, 8690</code>).</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -144,17 +156,6 @@
 <li>Gauge vacuum evaluated as <code>MapValue - BaroPressure</code>.</li>
 <li>Looks up <code>RESTBL</code> via <code>Lookup4ByteTable</code> at line 8665.</li>
 <li>Multiplies result by base pulse <code>Temp1</code> (<code>mul; adca #0</code>), clamps at 127 counts, and adds learned integrator <code>BitFlags_27</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Compensating for Camshaft Vacuum Loss</strong>:</li>
-<li>Performance camshafts produce lower manifold vacuum at cruising engine speeds.</li>
-<li>Increasing <code>RESTBL</code> values compensates for reduced vacuum draw, ensuring the servo bellows pre-charges firmly.</li>
-<li><strong>Altitude Adaptation</strong>:</li>
-<li>The routine subtracts barometric pressure from manifold pressure, ensuring true gauge vacuum is evaluated across varying altitudes.</li>
-<li><strong>Integration with Adaptive Trim</strong>:</li>
-<li>The product of <a href="../../7_-_Aux_Functions/Cruise_Control/SETPW_CruiseControlSetupPulseForSet_FromSpeed.html"><code>SETPW</code></a> and <code>RESTBL</code> is added to <code>BitFlags_27</code> (the learned adaptive mechanical cable trim), tailoring engagement to linkage slack.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -116,16 +116,17 @@
 <p><code>BAROHI</code> (BaroReadValidHighLimit) establishes the upper physical and electrical sanity boundary for atmospheric barometric pressure.</p>
 <p>Under real-world meteorological conditions on Earth, ambient sea-level barometric pressure rarely exceeds 30.5 - 31.0 inHg (even inside high-pressure cold Arctic air masses). If the MAP sensor returns an ADC reading exceeding <code>BAROHI</code> (stock calibration = <code>0x85</code> / ~31.2 inHg), the ECU recognizes that the sensor signal line is shorted to 5V reference, electrically biased, or defective. The out-of-bounds reading is rejected and overwritten with <a href="../Baro_Read/BARDFT_BaroReadDefaultValue.html"><code>BARDFT_BaroReadDefaultValue</code></a> (standard sea level), preventing corrupted fuel calculations.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>3-Bar MAP Sensor Upgrades</strong>: When converting from a factory 2-Bar MAP sensor to a 3-Bar sensor, the sensor transfer slope changes dramatically. If using custom scaling, <code>BAROHI</code> must be adjusted to match the new 3-Bar voltage transfer curve, otherwise valid ambient air pressures will exceed <code>BAROHI</code> and force the ECU permanently into default baro limp mode (<a href="../Baro_Read/BARDFT_BaroReadDefaultValue.html"><code>BARDFT</code></a>). In Turbonator codebases, 3-bar scaling tables (<a href="../Setup_-_Transfer_Functions/MAPMULT_ScaleMAPVoltsToPresMultiplyConst.html"><code>MAPMULT</code></a> / <a href="../Setup_-_Transfer_Functions/MAPADD_ScaleMAPVoltsToPresAddConst.html"><code>MAPADD</code></a>) manage this conversion.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during key-on and in-flight barometric pressure reads, establishing the acceptable high voltage limit for a valid atmospheric reading.</p>
 <ul>
 <li>Evaluated inside <code>BaroReadIfRequired</code> at line 4260 and <code>CheckBaroPressure</code> at line 4957.</li>
 <li>Compares live barometric ADC reading against <code>BAROHI</code>.</li>
 <li>If <code>BaroPressure &gt;= BAROHI</code> (<code>bcc LDEDD</code>), branches to load <a href="../Baro_Read/BARDFT_BaroReadDefaultValue.html"><code>BARDFT</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>3-Bar MAP Sensor Upgrades</strong>: When converting from a factory 2-Bar MAP sensor to a 3-Bar sensor, the sensor transfer slope changes dramatically. If using custom scaling, <code>BAROHI</code> must be adjusted to match the new 3-Bar voltage transfer curve, otherwise valid ambient air pressures will exceed <code>BAROHI</code> and force the ECU permanently into default baro limp mode (<a href="../Baro_Read/BARDFT_BaroReadDefaultValue.html"><code>BARDFT</code></a>). In Turbonator codebases, 3-bar scaling tables (<a href="../Setup_-_Transfer_Functions/MAPMULT_ScaleMAPVoltsToPresMultiplyConst.html"><code>MAPMULT</code></a> / <a href="../Setup_-_Transfer_Functions/MAPADD_ScaleMAPVoltsToPresAddConst.html"><code>MAPADD</code></a>) manage this conversion.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

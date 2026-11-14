@@ -130,7 +130,18 @@
 <p><code>SPGAIN</code> establishes the vehicle road speed gain correction factor that scales cruise servo responsiveness as a function of road speed.</p>
 <p>Aerodynamic drag increases with the square of vehicle velocity: at 35 mph, a minor throttle adjustment produces a noticeable change in vehicle speed, whereas at 75 mph, substantial throttle movement is required to counter high wind resistance. <code>SPGAIN</code> implements speed-dependent gain scheduling, scaling vacuum servo pulse authority upward at higher speeds and downward at lower speeds to deliver uniform, predictable cruise holding behavior from 35 mph to 85 mph.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>High-Speed Holding Authority</strong>:</li>
+<li>Aerodynamic resistance increases exponentially with speed; increase <code>SPGAIN</code> above 65 mph if highway cruising feels weak or lags on gentle inclines.</li>
+<li><strong>Low-Speed Surge Prevention</strong>:</li>
+<li>If cruise pulses or surges rhythmically at 35 to 40 mph, reduce the lower speed points of <code>SPGAIN</code> to soften low-speed servo authority.</li>
+<li><strong>Combined Gain Output</strong>:</li>
+<li>The looked-up <code>SPGAIN</code> value is added to <code>Temp4</code> (from <a href="../../7_-_Aux_Functions/Cruise_Control/THGAIN_CruiseControlThrottleGainFactor_FromThrottle.html"><code>THGAIN</code></a>) to establish final servo scaling multiplier <code>Temp3</code>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during cruise control operation, adjusting servo duty cycle gains based on vehicle road speed.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8903-8910</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -140,16 +151,6 @@
 <li>Loads <code>#SPGAIN_CruiseControlSpeedGainFactor_FromSpeed</code> into index register X.</li>
 <li>Queries <code>Lookup4ByteTable</code> at line 8908.</li>
 <li>Adds result to <code>Temp4</code> (throttle gain) and stores combined sum in <code>Temp3</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>High-Speed Holding Authority</strong>:</li>
-<li>Aerodynamic resistance increases exponentially with speed; increase <code>SPGAIN</code> above 65 mph if highway cruising feels weak or lags on gentle inclines.</li>
-<li><strong>Low-Speed Surge Prevention</strong>:</li>
-<li>If cruise pulses or surges rhythmically at 35 to 40 mph, reduce the lower speed points of <code>SPGAIN</code> to soften low-speed servo authority.</li>
-<li><strong>Combined Gain Output</strong>:</li>
-<li>The looked-up <code>SPGAIN</code> value is added to <code>Temp4</code> (from <a href="../../7_-_Aux_Functions/Cruise_Control/THGAIN_CruiseControlThrottleGainFactor_FromThrottle.html"><code>THGAIN</code></a>) to establish final servo scaling multiplier <code>Temp3</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

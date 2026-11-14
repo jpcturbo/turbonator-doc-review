@@ -118,16 +118,7 @@
 <p>To prevent this control loop windup, whenever engine speed is below the threshold set in <a href="../../5_-_Idle/A_-_AIS_Control/RPMTHS_RPMThresholdForIdleControl.html"><code>RPMTHS</code></a>, the SMEC substitutes <code>RPMDEF</code> as a synthetic engine speed target.</p>
 <p>In factory calibrations, <code>RPMDEF</code> is set to 160 counts, representing an equivalent engine speed target of approximately 1280 RPM.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>LoadDiagIdleSpeed</code> (<code>T-SMEC_v19.asm:2080-2145</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Evaluated when <code>BitFlags_AIS</code> bit <code>b0c_bit6</code> is clear at line 2134.</li>
-<li>Checks <code>BitFlags_54</code> bit <code>b54_FuelEngineNotRunning</code> at line 2135.</li>
-<li>Compares <code>EngineRpm_HB</code> against <a href="../../5_-_Idle/A_-_AIS_Control/RPMTHS_RPMThresholdForIdleControl.html"><code>RPMTHS</code></a> at line 2137. If engine RPM is lower than <a href="../../5_-_Idle/A_-_AIS_Control/RPMTHS_RPMThresholdForIdleControl.html"><code>RPMTHS</code></a> (carry clear), the code loads <code>RPMDEF</code> at line 2139 and jumps directly to <code>L1149</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Factory Baseline</strong>:</li>
 <li>Keep <code>RPMDEF</code> at 160 counts (1280 RPM) for stock and mild street calibrations.</li>
@@ -135,6 +126,16 @@
 <li>For race camshafts with significant overlap, raising <code>RPMDEF</code> to 1350 to 1450 RPM can help the engine bridge the transition from cranking to steady idle.</li>
 <li><strong>Overshoot &amp; Flare Warning</strong>:</li>
 <li>Setting <code>RPMDEF</code> higher than 1500 RPM produces excessive throttle flare upon initial firing.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the starter motor is turning the crankshaft, actual engine speed is typically only 150 to 250 RPM, which is well below normal operating idle speed.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>LoadDiagIdleSpeed</code> (<code>T-SMEC_v19.asm:2080-2145</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated when <code>BitFlags_AIS</code> bit <code>b0c_bit6</code> is clear at line 2134.</li>
+<li>Checks <code>BitFlags_54</code> bit <code>b54_FuelEngineNotRunning</code> at line 2135.</li>
+<li>Compares <code>EngineRpm_HB</code> against <a href="../../5_-_Idle/A_-_AIS_Control/RPMTHS_RPMThresholdForIdleControl.html"><code>RPMTHS</code></a> at line 2137. If engine RPM is lower than <a href="../../5_-_Idle/A_-_AIS_Control/RPMTHS_RPMThresholdForIdleControl.html"><code>RPMTHS</code></a> (carry clear), the code loads <code>RPMDEF</code> at line 2139 and jumps directly to <code>L1149</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

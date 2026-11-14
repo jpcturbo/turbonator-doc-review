@@ -116,17 +116,7 @@
 <p><code>MPFLOR</code> establishes a manifold pressure rate-of-change stability gate required to permit adaptive wastegate duty cycle decrementing in T1 control.</p>
 <p>If manifold pressure is fluctuating rapidly due to gear shifting, aggressive throttle movement, or turbocharger compressor surge, the difference between instantaneous manifold pressure and rolling average manifold pressure will be large. <code>MPFLOR</code> verifies that boost has stabilized before allowing the error timer to accumulate, ensuring the controller never updates adaptive learning cells during chaotic transient events.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_DecrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9680-9685</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
-<li><strong>Gating Conditions</strong>: Evaluated after passing <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MPDEL1_IncCounterWhenDeltaMapBelowThis.html"><code>MPDEL1</code></a> overboost check.</li>
-<li><strong>Stability Comparison</strong>:</li>
-<li>Accumulator A computes <code>|MapValue - AverageMAPValue|</code> at lines 9680-9683.</li>
-<li>Line 9684 compares accumulator A against <code>MPFLOR_StopAdaptiveWGWhenDeltaMapIsLessThanThis</code> (<code>cmpa MPFLOR</code>).</li>
-<li>If variance exceeds <code>MPFLOR</code> (<code>bhi</code>), branches to <code>WGDC_ClearBoostErrTimer</code> (line 9685), resetting the error timer.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Manifold Stability Filter</strong>:</li>
 <li>Requires instantaneous MAP to be within <code>MPFLOR</code> of rolling <code>AverageMAPValue</code> before allowing adaptive decrement.</li>
@@ -135,6 +125,17 @@
 <li>Inhibits downward adaptive trims during compressor surge, gear shifts, or throttle fluttering.</li>
 <li><strong>Pulsation Damping</strong>:</li>
 <li>If aggressive camshafts cause intake manifold pulsing that locks out adaptive learning, increase <code>MPFLOR</code> to 3 or 4 counts.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if manifold pressure is fluctuating rapidly due to gear shifting, aggressive throttle movement, or turbocharger compressor surge, the difference between instantaneous manifold pressure and rolling average manifold pressure will be large.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_DecrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9680-9685</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
+<li><strong>Gating Conditions</strong>: Evaluated after passing <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MPDEL1_IncCounterWhenDeltaMapBelowThis.html"><code>MPDEL1</code></a> overboost check.</li>
+<li><strong>Stability Comparison</strong>:</li>
+<li>Accumulator A computes <code>|MapValue - AverageMAPValue|</code> at lines 9680-9683.</li>
+<li>Line 9684 compares accumulator A against <code>MPFLOR_StopAdaptiveWGWhenDeltaMapIsLessThanThis</code> (<code>cmpa MPFLOR</code>).</li>
+<li>If variance exceeds <code>MPFLOR</code> (<code>bhi</code>), branches to <code>WGDC_ClearBoostErrTimer</code> (line 9685), resetting the error timer.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

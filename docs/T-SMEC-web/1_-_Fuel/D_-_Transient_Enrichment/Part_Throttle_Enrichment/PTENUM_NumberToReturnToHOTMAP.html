@@ -117,21 +117,22 @@
 <p>When part-throttle enrichment reaches the upper ceiling defined by <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTELMT_MultiplierMaxLimitFromRpm.html"><code>PTELMT</code></a> and <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTEADJ_EnrichAdjust_FromMap.html"><code>PTEADJ</code></a>, the engine controller asserts a status flag that substitutes specialized spark advance curves. Once engine load subsides and transient enrichment decays, the multiplier must drop below the ceiling by a specific margin before the controller clears the flag and restores normal ignition timing.</p>
 <p><code>PTENUM</code> establishes this margin by multiplying the negated decrement value from <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTENRD_AmountForDecreasingMultiplier_Negative.html"><code>PTENRD</code></a>. The factory setting of 15 counts requires a drop of 15 counts before normal spark advance resumes.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Spark Hysteresis Window</strong>: Increasing <code>PTENUM</code> broadens the hysteresis window, keeping modified ignition timing active longer after peak enrichment is reached.</li>
+<li><strong>Preventing Timing Chattering</strong>: Prevents rapid chattering between standard spark advance and enrichment spark advance when modulating the throttle near the ceiling threshold.</li>
+<li><strong>Restoring Base Timing Sooner</strong>: Decreasing <code>PTENUM</code> narrows the hysteresis window, allowing the controller to restore baseline spark advance sooner as soon as the throttle is relaxed.</li>
+<li><strong>Zero Setting Warning</strong>: Avoid setting <code>PTENUM</code> to zero, which can cause erratic spark oscillation near the limit.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when part-throttle enrichment reaches the upper ceiling defined by PTELMT and PTEADJ, the engine controller asserts a status flag that substitutes specialized spark advance curves.</p>
 <ul>
 <li>Enclosed in routine <code>Bit7_IsSet</code> at lines 5865-5925 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
 <li>Evaluated only when flag <code>b4f_PTEisMaxed</code> is asserted in <code>BitFlags_4f</code> (line 5899).</li>
 <li>Loaded into accumulator B at line 5907 via <code>ldab PTENUM_NumberToReturnToHOTMAP</code>.</li>
 <li>Multiplied by negated <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTENRD_AmountForDecreasingMultiplier_Negative.html"><code>PTENRD</code></a> via <code>mul</code> at line 5908.</li>
 <li>Compared against decay delta <code>Temp1</code> via <code>cmpb Temp1</code> at line 5911. If <code>Temp1 &gt; product</code>, branch falls through to line 5914 where <code>bclr *BitFlags_4f, #b4f_PTEisMaxed</code> clears the flag.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Spark Hysteresis Window</strong>: Increasing <code>PTENUM</code> broadens the hysteresis window, keeping modified ignition timing active longer after peak enrichment is reached.</li>
-<li><strong>Preventing Timing Chattering</strong>: Prevents rapid chattering between standard spark advance and enrichment spark advance when modulating the throttle near the ceiling threshold.</li>
-<li><strong>Restoring Base Timing Sooner</strong>: Decreasing <code>PTENUM</code> narrows the hysteresis window, allowing the controller to restore baseline spark advance sooner as soon as the throttle is relaxed.</li>
-<li><strong>Zero Setting Warning</strong>: Avoid setting <code>PTENUM</code> to zero, which can cause erratic spark oscillation near the limit.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

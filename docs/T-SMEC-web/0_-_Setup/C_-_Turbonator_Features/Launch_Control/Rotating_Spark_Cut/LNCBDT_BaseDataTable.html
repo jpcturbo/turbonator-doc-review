@@ -124,19 +124,20 @@
 <p>Turbonator firmware cuts ignition events in a rotating sequence across cylinders to distribute thermal loading and prevent raw fuel accumulation in any single combustion chamber. Each pattern operates over a specific cycle length: 3 cylinder events for 1/3 and 2/3 cuts, 5 cylinder events for 3/5 and 4/5 cuts, and 7 cylinder events for 3/7 through 6/7 cuts.</p>
 <p><code>LNCBDT</code> provides the cycle length for each selectable ratio so the controller knows when to reset the counter and reload the bitmask pattern.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Factory Calibration Matching</strong>: Standard calibrations use base values of 3, 3, 5, 5, 7, 7, 7, and 7 for pattern indices 0 through 7. These match the bit patterns in <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Rotating_Spark_Cut/LNCPDT_PatternDataTable.html"><code>LNCPDT</code></a>.</li>
+<li><strong>Bang-Bang Rev Limiter</strong>: When <code>opt_BangBang</code> is enabled in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a>, the firmware automatically decrements the selected base value by one, shortening the cycle and producing an aggressive staccato limiter sound.</li>
+<li><strong>Pattern Customization</strong>: Modifying these values is only required when authoring specialized firing sequences for alternative engine configurations.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when Turbonator launch control is active, providing the base data table that defines staging RPM limits and staging ignition timing offsets.</p>
 <ul>
 <li>Enclosed in subroutine <code>SetBaseandPattern</code> at lines 10279-10289 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
 <li>Evaluated when <code>Counter_SparkCut</code> decrements to zero (<code>beq SetBaseandPattern</code> at line 10252) while <code>Turbonator_Staging</code> and <code>Turbonator_SparkCut</code> are active.</li>
 <li>Offset lookup: <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Rotating_Spark_Cut/SPKFRC_SparkCutFraction.html"><code>SPKFRC_SparkCutFraction</code></a> is added to base address <code>#LNCBDT_BaseDataTable</code> in index register Y via instruction <code>aby</code> (line 10282).</li>
 <li>Bang-bang modification: If option flag <code>opt_BangBang</code> is set in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a>, instruction <code>decb</code> at line 10288 reduces the base counter by one before storing into <code>Counter_SparkCut</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Factory Calibration Matching</strong>: Standard calibrations use base values of 3, 3, 5, 5, 7, 7, 7, and 7 for pattern indices 0 through 7. These match the bit patterns in <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Rotating_Spark_Cut/LNCPDT_PatternDataTable.html"><code>LNCPDT</code></a>.</li>
-<li><strong>Bang-Bang Rev Limiter</strong>: When <code>opt_BangBang</code> is enabled in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a>, the firmware automatically decrements the selected base value by one, shortening the cycle and producing an aggressive staccato limiter sound.</li>
-<li><strong>Pattern Customization</strong>: Modifying these values is only required when authoring specialized firing sequences for alternative engine configurations.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

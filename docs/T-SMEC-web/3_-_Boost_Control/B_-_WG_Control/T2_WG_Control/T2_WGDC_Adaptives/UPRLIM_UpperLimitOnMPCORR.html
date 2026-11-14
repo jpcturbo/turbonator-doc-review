@@ -116,18 +116,7 @@
 <p><code>UPRLIM</code> specifies the upper authority clamp applied to the dynamic manifold pressure response correction (<code>MPCORR</code>) in T2 boost creep control.</p>
 <p>When boost is rising rapidly, the T2 algorithm computes a correction factor by multiplying the rate of boost rise by the response factor table (<a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_BoostCreep/T2RESFAC_MapCorrectionResponseFactor_FromMap.html"><code>T2RESFAC</code></a>). <code>UPRLIM</code> limits the maximum positive correction authority that this calculation can apply to the base boost target, preventing excessive control windup and sudden over-correction.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9839-9843</code>), called from <code>CalcWGDutyCycle_MM</code> (<code>T-SMEC_v19.asm:9506-9510</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Active when <code>BoostDelta_Signed</code> (<code>Temp1</code>) is positive (boost rising, line 9839).</li>
-<li><strong>Clamp Comparison</strong>:</li>
-<li>Line 9841 loads <code>UPRLIM_UpperLimitOnMPCORR</code> into accumulator A.</li>
-<li>Line 9846 executes <code>cba</code> to compare accumulator B (the multiplied correction) against <code>UPRLIM</code>.</li>
-<li>If accumulator B exceeds <code>UPRLIM</code>, accumulator B is clamped to <code>UPRLIM</code> at line 9848.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Positive Boost Creep Authority Clamp</strong>:</li>
 <li>Caps the maximum dynamic correction applied when boost is rising rapidly.</li>
@@ -136,6 +125,18 @@
 <li>Increasing <code>UPRLIM</code> to 24 to 32 counts gives the ECU more authority to suppress severe boost overshoot on fast-spooling turbos.</li>
 <li><strong>Preventing Sluggish Spool</strong>:</li>
 <li>If the car hesitates or dips boost during initial spool-up, lower <code>UPRLIM</code> to 8 to 12 counts to prevent excessive dampening.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during adaptive wastegate control, capping the maximum allowable positive duty cycle addition to prevent overboost.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9839-9843</code>), called from <code>CalcWGDutyCycle_MM</code> (<code>T-SMEC_v19.asm:9506-9510</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Active when <code>BoostDelta_Signed</code> (<code>Temp1</code>) is positive (boost rising, line 9839).</li>
+<li><strong>Clamp Comparison</strong>:</li>
+<li>Line 9841 loads <code>UPRLIM_UpperLimitOnMPCORR</code> into accumulator A.</li>
+<li>Line 9846 executes <code>cba</code> to compare accumulator B (the multiplied correction) against <code>UPRLIM</code>.</li>
+<li>If accumulator B exceeds <code>UPRLIM</code>, accumulator B is clamped to <code>UPRLIM</code> at line 9848.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

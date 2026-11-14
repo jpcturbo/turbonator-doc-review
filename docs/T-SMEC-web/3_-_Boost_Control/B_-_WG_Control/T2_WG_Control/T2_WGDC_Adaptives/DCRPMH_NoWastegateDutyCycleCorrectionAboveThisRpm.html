@@ -116,18 +116,7 @@
 <p><code>DCRPMH</code> defines the upper engine speed threshold above which adaptive wastegate duty cycle learning is completely inhibited in T2 control.</p>
 <p>At high engine speeds approaching redline, exhaust gas pulsation and rapid changes in volumetric efficiency can introduce noise into closed-loop boost calculations. <code>DCRPMH</code> establishes an upper RPM boundary to freeze adaptive cell learning, ensuring that the controller relies on established feed-forward baseline tables and prevents high-RPM transients from corrupting learned adaptive trims.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>T2WGDC_DecrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9987-9991</code>), called from <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9755-10040</code>).</li>
-<li><strong>Gating Conditions</strong>: Full-throttle flag <code>b4f_FullThrottle</code> must be set and knock penalty must be zero (lines 9984-9986).</li>
-<li><strong>RPM Comparison</strong>:</li>
-<li>Line 9987 loads <code>EngineRpm_HB</code> (32 RPM per count) into accumulator A.</li>
-<li>Line 9988 verifies <code>EngineRpm_HB &gt;= DCRPML</code>.</li>
-<li>Line 9990 executes <code>cmpa DCRPMH_NoWastegateDutyCycleCorrectionAboveThisRpm</code>.</li>
-<li>If engine speed is higher than <code>DCRPMH</code> (<code>bhi</code>), execution branches to <code>T2WGDC_ClearBoostErrTimer</code> (line 9991), inhibiting adaptive learning.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>High-RPM Adaptive Lockout</strong>:</li>
 <li>Engine speed threshold above which adaptive wastegate cell learning is frozen.</li>
@@ -136,6 +125,18 @@
 <li>For engines with upgraded valvetrain revving to 6800 to 7200 RPM, raise <code>DCRPMH</code> to 6400 to 6800 RPM to maintain closed-loop adaptation up to redline.</li>
 <li><strong>Freezing Adaptives on Dyno</strong>:</li>
 <li>Setting <code>DCRPMH</code> low locks out adaptive learning, allowing tuners to dial in open-loop base tables without adaptive interference.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during boost control, setting the high engine RPM boundary above which adaptive wastegate corrections are disabled.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>T2WGDC_DecrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9987-9991</code>), called from <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9755-10040</code>).</li>
+<li><strong>Gating Conditions</strong>: Full-throttle flag <code>b4f_FullThrottle</code> must be set and knock penalty must be zero (lines 9984-9986).</li>
+<li><strong>RPM Comparison</strong>:</li>
+<li>Line 9987 loads <code>EngineRpm_HB</code> (32 RPM per count) into accumulator A.</li>
+<li>Line 9988 verifies <code>EngineRpm_HB &gt;= DCRPML</code>.</li>
+<li>Line 9990 executes <code>cmpa DCRPMH_NoWastegateDutyCycleCorrectionAboveThisRpm</code>.</li>
+<li>If engine speed is higher than <code>DCRPMH</code> (<code>bhi</code>), execution branches to <code>T2WGDC_ClearBoostErrTimer</code> (line 9991), inhibiting adaptive learning.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

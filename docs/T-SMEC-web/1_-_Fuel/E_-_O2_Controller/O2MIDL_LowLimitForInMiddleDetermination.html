@@ -117,17 +117,7 @@
 <p>If the oxygen sensor voltage stays between <code>O2MIDL</code> and <a href="../../1_-_Fuel/E_-_O2_Controller/O2MIDH_HighLimitForInMiddleDetermination.html"><code>O2MIDH</code></a> without dropping into true lean territory (below 0.35V) or rising into true rich territory (above 0.55V), the sensor is diagnosed as failing or disconnected. In factory calibrations, <code>O2MIDL</code> is set to 18 counts, corresponding to approximately 0.35 volts.</p>
 <p>Operating continuously inside this zone triggers adaptive memory erasure and leads to fault code generation.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> / <code>O2_UsingFeedback</code> (<code>T-SMEC_v19.asm:3039-3050</code>), instruction line 3043.</li>
-<li><strong>Gating Conditions</strong>: Signal tested below <a href="../../1_-_Fuel/E_-_O2_Controller/O2MIDH_HighLimitForInMiddleDetermination.html"><code>O2MIDH</code></a> during active closed loop.</li>
-<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
-<li>Line 3043 executes <code>cmpb O2MIDL_LowLimitForInMiddleDetermination</code>.</li>
-<li>If <code>O2SensorValue &lt; O2MIDL</code> (<code>bcs</code>), execution branches to <code>O2Signal_InOuterMiddleRange</code> (line 3051).</li>
-<li>If <code>O2SensorValue &gt;= O2MIDL</code>, sensor is confirmed inside the middle band, incrementing the stuck timer.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Stuck Sensor Lower Edge</strong>:</li>
 <li>Defines the lower boundary (0.35V) of the stuck-in-middle diagnostic band.</li>
@@ -135,6 +125,17 @@
 <li>Raising <code>O2MIDL</code> catches lazy sensors that fail to swing below 0.35V during lean excursions.</li>
 <li><strong>Switching Threshold Hierarchy</strong>:</li>
 <li>Must be maintained strictly lower than <a href="../../1_-_Fuel/E_-_O2_Controller/O2LSWP_LowLimitForO2RampSwitching.html"><code>O2LSWP</code></a> (0.47V).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during oxygen sensor diagnostic checks, identifying whether the sensor is stuck in the inactive mid-voltage range.</p>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> / <code>O2_UsingFeedback</code> (<code>T-SMEC_v19.asm:3039-3050</code>), instruction line 3043.</li>
+<li><strong>Gating Conditions</strong>: Signal tested below <a href="../../1_-_Fuel/E_-_O2_Controller/O2MIDH_HighLimitForInMiddleDetermination.html"><code>O2MIDH</code></a> during active closed loop.</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Line 3043 executes <code>cmpb O2MIDL_LowLimitForInMiddleDetermination</code>.</li>
+<li>If <code>O2SensorValue &lt; O2MIDL</code> (<code>bcs</code>), execution branches to <code>O2Signal_InOuterMiddleRange</code> (line 3051).</li>
+<li>If <code>O2SensorValue &gt;= O2MIDL</code>, sensor is confirmed inside the middle band, incrementing the stuck timer.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

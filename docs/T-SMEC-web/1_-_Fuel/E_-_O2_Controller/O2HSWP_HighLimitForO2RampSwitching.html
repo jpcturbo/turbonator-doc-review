@@ -117,17 +117,7 @@
 <p>During closed-loop operation, the engine controller monitors sensor voltage against this threshold: when sensor voltage equals or exceeds <code>O2HSWP</code>, the mixture is recognized as rich, triggering the primary ramp logic to begin subtracting fuel.</p>
 <p>In stock calibrations, <code>O2HSWP</code> is set to 25 counts, corresponding to approximately 0.49 volts, positioned directly at the steep stoichiometric curve of a narrowband zirconium sensor.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> / <code>O2Signal_InOuterMiddleRange</code> (<code>T-SMEC_v19.asm:3051-3059</code>), instruction line 3054.</li>
-<li><strong>Gating Conditions</strong>: Closed loop active, signal outside stuck middle band.</li>
-<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
-<li>Line 3054 executes <code>cmpb O2HSWP_HighLimitForO2RampSwitching</code>.</li>
-<li>If <code>O2SensorValue &gt;= O2HSWP</code> (<code>bcc</code>), execution branches to <code>O2Signal_AboveToggle</code> (line 3060), setting register A to -1.</li>
-<li>If <code>O2SensorValue &lt; O2HSWP</code>, execution continues to test <a href="../../1_-_Fuel/E_-_O2_Controller/O2LSWP_LowLimitForO2RampSwitching.html"><code>O2LSWP</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Rich Bias Tuning</strong>:</li>
 <li>Raising <code>O2HSWP</code> to 26-28 counts biases the closed-loop stoichiometric oscillation slightly richer (approx 14.5:1), stabilizing idle on performance cams.</li>
@@ -135,6 +125,17 @@
 <li>Lowering <code>O2HSWP</code> brings the switching point closer to 0.45V, centering fuel delivery strictly at 14.7:1.</li>
 <li><strong>Deadband Maintenance</strong>:</li>
 <li>Must be strictly greater than <a href="../../1_-_Fuel/E_-_O2_Controller/O2LSWP_LowLimitForO2RampSwitching.html"><code>O2LSWP</code></a> to maintain switching hysteresis.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect in closed-loop cruise, establishing the rich-to-lean switching threshold for air-fuel ratio control.</p>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> / <code>O2Signal_InOuterMiddleRange</code> (<code>T-SMEC_v19.asm:3051-3059</code>), instruction line 3054.</li>
+<li><strong>Gating Conditions</strong>: Closed loop active, signal outside stuck middle band.</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Line 3054 executes <code>cmpb O2HSWP_HighLimitForO2RampSwitching</code>.</li>
+<li>If <code>O2SensorValue &gt;= O2HSWP</code> (<code>bcc</code>), execution branches to <code>O2Signal_AboveToggle</code> (line 3060), setting register A to -1.</li>
+<li>If <code>O2SensorValue &lt; O2HSWP</code>, execution continues to test <a href="../../1_-_Fuel/E_-_O2_Controller/O2LSWP_LowLimitForO2RampSwitching.html"><code>O2LSWP</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

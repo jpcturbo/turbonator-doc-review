@@ -117,18 +117,7 @@
 <p>The engine controller continuously monitors the health of the primary pressure sensor during engine operation. However, at elevated engine speeds during rapid acceleration or varying road load, manifold pressure changes rapidly and transiently, making steady-state rationality validation inaccurate.</p>
 <p>In factory calibrations, <code>MPRPMH</code> is configured to 12000 counts, corresponding to exactly 1500 RPM. If engine speed equals or exceeds <code>MPRPMH</code>, the engine controller suspends the steady-state MAP sensor check, confining sensor health validation to stable idle and gentle off-idle operation.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Routine &amp; Line Numbers</strong>: <code>StoreAntiDwell</code> (<code>T-SMEC_v19.asm:7040-7063</code>), instruction at line 7054.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Checked immediately after confirming engine speed <code>&gt;= MPRPML</code> at line 7052.</li>
-<li><strong>Math &amp; Comparison</strong>:</li>
-<li><code>cmpD MPRPMH_DisableMapCheckAboveThisRpm_1500</code> at line 7054 compares 16-bit RPM in register D against 12000 counts (1500 RPM).</li>
-<li>If greater or equal (<code>bcc</code>), branches to <code>L1595</code> at line 7055, bypassing assertion of <code>b47_MapOK</code>.</li>
-<li>If lower, continues to verify manifold pressure within <code>[MPDAGL, MPDAGH]</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Window Ceiling Adjustment</strong>:</li>
 <li>Raising <code>MPRPMH</code> to 2000 RPM allows steady-state sensor validation during gentle neighborhood cruising.</li>
@@ -137,6 +126,18 @@
 <li>Never set <code>MPRPMH</code> lower than <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPRPML_DisableMapCheckUnderThisRpm_600.html"><code>MPRPML</code></a> (600 RPM); doing so permanently disables the steady-state MAP rationality test.</li>
 <li><strong>Edge Cases</strong>:</li>
 <li>Setting <code>MPRPMH</code> to maximum (e.g., 6000 RPM) attempts steady-state validation during wide-open throttle acceleration, leading to false diagnostic flags.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if engine speed equals or exceeds MPRPMH, the engine controller suspends the steady-state MAP sensor check, confining sensor health validation to stable idle and gentle off-idle operation.</p>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>StoreAntiDwell</code> (<code>T-SMEC_v19.asm:7040-7063</code>), instruction at line 7054.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Checked immediately after confirming engine speed <code>&gt;= MPRPML</code> at line 7052.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li><code>cmpD MPRPMH_DisableMapCheckAboveThisRpm_1500</code> at line 7054 compares 16-bit RPM in register D against 12000 counts (1500 RPM).</li>
+<li>If greater or equal (<code>bcc</code>), branches to <code>L1595</code> at line 7055, bypassing assertion of <code>b47_MapOK</code>.</li>
+<li>If lower, continues to verify manifold pressure within <code>[MPDAGL, MPDAGH]</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

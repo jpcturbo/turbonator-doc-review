@@ -116,7 +116,18 @@
 <p><code>ARINDX</code> defines the increment step size added to the adaptive retard index (<code>AdaptiveRetardIndex</code>) whenever persistent combustion detonation under boost is confirmed.</p>
 <p>The engine controller monitors cylinder knock retards while operating above 5 psi of turbocharger boost. When knock retards persist for the full duration of <a href="../../2_-_Spark/D_-_Adaptive_Retard/ARTM5P_AdaptiveRetardTimeOver5psiBoost.html"><code>ARTM5P</code></a>, the controller recognizes sustained detonation and adds <code>ARINDX</code> to <code>AdaptiveRetardIndex</code> (clamped at 255 = 100% adaptive authority). In factory calibrations, <code>ARINDX</code> is set to 128 counts, representing an immediate 50% jump in learned adaptive retard on the first confirmed persistent knock cycle.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Learning Aggressiveness</strong>:</li>
+<li>Factory setting of 128 counts (50% step) reaches maximum adaptive retard after just two persistent knock detection cycles.</li>
+<li><strong>Softer Accumulation</strong>:</li>
+<li>Lowering <code>ARINDX</code> to 64 counts provides four discrete 25% learning stages, preventing abrupt power loss on mild knock events.</li>
+<li><strong>Disabling Learning</strong>:</li>
+<li>Setting <code>ARINDX</code> to 0 locks <code>AdaptiveRetardIndex</code> at zero, preventing any adaptive retard accumulation.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when knock retards persist for the full duration of ARTM5P, the controller recognizes sustained detonation and adds ARINDX to AdaptiveRetardIndex (clamped at 255 = 100% adaptive authority).</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_LookAtCylRetards</code> (<code>T-SMEC_v19.asm:9530-9537</code>), called from <code>CalcWGDutyCycleT1</code>.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -127,16 +138,6 @@
 <li><strong>Addition &amp; Clamp</strong>:</li>
 <li><code>ARINDX_AdaptiveRetardIndexBase_80</code> is added to <code>AdaptiveRetardIndex</code> with interrupts disabled (<code>sei</code>).</li>
 <li>If sum overflows 255 (<code>bcc L1855</code> not taken), accumulator A is clamped to 255 (0xFF).</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Learning Aggressiveness</strong>:</li>
-<li>Factory setting of 128 counts (50% step) reaches maximum adaptive retard after just two persistent knock detection cycles.</li>
-<li><strong>Softer Accumulation</strong>:</li>
-<li>Lowering <code>ARINDX</code> to 64 counts provides four discrete 25% learning stages, preventing abrupt power loss on mild knock events.</li>
-<li><strong>Disabling Learning</strong>:</li>
-<li>Setting <code>ARINDX</code> to 0 locks <code>AdaptiveRetardIndex</code> at zero, preventing any adaptive retard accumulation.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

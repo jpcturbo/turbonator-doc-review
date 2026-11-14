@@ -116,19 +116,7 @@
 <p><code>BSTSWS</code> defines the digital input pin bitmask on the switch input port used by the engine controller to read a driver-operated dual-boost selection switch.</p>
 <p>When switchable boost is enabled in the calibration option registers, the controller tests this bit against the hardware switch register during every main program loop pass. If the switch state indicates that low-boost mode is selected, the controller overrides the primary engine-speed boost target curve with the low-boost ceiling constant. This mechanism allows the driver to alternate between high-power boost and conservative low-boost settings on the fly for varying weather, traction, or fuel availability.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CheckBoostSwitch</code> (<code>T-SMEC_v19.asm:9469-9492</code>), called from <code>CalcTargetBoost_MM</code> (<code>T-SMEC_v19.asm:9423-9504</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Switchable boost option bit <code>opt_SwBoost</code> must be set in <a href="../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1_CalCustomOptionConfigFlags1</code></a> (line 9476).</li>
-<li>If <code>opt_SwBoost</code> is clear, execution branches directly to <code>StoreBoostTarget</code> (line 9477), bypassing the switch.</li>
-<li><strong>Polarity Evaluation</strong>:</li>
-<li>Polarity flag <code>opt_SwBstPol</code> in <a href="../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1</code></a> selects <code>Polarity_Hi</code> (line 9483) or <code>Polarity_Lo</code> (line 9488).</li>
-<li>Register B loads <code>SwitchPortAccessReg</code> and tests <code>bitb BSTSWS_HighBoostSwitchSelect</code> (lines 9484, 9489).</li>
-<li>If the test resolves to low-boost mode, execution branches to <code>LoadLoBoostAndLookup</code> (line 9493) to clamp boost target to <a href="../../3_-_Boost_Control/A_-_Target_Lookup/LOWBST_AllowedBoostLo.html"><code>LOWBST</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Switch Input Pin Configuration</strong>:</li>
 <li>Sets the digital input bitmask on the controller switch port corresponding to the physical boost switch.</li>
@@ -139,6 +127,19 @@
 <li>If switchable boost <code>opt_SwBoost</code> is disabled in <a href="../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1</code></a>, this switch bitmask is completely bypassed.</li>
 <li><strong>Hardware Integrity</strong>:</li>
 <li>Ensure clean wiring and debounced switch contacts to avoid rapid toggling between boost limits under road vibration.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during boost target calculation when switchable boost is enabled, reading the driver's dashboard toggle switch to alternate between high and low boost profiles.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CheckBoostSwitch</code> (<code>T-SMEC_v19.asm:9469-9492</code>), called from <code>CalcTargetBoost_MM</code> (<code>T-SMEC_v19.asm:9423-9504</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Switchable boost option bit <code>opt_SwBoost</code> must be set in <a href="../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1_CalCustomOptionConfigFlags1</code></a> (line 9476).</li>
+<li>If <code>opt_SwBoost</code> is clear, execution branches directly to <code>StoreBoostTarget</code> (line 9477), bypassing the switch.</li>
+<li><strong>Polarity Evaluation</strong>:</li>
+<li>Polarity flag <code>opt_SwBstPol</code> in <a href="../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1</code></a> selects <code>Polarity_Hi</code> (line 9483) or <code>Polarity_Lo</code> (line 9488).</li>
+<li>Register B loads <code>SwitchPortAccessReg</code> and tests <code>bitb BSTSWS_HighBoostSwitchSelect</code> (lines 9484, 9489).</li>
+<li>If the test resolves to low-boost mode, execution branches to <code>LoadLoBoostAndLookup</code> (line 9493) to clamp boost target to <a href="../../3_-_Boost_Control/A_-_Target_Lookup/LOWBST_AllowedBoostLo.html"><code>LOWBST</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

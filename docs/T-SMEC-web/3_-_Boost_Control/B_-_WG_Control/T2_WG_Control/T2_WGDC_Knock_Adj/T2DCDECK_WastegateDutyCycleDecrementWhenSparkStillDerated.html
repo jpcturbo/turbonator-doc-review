@@ -116,17 +116,7 @@
 <p><code>T2DCDECK</code> controls the rate at which wastegate duty cycle recovers toward normal operation after a detonation event has subsided in T2 control.</p>
 <p>While cylinders are recovering from knock retard, the controller steadily bleeds down the knock reduction penalty by <code>T2DCDECK</code> counts at intervals governed by <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2DECTIM_TimeScaleFor_DCDECK.html"><code>T2DECTIM</code></a>, smoothly restoring baseline wastegate duty cycle and boost pressure without causing sudden torque surges.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>T2WGDC_LookAtCylRetards</code> (<code>T-SMEC_v19.asm:9916-9921</code>), called from <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9755-10040</code>).</li>
-<li><strong>Gating Conditions</strong>: Triggered when <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2DECTIM_TimeScaleFor_DCDECK.html"><code>T2DECTIM</code></a> bitmask passes and cylinder retard exceeds <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2WGKNRD_MinimumKnockToReduceWGDC.html"><code>T2WGKNRD</code></a>.</li>
-<li><strong>Decrement Evaluation</strong>:</li>
-<li>Line 9917 loads <code>WastegateDutyCycleIncreaseFromKnock</code> into accumulator B.</li>
-<li>Line 9918 executes <code>subb T2DCDECK_WastegateDutyCycleDecrementWhenSparkStillDerated</code>.</li>
-<li>If carry is clear (no underflow), stores updated penalty count; if underflow occurs, accumulator B is cleared to zero at line 9920.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>T2 Knock Recovery Step Rate</strong>:</li>
 <li>Sets the duty cycle counts subtracted from the knock penalty per recovery interval.</li>
@@ -136,6 +126,17 @@
 <li>Decreasing <code>T2DCDECK</code> to 1 count creates a gentle recovery that prevents secondary knock events.</li>
 <li><strong>Underflow Clamping</strong>:</li>
 <li>Automatically clamps at zero counts when knock penalty has fully cleared.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect while cylinders are recovering from knock retard, the controller steadily bleeds down the knock reduction penalty by T2DCDECK counts at intervals governed by T2DECTIM, smoothly restoring baseline wastegate duty cycle and boost pressure without causing sudden torque surges.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>T2WGDC_LookAtCylRetards</code> (<code>T-SMEC_v19.asm:9916-9921</code>), called from <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9755-10040</code>).</li>
+<li><strong>Gating Conditions</strong>: Triggered when <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2DECTIM_TimeScaleFor_DCDECK.html"><code>T2DECTIM</code></a> bitmask passes and cylinder retard exceeds <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2WGKNRD_MinimumKnockToReduceWGDC.html"><code>T2WGKNRD</code></a>.</li>
+<li><strong>Decrement Evaluation</strong>:</li>
+<li>Line 9917 loads <code>WastegateDutyCycleIncreaseFromKnock</code> into accumulator B.</li>
+<li>Line 9918 executes <code>subb T2DCDECK_WastegateDutyCycleDecrementWhenSparkStillDerated</code>.</li>
+<li>If carry is clear (no underflow), stores updated penalty count; if underflow occurs, accumulator B is cleared to zero at line 9920.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

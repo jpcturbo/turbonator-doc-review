@@ -116,18 +116,7 @@
 <p><code>MAXTHR</code> defines the maximum throttle position ceiling above which the cruise control vacuum solenoid is blocked from applying further vacuum.</p>
 <p>Cruise control is engineered solely for maintaining highway cruising speed under moderate load, not for wide-open throttle acceleration. If vehicle speed drops on an extremely steep grade or if the vehicle is towing a heavy trailer, the cruise servo must not be permitted to pull the throttle plate wide open or generate sustained high turbocharger boost. In factory calibrations, <code>MAXTHR</code> is set to 80 counts, corresponding to approximately 31.4 percent throttle opening above idle, capping vacuum authority at a safe partial-throttle boundary.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8960-8964</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Positive servo command present (accumulator A positive, commanding vacuum pull).</li>
-<li>Net throttle position calculated as <code>TpsVolts - MINTHR_LowestSessionTPS</code> in accumulator B.</li>
-<li><strong>Comparison &amp; Branch</strong>:</li>
-<li>Compares throttle opening against <code>MAXTHR</code> via <code>cmpb MAXTHR</code> at line 8960.</li>
-<li>If lower (<code>bcs L1796</code>), vacuum command is permitted; if higher or equal, branches to line 8962 (<code>clra</code>), zeroing vacuum command in <code>CruiseControlVar3</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Mountain Climbing Authority</strong>:</li>
 <li>If cruise control sags and drops speed on steep highway grades, raise <code>MAXTHR</code> from 80 counts to 96 or 112 counts.</li>
@@ -136,6 +125,18 @@
 <li>Maintaining <code>MAXTHR</code> below 50 percent throttle opening prevents cruise control from building full turbo boost or pulling wide open.</li>
 <li><strong>Zeroing Out Output</strong>:</li>
 <li>When throttle exceeds <code>MAXTHR</code>, vacuum command <code>CruiseControlVar3</code> is zeroed, allowing the return spring to stabilize throttle position.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during cruise control operation, prohibiting vacuum servo pull when throttle opening exceeds this maximum angle ceiling.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8960-8964</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Positive servo command present (accumulator A positive, commanding vacuum pull).</li>
+<li>Net throttle position calculated as <code>TpsVolts - MINTHR_LowestSessionTPS</code> in accumulator B.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Compares throttle opening against <code>MAXTHR</code> via <code>cmpb MAXTHR</code> at line 8960.</li>
+<li>If lower (<code>bcs L1796</code>), vacuum command is permitted; if higher or equal, branches to line 8962 (<code>clra</code>), zeroing vacuum command in <code>CruiseControlVar3</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

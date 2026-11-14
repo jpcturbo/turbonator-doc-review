@@ -117,7 +117,16 @@
 <p>When the engine is idling with the throttle closed, rapid electrical or accessory load increases such as the air conditioning compressor engaging or turning the steering wheel cause the idle speed motor to open quickly to maintain target idle speed. This sudden rush of bypass air leans out the intake plenum before the throttle position sensor can react. If the commanded stepper motor opening delta meets or exceeds <code>POSTIG</code>, the engine controller triggers an auxiliary fuel pulse defined by <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/AIS_PumpShot/POSFUL_AisEnrichmentFuelPulse.html"><code>POSFUL</code></a>.</p>
 <p>The factory setting of 13 steps prevents minor idle trim adjustments from triggering extra fuel while responding instantly to major accessory loads.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Preventing Idle Sag</strong>: Lowering <code>POSTIG</code> makes the idle transient enrichment activate on smaller idle air movements, preventing RPM dips or stumbles when shifting an automatic transmission into gear or when the electric radiator fan turns on.</li>
+<li><strong>Preventing Idle Hunting</strong>: Setting <code>POSTIG</code> too low can cause the engine to inject extra fuel during normal idle speed stabilization, leading to an erratic or hunting idle.</li>
+<li><strong>Aggressive Camshafts</strong>: Raising <code>POSTIG</code> prevents false enrichment on engines with aggressive camshafts that cause rapid stepper hunting.</li>
+<li><strong>Companion Parameter</strong>: Must be calibrated in direct conjunction with <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/AIS_PumpShot/POSFUL_AisEnrichmentFuelPulse.html"><code>POSFUL</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the engine is idling with the throttle closed, rapid electrical or accessory load increases such as the air conditioning compressor engaging or turning the steering wheel cause the idle speed motor to open quickly to maintain target idle speed.</p>
 <ul>
 <li>Enclosed in routine <code>TransFuel_StoreLeanOutFactor</code> at lines 6540-6565 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
 <li>Evaluated only when <code>b4f_OffIdle</code> is clear in <code>BitFlags_4f</code> (engine is at idle with throttle closed, line 6549).</li>
@@ -125,14 +134,6 @@
 <li>Step delta calculation: <code>ldaa DesiredNewAisPosition; suba CurrentAisPosition</code> (lines 6553-6554).</li>
 <li>Threshold comparison: Line 6556 executes <code>cmpa POSTIG_MinAisPulseRequireToTriggerEnrichment</code>.</li>
 <li>Polarity: If delta is less than <code>POSTIG</code>, branch <code>bcs TransFuel_UseRunningPTEPW</code> uses normal transient fuel; if greater or equal, line 6558 loads <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/AIS_PumpShot/POSFUL_AisEnrichmentFuelPulse.html"><code>POSFUL</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Preventing Idle Sag</strong>: Lowering <code>POSTIG</code> makes the idle transient enrichment activate on smaller idle air movements, preventing RPM dips or stumbles when shifting an automatic transmission into gear or when the electric radiator fan turns on.</li>
-<li><strong>Preventing Idle Hunting</strong>: Setting <code>POSTIG</code> too low can cause the engine to inject extra fuel during normal idle speed stabilization, leading to an erratic or hunting idle.</li>
-<li><strong>Aggressive Camshafts</strong>: Raising <code>POSTIG</code> prevents false enrichment on engines with aggressive camshafts that cause rapid stepper hunting.</li>
-<li><strong>Companion Parameter</strong>: Must be calibrated in direct conjunction with <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/AIS_PumpShot/POSFUL_AisEnrichmentFuelPulse.html"><code>POSFUL</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

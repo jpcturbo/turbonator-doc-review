@@ -116,18 +116,7 @@
 <p><code>VNTAB2</code> defines the intermediate overspeed error threshold for commanding a fixed half-maximum vent pulse duration.</p>
 <p>When vehicle speed climbs above target cruise speed on rolling highway terrain, gentle proportional venting from <a href="../../7_-_Aux_Functions/Cruise_Control/VENTRG_CruiseControlVentRegularGainCurve_FromDeltaSpeed.html"><code>VENTRG</code></a> may be outpaced by vehicle momentum. If speed error exceeds <code>VNTAB2</code>, the controller commands a stepped, half-authority vent duration to check speed increase more quickly. In factory calibrations, <code>VNTAB2</code> is set to 240 counts, representing approximately 120 miles per hour of speed error, positioning it immediately below the maximum vent threshold.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8874-8878</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Overspeed delta below <a href="../../7_-_Aux_Functions/Cruise_Control/VNTAB1_CruiseControlLimitToAMaxVent.html"><code>VNTAB1</code></a> (did not branch at line 8871).</li>
-<li>Overspeed evaluated in accumulator A after register swap.</li>
-<li><strong>Comparison &amp; Branch</strong>:</li>
-<li>Compares overspeed against <code>VNTAB2</code> via <code>cmpa VNTAB2_CruiseControlLimitToHalfMaxVent</code> at line 8874.</li>
-<li>If lower (<code>bcs L1784</code>), branches to use proportional <a href="../../7_-_Aux_Functions/Cruise_Control/VENTRG_CruiseControlVentRegularGainCurve_FromDeltaSpeed.html"><code>VENTRG</code></a> curve; if higher or equal, loads 0x05 and branches to command stepped vent 0x85.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Stepped Vent Authority</strong>:</li>
 <li>Commands a fixed half-authority vent pulse when overspeed exceeds <code>VNTAB2</code> but remains below <a href="../../7_-_Aux_Functions/Cruise_Control/VNTAB1_CruiseControlLimitToAMaxVent.html"><code>VNTAB1</code></a>.</li>
@@ -136,6 +125,18 @@
 <li>Lowering <code>VNTAB2</code> to 20 to 30 counts helps curb vehicle acceleration when cresting moderate highway hills.</li>
 <li><strong>Factory Calibration</strong>:</li>
 <li>Set to 240 counts in production calibrations, keeping stepped venting dormant during normal minor speed variations.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when cruise control overspeeds down a highway descent, setting an intermediate vent solenoid pulse duration clamp to prevent throttle hunting.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8874-8878</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Overspeed delta below <a href="../../7_-_Aux_Functions/Cruise_Control/VNTAB1_CruiseControlLimitToAMaxVent.html"><code>VNTAB1</code></a> (did not branch at line 8871).</li>
+<li>Overspeed evaluated in accumulator A after register swap.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Compares overspeed against <code>VNTAB2</code> via <code>cmpa VNTAB2_CruiseControlLimitToHalfMaxVent</code> at line 8874.</li>
+<li>If lower (<code>bcs L1784</code>), branches to use proportional <a href="../../7_-_Aux_Functions/Cruise_Control/VENTRG_CruiseControlVentRegularGainCurve_FromDeltaSpeed.html"><code>VENTRG</code></a> curve; if higher or equal, loads 0x05 and branches to command stepped vent 0x85.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

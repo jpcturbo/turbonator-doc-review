@@ -118,18 +118,7 @@
 <p>As the vehicle slows down and engine speed drops toward idle, approaching within <code>DCLRPL</code> of target idle disarms the decel fuel cut flag and commands the idle air stepper motor to step open.</p>
 <p>In factory calibrations, <code>DCLRPL</code> is set to 15 counts, representing 480 RPM above target idle speed.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> (<code>T-SMEC_v19.asm:2047-2056</code>), instruction line 2052.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Evaluated when <code>Turbonator_DecelFuelCut</code> flag is currently set.</li>
-<li><strong>Comparison &amp; Branch</strong>:</li>
-<li>Compares delta RPM against <code>DCLRPL</code>.</li>
-<li>If delta RPM <code>&gt; DCLRPL</code> (<code>bhi SetDFCFlag</code>), the flag remains armed.</li>
-<li>If delta RPM <code>&lt;= DCLRPL</code>, loads <a href="../../1_-_Fuel/G_-_Decel_Fuel_Shutoff/DCAISI_AISIncrementWhenUsingDecelFuelShut.html"><code>DCAISI</code></a>, calls <code>ClearAisTimer</code>, and falls into <code>ClearDFCFlag</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Coast-Down Stall Prevention</strong>:</li>
 <li>If depressing the clutch during deceleration causes RPM to plummet below idle, increase <code>DCLRPL</code> by 2 to 4 counts.</li>
@@ -139,6 +128,18 @@
 <li>Crossing below <code>DCLRPL</code> triggers <a href="../../1_-_Fuel/G_-_Decel_Fuel_Shutoff/DCAISI_AISIncrementWhenUsingDecelFuelShut.html"><code>DCAISI</code></a>, adding bypass air steps to catch falling RPM.</li>
 <li><strong>Hysteresis Pair</strong>:</li>
 <li>Works with <a href="../../1_-_Fuel/G_-_Decel_Fuel_Shutoff/DCLRPH_EngineRPMLimitForDecelFuelShutoffHigh.html"><code>DCLRPH</code></a>; delta between <a href="../../1_-_Fuel/G_-_Decel_Fuel_Shutoff/DCLRPH_EngineRPMLimitForDecelFuelShutoffHigh.html"><code>DCLRPH</code></a> and <code>DCLRPL</code> prevents flag hunting.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect once decel fuel shutoff has been armed, engine speed delta must remain above DCLRPL.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> (<code>T-SMEC_v19.asm:2047-2056</code>), instruction line 2052.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated when <code>Turbonator_DecelFuelCut</code> flag is currently set.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Compares delta RPM against <code>DCLRPL</code>.</li>
+<li>If delta RPM <code>&gt; DCLRPL</code> (<code>bhi SetDFCFlag</code>), the flag remains armed.</li>
+<li>If delta RPM <code>&lt;= DCLRPL</code>, loads <a href="../../1_-_Fuel/G_-_Decel_Fuel_Shutoff/DCAISI_AISIncrementWhenUsingDecelFuelShut.html"><code>DCAISI</code></a>, calls <code>ClearAisTimer</code>, and falls into <code>ClearDFCFlag</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

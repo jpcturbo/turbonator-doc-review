@@ -116,18 +116,7 @@
 <p><code>STGBST</code> defines the maximum allowable turbocharger boost pressure permitted while launch control staging mode is actively engaged.</p>
 <p>When the staging logic is triggered by clutch or brake engagement at a standstill, the engine controller applies specialized spark cut and fuel rev limiting while restricting manifold pressure to this threshold. In factory Turbonator calibrations, <code>STGBST</code> is calibrated to 41 counts, corresponding to approximately 4.7 psi of boost above atmospheric pressure. Holding boost to this calibrated ceiling prevents excessive wheel spin on launch while spooling the turbocharger to build immediate torque at the starting line.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>LoadStagingBoostAndLookup</code> (<code>T-SMEC_v19.asm:9463-9468</code>), called from <code>CalcTargetBoost_MM</code> (<code>T-SMEC_v19.asm:9423-9504</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Reached after evaluating the six primary target tables.</li>
-<li>Checks <code>Turbonator_Flags</code> bit <code>Turbonator_Staging</code> at line 9465. If clear (<code>brclr</code>), execution skips staging boost and jumps to <code>CheckBoostSwitch</code>.</li>
-<li><strong>Target Evaluation</strong>:</li>
-<li>If staging bit is set, line 9466 loads <code>STGBST_AllowedBoostDuringStaging</code> into accumulator A.</li>
-<li>Calls <code>bsr KeepSmallerBoostGoal</code> (line 9467) to clamp running minimum <code>Temp4</code> to <code>STGBST</code> if smaller.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Launch Boost Management</strong>:</li>
 <li>Sets the stationary boost limit enforced while on the two-step launch limiter.</li>
@@ -137,6 +126,18 @@
 <li>For street tires or unglued tracks, lower <code>STGBST</code> to 3 to 5 psi (or base spring pressure) to avoid instant tire smoke on release.</li>
 <li><strong>Staging Flag Dependency</strong>:</li>
 <li>Active only while <code>Turbonator_Staging</code> flag is set in <code>Turbonator_Flags</code>; bypassed during normal rolling driving.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the staging logic is triggered by clutch or brake engagement at a standstill, the engine controller applies specialized spark cut and fuel rev limiting while restricting manifold pressure to this threshold.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>LoadStagingBoostAndLookup</code> (<code>T-SMEC_v19.asm:9463-9468</code>), called from <code>CalcTargetBoost_MM</code> (<code>T-SMEC_v19.asm:9423-9504</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Reached after evaluating the six primary target tables.</li>
+<li>Checks <code>Turbonator_Flags</code> bit <code>Turbonator_Staging</code> at line 9465. If clear (<code>brclr</code>), execution skips staging boost and jumps to <code>CheckBoostSwitch</code>.</li>
+<li><strong>Target Evaluation</strong>:</li>
+<li>If staging bit is set, line 9466 loads <code>STGBST_AllowedBoostDuringStaging</code> into accumulator A.</li>
+<li>Calls <code>bsr KeepSmallerBoostGoal</code> (line 9467) to clamp running minimum <code>Temp4</code> to <code>STGBST</code> if smaller.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

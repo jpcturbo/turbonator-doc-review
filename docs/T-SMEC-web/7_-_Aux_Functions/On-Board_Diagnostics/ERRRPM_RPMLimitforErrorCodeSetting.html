@@ -117,7 +117,19 @@
 <p>In Chrysler SMEC firmware, minor transient electrical faults are filtered and held in pending registers, while major system faults that affect emissions and drivability must be confirmed before escalating to a latched error state. During low-speed operation or idle, minor sensor fluctuations or engine speed dips could trigger nuisance error codes.</p>
 <p>In factory calibrations, <code>ERRRPM</code> is set to 56 counts, corresponding to approximately 1792 RPM. The engine controller requires engine speed to reach or exceed <code>ERRRPM</code> before it will escalate qualifying pending faults into a confirmed major fault state.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Major Fault Code Escalation Gate</strong>:</li>
+<li>Confirms pending error flags into latched <code>b46_MajorFault</code> status, turning on the check engine lamp.</li>
+<li><strong>Raising for Stumble Suppression</strong>:</li>
+<li>Raising <code>ERRRPM</code> to 2200 RPM prevents rough low-speed cruising on radical cam engines from latching major trouble codes.</li>
+<li><strong>Lowering &amp; Edge Cases</strong>:</li>
+<li>Lowering <code>ERRRPM</code> below 1000 RPM allows major codes to set during idle.</li>
+<li>Setting <code>ERRRPM</code> to maximum (255 counts / 8160 RPM) prevents major fault code confirmation and keeps the check engine light off for these checks.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during ECU self-diagnostics, establishing the minimum engine speed required before recording diagnostic trouble codes.</p>
 <ul>
 <li><strong>Routine &amp; Line Numbers</strong>: <code>CheckForErrorsAndSetCodes_MM</code> (<code>T-SMEC_v19.asm:4731-4763</code>), instruction at line 4748.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -127,17 +139,6 @@
 <li><code>cmpa ERRRPM_RPMLimitforErrorCodeSetting</code> at line 4748 compares against 56 counts (1792 RPM).</li>
 <li>If lower (<code>bcs</code>), branches to <code>R1363</code> at line 4749, exiting without setting major code.</li>
 <li>If higher or equal, continues to check manifold vacuum against <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/ERRMAP_MAPLimitforErrorCodeSetting.html"><code>ERRMAP</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Major Fault Code Escalation Gate</strong>:</li>
-<li>Confirms pending error flags into latched <code>b46_MajorFault</code> status, turning on the check engine lamp.</li>
-<li><strong>Raising for Stumble Suppression</strong>:</li>
-<li>Raising <code>ERRRPM</code> to 2200 RPM prevents rough low-speed cruising on radical cam engines from latching major trouble codes.</li>
-<li><strong>Lowering &amp; Edge Cases</strong>:</li>
-<li>Lowering <code>ERRRPM</code> below 1000 RPM allows major codes to set during idle.</li>
-<li>Setting <code>ERRRPM</code> to maximum (255 counts / 8160 RPM) prevents major fault code confirmation and keeps the check engine light off for these checks.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -116,17 +116,7 @@
 <p><code>INCPT</code> specifies the dwell time threshold that an underboost condition must continuously persist before the controller increments the active adaptive wastegate cell in T1 control.</p>
 <p>When the throttle is initially opened, turbocharger spool lag naturally creates a temporary underboost condition. <code>INCPT</code> ensures that the error timer must accumulate a steady duration of underboost before the controller concludes that baseline duty cycle is truly insufficient, preventing transient spool-up lag from corrupting steady-state adaptive trims.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_IncrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9717-9720</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
-<li><strong>Gating Conditions</strong>: Underboost must satisfy <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MPROOF_StopAdaptiveWGWhenMapIsThisCloseToBoostTarget.html"><code>MPROOF</code></a>, <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/TPSLIM_UpdateAdaptiveWGTPSUpperLimit.html"><code>TPSLIM</code></a>, <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MPDEL2_IncCounterWhenDeltaMapBelowThis2.html"><code>MPDEL2</code></a>, zero knock penalty, and <code>EngineRpm_HB &gt;= DCRPML</code>.</li>
-<li><strong>Timer Comparison</strong>:</li>
-<li>Line 9717 loads <code>Timer_BoostErrTimer</code> and increments it (<code>inca</code>).</li>
-<li>Line 9719 executes <code>cmpa INCPT_AdaptiveIncAfterThisTime</code>.</li>
-<li>If timer is below <code>INCPT</code> (<code>bcs</code>), branches to <code>WGDC_StoreBoostErrTimer</code> (line 9720) to save timer state without updating memory.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Underboost Dwell Time Threshold</strong>:</li>
 <li>Number of consecutive error timer counts that underboost must persist before the adaptive cell is incremented.</li>
@@ -135,6 +125,17 @@
 <li>Higher values (40 to 60 counts, 0.45 to 0.7 seconds) prevent the ECU from adding duty cycle while a large turbo is naturally spooling.</li>
 <li><strong>Fast Convergence for Sluggish Spool</strong>:</li>
 <li>Lowering <code>INCPT</code> to 15 to 20 counts speeds up adaptive duty cycle additions if steady-state boost consistently falls short.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during part-throttle boost control, establishing the adaptive duty cycle increment time delay.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_IncrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9717-9720</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
+<li><strong>Gating Conditions</strong>: Underboost must satisfy <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MPROOF_StopAdaptiveWGWhenMapIsThisCloseToBoostTarget.html"><code>MPROOF</code></a>, <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/TPSLIM_UpdateAdaptiveWGTPSUpperLimit.html"><code>TPSLIM</code></a>, <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MPDEL2_IncCounterWhenDeltaMapBelowThis2.html"><code>MPDEL2</code></a>, zero knock penalty, and <code>EngineRpm_HB &gt;= DCRPML</code>.</li>
+<li><strong>Timer Comparison</strong>:</li>
+<li>Line 9717 loads <code>Timer_BoostErrTimer</code> and increments it (<code>inca</code>).</li>
+<li>Line 9719 executes <code>cmpa INCPT_AdaptiveIncAfterThisTime</code>.</li>
+<li>If timer is below <code>INCPT</code> (<code>bcs</code>), branches to <code>WGDC_StoreBoostErrTimer</code> (line 9720) to save timer state without updating memory.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

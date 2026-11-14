@@ -117,21 +117,22 @@
 <p>On manual transmission vehicles, if the EGR valve were to switch on and off at the exact same engine speed, minor RPM fluctuations during cruise would cause annoying solenoid clicking and vehicle surging.</p>
 <p>To prevent this cycling, the engine controller adds <code>EGR10</code> to base threshold <a href="../../7_-_Aux_Functions/EGR/EGR13_ExhGasRecircConstFromRPM.html"><code>EGR13</code></a> whenever the EGR solenoid is currently off. This creates a higher turn-on threshold (<a href="../../7_-_Aux_Functions/EGR/EGR13_ExhGasRecircConstFromRPM.html"><code>EGR13</code></a> + <code>EGR10</code>) while allowing EGR to remain on until engine speed drops below <a href="../../7_-_Aux_Functions/EGR/EGR13_ExhGasRecircConstFromRPM.html"><code>EGR13</code></a>. The factory calibration setting of 0 counts disables engine speed hysteresis on manual calibrations.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Manual Transmission Hysteresis</strong>: Operates exclusively on manual transmission vehicles (<code>cfg_ATX</code> clear). Has no function on automatic calibrations.</li>
+<li><strong>Raising EGR10</strong>: Widens the engine speed deadband between turn-on and turn-off. For example, 6 counts provides a 192 RPM deadband (6 x 32 RPM).</li>
+<li><strong>Solenoid Chatter Prevention</strong>: Eliminates rapid solenoid cycling when cruising near the base <a href="../../7_-_Aux_Functions/EGR/EGR13_ExhGasRecircConstFromRPM.html"><code>EGR13</code></a> enable threshold.</li>
+<li><strong>Factory Calibration</strong>: 0 counts provides zero hysteresis in stock configurations.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle cruising, modulating the exhaust gas recirculation (EGR) solenoid duty cycle to control combustion temperatures.</p>
 <ul>
 <li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5396.</li>
 <li><strong>Precondition</strong>: <code>cfg_ATX</code> clear (manual transmission) and <code>b4f_OffIdle</code> set.</li>
 <li><strong>State Test</strong>: Line 5395 tests <code>b2d_EGR</code> in <code>BitFlags_2d</code>; if clear (EGR currently off), executes line 5396.</li>
 <li><strong>Arithmetic</strong>: <code>A = EGR13 + EGR10_ExhGasRecircConstFromRPM</code>.</li>
 <li><strong>Branch Behavior</strong>: If <code>EngineRpm_HB &gt;= (EGR13 + EGR10)</code> (<code>bls L1456</code>), permits EGR to engage.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Manual Transmission Hysteresis</strong>: Operates exclusively on manual transmission vehicles (<code>cfg_ATX</code> clear). Has no function on automatic calibrations.</li>
-<li><strong>Raising EGR10</strong>: Widens the engine speed deadband between turn-on and turn-off. For example, 6 counts provides a 192 RPM deadband (6 x 32 RPM).</li>
-<li><strong>Solenoid Chatter Prevention</strong>: Eliminates rapid solenoid cycling when cruising near the base <a href="../../7_-_Aux_Functions/EGR/EGR13_ExhGasRecircConstFromRPM.html"><code>EGR13</code></a> enable threshold.</li>
-<li><strong>Factory Calibration</strong>: 0 counts provides zero hysteresis in stock configurations.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

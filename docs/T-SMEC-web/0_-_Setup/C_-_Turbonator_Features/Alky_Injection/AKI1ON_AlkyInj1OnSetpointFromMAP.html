@@ -117,20 +117,21 @@
 <p>Two-stage auxiliary injection provides progressive fluid delivery: stage one introduces a modest spray volume at moderate boost to suppress early detonation, while stage two adds higher flow under maximum boost. In Turbonator firmware, an auxiliary output driver (such as Cruise Vent) can be assigned to trigger the stage one injection solenoid when boost reaches this setpoint.</p>
 <p>The factory setting is 255 counts (disabled).</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Activation Boost</strong>: Typically set between 7 and 10 psi of boost to initiate primary charge cooling as boost ramps up.</li>
+<li><strong>Coordination With Pump</strong>: Ensure <code>AKI1ON</code> is set at least 2 psi above <a href="../../../0_-_Setup/C_-_Turbonator_Features/Alky_Injection/AKPMON_AlkyPumpOnSetpointFromMAP.html"><code>AKPMON</code></a> so the delivery pump is fully pressurized before spraying.</li>
+<li><strong>Disabling Setpoint</strong>: Factory setting of 255 counts keeps stage one disabled.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under positive boost pressure, commanding the primary water/methanol injection nozzle solenoid open across manifold pressure.</p>
 <ul>
 <li>Enclosed in subroutine <code>MM_AlkyInjector_Control</code> at lines 10592-10614 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
 <li>Requires <code>cfg_AlkyInj</code> set and <code>cfg_SpeedSenseAero</code> clear in <a href="../../../0_-_Setup/A_-_Cal_Configuration/CONFIG_ConfigurationFlags.html"><code>CONFIG_ConfigurationFlags</code></a> (lines 10596-10599).</li>
 <li>In active firmware, this subroutine is commented out with semicolons in <a href="../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a> (as documented in <code>smec_anomaly.md</code>), meaning the controller does not execute these instructions unless uncommented in source.</li>
 <li>Comparison: <code>cmpa AKI1ON_AlkyInj1OnSetpointFromMAP</code> against <code>MapValue</code> (line 10609).</li>
 <li>When <code>MapValue &gt;= AKI1ON</code>, bit <code>PortA_CruiseVent</code> in <code>Z83_PortA_copy</code> is asserted to open injection solenoid one. If below setpoint, branches to <code>AlkyInj1_CheckHysteresisAndTurnOff</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Activation Boost</strong>: Typically set between 7 and 10 psi of boost to initiate primary charge cooling as boost ramps up.</li>
-<li><strong>Coordination With Pump</strong>: Ensure <code>AKI1ON</code> is set at least 2 psi above <a href="../../../0_-_Setup/C_-_Turbonator_Features/Alky_Injection/AKPMON_AlkyPumpOnSetpointFromMAP.html"><code>AKPMON</code></a> so the delivery pump is fully pressurized before spraying.</li>
-<li><strong>Disabling Setpoint</strong>: Factory setting of 255 counts keeps stage one disabled.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

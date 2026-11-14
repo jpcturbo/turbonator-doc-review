@@ -117,7 +117,20 @@
 <p>The manifold absolute pressure sensor translates intake manifold vacuum and boost pressure into an analog voltage signal ranging from approximately 0.25 volts at high vacuum up to 4.75 volts at full boost. If the sensor signal wire breaks, the connector comes unplugged, or the sensor circuit shorts directly to ground, the input voltage drops to zero.</p>
 <p>In factory calibrations, <code>MAPLOW</code> is set to 1 count, corresponding to approximately 0.02 volts. If sensor voltage drops below <code>MAPLOW</code>, the engine controller flags <strong>Fault Code 14</strong>, latches an electrical sensor failure, illuminates the check engine lamp, and activates throttle-based limp-home mode.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Deceleration Vacuum Margin</strong>:</li>
+<li>Trailing-throttle deceleration from high engine speeds produces the deepest manifold vacuum, driving sensor voltage toward 0.30 volts.</li>
+<li><code>MAPLOW</code> must remain comfortably below this level (at 1 count / 0.02 volts) to avoid false fault codes on overrun.</li>
+<li><strong>Harness Diagnostics</strong>:</li>
+<li>If Fault Code 14 sets with 0.0 volts on the signal wire, check for an unplugged 3-pin MAP harness connector or broken wire.</li>
+<li><strong>Lowering &amp; Edge Cases</strong>:</li>
+<li>Zeroing <code>MAPLOW</code> disables open-circuit and short-to-ground fault detection.</li>
+<li>Setting <code>MAPLOW</code> higher than normal idle vacuum causes persistent limp-home operation.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect continuously during sensor diagnostic checks, flagging fault codes if the MAP sensor voltage shorts to ground.</p>
 <ul>
 <li><strong>Routine &amp; Line Numbers</strong>: <code>VerifyOperationOfMapSensor_MM</code> (<code>T-SMEC_v19.asm:4893-4946</code>), instruction at line 4935.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -128,18 +141,6 @@
 <li><code>cmpa MAPHIG_MapSensorUpperLimit</code> checked first at line 4933.</li>
 <li><code>cmpa MAPLOW_MapSensorLowerLimit</code> compares accumulator A against 1 count at line 4935.</li>
 <li>If lower (<code>bcs</code>), loads error code <code>0x2494</code> (Fault Code 14), sets <code>b45_IPL1</code> bit <code>b45_MapBadSignal</code>, and throws non-critical error.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Deceleration Vacuum Margin</strong>:</li>
-<li>Trailing-throttle deceleration from high engine speeds produces the deepest manifold vacuum, driving sensor voltage toward 0.30 volts.</li>
-<li><code>MAPLOW</code> must remain comfortably below this level (at 1 count / 0.02 volts) to avoid false fault codes on overrun.</li>
-<li><strong>Harness Diagnostics</strong>:</li>
-<li>If Fault Code 14 sets with 0.0 volts on the signal wire, check for an unplugged 3-pin MAP harness connector or broken wire.</li>
-<li><strong>Lowering &amp; Edge Cases</strong>:</li>
-<li>Zeroing <code>MAPLOW</code> disables open-circuit and short-to-ground fault detection.</li>
-<li>Setting <code>MAPLOW</code> higher than normal idle vacuum causes persistent limp-home operation.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

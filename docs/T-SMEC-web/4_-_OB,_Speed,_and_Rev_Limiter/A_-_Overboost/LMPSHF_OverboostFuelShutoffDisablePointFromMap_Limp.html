@@ -116,7 +116,18 @@
 <p><code>LMPSHF</code> establishes the overboost fuel cutout threshold used whenever the engine controller detects an electrical fault in the wastegate solenoid circuit.</p>
 <p>If the wastegate solenoid wiring is damaged, disconnected, or shorted, the controller cannot actively modulate boost pressure and loses electronic wastegate bleed control. Under these compromised conditions, the normal two-stage timed overboost routine (<a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a> and <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFA_OverboostFuelShutoffEnablePointFromMap_Absolute.html"><code>MPSHFA</code></a>) is completely bypassed. Instead, the controller compares manifold boost directly against <code>LMPSHF</code>. In factory calibrations, <code>LMPSHF</code> is set to 115 counts, representing approximately 13.3 psi of boost above atmospheric pressure. If boost exceeds <code>LMPSHF</code> while a wastegate solenoid fault is flagged, fuel injection is cut instantly on the current engine rotation without any timer delay.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Failsafe Preservation</strong>:</li>
+<li>Retain <code>LMPSHF</code> as an emergency protection ceiling in case the boost control solenoid wiring is compromised or unplugged.</li>
+<li><strong>Proportional Adjustment for High Boost</strong>:</li>
+<li>When raising target boost and <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a>, elevate <code>LMPSHF</code> to match the mechanical spring pressure of the upgraded wastegate actuator.</li>
+<li><strong>3-Bar MAP Scaling</strong>:</li>
+<li>Rescale <code>LMPSHF</code> when migrating to a 3-bar sensor to maintain appropriate emergency pressure limits on the 44.1 psi scale.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect only when the ECU enters Limp-In mode due to an active sensor fault, enforcing a reduced manifold pressure ceiling for overboost fuel cutoff.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>Cutout_CheckForOBConditions</code> (<code>T-SMEC_v19.asm:5638-5645</code>), called from <code>ControlEngineCutout_MM</code> (<code>T-SMEC_v19.asm:5628</code>).</li>
 <li><strong>Fault Flag Test</strong>:</li>
@@ -126,16 +137,6 @@
 <li>Manifold gauge boost (<code>MapValue - BaroPressure</code>) is compared against <code>LMPSHF</code> (<code>cmpa LMPSHF_OverboostFuelShutoffDisablePointFromMap_Limp</code>).</li>
 <li>If boost is lower or same (<code>bls Cutout_CheckRevLimiters</code>), execution continues to rev limiter checks.</li>
 <li>If boost exceeds <code>LMPSHF</code>, execution falls through directly to <code>Cutout_ShutOffEngineForThisRotation</code> (<code>T-SMEC_v19.asm:5646-5649</code>).</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Failsafe Preservation</strong>:</li>
-<li>Retain <code>LMPSHF</code> as an emergency protection ceiling in case the boost control solenoid wiring is compromised or unplugged.</li>
-<li><strong>Proportional Adjustment for High Boost</strong>:</li>
-<li>When raising target boost and <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a>, elevate <code>LMPSHF</code> to match the mechanical spring pressure of the upgraded wastegate actuator.</li>
-<li><strong>3-Bar MAP Scaling</strong>:</li>
-<li>Rescale <code>LMPSHF</code> when migrating to a 3-bar sensor to maintain appropriate emergency pressure limits on the 44.1 psi scale.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

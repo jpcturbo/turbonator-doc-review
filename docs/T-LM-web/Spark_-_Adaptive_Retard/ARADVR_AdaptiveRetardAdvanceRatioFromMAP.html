@@ -117,27 +117,7 @@
 <p>When a driver accelerates and begins building boost at part throttle without fully depressing the accelerator pedal to WOT, the ECU needs a method to safely transition ignition timing downward from the higher part-throttle timing table toward the more conservative full-throttle timing table.</p>
 <p><code>ARADVR_AdaptiveRetardAdvanceRatioFromMAP</code> acts as a <strong>part-throttle boost retard multiplier / scaling gain</strong>. It dictates how aggressively ignition advance is pulled out (retarded) as manifold boost and part-throttle fuel enrichment accumulate.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<p>This logic is active only when all of the following real-world conditions are met:</p>
-<ol>
-<li>
-<p><strong>Engine is Fully Warmed Up:</strong><br />
-   The coolant temperature is above the warm engine switch point (<a href="../Spark_-_Normal_Advance/TMPSWP_EngTempSwitchPointForSparkAdvance.html"><code>TMPSWP_EngTempSwitchPointForSparkAdvance</code></a>, typically ~166°F / 74°C). When the engine is cold, cold MAP timing tables (<a href="../Spark_-_Normal_Advance/CLDMAP_AdvanceFromMAPCold.html"><code>CLDMAP</code></a>) take precedence.</p>
-</li>
-<li>
-<p><strong>Part-Throttle Driving (Off-Idle, but Not WOT):</strong><br />
-   The driver's foot is on the gas pedal (throttle is open / off-idle), but has <strong>not</strong> reached Wide-Open Throttle.  </p>
-<blockquote>
-<p><em>Note:</em> The moment true WOT is triggered, the ECU bypasses this entire transitional calculation and switches directly to the dedicated full-throttle table (<a href="../Spark_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP_AdvanceFromMAPWarmFull</code></a>).</p>
-</blockquote>
-</li>
-<li>
-<p><strong>Approaching or Building Boost:</strong><br />
-   Manifold pressure (MAP) is entering moderate boost—specifically approaching or exceeding the threshold set by <a href="../Fuel_-_Transient_Enrichment/OBCONST_OverboostConstant1.html"><code>OBCONST_OverboostConstant1</code></a> (stock value <code>0xAA</code>, approximately 4.8 to 5.0 psi of boost on a 2-bar MAP sensor)—while the ECU is accumulating Part-Throttle Enrichment (PTE) via <code>Timer_OpenLoopFraction</code>.</p>
-</li>
-</ol>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <p>The result of this calculation is a retard offset that is subtracted from the warm part-throttle MAP advance table (<a href="../Spark_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP_AdvanceFromMAPWarmPart</code></a>), with the full-throttle table (<a href="../Spark_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP_AdvanceFromMAPWarmFull</code></a>) acting as a hard floor. The final MAP component is then added to the RPM advance curve (<a href="../Spark_-_Normal_Advance/GOVNER_AdvanceFromRPM.html"><code>GOVNER_AdvanceFromRPM</code></a>) to produce total ignition timing.</p>
 <ul>
 <li><strong>Increasing the Value (Larger Number):</strong></li>
@@ -160,6 +140,27 @@
 <li><strong>What it does:</strong> Completely disables this transitional boost-retard mechanism.</li>
 <li><strong>Effect on Total Timing:</strong> The ECU will not pull any progressive timing based on boost at part throttle; it will run the raw part-throttle table until you either floor it to WOT or the table's values naturally dip below the WOT curve.</li>
 </ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when a driver accelerates and begins building boost at part throttle without fully depressing the accelerator pedal to WOT, the ECU needs a method to safely transition ignition timing downward from the higher part-throttle timing table toward the more conservative full-throttle timing table.</p>
+<p>This logic is active only when all of the following real-world conditions are met:</p>
+<ol>
+<li>
+<p><strong>Engine is Fully Warmed Up:</strong><br />
+   The coolant temperature is above the warm engine switch point (<a href="../Spark_-_Normal_Advance/TMPSWP_EngTempSwitchPointForSparkAdvance.html"><code>TMPSWP_EngTempSwitchPointForSparkAdvance</code></a>, typically ~166°F / 74°C). When the engine is cold, cold MAP timing tables (<a href="../Spark_-_Normal_Advance/CLDMAP_AdvanceFromMAPCold.html"><code>CLDMAP</code></a>) take precedence.</p>
+</li>
+<li>
+<p><strong>Part-Throttle Driving (Off-Idle, but Not WOT):</strong><br />
+   The driver's foot is on the gas pedal (throttle is open / off-idle), but has <strong>not</strong> reached Wide-Open Throttle.  </p>
+<blockquote>
+<p><em>Note:</em> The moment true WOT is triggered, the ECU bypasses this entire transitional calculation and switches directly to the dedicated full-throttle table (<a href="../Spark_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP_AdvanceFromMAPWarmFull</code></a>).</p>
+</blockquote>
+</li>
+<li>
+<p><strong>Approaching or Building Boost:</strong><br />
+   Manifold pressure (MAP) is entering moderate boost—specifically approaching or exceeding the threshold set by <a href="../Fuel_-_Transient_Enrichment/OBCONST_OverboostConstant1.html"><code>OBCONST_OverboostConstant1</code></a> (stock value <code>0xAA</code>, approximately 4.8 to 5.0 psi of boost on a 2-bar MAP sensor)—while the ECU is accumulating Part-Throttle Enrichment (PTE) via <code>Timer_OpenLoopFraction</code>.</p>
+</li>
+</ol>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>
 <p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 6606–6631), the calculation proceeds as follows:</p>

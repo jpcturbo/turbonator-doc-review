@@ -132,17 +132,7 @@
 <p><code>CHGTL1</code> defines the four-point non-linear transfer table converting raw voltage counts from the intake manifold air charge temperature sensor into engineering temperature units.</p>
 <p>Measuring intake charge temperature is essential for calculating intake air density, setting charge-air fuel density trims, and applying spark advance knock retards when intake manifold air becomes excessively hot. Additionally, if the primary coolant temperature sensor fails, the controller evaluates <code>CHGTL1</code> to substitute intake air temperature as a temporary fallback to maintain engine operation.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>SubstituteChargeTempForCoolantTemp</code> (<code>T-SMEC_v19.asm:7698-7713</code>), instruction line 7707 (<code>ldx #CHGTL1_...</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Evaluated during regular sensor scanning and during coolant temperature sensor fault recovery.</li>
-<li>Requires <code>cfg_CTS</code> (Bit 4) in <a href="../../0_-_Setup/A_-_Cal_Configuration/CONFIG_ConfigurationFlags.html"><code>CONFIG_ConfigurationFlags</code></a> to be set.</li>
-<li><strong>Interpolation</strong>:</li>
-<li>Calls <code>Lookup4ByteTable</code> using <code>RawChargeTempVolts</code> to derive temperature.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Open-Element Sensor Conversions</strong>:</li>
 <li>When replacing factory brass-encapsulated sensors with open-element thermistors, rescale <code>CHGTL1</code> to match the new sensor's voltage-temperature profile.</li>
@@ -152,6 +142,17 @@
 <li>If the coolant temperature sensor fails and <code>cfg_CTS</code> is enabled in <a href="../../0_-_Setup/A_-_Cal_Configuration/CONFIG_ConfigurationFlags.html"><code>CONFIG</code></a>, <code>CHGTL1</code> supplies fallback operating temperatures.</li>
 <li><strong>Single-Range Circuit</strong>:</li>
 <li>Uses a single fixed pull-up resistor, unlike the dual-range coolant temperature sensor circuit.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect continuously whenever intake air charge temperature is sampled, converting raw sensor voltage into engineering temperature units.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>SubstituteChargeTempForCoolantTemp</code> (<code>T-SMEC_v19.asm:7698-7713</code>), instruction line 7707 (<code>ldx #CHGTL1_...</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated during regular sensor scanning and during coolant temperature sensor fault recovery.</li>
+<li>Requires <code>cfg_CTS</code> (Bit 4) in <a href="../../0_-_Setup/A_-_Cal_Configuration/CONFIG_ConfigurationFlags.html"><code>CONFIG_ConfigurationFlags</code></a> to be set.</li>
+<li><strong>Interpolation</strong>:</li>
+<li>Calls <code>Lookup4ByteTable</code> using <code>RawChargeTempVolts</code> to derive temperature.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

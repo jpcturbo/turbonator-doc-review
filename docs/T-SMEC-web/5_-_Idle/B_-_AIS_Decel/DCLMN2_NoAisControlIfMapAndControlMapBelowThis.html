@@ -118,16 +118,7 @@
 <p>If both actual manifold pressure and calculated control manifold pressure are below <code>DCLMN2</code>, all stepper motor manipulation is completely suspended.</p>
 <p>In factory calibrations, <code>DCLMN2</code> is set to 13 counts, corresponding to an absolute pressure lockout threshold of approximately 1.5 psi absolute (3.0 inHg / 26.9 inHg vacuum).</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1985-1989</code>), and <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> (<code>T-SMEC_v19.asm:2252, 2295</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Compares calculated decel control MAP against <code>DCLMN2</code> at line 1985. If greater than or equal (<code>bcc L1078</code>), advances to decel step lookup.</li>
-<li>If lower, compares actual <code>MapValue</code> against <code>DCLMN2</code> at line 1988.</li>
-<li>If actual MAP is also below <code>DCLMN2</code> (<code>bcs R1075</code>), execution aborts immediately without moving the stepper motor.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Deep Overrun Lockout Safety</strong>:</li>
 <li>Keep <code>DCLMN2</code> at 13 counts (~1.5 psi absolute) to preserve the safety envelope during extreme engine braking.</li>
@@ -135,6 +126,16 @@
 <li>Do not raise <code>DCLMN2</code> above 20 counts, as this will disable dashpot control during normal deceleration, causing frequent stalls.</li>
 <li><strong>Multi-Routine Enforcement</strong>:</li>
 <li>Enforces identical safety lockouts across both the decel dashpot routines and the A/C clutch transition routines.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under conditions of extreme closed-throttle engine overrun from high RPM (such as downhill engine braking), intake manifold absolute pressure can plummet to near total vacuum.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1985-1989</code>), and <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> (<code>T-SMEC_v19.asm:2252, 2295</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Compares calculated decel control MAP against <code>DCLMN2</code> at line 1985. If greater than or equal (<code>bcc L1078</code>), advances to decel step lookup.</li>
+<li>If lower, compares actual <code>MapValue</code> against <code>DCLMN2</code> at line 1988.</li>
+<li>If actual MAP is also below <code>DCLMN2</code> (<code>bcs R1075</code>), execution aborts immediately without moving the stepper motor.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

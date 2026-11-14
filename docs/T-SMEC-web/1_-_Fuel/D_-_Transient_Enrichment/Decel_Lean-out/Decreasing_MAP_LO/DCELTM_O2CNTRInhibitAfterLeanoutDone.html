@@ -117,20 +117,21 @@
 <p>When an engine decelerates with leaned-out fuel delivery, the exhaust gas stream temporarily goes very lean. If closed-loop feedback remains active, the oxygen sensor would detect this excess oxygen and command large rich fuel trim corrections, causing the engine to surge rich upon re-opening the throttle. <code>DCELTM</code> freezes oxygen sensor feedback integration during and immediately following deceleration.</p>
 <p>The factory setting is 0 counts in this calibration, but performance calibrations often incorporate a hold timer.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li>Enclosed in routine <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> at lines 6435-6476 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
-<li>Loaded when manifold pressure drop meets or exceeds <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DTRG2_DeltaMapTriggerForMaxLeanout.html"><code>DTRG2</code></a> (line 6458).</li>
-<li>Stored into RAM variable <code>Timer_O2InhibitSwitchingRichIdleToClosedLoop</code> via lines 6460-6461.</li>
-<li>Decremented every loop pass in <code>CalculatePartThrottleTransientFuel_MM</code> at lines 6399-6402 until reaching zero.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Preventing False Rich Trims</strong>: Increase <code>DCELTM</code> to 10 to 30 counts (approximately 110 to 330 milliseconds) if wideband data logging shows rich overshooting or fuel trim distortion immediately after deceleration events.</li>
 <li><strong>Exhaust Scavenging Interval</strong>: Inhibiting closed-loop feedback gives the exhaust system time to scavenge fresh air and return to normal stoichiometric conditions before the controller resumes adaptive learning.</li>
 <li><strong>Fuel Economy Considerations</strong>: Setting this timer excessively high keeps the engine in open-loop mode longer than necessary, slightly reducing fuel economy.</li>
 <li><strong>Timing Resolution</strong>: Each count provides 11 milliseconds of inhibit delay.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect following deceleration leanout, setting the lockout time before oxygen sensor closed-loop integration is allowed to resume.</p>
+<ul>
+<li>Enclosed in routine <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> at lines 6435-6476 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Loaded when manifold pressure drop meets or exceeds <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DTRG2_DeltaMapTriggerForMaxLeanout.html"><code>DTRG2</code></a> (line 6458).</li>
+<li>Stored into RAM variable <code>Timer_O2InhibitSwitchingRichIdleToClosedLoop</code> via lines 6460-6461.</li>
+<li>Decremented every loop pass in <code>CalculatePartThrottleTransientFuel_MM</code> at lines 6399-6402 until reaching zero.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

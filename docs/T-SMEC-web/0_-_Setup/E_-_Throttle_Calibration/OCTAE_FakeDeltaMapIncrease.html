@@ -116,18 +116,7 @@
 <p><code>OCTAE</code> defines the artificial manifold pressure delta step injected during off-idle throttle transitions.</p>
 <p>When the driver steps on the accelerator pedal and the throttle blade opens, intake manifold pressure rises rapidly. Because physical pressure sensor filtering introduces a brief mathematical lag in the running average manifold pressure variable, the engine controller subtracts <code>OCTAE</code> from instantaneous manifold pressure when leaving idle. This subtraction artificially suppresses the historical average pressure baseline, creating an instantaneous positive delta pressure jump that triggers immediate transient fuel enrichment and responsive ignition advance before the physical sensor filter catches up. Factory calibrations configure <code>OCTAE</code> to two counts, representing approximately zero point two three psi.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CheckThrottle_AtFullThrottle</code> (<code>T-SMEC_v19.asm:7818-7866</code>), instruction line 7858 (<code>suba OCTAE_FakeDeltaMapIncrease</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Evaluated when the throttle transitions from idle to off-idle (<code>TpsVolts &gt; MINTHR + MTHRCL</code>).</li>
-<li><strong>Math &amp; Clamping</strong>:</li>
-<li>Instantaneous <code>MapValue</code> minus <code>OCTAE_FakeDeltaMapIncrease</code>.</li>
-<li>If subtraction causes underflow (<code>bcs</code>), execution branches to load <a href="../../0_-_Setup/D_-_Transfer_Functions/MINAMP_MinimumAverageMAP.html"><code>MINAMP_MinimumAverageMAP</code></a> at line 7860.</li>
-<li>Stored directly into <code>AverageMAPValue</code> at line 7861.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Tip-In Hesitation Cure</strong>:</li>
 <li>Increasing <code>OCTAE</code> to three or four counts forces a sharper delta manifold pressure step, curing light off-idle lean stumbles.</li>
@@ -137,6 +126,18 @@
 <li>If the subtraction of <code>OCTAE</code> would reduce average pressure below minimum thresholds, <a href="../../0_-_Setup/D_-_Transfer_Functions/MINAMP_MinimumAverageMAP.html"><code>MINAMP</code></a> enforces a hard lower boundary.</li>
 <li><strong>Factory Setting</strong>:</li>
 <li>Set to two counts (approx 0.23 psi) in factory 2.5L calibrations.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the driver steps on the accelerator pedal and the throttle blade opens, intake manifold pressure rises rapidly.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CheckThrottle_AtFullThrottle</code> (<code>T-SMEC_v19.asm:7818-7866</code>), instruction line 7858 (<code>suba OCTAE_FakeDeltaMapIncrease</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated when the throttle transitions from idle to off-idle (<code>TpsVolts &gt; MINTHR + MTHRCL</code>).</li>
+<li><strong>Math &amp; Clamping</strong>:</li>
+<li>Instantaneous <code>MapValue</code> minus <code>OCTAE_FakeDeltaMapIncrease</code>.</li>
+<li>If subtraction causes underflow (<code>bcs</code>), execution branches to load <a href="../../0_-_Setup/D_-_Transfer_Functions/MINAMP_MinimumAverageMAP.html"><code>MINAMP_MinimumAverageMAP</code></a> at line 7860.</li>
+<li>Stored directly into <code>AverageMAPValue</code> at line 7861.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

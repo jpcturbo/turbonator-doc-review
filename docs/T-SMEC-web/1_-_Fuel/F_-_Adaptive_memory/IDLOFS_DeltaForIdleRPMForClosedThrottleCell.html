@@ -117,7 +117,18 @@
 <p>When the throttle is closed, the engine controller checks whether actual engine speed is below target idle speed plus <code>IDLOFS</code>. If engine speed is below this calculated ceiling, Cell 12 is selected; if engine speed exceeds it (such as during closed-throttle coasting at speed), the controller bypasses Cell 12 and uses the regular MAP-RPM grid cells.</p>
 <p>In factory calibrations, <code>IDLOFS</code> is set to 4 counts, corresponding to 128 RPM above target idle speed.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Camshaft Tuning &amp; Idle Flaring</strong>:</li>
+<li>High-duration camshafts with choppy idle require raising <code>IDLOFS</code> to 5-7 counts (160-224 RPM) to prevent idle flare-ups from kicking the ECU out of Cell 12.</li>
+<li><strong>Idle Cell Qualification</strong>:</li>
+<li>Defines the maximum engine speed allowed above target idle speed (<code>TargetIdleSpeed + IDLOFS</code>) to engage Cell 12.</li>
+<li><strong>Coasting Fuel Trim Isolation</strong>:</li>
+<li>Keeps high-speed closed-throttle coastdown from corrupting the stationary idle fuel trim cell.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the throttle is closed, the engine controller checks whether actual engine speed is below target idle speed plus IDLOFS.</p>
 <ul>
 <li><strong>Enclosing Subroutine</strong>: <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code> (<code>T-SMEC_v19.asm:3350-3373</code>), instruction line 3359.</li>
 <li><strong>Gating Conditions</strong>: Throttle closed (<code>BitFlags_4f</code> bit <code>b4f_OffIdle</code> clear).</li>
@@ -127,16 +138,6 @@
 <li>Line 3363 compares the sum against <code>EngineRpm_HB</code> via <code>cmpa EngineRpm_HB</code>.</li>
 <li>If <code>sum &lt; EngineRpm_HB</code> (<code>bcs</code>), execution branches to <code>ONTHROTTLE_OR_RPMTOOHIGHFORIDLE</code> (line 3374) to select cruise cells.</li>
 <li>If <code>sum &gt;= EngineRpm_HB</code>, execution branches to <code>L1250</code> (line 3365), selecting Cell 12.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Camshaft Tuning &amp; Idle Flaring</strong>:</li>
-<li>High-duration camshafts with choppy idle require raising <code>IDLOFS</code> to 5-7 counts (160-224 RPM) to prevent idle flare-ups from kicking the ECU out of Cell 12.</li>
-<li><strong>Idle Cell Qualification</strong>:</li>
-<li>Defines the maximum engine speed allowed above target idle speed (<code>TargetIdleSpeed + IDLOFS</code>) to engage Cell 12.</li>
-<li><strong>Coasting Fuel Trim Isolation</strong>:</li>
-<li>Keeps high-speed closed-throttle coastdown from corrupting the stationary idle fuel trim cell.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

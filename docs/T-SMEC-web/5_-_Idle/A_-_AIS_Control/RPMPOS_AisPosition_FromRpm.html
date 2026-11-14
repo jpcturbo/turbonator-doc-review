@@ -133,16 +133,7 @@
 <p><code>RPMPOS</code> monitors engine speed and enforces a progressively higher minimum stepper opening floor as engine RPM rises.</p>
 <p>In factory calibrations, <code>RPMPOS</code> commands 0 steps below 1000 RPM, transitioning to 3 steps around 1500 RPM, and 6 steps above 2250 RPM.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2440</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Evaluated when engine is running off-idle (execution reaches label <code>L1143</code> at line 2428).</li>
-<li>Loads <code>EngineRpm_HB</code> into accumulator A and indexes <code>RPMPOS</code> at lines 2432-2434 via <code>jsr Lookup4ByteTable</code>.</li>
-<li>Compares returned steps against <a href="../../5_-_Idle/A_-_AIS_Control/CLDPOS_AisColdPosition_FromTemp.html"><code>CLDPOS</code></a> output in <code>Temp0</code> at line 2435; if <code>RPMPOS</code> is larger, updates <code>Temp0</code> with the higher step floor.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>High-RPM Decel Stall Catch</strong>:</li>
 <li>Increase <code>RPMPOS</code> step values above 2000 RPM if the engine stalls when abruptly releasing the throttle from high RPM.</li>
@@ -150,6 +141,16 @@
 <li>Add 3 to 6 steps to <code>RPMPOS</code> to catch lightweight rotating assemblies that drop revs too quickly on clutch disengagement.</li>
 <li><strong>Excessive Hang Warning</strong>:</li>
 <li>Setting <code>RPMPOS</code> too high causes the engine to coast forward with unwanted forward push and diminished engine braking.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if the idle air stepper motor were sitting fully closed during high-RPM deceleration, the sudden throttle closure would create an extreme intake manifold vacuum spike, sucking oil past valve guide seals and causing severe engine braking or sudden stalling.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2440</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated when engine is running off-idle (execution reaches label <code>L1143</code> at line 2428).</li>
+<li>Loads <code>EngineRpm_HB</code> into accumulator A and indexes <code>RPMPOS</code> at lines 2432-2434 via <code>jsr Lookup4ByteTable</code>.</li>
+<li>Compares returned steps against <a href="../../5_-_Idle/A_-_AIS_Control/CLDPOS_AisColdPosition_FromTemp.html"><code>CLDPOS</code></a> output in <code>Temp0</code> at line 2435; if <code>RPMPOS</code> is larger, updates <code>Temp0</code> with the higher step floor.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

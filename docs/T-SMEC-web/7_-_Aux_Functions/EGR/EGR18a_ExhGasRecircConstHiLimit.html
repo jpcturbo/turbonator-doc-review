@@ -117,21 +117,22 @@
 <p>Located immediately following <a href="../../7_-_Aux_Functions/EGR/EGR18_ExhGasRecircConstLoLimit.html"><code>EGR18</code></a> in calibration memory, this parameter defines the maximum intake manifold pressure under which Phase 1 baseline oxygen sensor tracking is permitted to operate. When the boundary checking routine is called at line 5429, the controller verifies that manifold pressure does not exceed the value stored at offset +1 from the <a href="../../7_-_Aux_Functions/EGR/EGR18_ExhGasRecircConstLoLimit.html"><code>EGR18</code></a> base pointer.</p>
 <p>The factory setting of 255 counts represents full-scale pressure (approximately 14.7 psi boost in a 2-bar system), which ensures that the upper limit check never aborts the diagnostic sequence under normal driving conditions.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Lowering EGRR18A</strong>: Imposes an upper manifold pressure ceiling on Phase 1 baseline sampling. Useful if tuners wish to ensure baseline oxygen sensor readings are gathered strictly under deep manifold vacuum.</li>
+<li><strong>Factory Ceiling (255 counts)</strong>: Maximizes diagnostic window availability by setting the upper boundary to full-scale pressure.</li>
+<li><strong>3-Bar MAP Sensor Scaling</strong>: When implementing a 3-bar MAP sensor, if a specific vacuum or pressure ceiling is calibrated, scale down the threshold by 0.667 (two-thirds) to preserve the intended manifold pressure window.</li>
+<li><strong>Pair Synchronization</strong>: Ensure <code>EGRR18A</code> is always greater than or equal to <a href="../../7_-_Aux_Functions/EGR/EGR18_ExhGasRecircConstLoLimit.html"><code>EGR18</code></a>; setting <code>EGRR18A</code> lower than <a href="../../7_-_Aux_Functions/EGR/EGR18_ExhGasRecircConstLoLimit.html"><code>EGR18</code></a> creates an impossible condition that immediately aborts every Phase 1 attempt.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle cruising, modulating the exhaust gas recirculation (EGR) solenoid duty cycle to control combustion temperatures.</p>
 <ul>
 <li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically via subroutine call at line 5430.</li>
 <li><strong>Subroutine Called</strong>: <code>EGR_CheckHiLoLimits</code> (lines 5462–5468), specifically line 5465.</li>
 <li><strong>Input Variable</strong>: <code>MapValue</code> (RAM address 0x0017) evaluated in accumulator A.</li>
 <li><strong>Memory Reference</strong>: Evaluated at offset <code>0x01,x</code> from index pointer <code>#EGR18_ExhGasRecircConstLoLimit</code>.</li>
 <li><strong>Branch Behavior</strong>: If <code>MapValue &gt; EGRR18A</code> (<code>bhi L1464</code>), pulls return address off stack (<code>pulx</code>) and jumps to <code>EGR_ResetEGRVars</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Lowering EGRR18A</strong>: Imposes an upper manifold pressure ceiling on Phase 1 baseline sampling. Useful if tuners wish to ensure baseline oxygen sensor readings are gathered strictly under deep manifold vacuum.</li>
-<li><strong>Factory Ceiling (255 counts)</strong>: Maximizes diagnostic window availability by setting the upper boundary to full-scale pressure.</li>
-<li><strong>3-Bar MAP Sensor Scaling</strong>: When implementing a 3-bar MAP sensor, if a specific vacuum or pressure ceiling is calibrated, scale down the threshold by 0.667 (two-thirds) to preserve the intended manifold pressure window.</li>
-<li><strong>Pair Synchronization</strong>: Ensure <code>EGRR18A</code> is always greater than or equal to <a href="../../7_-_Aux_Functions/EGR/EGR18_ExhGasRecircConstLoLimit.html"><code>EGR18</code></a>; setting <code>EGRR18A</code> lower than <a href="../../7_-_Aux_Functions/EGR/EGR18_ExhGasRecircConstLoLimit.html"><code>EGR18</code></a> creates an impossible condition that immediately aborts every Phase 1 attempt.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -131,7 +131,20 @@
 <p><code>VENTRG</code> defines the proportional vent solenoid gain curve utilized when vehicle speed exceeds the target cruise setting.</p>
 <p>When descending highway grades or following an acceleration event, gravity or residual engine power causes road speed to climb above the setpoint. In response, the engine controller calculates the negative speed error and queries <code>VENTRG</code> to determine the required vent solenoid pulse duration. Energizing the vent solenoid bleeds trapped vacuum from the actuator diaphragm to atmospheric pressure, allowing the throttle return spring to pull the throttle blade closed smoothly and re-establish the desired road speed without harsh deceleration jerks.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Downhill Speed Creep Control</strong>:</li>
+<li>Increasing <code>VENTRG</code> values commands wider vent solenoid openings when vehicle speed rises above target.</li>
+<li>Prevents the car from gaining 5 to 10 mph on moderate interstate downhill descents.</li>
+<li><strong>Driveline Lash &amp; Bucking</strong>:</li>
+<li>If the car exhibits abrupt throttle snap-shut behavior or driveline shudder when cresting hills, lower the lower points of <code>VENTRG</code>.</li>
+<li>Particularly important for manual transmission vehicles with solid engine mounts or lightweight flywheels.</li>
+<li><strong>Closed Throttle Inhibit</strong>:</li>
+<li>Venting is automatically inhibited below <a href="../../7_-_Aux_Functions/Cruise_Control/CLOTHR_CruiseControlDontVentIfThrottleBelowThis.html"><code>CLOTHR</code></a> (1 count above closed idle), protecting the solenoid from rapid chatter when the throttle is already fully resting on its idle stop.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during cruise control when vehicle speed exceeds the target set speed, pulsing the vent solenoid to bleed vacuum and close the throttle.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8856-8865</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -142,18 +155,6 @@
 <li>At line 8856, <code>bcc L1781</code> falls through on carry set (negative difference).</li>
 <li>Loads <code>ldx #VENTRG_CruiseControlVentRegularGainCurve_FromDeltaSpeed</code> at line 8857.</li>
 <li>Performs two's complement inversion (<code>coma; comb; addd #1</code>) to obtain positive absolute overspeed delta, stores to <code>Temp0</code>, and clears accelerated cruise bit 6.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Downhill Speed Creep Control</strong>:</li>
-<li>Increasing <code>VENTRG</code> values commands wider vent solenoid openings when vehicle speed rises above target.</li>
-<li>Prevents the car from gaining 5 to 10 mph on moderate interstate downhill descents.</li>
-<li><strong>Driveline Lash &amp; Bucking</strong>:</li>
-<li>If the car exhibits abrupt throttle snap-shut behavior or driveline shudder when cresting hills, lower the lower points of <code>VENTRG</code>.</li>
-<li>Particularly important for manual transmission vehicles with solid engine mounts or lightweight flywheels.</li>
-<li><strong>Closed Throttle Inhibit</strong>:</li>
-<li>Venting is automatically inhibited below <a href="../../7_-_Aux_Functions/Cruise_Control/CLOTHR_CruiseControlDontVentIfThrottleBelowThis.html"><code>CLOTHR</code></a> (1 count above closed idle), protecting the solenoid from rapid chatter when the throttle is already fully resting on its idle stop.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

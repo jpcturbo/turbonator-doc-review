@@ -118,17 +118,7 @@
 <p>If vehicle speed crosses <code>ACESPD</code> while part-throttle cutout is engaged, the controller clears the cutout timer and re-engages the compressor.</p>
 <p>In factory calibrations, <code>ACESPD</code> is set to 1280 counts, corresponding to a vehicle speed threshold of approximately 20 mph.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2207</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Part-throttle cutout is actively running (<code>Timer_AcCutout</code> &gt; 0).</li>
-<li>Loads <code>VehicleSpeed_HB</code> into index X at line 2193.</li>
-<li>Compares index X against 16-bit word <code>ACESPD</code> at line 2194 (<code>cpx ACESPD_AllowAcClutchAboveThisSpeed</code>).</li>
-<li>If vehicle speed &gt;= <code>ACESPD</code> (<code>bcc L1099</code>), branches to line 2206 to clear <code>Timer_AcCutout</code> and restore A/C operation.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Extending Launch Power Assist</strong>:</li>
 <li>Raise <code>ACESPD</code> to 40 to 45 mph to sustain part-throttle compressor cutout through city street acceleration runs.</li>
@@ -136,6 +126,17 @@
 <li>Retain factory 20 mph (1280 counts) if you only want cutout assist during the initial launch away from a dead stop.</li>
 <li><strong>16-Bit Word Resolution</strong>:</li>
 <li>Type 4 constant evaluated against 16-bit register <code>VehicleSpeed_HB</code>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during part-throttle driving with the A/C on, allowing compressor re-engagement once vehicle speed exceeds this road speed limit.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2207</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Part-throttle cutout is actively running (<code>Timer_AcCutout</code> &gt; 0).</li>
+<li>Loads <code>VehicleSpeed_HB</code> into index X at line 2193.</li>
+<li>Compares index X against 16-bit word <code>ACESPD</code> at line 2194 (<code>cpx ACESPD_AllowAcClutchAboveThisSpeed</code>).</li>
+<li>If vehicle speed &gt;= <code>ACESPD</code> (<code>bcc L1099</code>), branches to line 2206 to clear <code>Timer_AcCutout</code> and restore A/C operation.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

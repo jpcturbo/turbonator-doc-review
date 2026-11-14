@@ -116,17 +116,7 @@
 <p><code>MAXCNT</code> defines the debounce integration counter that governs how quickly the learned closed-throttle baseline voltage ratchets downward when throttle position sensor voltage drops below the current learned minimum.</p>
 <p>If sensor voltage settles slightly lower than the stored minimum—such as after the throttle linkage warms up or when returning from high engine speeds—the controller does not jump to the new voltage immediately. Instead, it decrements the learned minimum by one count only after throttle voltage remains continuously below the stored value for the number of program loops specified by <code>MAXCNT</code>. Factory calibrations set <code>MAXCNT</code> to sixteen loops, representing approximately one hundred seventy-six milliseconds.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CheckThrottle_AtFullThrottle</code> (<code>T-SMEC_v19.asm:7818-7866</code>), instruction line 7838 (<code>ldaa MAXCNT_...</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Evaluated when <code>TpsVolts &lt; MINTHR_LowestSessionTPS</code> and <code>b4f_OffIdle</code> is clear.</li>
-<li><strong>Countdown Execution</strong>:</li>
-<li><code>Timer_DelayBeforeUpdating_MINTHR</code> decrements each pass.</li>
-<li>When it reaches zero, <code>MINTHR_LowestSessionTPS</code> decrements by one count (<code>deca</code>) and the timer is reloaded from <code>MAXCNT</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Downward Ratchet Speed</strong>:</li>
 <li>Controls how many main loop passes (each ~11ms) sensor voltage must remain below <code>MINTHR</code> before <code>MINTHR</code> decrements by 1 count.</li>
@@ -134,6 +124,17 @@
 <li>Debounce delay filters out transient sensor ground bounce, ignition coil interference, and sensor wiper vibration.</li>
 <li><strong>Preserve Stock Value</strong>:</li>
 <li>Sixteen loops provides the optimal balance between rapid initial adaptation and electrical noise immunity.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when throttle position sensor voltage drops below the current learned minimum.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CheckThrottle_AtFullThrottle</code> (<code>T-SMEC_v19.asm:7818-7866</code>), instruction line 7838 (<code>ldaa MAXCNT_...</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated when <code>TpsVolts &lt; MINTHR_LowestSessionTPS</code> and <code>b4f_OffIdle</code> is clear.</li>
+<li><strong>Countdown Execution</strong>:</li>
+<li><code>Timer_DelayBeforeUpdating_MINTHR</code> decrements each pass.</li>
+<li>When it reaches zero, <code>MINTHR_LowestSessionTPS</code> decrements by one count (<code>deca</code>) and the timer is reloaded from <code>MAXCNT</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

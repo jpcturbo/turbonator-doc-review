@@ -117,21 +117,22 @@
 <p>On manual transmission vehicles, if intake manifold pressure fluctuates near the base enable threshold (<a href="../../7_-_Aux_Functions/EGR/EGR11_ExhGasRecircConstFromMAP.html"><code>EGR11</code></a>), rapid solenoid cycling can occur. To provide a stable pressure deadband, the engine controller adds <code>EGR12</code> to <a href="../../7_-_Aux_Functions/EGR/EGR11_ExhGasRecircConstFromMAP.html"><code>EGR11</code></a> whenever the EGR solenoid is currently off. This requires manifold pressure to rise to a higher turn-on threshold (<a href="../../7_-_Aux_Functions/EGR/EGR11_ExhGasRecircConstFromMAP.html"><code>EGR11</code></a> + <code>EGR12</code>) before engaging EGR, while allowing EGR to remain active until pressure drops below <a href="../../7_-_Aux_Functions/EGR/EGR11_ExhGasRecircConstFromMAP.html"><code>EGR11</code></a>.</p>
 <p>The factory calibration setting of 0 counts disables pressure hysteresis on manual vehicles.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Manual Transmission Hysteresis</strong>: Operates exclusively on manual transmission vehicles (<code>cfg_ATX</code> clear). Has no effect on automatics.</li>
+<li><strong>Raising EGR12</strong>: Widens the manifold pressure turn-on hysteresis band. For example, 10 counts provides ~1.1 psi hysteresis in a 2-bar calibration.</li>
+<li><strong>3-Bar MAP Scaling</strong>: If modified for custom 3-bar calibrations, multiply by 0.667 (two-thirds) to compensate for sensor scaling.</li>
+<li><strong>Factory Calibration</strong>: 0 counts provides zero pressure hysteresis in stock calibrations.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle cruising, modulating the exhaust gas recirculation (EGR) solenoid duty cycle to control combustion temperatures.</p>
 <ul>
 <li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5397.</li>
 <li><strong>Precondition</strong>: <code>cfg_ATX</code> clear (manual transmission) and <code>b4f_OffIdle</code> set.</li>
 <li><strong>State Test</strong>: Line 5395 tests <code>b2d_EGR</code> in <code>BitFlags_2d</code>; if clear (EGR currently off), executes line 5397.</li>
 <li><strong>Arithmetic</strong>: <code>B = EGR11 + EGR12_ExhGasRecircConstFromMAP</code>.</li>
 <li><strong>Branch Behavior</strong>: If <code>MapValue &lt; (EGR11 + EGR12)</code> (<code>bhi L1457</code>), branches to turn EGR off via <code>EGR_SetEGRtoOff</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Manual Transmission Hysteresis</strong>: Operates exclusively on manual transmission vehicles (<code>cfg_ATX</code> clear). Has no effect on automatics.</li>
-<li><strong>Raising EGR12</strong>: Widens the manifold pressure turn-on hysteresis band. For example, 10 counts provides ~1.1 psi hysteresis in a 2-bar calibration.</li>
-<li><strong>3-Bar MAP Scaling</strong>: If modified for custom 3-bar calibrations, multiply by 0.667 (two-thirds) to compensate for sensor scaling.</li>
-<li><strong>Factory Calibration</strong>: 0 counts provides zero pressure hysteresis in stock calibrations.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

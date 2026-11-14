@@ -117,19 +117,7 @@
 <p>When the driver lifts off the throttle and all entry criteria are satisfied, the difference between actual engine RPM and target idle RPM must exceed <code>DCLRPH</code> before the controller will arm fuel shutoff. This threshold prevents the engine controller from cutting fuel during low-speed crawling in traffic or parking lot maneuvering.</p>
 <p>In factory calibrations, <code>DCLRPH</code> is set to 17 counts, representing 544 RPM above target idle speed.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ClearDFCFlag</code> / <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> (<code>T-SMEC_v19.asm:2057-2067</code>), instruction line 2061.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Evaluated when <code>Turbonator_DecelFuelCut</code> in <code>Turbonator_Flags</code> is currently clear.</li>
-<li>Throttle must be closed (<code>b4f_OffIdle</code> clear) and vehicle speed below <a href="../../5_-_Idle/B_-_AIS_Decel/MPHREF_SwitchPointForDecelIdleAisControl.html"><code>MPHREF</code></a>.</li>
-<li><strong>Comparison &amp; Branch</strong>:</li>
-<li>Compares delta RPM (<code>EngineRpm - TargetIdleSpeed</code>) against <code>DCLRPH</code>.</li>
-<li>If delta RPM <code>&lt;= DCLRPH</code> (<code>bls ClearDFCFlag</code>), remains disarmed.</li>
-<li>If delta RPM <code>&gt; DCLRPH</code>, branches to <code>SetDFCFlag</code> at line 2064, setting <code>Turbonator_DecelFuelCut</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Stop-and-Go Drivability</strong>:</li>
 <li>Raise <code>DCLRPH</code> if the engine cuts fuel annoyingly when creeping along in first or second gear in traffic.</li>
@@ -139,6 +127,19 @@
 <li>Ensure <code>DCLRPH</code> remains at least 2 to 4 counts higher than <a href="../../1_-_Fuel/G_-_Decel_Fuel_Shutoff/DCLRPL_EngineRPMLimitForDecelFuelShutoffLow.html"><code>DCLRPL</code></a> to prevent hunting.</li>
 <li><strong>Arming vs Fuel Cut</strong>:</li>
 <li><code>DCLRPH</code> arms the <code>Turbonator_DecelFuelCut</code> flag; actual injector shutoff is governed downstream by <a href="../../1_-_Fuel/G_-_Decel_Fuel_Shutoff/DFRPMH_DecelFuelShutoffDeltaRPMOff.html"><code>DFRPMH</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the driver lifts off the throttle and all entry criteria are satisfied, the difference between actual engine RPM and target idle RPM must exceed DCLRPH before the controller will arm fuel shutoff.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ClearDFCFlag</code> / <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> (<code>T-SMEC_v19.asm:2057-2067</code>), instruction line 2061.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated when <code>Turbonator_DecelFuelCut</code> in <code>Turbonator_Flags</code> is currently clear.</li>
+<li>Throttle must be closed (<code>b4f_OffIdle</code> clear) and vehicle speed below <a href="../../5_-_Idle/B_-_AIS_Decel/MPHREF_SwitchPointForDecelIdleAisControl.html"><code>MPHREF</code></a>.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Compares delta RPM (<code>EngineRpm - TargetIdleSpeed</code>) against <code>DCLRPH</code>.</li>
+<li>If delta RPM <code>&lt;= DCLRPH</code> (<code>bls ClearDFCFlag</code>), remains disarmed.</li>
+<li>If delta RPM <code>&gt; DCLRPH</code>, branches to <code>SetDFCFlag</code> at line 2064, setting <code>Turbonator_DecelFuelCut</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

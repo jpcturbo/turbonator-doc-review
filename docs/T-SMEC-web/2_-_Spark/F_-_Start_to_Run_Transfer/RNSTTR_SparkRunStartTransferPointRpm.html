@@ -116,17 +116,7 @@
 <p><code>RNSTTR</code> defines the stall-detection hysteresis distributor pulse period threshold that drops ignition control back from running Run Mode into cranking Start Mode.</p>
 <p>Once an engine is running, sudden clutch engagement, severe electrical loading, or abrupt idle undershoot can cause engine speed to sag toward a stall. In period-based logic, a sagging engine speed produces an increasing pulse period. If the distributor pulse period exceeds <code>RNSTTR</code> (engine speed falls below approximately 422 RPM in factory calibrations), the engine controller recognizes that self-sustaining engine operation has ceased. It sets the dwell disable flag and transitions ignition back to cranking mode (fixed base trigger timing and full cranking dwell) to assist immediate restart.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>RpmBelowStartRunTransfer</code> (<code>T-SMEC_v19.asm:7004-7007</code>), called from <code>HandleFuelStartRunStartTransfer</code>.</li>
-<li><strong>Input Variable</strong>: <code>DistributorFallingEdgePulsewidth_HB</code> (RAM address 0x0090).</li>
-<li><strong>Comparison &amp; Branch</strong>:</li>
-<li><code>cmpb RNSTTR_SparkRunStartTransferPointRpm</code> at line 7004.</li>
-<li>If period &lt; <code>RNSTTR</code> (<code>bcs L2591</code>), engine speed is above stall threshold (~422 RPM), maintaining current dwell mode.</li>
-<li>If period &gt;= <code>RNSTTR</code>, line 7006 executes <code>bset *BitFlags_54, #b54_DisableNormalDwell</code> to revert to cranking spark mode.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Stall Recovery Hysteresis</strong>:</li>
 <li>Factory setting of 422 RPM (71 counts) sits well below idle speed (850 to 950 RPM), providing a wide 400+ RPM buffer against accidental stall triggering.</li>
@@ -134,6 +124,17 @@
 <li>Raising <code>RNSTTR</code> allows manual transmission drivers to lug the engine down to 350 RPM without the controller abruptly switching to locked cranking spark advance.</li>
 <li><strong>Period Inversion Reminder</strong>:</li>
 <li>Higher period values correspond to lower engine speeds (Period = 30000 / RPM).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect once an engine is running, sudden clutch engagement, severe electrical loading, or abrupt idle undershoot can cause engine speed to sag toward a stall.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>RpmBelowStartRunTransfer</code> (<code>T-SMEC_v19.asm:7004-7007</code>), called from <code>HandleFuelStartRunStartTransfer</code>.</li>
+<li><strong>Input Variable</strong>: <code>DistributorFallingEdgePulsewidth_HB</code> (RAM address 0x0090).</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li><code>cmpb RNSTTR_SparkRunStartTransferPointRpm</code> at line 7004.</li>
+<li>If period &lt; <code>RNSTTR</code> (<code>bcs L2591</code>), engine speed is above stall threshold (~422 RPM), maintaining current dwell mode.</li>
+<li>If period &gt;= <code>RNSTTR</code>, line 7006 executes <code>bset *BitFlags_54, #b54_DisableNormalDwell</code> to revert to cranking spark mode.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

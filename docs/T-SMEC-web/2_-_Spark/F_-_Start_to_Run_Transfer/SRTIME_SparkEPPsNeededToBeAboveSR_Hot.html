@@ -116,7 +116,18 @@
 <p><code>SRTIME</code> defines the number of consecutive Engine Position Pulses (EPPs) that engine speed must remain above the start-to-run threshold (<a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/STRNTR_SparkStartRunTransferPointRpm.html"><code>STRNTR</code></a>) before transferring spark control to Run Mode when the engine is warm.</p>
 <p>During engine cranking, a single cylinder firing can momentarily accelerate the crankshaft past 600 RPM before compression on the next cylinder slows it back down. To verify that the engine is truly self-sustaining and not merely experiencing an isolated combustion event, the engine controller requires consecutive distributor pulses above <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/STRNTR_SparkStartRunTransferPointRpm.html"><code>STRNTR</code></a>. In factory calibrations, <code>SRTIME</code> is set to 4 pulses, corresponding to one complete engine revolution (two distributor pulses per revolution on a 4-cylinder engine), before locking in warm Run Mode.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Warm Restart Verification</strong>:</li>
+<li>Factory setting of 4 pulses (one full crank revolution) ensures the engine is spinning under its own power before enabling running spark advance.</li>
+<li><strong>Fast Warm Restarts</strong>:</li>
+<li>Lowering <code>SRTIME</code> to 2 pulses reduces post-crank delay on warm restarts, making the engine catch and transition instantly.</li>
+<li><strong>High-Compression Applications</strong>:</li>
+<li>On high-compression or alcohol engines with uneven cranking pulses, raising <code>SRTIME</code> to 6 pulses prevents false-start stalls.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during engine cranking, a single cylinder firing can momentarily accelerate the crankshaft past 600 RPM before compression on the next cylinder slows it back down.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>ENGINE_IDLING_FASTERTHAN_813RPM</code> (<code>T-SMEC_v19.asm:7015-7023</code>), called from <code>RpmBelowStartRunTransfer</code>.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -127,16 +138,6 @@
 <li><code>CoolantTemp</code> &gt; <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTMTP_SparkTempSwitchPointFor_SRTIME.html"><code>SRTMTP</code></a> takes branch <code>bcs SETTOLOOKFOR_RISINGEDGE_AND_CALCULATE_DWELL</code> (line 7018), preserving pointer X at <code>SRTIME</code>.</li>
 <li><code>cmpa 0x00,x</code> compares accumulated pulses against <code>SRTIME</code>.</li>
 <li>If pulses &gt;= <code>SRTIME</code>, bit <code>b54_DisableNormalDwell</code> is cleared, enabling normal running spark.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Warm Restart Verification</strong>:</li>
-<li>Factory setting of 4 pulses (one full crank revolution) ensures the engine is spinning under its own power before enabling running spark advance.</li>
-<li><strong>Fast Warm Restarts</strong>:</li>
-<li>Lowering <code>SRTIME</code> to 2 pulses reduces post-crank delay on warm restarts, making the engine catch and transition instantly.</li>
-<li><strong>High-Compression Applications</strong>:</li>
-<li>On high-compression or alcohol engines with uneven cranking pulses, raising <code>SRTIME</code> to 6 pulses prevents false-start stalls.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

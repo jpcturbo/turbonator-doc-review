@@ -117,7 +117,18 @@
 <p>This boundary distinguishes light-load level cruise from moderate part-throttle acceleration. In factory calibrations, <code>MP2</code> is set to 55 counts, corresponding to approximately 6.3 psia or 17.1 inHg of vacuum.</p>
 <p>The engine controller evaluates <code>MP2</code> by stepping its index register through the boundary table during cell determination, ensuring that fueling adaptations learned during steady-state highway cruising remain isolated from moderate acceleration load zones.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Light Cruise Segmentation</strong>:</li>
+<li>Adjusts the transition between light highway cruise (Cell 2/3) and moderate load acceleration (Cell 4/5).</li>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
+<li>Rescale downward proportionally from 55 counts to approximately 37 counts on a 3-bar sensor.</li>
+<li><strong>Ascending Order Constraint</strong>:</li>
+<li>Must be strictly greater than <a href="../../1_-_Fuel/F_-_Adaptive_memory/MP1_AutoCalMapCellBoundary1.html"><code>MP1</code></a> and strictly lower than <a href="../../1_-_Fuel/F_-_Adaptive_memory/MP3_AutoCalMapCellBoundary3.html"><code>MP3</code></a> (<code>MP1 &lt; MP2 &lt; MP3</code>).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during adaptive fuel memory operation, defining the second manifold pressure load boundary in the adaptive fuel grid.</p>
 <ul>
 <li><strong>Enclosing Subroutine</strong>: <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code> (<code>T-SMEC_v19.asm:3350-3393</code>), instruction line 3354 (evaluated via <code>inx</code> loop at lines 3367-3379).</li>
 <li><strong>Gating Conditions</strong>: <code>MapValue</code> exceeds <a href="../../1_-_Fuel/F_-_Adaptive_memory/MP1_AutoCalMapCellBoundary1.html"><code>MP1</code></a> plus <a href="../../1_-_Fuel/F_-_Adaptive_memory/DLTMAP_MapHysteresisAtMapCellBoundaries.html"><code>DLTMAP</code></a> hysteresis.</li>
@@ -126,16 +137,6 @@
 <li>Line 3371 executes <code>cmpa MapValue</code>.</li>
 <li>If <code>MP2 &gt;= MapValue</code> (<code>bcc</code>), execution branches to <code>L1247</code> (line 3380), selecting Cell 2 or 3.</li>
 <li>If <code>MP2 &lt; MapValue</code>, X increments to <a href="../../1_-_Fuel/F_-_Adaptive_memory/MP3_AutoCalMapCellBoundary3.html"><code>MP3</code></a> and <code>Temp0</code> steps by 2.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Light Cruise Segmentation</strong>:</li>
-<li>Adjusts the transition between light highway cruise (Cell 2/3) and moderate load acceleration (Cell 4/5).</li>
-<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
-<li>Rescale downward proportionally from 55 counts to approximately 37 counts on a 3-bar sensor.</li>
-<li><strong>Ascending Order Constraint</strong>:</li>
-<li>Must be strictly greater than <a href="../../1_-_Fuel/F_-_Adaptive_memory/MP1_AutoCalMapCellBoundary1.html"><code>MP1</code></a> and strictly lower than <a href="../../1_-_Fuel/F_-_Adaptive_memory/MP3_AutoCalMapCellBoundary3.html"><code>MP3</code></a> (<code>MP1 &lt; MP2 &lt; MP3</code>).</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

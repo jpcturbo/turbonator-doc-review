@@ -132,7 +132,16 @@
 <p>As ambient atmospheric pressure decreases when operating in elevated terrain, lower intake air density can destabilize idle combustion and cause lean engine surging. The engine controller looks up barometric pressure from <code>PWADD</code> during foreground latency updates and converts the resulting value into an additive microsecond fuel pulse.</p>
 <p>At sea-level barometric pressure of approximately 14.7 psi or 29.9 inHg, the factory calibration delivers zero additional pulse width. As barometric pressure drops below 13.1 psi toward 10.5 psi at high elevations, the table progressively adds between 64 and 100 microseconds of injection pulse width to stabilize idle combustion and low-speed driveability.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>High-Altitude Compensation</strong>: Raise table values if the engine experiences lean surging, rough idle, or hesitation when driving in high-altitude environments.</li>
+<li><strong>Over-Rich Altitude Correction</strong>: Lower or zero out table values if modified engines or large injectors run excessively rich at elevation.</li>
+<li><strong>Injector Sizing Adjustments</strong>: When upgrading to larger fuel injectors, scale down <code>PWADD</code> values inversely to match the percentage increase in injector flow rate so that total delivered fuel remains constant.</li>
+<li><strong>MAP Sensor Scaling Consideration</strong>: If tuning an engine converted to a 3-bar MAP sensor, confirm that initial key-on barometric pressure readings accurately align with real-world atmospheric conditions.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during engine running fuel calculation to calibrate FuelPWModifierFromBaro.</p>
 <ul>
 <li>Enclosed in routine <code>LookupInjectorLatency</code> at lines 5936-5957 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
 <li>Executed unconditionally during main loop execution when updating battery offset and baseline latency.</li>
@@ -140,14 +149,6 @@
 <li>Looked up via <code>jsr Lookup4ByteTable</code> at line 5945 with pointer <code>ldx #PWADD_FuelPWModifierFromBaro</code>.</li>
 <li>Evaluated alongside flag <code>b50_IdleSpeedMode</code> in <code>BitFlags_50</code> and <code>b55_UseSparkScatter</code> in <code>BitFlags_55</code> (lines 5953-5954).</li>
 <li>When spark scatter idle stabilization is not active, stored directly into <code>SparkScatterFuelStabilizationValue_HB</code> at line 5956, which adds directly to <code>InjectorPulsewidth_HB</code> at line 6865.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>High-Altitude Compensation</strong>: Raise table values if the engine experiences lean surging, rough idle, or hesitation when driving in high-altitude environments.</li>
-<li><strong>Over-Rich Altitude Correction</strong>: Lower or zero out table values if modified engines or large injectors run excessively rich at elevation.</li>
-<li><strong>Injector Sizing Adjustments</strong>: When upgrading to larger fuel injectors, scale down <code>PWADD</code> values inversely to match the percentage increase in injector flow rate so that total delivered fuel remains constant.</li>
-<li><strong>MAP Sensor Scaling Consideration</strong>: If tuning an engine converted to a 3-bar MAP sensor, confirm that initial key-on barometric pressure readings accurately align with real-world atmospheric conditions.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

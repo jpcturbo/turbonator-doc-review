@@ -129,17 +129,7 @@
 <p><code>SPKLMT</code> defines the absolute maximum spark advance ceiling curve across engine speed.</p>
 <p>Under light-throttle highway cruising in deep manifold vacuum, the mathematical sum of mechanical advance (<a href="../../2_-_Spark/A_-_Normal_Advance/GOVNER_AdvanceFromRPM.html"><code>GOVNER</code></a>) and part-throttle vacuum advance (<a href="../../2_-_Spark/A_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a>) could easily exceed 50 to 60 degrees BTDC. Running excessive ignition advance—even under very light engine load—can cause misfires, rotor phase misalignment and spark jump inside the distributor cap, and negative mechanical work against the compressing piston. <code>SPKLMT</code> enforces a hard upper limit: if the total combined ignition timing exceeds the value in <code>SPKLMT</code> at that RPM, it is clamped down to <code>SPKLMT</code>. In factory calibrations, <code>SPKLMT</code> is calibrated to approximately 53 degrees BTDC.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CheckMaxSparkAdvance</code> (<code>T-SMEC_v19.asm:8041-8048</code>), called from <code>CalculateSparkAdvance_MM</code>.</li>
-<li><strong>Comparison &amp; Clamp</strong>:</li>
-<li>Total calculated advance is temporarily stored in <code>Temp0</code>.</li>
-<li><code>EngineRpm_HB</code> looks up <code>SPKLMT_TotalAdvanceAllowed</code> via <code>Lookup4ByteTable</code>.</li>
-<li><code>cmpa Temp0</code> compares the ceiling in accumulator A against <code>Temp0</code>.</li>
-<li>If accumulator A is lower (<code>bcs L1669</code>), accumulator A (the <code>SPKLMT</code> ceiling) is retained; otherwise, <code>Temp0</code> is restored.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Distributor Crossfire Prevention</strong>:</li>
 <li><code>SPKLMT</code> ensures rotor tip phasing remains aligned with distributor cap terminals, preventing spark jump to adjacent cylinders.</li>
@@ -147,6 +137,17 @@
 <li>Setting <code>SPKLMT</code> between 42 and 48 degrees BTDC supports optimal fuel economy during light highway cruising.</li>
 <li><strong>Safety Clamp</strong>:</li>
 <li>Acts as the final clamp on total calculated timing before spark scatter and cylinder-specific knock retard are applied.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect continuously across all operating conditions, enforcing an absolute ceiling on total ignition advance to protect the engine.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CheckMaxSparkAdvance</code> (<code>T-SMEC_v19.asm:8041-8048</code>), called from <code>CalculateSparkAdvance_MM</code>.</li>
+<li><strong>Comparison &amp; Clamp</strong>:</li>
+<li>Total calculated advance is temporarily stored in <code>Temp0</code>.</li>
+<li><code>EngineRpm_HB</code> looks up <code>SPKLMT_TotalAdvanceAllowed</code> via <code>Lookup4ByteTable</code>.</li>
+<li><code>cmpa Temp0</code> compares the ceiling in accumulator A against <code>Temp0</code>.</li>
+<li>If accumulator A is lower (<code>bcs L1669</code>), accumulator A (the <code>SPKLMT</code> ceiling) is retained; otherwise, <code>Temp0</code> is restored.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

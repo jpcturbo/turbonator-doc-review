@@ -117,20 +117,21 @@
 <p>As the throttle opens and manifold pressure rises from vacuum toward atmospheric pressure or positive boost, the air density in the intake plenum increases rapidly. If the instantaneous manifold pressure exceeds the rolling average manifold pressure by more than <code>MAPTRG</code>, the engine controller calculates an immediate transient fuel addition.</p>
 <p>The factory threshold of 13 counts corresponds to approximately 1.5 psi of sudden pressure rise, effectively screening out harmless vacuum ripples caused by camshaft overlap and normal intake valve cycling while responding promptly to real engine load spikes.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li>Enclosed in routine <code>TransFuel_CalculateIncreasingMAPTransientFuel</code> at lines 6419-6434 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
-<li>Called from <code>CalculatePartThrottleTransientFuel_MM</code> when <code>MapValue &gt;= AverageMAPValue</code> (line 6407).</li>
-<li>Delta comparison: Line 6420 loads <code>Temp0</code> (<code>MapValue - AverageMAPValue</code>) and line 6421 executes <code>suba MAPTRG_DeltaMapTriggerLevel</code>.</li>
-<li>Polarity: If <code>Temp0 &lt; MAPTRG</code>, carry is asserted and <code>bcs TransFuel_IncludeTPSTransients</code> branches away to line 6484, skipping MAP transient enrichment.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Sensitivity Adjustment</strong>: Lowering <code>MAPTRG</code> increases sensitivity to manifold pressure changes, triggering transient enrichment on smaller throttle modulations to eliminate light-throttle tip-in hesitation.</li>
 <li><strong>Camshaft Pulsation Filtering</strong>: Raising <code>MAPTRG</code> prevents false triggers on rough-idling engines or aggressive high-overlap camshafts where vacuum fluctuates naturally.</li>
 <li><strong>3-Bar MAP Scaling</strong>: When converting to a 3-bar MAP sensor, scale down <code>MAPTRG</code> by roughly 33 percent (e.g. from 13 counts down to 8 or 9 counts) to preserve the stock 1.5 psi sensitivity threshold.</li>
 <li><strong>Coordination with MAPMAX</strong>: Ensure <code>MAPTRG</code> remains well below <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/MAP_PumpShot/MAPMAX_MaxDeltaMapAllowed.html"><code>MAPMAX</code></a> to provide a functional linear calculation window.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if the instantaneous manifold pressure exceeds the rolling average manifold pressure by more than MAPTRG, the engine controller calculates an immediate transient fuel addition.</p>
+<ul>
+<li>Enclosed in routine <code>TransFuel_CalculateIncreasingMAPTransientFuel</code> at lines 6419-6434 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Called from <code>CalculatePartThrottleTransientFuel_MM</code> when <code>MapValue &gt;= AverageMAPValue</code> (line 6407).</li>
+<li>Delta comparison: Line 6420 loads <code>Temp0</code> (<code>MapValue - AverageMAPValue</code>) and line 6421 executes <code>suba MAPTRG_DeltaMapTriggerLevel</code>.</li>
+<li>Polarity: If <code>Temp0 &lt; MAPTRG</code>, carry is asserted and <code>bcs TransFuel_IncludeTPSTransients</code> branches away to line 6484, skipping MAP transient enrichment.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

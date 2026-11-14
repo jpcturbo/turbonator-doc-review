@@ -133,20 +133,21 @@
 <p>Stock Chrysler engine controllers expect a non-linear switching signal from a factory zirconium oxygen sensor that transitions sharply between 0.1 volts (lean) and 0.9 volts (rich) around stoichiometry. By passing the measured air-fuel ratio from a wideband controller through <code>AFR2NB</code>, the controller synthesizes this classic switching voltage curve.</p>
 <p>This allows the factory closed-loop fueling and adaptive memory systems to operate normally while receiving input from an accurate wideband oxygen sensor.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Factory Curve Profile</strong>: Four calibration points generate a steep sigmoidal switching curve centered precisely at 14.7:1 stoichiometric air-fuel ratio.</li>
+<li><strong>Target Air-Fuel Ratio Shifting</strong>: Shifting the steep transition region left or right allows closed-loop cruising to target rich (e.g., 14.2:1) or lean (e.g., 15.2:1) mixtures.</li>
+<li><strong>Alternative Fuel Tuning</strong>: For ethanol blends (E85), re-scale the transition points to match the fuel's stoichiometric ratio (approx 9.8:1 for E85) if the wideband controller outputs true AFR rather than lambda.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when wideband O2 tracking is enabled, converting wideband air-fuel ratio voltage into a simulated narrowband signal for the ECU feedback loop.</p>
 <ul>
 <li>Enclosed in subroutine <code>LookupWB2NBXferFunc</code> at lines 10315-10327 of <code>cals/SMEC/T-SMEC_v19.asm</code> (invoked via <code>ConvertWB2NBSignal_MM</code> at line 7492 in the main analog input loop).</li>
 <li>Requires custom option flag <code>opt_WB2NB</code> (bit 7) enabled in <a href="../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2_CalCustomOptionConfigFlags2</code></a> (line 10312).</li>
 <li>Operates in sequence after <a href="../../../0_-_Setup/C_-_Turbonator_Features/WB2NB/WB2AFR_WidebandToAFRTransferFunction.html"><code>WB2AFR</code></a> translates raw wideband voltage into <code>AFRatio</code>.</li>
 <li>Accumulator A passes air-fuel ratio to <code>Lookup4ByteTable</code> with index register X pointing to <code>#AFR2NB_WidebandAFRToO2TransferFunction</code> (lines 10320-10321).</li>
 <li>Result is modified by <a href="../../../0_-_Setup/C_-_Turbonator_Features/WB2NB/NBOFFS_NarrowBandOffsetValue.html"><code>NBOFFS_NarrowBandOffsetValue</code></a> at line 10322 and stored into <code>O2SensorValue</code> at line 10325.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Factory Curve Profile</strong>: Four calibration points generate a steep sigmoidal switching curve centered precisely at 14.7:1 stoichiometric air-fuel ratio.</li>
-<li><strong>Target Air-Fuel Ratio Shifting</strong>: Shifting the steep transition region left or right allows closed-loop cruising to target rich (e.g., 14.2:1) or lean (e.g., 15.2:1) mixtures.</li>
-<li><strong>Alternative Fuel Tuning</strong>: For ethanol blends (E85), re-scale the transition points to match the fuel's stoichiometric ratio (approx 9.8:1 for E85) if the wideband controller outputs true AFR rather than lambda.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -130,19 +130,7 @@
 <p><code>T2RESFAC</code> supplies a manifold-pressure-dependent response factor gain table used to dynamically scale the rate-of-boost correction in T2 control.</p>
 <p>The engine controller multiplies the excess rate of boost change by the response factor looked up from <code>T2RESFAC</code> to calculate a dynamic target correction factor (<code>MPCORR</code>). This gain scaling allows the controller to react with different sensitivity at low boost levels compared to high boost levels, ensuring precise damping against boost creep across the operating map.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9828-9838</code>), called from <code>CalcWGDutyCycle_MM</code> (<code>T-SMEC_v19.asm:9506-9510</code>).</li>
-<li><strong>Gating Conditions</strong>: Absolute boost rate must exceed <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_BoostCreep/T2MPDEL_HysteresisForBoostCreep.html"><code>T2MPDEL</code></a>.</li>
-<li><strong>Table Lookup &amp; Multiplication</strong>:</li>
-<li>Line 9828 stores remaining rate delta into <code>Temp4</code>.</li>
-<li>Lines 9829-9831 load <code>Temp3</code> (target boost), subtract <code>MapValue</code>, and add 128 (0x80) for offset.</li>
-<li>Line 9832 loads index X with <code>#T2RESFAC_MapCorrectionResponseFactor_FromMap</code> and executes <code>jsr Lookup4ByteTable</code>.</li>
-<li>Line 9834 loads <code>Temp4</code> into accumulator A and line 9835 executes <code>mul</code> (multiplying gain by rate delta).</li>
-<li>Clamped against <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Adaptives/UPRLIM_UpperLimitOnMPCORR.html"><code>UPRLIM</code></a> or <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Adaptives/LWRLIM_LowerLimitOnMPCORR.html"><code>LWRLIM</code></a> at lines 9841-9848.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Dynamic Response Gain Table</strong>:</li>
 <li>Maps response factor gain vs. manifold pressure to scale rate-of-rise damping.</li>
@@ -153,6 +141,19 @@
 <li>If boost hesitates or lags on throttle tip-in, lower <code>T2RESFAC</code> to reduce dynamic damping.</li>
 <li><strong>Product Clamping</strong>:</li>
 <li>Resulting correction product is clamped by <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Adaptives/UPRLIM_UpperLimitOnMPCORR.html"><code>UPRLIM</code></a> (positive) and <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Adaptives/LWRLIM_LowerLimitOnMPCORR.html"><code>LWRLIM</code></a> (negative).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under turbocharger boost operation to control FromMap.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9828-9838</code>), called from <code>CalcWGDutyCycle_MM</code> (<code>T-SMEC_v19.asm:9506-9510</code>).</li>
+<li><strong>Gating Conditions</strong>: Absolute boost rate must exceed <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_BoostCreep/T2MPDEL_HysteresisForBoostCreep.html"><code>T2MPDEL</code></a>.</li>
+<li><strong>Table Lookup &amp; Multiplication</strong>:</li>
+<li>Line 9828 stores remaining rate delta into <code>Temp4</code>.</li>
+<li>Lines 9829-9831 load <code>Temp3</code> (target boost), subtract <code>MapValue</code>, and add 128 (0x80) for offset.</li>
+<li>Line 9832 loads index X with <code>#T2RESFAC_MapCorrectionResponseFactor_FromMap</code> and executes <code>jsr Lookup4ByteTable</code>.</li>
+<li>Line 9834 loads <code>Temp4</code> into accumulator A and line 9835 executes <code>mul</code> (multiplying gain by rate delta).</li>
+<li>Clamped against <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Adaptives/UPRLIM_UpperLimitOnMPCORR.html"><code>UPRLIM</code></a> or <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Adaptives/LWRLIM_LowerLimitOnMPCORR.html"><code>LWRLIM</code></a> at lines 9841-9848.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -117,16 +117,7 @@
 <p>To prevent abrupt steps in engine speed while rolling or coasting, the reduction of target idle speed must occur across a measured time interval. DECAIS masks the main program loop counter to enforce a deliberate delay between each decay step.</p>
 <p>In factory calibrations, <code>DECAIS</code> is set to 127 counts, representing a binary bitmask allowing one decay step every 128 main loop passes, or approximately every 1.4 seconds.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>LoadDiagIdleSpeed</code> (<code>T-SMEC_v19.asm:2080-2133</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Rolling idle mode active (<code>b50_IdleSpeedMode</code> set at line 2117).</li>
-<li>Main loop counter masked with <code>DECAIS</code> at line 2119: <code>andb DECAIS_RollingAisUpdateRate; bne L1092</code>.</li>
-<li>When masked counter is non-zero, jumps to <code>L1092</code>, skipping the decay step.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Accelerating Rolling Decay</strong>:</li>
 <li>Lower <code>DECAIS</code> to 63 or 31 counts to step down elevated rolling idle twice or four times as fast.</li>
@@ -134,6 +125,16 @@
 <li>Retain factory 127 counts (every 128th loop) for a slow, imperceptible return to base idle during long highway coast-downs.</li>
 <li><strong>Mask Formatting</strong>:</li>
 <li>Must be configured as a valid binary mask (15, 31, 63, 127, 255).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect while coasting or rolling in neutral, setting the idle air stepper update rate to smoothly track rolling idle.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>LoadDiagIdleSpeed</code> (<code>T-SMEC_v19.asm:2080-2133</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Rolling idle mode active (<code>b50_IdleSpeedMode</code> set at line 2117).</li>
+<li>Main loop counter masked with <code>DECAIS</code> at line 2119: <code>andb DECAIS_RollingAisUpdateRate; bne L1092</code>.</li>
+<li>When masked counter is non-zero, jumps to <code>L1092</code>, skipping the decay step.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

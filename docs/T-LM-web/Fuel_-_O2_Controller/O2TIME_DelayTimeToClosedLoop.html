@@ -116,15 +116,7 @@
 <p><code>O2TIME_DelayTimeToClosedLoop</code> establishes the <strong>minimum warmup hold time</strong> that the ECU must wait after the engine has reached operating temperature (<a href="../Fuel_-_Adaptive_Memory_Timer/CLTEMP_TempToStartCLTIMETimer.html"><code>CLTEMP</code></a>) before attempting to transition from Open-Loop into Closed-Loop fuel feedback control.</p>
 <p>A cold narrow-band zirconia O2 sensor cannot generate an accurate or reliable voltage signal until its ceramic element reaches internal operating temperatures of at least 600Â°F (315Â°C). Entering closed-loop operation prematurely causes violent fueling oscillations, surging, or stalling because the ECU misinterprets the high-impedance resting voltage of an unheated sensor as an extreme rich or lean condition. <code>O2TIME</code> guarantees that the sensor heater and hot exhaust gases have had adequate time to bring the sensor up to full operational temperature.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<p>The closed-loop delay timer (<code>Timer_CLTIME_ClosedLoopTimer</code>) begins incrementing only when all of the following entry conditions are met:
-* <strong>Engine Running:</strong> The engine must be running above crank/stall speed.
-* <strong>Warmup Temperature Reached:</strong> Coolant temperature must equal or exceed <a href="../Fuel_-_Adaptive_Memory_Timer/CLTEMP_TempToStartCLTIMETimer.html"><code>CLTEMP_TempToStartCLTIMETimer</code></a> (typically 70Â°F to 120Â°F).
-* <strong>Load / MAP Limits:</strong> Manifold pressure must remain below <a href="../Fuel_-_Adaptive_memory/MAPDEC_NoCellUpdateAndO2CNTRHeldBelowThisMap.html"><code>MAPDEC_NoCellUpdateAndO2CNTRHeldBelowThisMap</code></a>.
-* <strong>Off-Idle / Timer Checks:</strong> Open-loop fraction timer must remain below <a href="../Fuel_-_Transient_Enrichment/LMTOLF2_LimitTimerOpenLoopFraction2.html"><code>LMTOLF2</code></a>.</p>
-<p>Once the timer accumulates ticks equal to <code>O2TIME</code>, the ECU executes <code>CheckIfO2SensorDataIsValid</code>. If the sensor voltage has broken out of the deadband (outside <a href="../Fuel_-_O2_Controller/O2TLML_LowLimitForDelayedSwitchToClosedLoop.html"><code>O2TLML</code></a> to <a href="../Fuel_-_O2_Controller/O2TLMH_HighLimitForDelayedSwitchToClosedLoop.html"><code>O2TLMH</code></a>), bit 4 of <code>BitFlags_81</code> is asserted and closed loop feedback activates.</p>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Factory Calibration Value:</strong> <code>0x15</code> (21 decimal × 2.8 s ≈ 59 seconds).</li>
 <li><strong>Increasing <code>O2TIME</code>:</strong></li>
@@ -135,6 +127,15 @@
 <li><strong>When to Use:</strong> Modern heated 3-wire or 4-wire O2 sensors with dedicated, fast-acting ceramic heaters that achieve operating temperature in under 15â€“20 seconds.</li>
 <li><strong>Caution:</strong> Setting <code>O2TIME</code> too low with an unheated or sluggish sensor will induce lean stumbling and hesitation during drive-away.</li>
 </ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect after the engine has reached operating temperature (CLTEMP) before attempting to transition from Open-Loop into Closed-Loop fuel feedback control.</p>
+<p>The closed-loop delay timer (<code>Timer_CLTIME_ClosedLoopTimer</code>) begins incrementing only when all of the following entry conditions are met:
+* <strong>Engine Running:</strong> The engine must be running above crank/stall speed.
+* <strong>Warmup Temperature Reached:</strong> Coolant temperature must equal or exceed <a href="../Fuel_-_Adaptive_Memory_Timer/CLTEMP_TempToStartCLTIMETimer.html"><code>CLTEMP_TempToStartCLTIMETimer</code></a> (typically 70Â°F to 120Â°F).
+* <strong>Load / MAP Limits:</strong> Manifold pressure must remain below <a href="../Fuel_-_Adaptive_memory/MAPDEC_NoCellUpdateAndO2CNTRHeldBelowThisMap.html"><code>MAPDEC_NoCellUpdateAndO2CNTRHeldBelowThisMap</code></a>.
+* <strong>Off-Idle / Timer Checks:</strong> Open-loop fraction timer must remain below <a href="../Fuel_-_Transient_Enrichment/LMTOLF2_LimitTimerOpenLoopFraction2.html"><code>LMTOLF2</code></a>.</p>
+<p>Once the timer accumulates ticks equal to <code>O2TIME</code>, the ECU executes <code>CheckIfO2SensorDataIsValid</code>. If the sensor voltage has broken out of the deadband (outside <a href="../Fuel_-_O2_Controller/O2TLML_LowLimitForDelayedSwitchToClosedLoop.html"><code>O2TLML</code></a> to <a href="../Fuel_-_O2_Controller/O2TLMH_HighLimitForDelayedSwitchToClosedLoop.html"><code>O2TLMH</code></a>), bit 4 of <code>BitFlags_81</code> is asserted and closed loop feedback activates.</p>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>
 <p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 3088â€“3102):</p>

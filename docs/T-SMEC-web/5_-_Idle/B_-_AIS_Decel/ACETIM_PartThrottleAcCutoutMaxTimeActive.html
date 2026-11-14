@@ -118,16 +118,7 @@
 <p><code>ACETIM</code> acts as a maximum timeout limiter: once the cutout timer reaches <code>ACETIM</code>, the controller overrides the cutout and forces the compressor clutch to re-engage.</p>
 <p>In factory calibrations, <code>ACETIM</code> is set to 8 counts, enforcing a maximum cutout window of approximately 0.5 seconds.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2207</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Part-throttle cutout is actively running (<code>Timer_AcCutout</code> &gt; 0 at line 2175, branching to <code>L1098</code>).</li>
-<li>Compares <code>Timer_AcCutout</code> in accumulator A against <code>ACETIM</code> at line 2191.</li>
-<li>If timer &gt;= <code>ACETIM</code> (<code>bcc L1099</code>), branches to line 2206 to clear <code>Timer_AcCutout</code>, terminating the cutout.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Extending Acceleration Boost Window</strong>:</li>
 <li>Increase <code>ACETIM</code> to 5.0 to 10.0 seconds to allow the compressor to remain disengaged throughout an entire highway passing maneuver.</li>
@@ -135,6 +126,16 @@
 <li>Keep <code>ACETIM</code> below 15 seconds to prevent the cabin evaporator from thawing and blowing humid air.</li>
 <li><strong>Timeout Reset</strong>:</li>
 <li>When <code>Timer_AcCutout</code> reaches <code>ACETIM</code>, the timer is zeroed at line 2207, re-engaging the compressor.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during part-throttle A/C cutout, capping the maximum continuous duration the compressor clutch can remain disengaged.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2207</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Part-throttle cutout is actively running (<code>Timer_AcCutout</code> &gt; 0 at line 2175, branching to <code>L1098</code>).</li>
+<li>Compares <code>Timer_AcCutout</code> in accumulator A against <code>ACETIM</code> at line 2191.</li>
+<li>If timer &gt;= <code>ACETIM</code> (<code>bcc L1099</code>), branches to line 2206 to clear <code>Timer_AcCutout</code>, terminating the cutout.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

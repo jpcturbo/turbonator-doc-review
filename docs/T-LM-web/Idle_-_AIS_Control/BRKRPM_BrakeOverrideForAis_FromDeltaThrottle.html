@@ -116,17 +116,18 @@
 <p><code>BRKRPM</code> (BrakeOverrideForAis_FromDeltaThrottle) is a 2D calibration lookup table that defines an engine RPM threshold indexed by throttle opening above closed-throttle baseline (<code>TpsVolts - MINTHR_LowestSessionTPS</code>).</p>
 <p>When the driver is operating the throttle or applying the brakes off-idle, closed-loop idle speed regulation must be temporarily suspended so the ECU does not attempt to fight the driver's throttle inputs or fight brake booster vacuum surges. If engine RPM is below the looked-up threshold in <code>BRKRPM</code>, closed-loop idle control is bypassed and the stepper motor enters dashpot / tracking mode. Once engine RPM and throttle drop into valid idle conditions, closed-loop regulation is restored.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Hanging Idle Off-Throttle</strong>: If the engine hangs at elevated RPM after light throttle blips or when braking into a corner, lowering <code>BRKRPM</code> allows the ECU to resume closed-loop idle control sooner.</li>
+<li><strong>Surging While Creeping in Traffic</strong>: If the car surges or 'bucks' at very low speeds with light throttle application, the ECU may be toggling in and out of closed-loop idle control prematurely. Raising <code>BRKRPM</code> widens the deadband to prevent premature closed-loop entry.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the driver is operating the throttle or applying the brakes off-idle, closed-loop idle speed regulation must be temporarily suspended so the ECU does not attempt to fight the driver's throttle inputs or fight brake booster vacuum surges.</p>
 <ul>
 <li>Evaluated inside <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at line 5122.</li>
 <li>Indexed by throttle delta above learned minimum: <code>ldaa TpsVolts; suba MINTHR_LowestSessionTPS</code>.</li>
 <li>Compares looked-up value against <code>EngineRpm_HB</code>. If RPM is lower, branches to <code>LE51C</code> to execute closed-loop idle feedback.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Hanging Idle Off-Throttle</strong>: If the engine hangs at elevated RPM after light throttle blips or when braking into a corner, lowering <code>BRKRPM</code> allows the ECU to resume closed-loop idle control sooner.</li>
-<li><strong>Surging While Creeping in Traffic</strong>: If the car surges or 'bucks' at very low speeds with light throttle application, the ECU may be toggling in and out of closed-loop idle control prematurely. Raising <code>BRKRPM</code> widens the deadband to prevent premature closed-loop entry.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

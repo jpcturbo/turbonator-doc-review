@@ -134,17 +134,7 @@
 <p><code>FWDAIS</code> indexes this RPM error to determine how many opening steps to apply to catch the sagging engine speed.</p>
 <p>In factory calibrations, <code>FWDAIS</code> incorporates a deadband of approximately 30 RPM where 0 steps are commanded to prevent hunting, then adds 1 step at 50 RPM error, 4 steps at 100 RPM error, and 6 steps at 120 RPM error.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2401</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Startup feedback lockout timer <code>Timer_CountdownFromStartRunForAisFeedback</code> must be zero at line 2368.</li>
-<li>Stepper movement interval timer <code>Timer_AisChanges</code> must exceed <a href="../../5_-_Idle/B_-_AIS_Decel/AISFRQ_AisPeriodForRpmFeedback11ms.html"><code>AISFRQ</code></a> at line 2371.</li>
-<li>Actual engine speed must be lower than target idle speed: <code>subd EngineRpm_HB</code> from <code>TargetIdleSpeed_HB</code> yields a positive result (<code>bcc L1131</code> at line 2376).</li>
-<li>Indexes <code>FWDAIS</code> table at line 2373 using the shifted RPM error delta.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Curing Accessory Load Dips</strong>:</li>
 <li>If turning the steering wheel or activating the headlights causes engine speed to plunge, increase the opening steps in <code>FWDAIS</code> at 50 to 100 RPM error by 1 or 2 steps.</li>
@@ -152,6 +142,17 @@
 <li>Engines with reduced rotating mass decelerate rapidly; slightly larger opening steps help arrest the downward RPM spike before stalling.</li>
 <li><strong>Surging &amp; Hunting Prevention</strong>:</li>
 <li>If the engine rhythmically surges up and down at idle, reduce <code>FWDAIS</code> opening steps and broaden the zero-step deadband to stabilize the control loop.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when electrical or mechanical loads suddenly engage, such as the radiator cooling fan turning on, alternator heavy charging, or power steering pump assist, engine speed sags.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2401</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Startup feedback lockout timer <code>Timer_CountdownFromStartRunForAisFeedback</code> must be zero at line 2368.</li>
+<li>Stepper movement interval timer <code>Timer_AisChanges</code> must exceed <a href="../../5_-_Idle/B_-_AIS_Decel/AISFRQ_AisPeriodForRpmFeedback11ms.html"><code>AISFRQ</code></a> at line 2371.</li>
+<li>Actual engine speed must be lower than target idle speed: <code>subd EngineRpm_HB</code> from <code>TargetIdleSpeed_HB</code> yields a positive result (<code>bcc L1131</code> at line 2376).</li>
+<li>Indexes <code>FWDAIS</code> table at line 2373 using the shifted RPM error delta.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

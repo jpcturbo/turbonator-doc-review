@@ -116,16 +116,7 @@
 <p><code>MTHRMX</code> defines the default closed-throttle position baseline voltage loaded into memory whenever the vehicle battery is disconnected, keep-alive memory power is lost, or the engine controller undergoes a hard reset.</p>
 <p>In factory calibrations, <code>MTHRMX</code> is calibrated to ninety-two counts, corresponding to approximately one point eight zero volts. Because physical throttle position sensors typically rest between zero point eight and one point zero volts at idle, initializing the learned minimum throttle register to <code>MTHRMX</code> establishes a safe upper ceiling. Once the engine starts and enters closed-throttle deceleration, the adaptive ratcheting logic steps the learned baseline downward until it matches the physical resting voltage.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: Evaluated in <code>Interrupt_RealTime</code> (<code>T-SMEC_v19.asm:7211-7248</code>, line 7248), <code>SetupSystemAndGoToMainLoop</code> (lines 7445, 7448), and <code>CheckThrottle_AtFullThrottle</code> (lines 7835, 7903, 7905).</li>
-<li><strong>Battery Disconnect Recovery</strong>:</li>
-<li>Loaded into <code>MINTHR_LowestSessionTPS</code> during cold power-on initialization when standby memory power loss is detected.</li>
-<li><strong>Clamping Ceiling</strong>:</li>
-<li>In <code>CheckThrottle_VehicleSpeedStillAboveDecelIdle</code> at line 7903, <code>MINTHR_LowestSessionTPS</code> is compared to <code>MTHRMX</code> and clamped via <code>ldaa MTHRMX</code> to prevent excessive upward drift.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Battery Disconnect Fallback</strong>:</li>
 <li>Default voltage baseline written to <code>MINTHR_LowestSessionTPS</code> during power-up when battery memory is cleared.</li>
@@ -135,6 +126,16 @@
 <li>Also functions as the maximum permissible voltage cap when the deceleration self-calibration routine increments <code>MINTHR</code>.</li>
 <li><strong>Factory Setting</strong>:</li>
 <li>Set to ninety-two counts (~1.80 Volts) in factory calibrations.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect once the engine starts and enters closed-throttle deceleration, the adaptive ratcheting logic steps the learned baseline downward until it matches the physical resting voltage.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: Evaluated in <code>Interrupt_RealTime</code> (<code>T-SMEC_v19.asm:7211-7248</code>, line 7248), <code>SetupSystemAndGoToMainLoop</code> (lines 7445, 7448), and <code>CheckThrottle_AtFullThrottle</code> (lines 7835, 7903, 7905).</li>
+<li><strong>Battery Disconnect Recovery</strong>:</li>
+<li>Loaded into <code>MINTHR_LowestSessionTPS</code> during cold power-on initialization when standby memory power loss is detected.</li>
+<li><strong>Clamping Ceiling</strong>:</li>
+<li>In <code>CheckThrottle_VehicleSpeedStillAboveDecelIdle</code> at line 7903, <code>MINTHR_LowestSessionTPS</code> is compared to <code>MTHRMX</code> and clamped via <code>ldaa MTHRMX</code> to prevent excessive upward drift.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -117,21 +117,22 @@
 <p>Although labeled in calibration templates as an engine speed high limit, firmware reverse engineering of <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a> confirms that this label is a complete misnomer. The actual RPM limits are governed by <a href="../../7_-_Aux_Functions/EGR/EGR15_ExhGasRecircConstFromRPMLoLimit.html"><code>EGR15</code></a>/<a href="../../7_-_Aux_Functions/EGR/EGR15b_ExhGasRecircConstFromRPMLoLimit.html"><code>EGR15B</code></a> (Phase 1) and <a href="../../7_-_Aux_Functions/EGR/EGR17_ExhGasRecircConstLoLimit.html"><code>EGR17</code></a>/<a href="../../7_-_Aux_Functions/EGR/EGR17a_ExhGasRecircConstHiLimit.html"><code>EGR17A</code></a> (Phase 2).</p>
 <p>In executable firmware, <code>EGR15A</code> resides in calibration memory directly following <a href="../../7_-_Aux_Functions/EGR/EGR6_ExhGasRecircConst.html"><code>EGR6</code></a>. When the CPU executes line 5485, it reads a 16-bit word where <a href="../../7_-_Aux_Functions/EGR/EGR6_ExhGasRecircConst.html"><code>EGR6</code></a> is the high byte (1 count) and <code>EGR15A</code> is the low byte (108 counts), combining into the 364-count diagnostic timeout threshold.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Template Misnomer Anomaly</strong>: Labeled in MPTune as <code>ExhGasRecircConstFromRPMHiLimit</code>, but has no connection to RPM. It is the low byte of 16-bit constant <a href="../../7_-_Aux_Functions/EGR/EGR6_ExhGasRecircConst.html"><code>EGR6</code></a>.</li>
+<li><strong>Fine-Tuning Timeout</strong>: Each count added or subtracted adjusts the Phase 2 timeout window by approximately 10 to 15 milliseconds.</li>
+<li><strong>Combined Math</strong>: Total Phase 2 timeout counts equal <code>(EGR6 * 256) + EGR15A</code>. Factory settings: <code>(1 * 256) + 108 = 364</code> counts (approx 3.6 to 5.5 seconds).</li>
+<li><strong>Diagnostic Tuning</strong>: If installing headers causes delayed oxygen sensor response, raising <code>EGR15A</code> to 200 or raising <a href="../../7_-_Aux_Functions/EGR/EGR6_ExhGasRecircConst.html"><code>EGR6</code></a> to 2 provides extra response headroom.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle cruising, modulating the exhaust gas recirculation (EGR) solenoid duty cycle to control combustion temperatures.</p>
 <ul>
 <li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically line 5485.</li>
 <li><strong>Execution Context</strong>: Evaluated as part of the 16-bit instruction <code>cpx EGR6_ExhGasRecircConst</code>.</li>
 <li><strong>Input Variable</strong>: Index register X holding 16-bit diagnostic counter <code>EGRVar3</code>.</li>
 <li><strong>Memory Address</strong>: Stored at ROM address 0x1ABD (calculated address 0x86E8 / org 0x8830), which is the low byte of operand <a href="../../7_-_Aux_Functions/EGR/EGR6_ExhGasRecircConst.html"><code>EGR6</code></a>.</li>
 <li><strong>Branch Behavior</strong>: If <code>EGRVar3 &gt;= 0x016C</code> (<code>bcc L1470</code>), branches to timeout failure handler.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Template Misnomer Anomaly</strong>: Labeled in MPTune as <code>ExhGasRecircConstFromRPMHiLimit</code>, but has no connection to RPM. It is the low byte of 16-bit constant <a href="../../7_-_Aux_Functions/EGR/EGR6_ExhGasRecircConst.html"><code>EGR6</code></a>.</li>
-<li><strong>Fine-Tuning Timeout</strong>: Each count added or subtracted adjusts the Phase 2 timeout window by approximately 10 to 15 milliseconds.</li>
-<li><strong>Combined Math</strong>: Total Phase 2 timeout counts equal <code>(EGR6 * 256) + EGR15A</code>. Factory settings: <code>(1 * 256) + 108 = 364</code> counts (approx 3.6 to 5.5 seconds).</li>
-<li><strong>Diagnostic Tuning</strong>: If installing headers causes delayed oxygen sensor response, raising <code>EGR15A</code> to 200 or raising <a href="../../7_-_Aux_Functions/EGR/EGR6_ExhGasRecircConst.html"><code>EGR6</code></a> to 2 provides extra response headroom.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

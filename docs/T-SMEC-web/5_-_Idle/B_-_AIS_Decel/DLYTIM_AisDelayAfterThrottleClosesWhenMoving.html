@@ -118,17 +118,7 @@
 <p>Whenever closed throttle is detected and vehicle speed is above the rolling switch point set in <a href="../../5_-_Idle/B_-_AIS_Decel/MPHREF_SwitchPointForDecelIdleAisControl.html"><code>MPHREF</code></a>, the controller reloads the feedback lockout timer with <code>DLYTIM</code>.</p>
 <p>In factory calibrations, <code>DLYTIM</code> is set to 18 counts, enforcing an open dashpot hold delay of approximately 1.1 seconds while moving.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>CheckThrottle_AtIdle</code> (<code>T-SMEC_v19.asm:7867-7895</code>) within <code>CheckThrottleRoutine_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Closed throttle detected (<code>b4f_OffIdle</code> clear at line 7868).</li>
-<li>Loads index X with <code>#DLYTIM_AisDelayAfterThrottleClosesWhenMoving</code> at line 7872.</li>
-<li>Evaluates vehicle speed: <code>ldd VehicleSpeed_HB; asld; asld; asld; cmpa MPHREF_SwitchPointForDecelIdleAisControl</code> at line 7878.</li>
-<li>If vehicle speed exceeds <a href="../../5_-_Idle/B_-_AIS_Decel/MPHREF_SwitchPointForDecelIdleAisControl.html"><code>MPHREF</code></a> (<code>bhi</code>), branches directly to <code>CheckThrottle_VehicleSpeedStillAboveDecelIdle</code> at line 7885, loading <code>DLYTIM</code> into accumulator A and storing into <code>Timer_CountdownFromStartRunForAisFeedback</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Smoothing Driveline Snatch</strong>:</li>
 <li>Increase <code>DLYTIM</code> to 1.5 to 2.0 seconds to eliminate harsh forward-and-back driveline bucking when lifting off the throttle at highway speeds.</li>
@@ -136,6 +126,17 @@
 <li>Lower <code>DLYTIM</code> to 0.5 to 0.8 seconds if you prefer sharper, immediate engine vacuum braking on throttle lift.</li>
 <li><strong>Preventing Shift Hang</strong>:</li>
 <li>Setting <code>DLYTIM</code> excessively high makes RPM linger between gear shifts on manual transmission vehicles.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the throttle snaps shut, holding the idle air motor in a dashpot position for a calibrated delay before closed-loop idle speed control resumes.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CheckThrottle_AtIdle</code> (<code>T-SMEC_v19.asm:7867-7895</code>) within <code>CheckThrottleRoutine_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Closed throttle detected (<code>b4f_OffIdle</code> clear at line 7868).</li>
+<li>Loads index X with <code>#DLYTIM_AisDelayAfterThrottleClosesWhenMoving</code> at line 7872.</li>
+<li>Evaluates vehicle speed: <code>ldd VehicleSpeed_HB; asld; asld; asld; cmpa MPHREF_SwitchPointForDecelIdleAisControl</code> at line 7878.</li>
+<li>If vehicle speed exceeds <a href="../../5_-_Idle/B_-_AIS_Decel/MPHREF_SwitchPointForDecelIdleAisControl.html"><code>MPHREF</code></a> (<code>bhi</code>), branches directly to <code>CheckThrottle_VehicleSpeedStillAboveDecelIdle</code> at line 7885, loading <code>DLYTIM</code> into accumulator A and storing into <code>Timer_CountdownFromStartRunForAisFeedback</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

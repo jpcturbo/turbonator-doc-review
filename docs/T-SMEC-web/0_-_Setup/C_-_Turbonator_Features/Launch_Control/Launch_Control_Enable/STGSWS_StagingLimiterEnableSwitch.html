@@ -117,19 +117,20 @@
 <p>Rather than requiring staging control to be permanently engaged at low vehicle speeds, this parameter allows the driver to trigger launch control via an external electrical switch, such as a clutch pedal switch, handbrake switch, steering wheel push-button, or cruise control switch.</p>
 <p>When set to zero (the factory default), no external switch is required; the engine controller automatically arms launch control whenever vehicle speed and throttle position meet the staging criteria.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Clutch Interlock Wiring</strong>: Wire a clutch pedal switch to a digital input (such as Brake Switch or Cruise Control On/Off) and select that bitmask in <code>STGSWS</code> for seamless manual transmission staging.</li>
+<li><strong>Hands-Free Automatic Arming</strong>: Setting <code>STGSWS</code> to zero allows automatic arming whenever vehicle speed is below <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_Enable/STGSPD_StageLimiterCutoffSpeed.html"><code>STGSPD</code></a> and throttle exceeds <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_Entry_Conditions/STGTPS_StageLimiterMinTPS.html"><code>STGTPS</code></a>, requiring no external switches.</li>
+<li><strong>Diagnostic Verification</strong>: Datalog the staging flag in MPScan to confirm that the selected switch reliably engages and disengages launch control logic.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when staging at the starting line, selecting the physical toggle switch or clutch input used to activate the 2-step launch rev limiter.</p>
 <ul>
 <li>Enclosed in subroutine <code>LaunchControl_CheckSwitch</code> at lines 10138-10146 of <code>cals/SMEC/T-SMEC_v19.asm</code> (invoked via <code>LaunchControl_MM</code> at line 7537 in the main engine loop).</li>
 <li>Evaluated only when custom option flag <code>opt_StageLim</code> is set in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2_CalCustomOptionConfigFlags2</code></a> (line 10134).</li>
 <li>If <code>STGSWS</code> is zero (<code>beq LaunchControl_CheckTPS</code> at line 10141), the switch check is bypassed and launch control relies purely on speed and throttle thresholds.</li>
 <li>If <code>STGSWS</code> is non-zero, instruction <code>bitb SwitchPortAccessReg</code> tests the input register (line 10144). If the bit is clear (<code>beq LaunchControl_Off</code>), launch control is aborted.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Clutch Interlock Wiring</strong>: Wire a clutch pedal switch to a digital input (such as Brake Switch or Cruise Control On/Off) and select that bitmask in <code>STGSWS</code> for seamless manual transmission staging.</li>
-<li><strong>Hands-Free Automatic Arming</strong>: Setting <code>STGSWS</code> to zero allows automatic arming whenever vehicle speed is below <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_Enable/STGSPD_StageLimiterCutoffSpeed.html"><code>STGSPD</code></a> and throttle exceeds <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_Entry_Conditions/STGTPS_StageLimiterMinTPS.html"><code>STGTPS</code></a>, requiring no external switches.</li>
-<li><strong>Diagnostic Verification</strong>: Datalog the staging flag in MPScan to confirm that the selected switch reliably engages and disengages launch control logic.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

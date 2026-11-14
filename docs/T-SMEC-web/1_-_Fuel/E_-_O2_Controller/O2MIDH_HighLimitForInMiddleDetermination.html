@@ -117,7 +117,18 @@
 <p>A healthy narrowband oxygen sensor constantly swings between rich (above 0.6V) and lean (below 0.3V). If the sensor voltage remains trapped between <a href="../../1_-_Fuel/E_-_O2_Controller/O2MIDL_LowLimitForInMiddleDetermination.html"><code>O2MIDL</code></a> and <code>O2MIDH</code>, it indicates that the sensor is cold, poisoned, unplugged, or suffering from a high-resistance wiring fault.</p>
 <p>In factory calibrations, <code>O2MIDH</code> is set to 28 counts, corresponding to approximately 0.55 volts. If the signal remains in this middle zone, the controller increments a fault timer toward clearing adaptive memory and setting diagnostic codes.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stuck Sensor Diagnostics</strong>:</li>
+<li>Defines the upper edge (0.55V) of the inactive sensor detection zone.</li>
+<li><strong>Idle Exhaust Cooling</strong>:</li>
+<li>If free-flowing exhaust causes sensor cooling at idle that dampens voltage swings, lowering <code>O2MIDH</code> slightly prevents false fault timers.</li>
+<li><strong>Switching Threshold Hierarchy</strong>:</li>
+<li>Must be maintained higher than <a href="../../1_-_Fuel/E_-_O2_Controller/O2HSWP_HighLimitForO2RampSwitching.html"><code>O2HSWP</code></a> (0.49V) to preserve normal switching.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during oxygen sensor diagnostic checks, identifying whether the sensor is stuck in the inactive mid-voltage range.</p>
 <ul>
 <li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> / <code>O2_UsingFeedback</code> (<code>T-SMEC_v19.asm:3039-3050</code>), instruction line 3041.</li>
 <li><strong>Gating Conditions</strong>: Closed loop active (<code>BitFlags_4f</code> bit <code>b4f_O2Valid</code> set).</li>
@@ -126,16 +137,6 @@
 <li>Line 3041 executes <code>cmpb O2MIDH_HighLimitForInMiddleDetermination</code>.</li>
 <li>If <code>O2SensorValue &gt;= O2MIDH</code> (<code>bcc</code>), execution branches to <code>O2Signal_InOuterMiddleRange</code> (line 3051).</li>
 <li>If <code>O2SensorValue &lt; O2MIDH</code>, execution proceeds to check <a href="../../1_-_Fuel/E_-_O2_Controller/O2MIDL_LowLimitForInMiddleDetermination.html"><code>O2MIDL</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Stuck Sensor Diagnostics</strong>:</li>
-<li>Defines the upper edge (0.55V) of the inactive sensor detection zone.</li>
-<li><strong>Idle Exhaust Cooling</strong>:</li>
-<li>If free-flowing exhaust causes sensor cooling at idle that dampens voltage swings, lowering <code>O2MIDH</code> slightly prevents false fault timers.</li>
-<li><strong>Switching Threshold Hierarchy</strong>:</li>
-<li>Must be maintained higher than <a href="../../1_-_Fuel/E_-_O2_Controller/O2HSWP_HighLimitForO2RampSwitching.html"><code>O2HSWP</code></a> (0.49V) to preserve normal switching.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -133,19 +133,7 @@
 <p><code>DCWOT</code> provides the open-loop base wastegate solenoid duty cycle curve as a function of target boost pressure for T1 wastegate control.</p>
 <p>In Chrysler T1 bleed-style wastegate plumbing, the solenoid bleeds pressurized air away from the wastegate actuator canister; higher duty cycle bleeds more pressure to hold the wastegate valve closed and raise boost, while lower duty cycle vents less air, forcing the actuator open to lower boost. The engine controller looks up this base duty cycle from target boost as the foundational starting point for closed-loop regulation, scaled so that 200 counts represents 100 percent duty cycle.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_LookupWGDutyCycleBase</code> (<code>T-SMEC_v19.asm:9600-9603</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
-<li><strong>Algorithm Selector</strong>: Active only when <code>opt_T2BC</code> bit in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2_CalCustomOptionConfigFlags2</code></a> is clear (line 9508 selecting T1 control).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Engine running confirmed (<code>BitFlags_54</code> bit <code>b54_FuelEngineNotRunning</code> clear at line 9513).</li>
-<li>Manifold pressure must exceed <code>BaroPressure + MAPPT2</code> (line 9554); otherwise, duty cycle is cleared to zero.</li>
-<li><strong>Table Lookup</strong>:</li>
-<li>Index register loaded with <code>#DCWOT_FullThrottleWastegateDutyCycle_C8is100Percent_FromMap</code> at line 9601.</li>
-<li>Indexed by gauge boost target (<code>Temp3 - BaroPressure</code>), with result written to <code>Temp4</code> at line 9603.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Feed-Forward Base Duty Cycle</strong>:</li>
 <li>Sets the foundational open-loop solenoid duty cycle before RPM, delta-boost, and adaptive corrections are applied.</li>
@@ -156,6 +144,19 @@
 <li>Aftermarket wastegates with stiff base springs (10 to 14 psi) require substantially lower <code>DCWOT</code> values than stock 6 psi springs.</li>
 <li><strong>Bleed-Style Plumbing Mechanics</strong>:</li>
 <li>T1 hardware bleeds air away from the canister; higher duty cycle holds the wastegate shut, while zero duty cycle runs base spring boost.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect at wide-open throttle under boost, defining the baseline wastegate duty cycle curve across manifold pressure.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_LookupWGDutyCycleBase</code> (<code>T-SMEC_v19.asm:9600-9603</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
+<li><strong>Algorithm Selector</strong>: Active only when <code>opt_T2BC</code> bit in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2_CalCustomOptionConfigFlags2</code></a> is clear (line 9508 selecting T1 control).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Engine running confirmed (<code>BitFlags_54</code> bit <code>b54_FuelEngineNotRunning</code> clear at line 9513).</li>
+<li>Manifold pressure must exceed <code>BaroPressure + MAPPT2</code> (line 9554); otherwise, duty cycle is cleared to zero.</li>
+<li><strong>Table Lookup</strong>:</li>
+<li>Index register loaded with <code>#DCWOT_FullThrottleWastegateDutyCycle_C8is100Percent_FromMap</code> at line 9601.</li>
+<li>Indexed by gauge boost target (<code>Temp3 - BaroPressure</code>), with result written to <code>Temp4</code> at line 9603.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

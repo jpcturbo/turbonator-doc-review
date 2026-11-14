@@ -117,21 +117,22 @@
 <p>The engine controller must ensure that the vehicle is operating under genuine part-throttle cruising conditions before recording baseline oxygen sensor behavior. At line 5431, the controller subtracts the minimum learned closed-throttle voltage from current throttle voltage, and tests the delta against <code>EGR14</code>.</p>
 <p>The factory setting of 5 counts corresponds to approximately 0.10 volts (roughly 2 percent throttle opening). If throttle position drops below this threshold (such as when the driver lifts off the accelerator into idle or deceleration), Phase 1 immediately aborts and resets, preventing deceleration fueling effects from corrupting the EGR baseline.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Raising EGR14</strong>: Demands more throttle pedal opening before Phase 1 baseline recording begins. Recommended for large throttle body conversions where 2 percent throttle represents a larger fraction of total engine airflow.</li>
+<li><strong>Lowering EGR14</strong>: Allows baseline recording at very light throttle cruise. Do not lower to zero, as closed-throttle idle transitions will destabilize the baseline calculation.</li>
+<li><strong>EGR Elimination (255 counts)</strong>: Setting <code>EGR14</code> to 255 creates an impossible lower throttle gate that prevents Phase 1 from ever completing, permanently suppressing Fault Code 32 without setting error flags.</li>
+<li><strong>Factory Calibration</strong>: 5 counts (approx 0.10 volts / 2 percent throttle) reliably distinguishes cruise from closed-throttle deceleration.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle cruising, modulating the exhaust gas recirculation (EGR) solenoid duty cycle to control combustion temperatures.</p>
 <ul>
 <li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5434.</li>
 <li><strong>Subroutine Called</strong>: <code>EGR_CheckHiLoLimits</code> (line 5462).</li>
 <li><strong>Throttle Calculation</strong>: <code>TpsVolts - MINTHR_LowestSessionTPS</code> evaluated in accumulator A.</li>
 <li><strong>Early Inhibit</strong>: Line 5433 tests <code>bls EGR_ResetEGRVars</code>; if throttle delta is zero or negative, aborts immediately.</li>
 <li><strong>Boundary Check</strong>: If throttle delta &lt; <code>EGR14</code> (<code>bcs L1464</code>), subroutine pulls stack and aborts via <code>EGR_ResetEGRVars</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Raising EGR14</strong>: Demands more throttle pedal opening before Phase 1 baseline recording begins. Recommended for large throttle body conversions where 2 percent throttle represents a larger fraction of total engine airflow.</li>
-<li><strong>Lowering EGR14</strong>: Allows baseline recording at very light throttle cruise. Do not lower to zero, as closed-throttle idle transitions will destabilize the baseline calculation.</li>
-<li><strong>EGR Elimination (255 counts)</strong>: Setting <code>EGR14</code> to 255 creates an impossible lower throttle gate that prevents Phase 1 from ever completing, permanently suppressing Fault Code 32 without setting error flags.</li>
-<li><strong>Factory Calibration</strong>: 5 counts (approx 0.10 volts / 2 percent throttle) reliably distinguishes cruise from closed-throttle deceleration.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

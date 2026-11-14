@@ -134,19 +134,7 @@
 <p><code>T2DCWBST</code> provides an error-proportional duty cycle correction based on the difference between target boost and actual manifold pressure in T2 control.</p>
 <p>Unlike the T1 routine where positive error adds duty cycle, the T2 routine explicitly negates the lookup result (using the assembly instruction <code>nega</code>) before applying it to the duty cycle total. This inversion matches T2 pressure-source plumbing, ensuring that when boost is below target, duty cycle is reduced to keep pressure off the actuator and hold the wastegate closed for fast spool-up.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9879-9887</code>).</li>
-<li><strong>Error Delta Calculation</strong>:</li>
-<li>Line 9879 loads <code>Temp3</code> (target boost) and subtracts <code>MapValue</code> at line 9880.</li>
-<li>If actual boost exceeds target, accumulator A is cleared to zero at line 9882.</li>
-<li><strong>Table Lookup &amp; Negation</strong>:</li>
-<li>Line 9883 loads index X with <code>#T2DCWBST_FullThrottleWastegateDutyCycleAdjustment_FromBoostTarget</code>.</li>
-<li>Output from <code>Lookup4ByteTable</code> is negated at line 9885 (<code>nega</code>).</li>
-<li>Line 9886 executes <code>jsr WGDC_AdjustWGDutyCycle</code>, applying the negative offset to <code>Temp4</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>T2 Spool-Up Error Correction</strong>:</li>
 <li>Maps delta boost error (<code>Target - Actual</code>) to duty cycle correction in T2 mode.</li>
@@ -156,6 +144,19 @@
 <li>Under T2 plumbing, reducing duty cycle closes the wastegate, building boost rapidly.</li>
 <li><strong>Smooth Convergence to Target</strong>:</li>
 <li>Ensure table tapers to 0% at 0 psi delta to allow smooth transition to adaptive and base feed-forward control.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under turbocharger boost operation to control FromBoostTarget.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9879-9887</code>).</li>
+<li><strong>Error Delta Calculation</strong>:</li>
+<li>Line 9879 loads <code>Temp3</code> (target boost) and subtracts <code>MapValue</code> at line 9880.</li>
+<li>If actual boost exceeds target, accumulator A is cleared to zero at line 9882.</li>
+<li><strong>Table Lookup &amp; Negation</strong>:</li>
+<li>Line 9883 loads index X with <code>#T2DCWBST_FullThrottleWastegateDutyCycleAdjustment_FromBoostTarget</code>.</li>
+<li>Output from <code>Lookup4ByteTable</code> is negated at line 9885 (<code>nega</code>).</li>
+<li>Line 9886 executes <code>jsr WGDC_AdjustWGDutyCycle</code>, applying the negative offset to <code>Temp4</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

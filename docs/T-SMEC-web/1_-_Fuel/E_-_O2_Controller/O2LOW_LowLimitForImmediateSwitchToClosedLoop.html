@@ -117,17 +117,7 @@
 <p>If the sensor produces a clear lean reading below <code>O2LOW</code> during warmup, the controller knows the sensor has reached operating temperature and is capable of full amplitude swings. The controller immediately validates the sensor flag without waiting for delay timers.</p>
 <p>In stock calibrations, <code>O2LOW</code> is set to 15 counts, corresponding to approximately 0.29 volts.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> / <code>O2_FullThrottle</code> (<code>T-SMEC_v19.asm:3008-3018</code>), instruction line 3011.</li>
-<li><strong>Gating Conditions</strong>: Signal tested lower than <a href="../../1_-_Fuel/E_-_O2_Controller/O2HIGH_HighLimitForImmediateSwitchToClosedLoop.html"><code>O2HIGH</code></a>.</li>
-<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
-<li>Line 3011 executes <code>cmpb O2LOW_LowLimitForImmediateSwitchToClosedLoop</code>.</li>
-<li>If <code>O2SensorValue &lt; O2LOW</code> (<code>bcs</code>), execution falls through to <code>O2_ValidSignal_OutsideMiddleRange</code> (line 3013), setting bit <code>b4f_O2Valid</code> immediately.</li>
-<li>If <code>O2SensorValue &gt;= O2LOW</code> (<code>bcc</code>), execution branches to <code>O2_InvalidSignal_InMiddleRange</code> (line 3019).</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Lean Signal Validation</strong>:</li>
 <li>Any signal below <code>O2LOW</code> (approx 0.29V) proves the sensor is hot and swinging lean, immediately triggering closed loop.</li>
@@ -135,6 +125,17 @@
 <li>If wiring resistance creates a ground voltage offset, raising <code>O2LOW</code> to 18-20 counts (0.35-0.39V) prevents delayed closed-loop entry.</li>
 <li><strong>Interaction with O2HIGH</strong>:</li>
 <li>Together, <code>O2LOW</code> and <a href="../../1_-_Fuel/E_-_O2_Controller/O2HIGH_HighLimitForImmediateSwitchToClosedLoop.html"><code>O2HIGH</code></a> define the active boundaries outside the intermediate warmup zone.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during oxygen sensor signal validation, setting the lower (lean) voltage threshold that verifies the O2 sensor is active and switching.</p>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> / <code>O2_FullThrottle</code> (<code>T-SMEC_v19.asm:3008-3018</code>), instruction line 3011.</li>
+<li><strong>Gating Conditions</strong>: Signal tested lower than <a href="../../1_-_Fuel/E_-_O2_Controller/O2HIGH_HighLimitForImmediateSwitchToClosedLoop.html"><code>O2HIGH</code></a>.</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Line 3011 executes <code>cmpb O2LOW_LowLimitForImmediateSwitchToClosedLoop</code>.</li>
+<li>If <code>O2SensorValue &lt; O2LOW</code> (<code>bcs</code>), execution falls through to <code>O2_ValidSignal_OutsideMiddleRange</code> (line 3013), setting bit <code>b4f_O2Valid</code> immediately.</li>
+<li>If <code>O2SensorValue &gt;= O2LOW</code> (<code>bcc</code>), execution branches to <code>O2_InvalidSignal_InMiddleRange</code> (line 3019).</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

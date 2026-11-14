@@ -117,7 +117,20 @@
 <p>Major error confirmation requires that the vehicle be operated under moderate, steady cruising conditions rather than during deep trailing-throttle overrun. During deceleration with the throttle closed, manifold vacuum is extremely high, and airflow through the engine is minimal, which can distort sensor readings.</p>
 <p>In factory calibrations, <code>ERRMAP</code> is configured to 43 counts, corresponding to approximately 4.9 psi or roughly 10.1 inHg of manifold vacuum below atmospheric pressure. The engine controller requires measured intake manifold vacuum to be less than <code>ERRMAP</code> (meaning the engine must be under sufficient load) to confirm and latch major trouble codes.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
+<li>Multiply <code>ERRMAP</code> by 0.667 (from 43 counts down to 29 counts) when converting to a 3-bar MAP sensor.</li>
+<li>Preserves the 10.1 inHg manifold vacuum qualification window.</li>
+<li><strong>Overrun Suppression</strong>:</li>
+<li>Ensures that deep trailing-throttle deceleration vacuum (18 to 22 inHg vacuum) does not confirm major trouble codes.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Zeroing <code>ERRMAP</code> completely blocks major error code escalation.</li>
+<li>Setting <code>ERRMAP</code> to maximum allows codes to latch during closed-throttle coastdown.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during deceleration with the throttle closed, manifold vacuum is extremely high, and airflow through the engine is minimal, which can distort sensor readings.</p>
 <ul>
 <li><strong>Routine &amp; Line Numbers</strong>: <code>CheckForErrorsAndSetCodes_MM</code> (<code>T-SMEC_v19.asm:4731-4763</code>), instruction at line 4754.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -128,18 +141,6 @@
 <li><code>cmpa ERRMAP_MAPLimitforErrorCodeSetting</code> at line 4754 compares vacuum against 43 counts.</li>
 <li>If vacuum is greater or equal (<code>bcc</code>), branches to <code>R1363</code> at line 4755, suppressing major code.</li>
 <li>If vacuum is less than <code>ERRMAP</code>, checks vehicle speed <code>&lt; 0x002A</code> before asserting <code>b46_MajorFault</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
-<li>Multiply <code>ERRMAP</code> by 0.667 (from 43 counts down to 29 counts) when converting to a 3-bar MAP sensor.</li>
-<li>Preserves the 10.1 inHg manifold vacuum qualification window.</li>
-<li><strong>Overrun Suppression</strong>:</li>
-<li>Ensures that deep trailing-throttle deceleration vacuum (18 to 22 inHg vacuum) does not confirm major trouble codes.</li>
-<li><strong>Edge Cases</strong>:</li>
-<li>Zeroing <code>ERRMAP</code> completely blocks major error code escalation.</li>
-<li>Setting <code>ERRMAP</code> to maximum allows codes to latch during closed-throttle coastdown.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

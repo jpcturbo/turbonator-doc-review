@@ -134,7 +134,18 @@
 <p><code>MAPMUL</code> defines an RPM-indexed scaling multiplier applied to negative manifold pressure spark advance (boost retard).</p>
 <p>In turbocharged Chrysler calibrations, ignition advance from the MAP tables (<a href="../../2_-_Spark/A_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a> and <a href="../../2_-_Spark/A_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP</code></a>) becomes negative under boost, meaning timing is subtracted from the base engine speed curve (<a href="../../2_-_Spark/A_-_Normal_Advance/GOVNER_AdvanceFromRPM.html"><code>GOVNER</code></a>). Because cylinder volumetric efficiency, charge air heating, and detonation tendencies increase at elevated engine speeds, the engine controller scales the negative MAP retard by <code>MAPMUL(RPM)</code> to apply greater timing reduction at higher RPM. In factory calibrations, <code>MAPMUL</code> scales retard by approximately 1.0x to 1.75x across the engine speed range.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Flat 1.0x Multiplier (T2 Strategy)</strong>:</li>
+<li>Setting all <code>MAPMUL</code> points to a 1.0x multiplier factor (40 counts) removes RPM-dependent retard multiplication, allowing the tuner to shape boost timing solely within <a href="../../2_-_Spark/A_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP</code></a>.</li>
+<li><strong>High-RPM Knock Suppression</strong>:</li>
+<li>Increasing <code>MAPMUL</code> values above 4500 RPM adds progressive retard at high engine speeds to protect against detonation from elevated intake charge temperatures.</li>
+<li><strong>Zeroing or Lowering Cautions</strong>:</li>
+<li>Setting <code>MAPMUL</code> too low reduces commanded boost retard, effectively advancing total ignition timing under high boost.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under manifold boost pressure, multiplying negative manifold pressure advance to retard ignition timing progressively as boost rises.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>IncludeMAPAdvMultiplier</code> (<code>T-SMEC_v19.asm:8082-8104</code>), called from <code>SparkAdvance_GetAdvanceFromTableUsingMap</code>.</li>
 <li><strong>Activation Gate</strong>:</li>
@@ -143,16 +154,6 @@
 <li>The negative advance is negated to positive (<code>nega</code>) and stored in <code>Temp1</code>.</li>
 <li><code>EngineRpm_HB</code> looks up <code>MAPMUL_MultiplierOnMapAdvanceWhenRetarding_FromRpm</code>.</li>
 <li>The multiplier is multiplied by <code>Temp1</code> via 8x8 unsigned multiplication and scaled back to signed negative advance.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Flat 1.0x Multiplier (T2 Strategy)</strong>:</li>
-<li>Setting all <code>MAPMUL</code> points to a 1.0x multiplier factor (40 counts) removes RPM-dependent retard multiplication, allowing the tuner to shape boost timing solely within <a href="../../2_-_Spark/A_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP</code></a>.</li>
-<li><strong>High-RPM Knock Suppression</strong>:</li>
-<li>Increasing <code>MAPMUL</code> values above 4500 RPM adds progressive retard at high engine speeds to protect against detonation from elevated intake charge temperatures.</li>
-<li><strong>Zeroing or Lowering Cautions</strong>:</li>
-<li>Setting <code>MAPMUL</code> too low reduces commanded boost retard, effectively advancing total ignition timing under high boost.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

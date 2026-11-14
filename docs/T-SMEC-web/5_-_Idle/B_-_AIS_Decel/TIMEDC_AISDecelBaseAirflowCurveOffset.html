@@ -132,17 +132,7 @@
 <p><code>TIMEDC</code> is indexed by engine run time and adds an auxiliary boost to the calculated decel control manifold pressure, commanding extra dashpot opening steps from <a href="../../5_-_Idle/B_-_AIS_Decel/DAISOP_DecelAisOpenStepsFromNeg_FromDeltaMap.html"><code>DAISOP</code></a>.</p>
 <p>In factory calibrations, <code>TIMEDC</code> supplies an auxiliary decel offset during the first 11 seconds that smoothly ramps to zero by 21 seconds of engine run time.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1996</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Fall-to-idle deceleration flag <code>b50_FallToIdle</code> must be set in <code>BitFlags_50</code> at line 1877.</li>
-<li>Loads <code>KeyOnOrEngineRunningTime</code> into accumulator A at line 1880.</li>
-<li>Indexes <code>TIMEDC</code> table at line 1879 via <code>jsr Lookup4ByteTable</code>.</li>
-<li>Sums the returned offset with the running control MAP in <code>Temp0</code> at line 1882.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Cold Drive-Away Stall Elimination</strong>:</li>
 <li>Increase <code>TIMEDC</code> offset values and extend the time axis to 30 to 45 seconds if the vehicle dies on gear changes immediately after starting.</li>
@@ -150,6 +140,17 @@
 <li>If warm engine restarts produce an extended floating idle during the first 20 seconds of driving, reduce <code>TIMEDC</code> offset points.</li>
 <li><strong>Table Interpolation</strong>:</li>
 <li>Evaluated smoothly via <code>Lookup4ByteTable</code> using <code>KeyOnOrEngineRunningTime</code>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when an engine has recently started and is driven off-idle, intake manifold runners and cylinder heads are still absorbing heat, and fuel atomization is not yet fully optimized.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1996</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Fall-to-idle deceleration flag <code>b50_FallToIdle</code> must be set in <code>BitFlags_50</code> at line 1877.</li>
+<li>Loads <code>KeyOnOrEngineRunningTime</code> into accumulator A at line 1880.</li>
+<li>Indexes <code>TIMEDC</code> table at line 1879 via <code>jsr Lookup4ByteTable</code>.</li>
+<li>Sums the returned offset with the running control MAP in <code>Temp0</code> at line 1882.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

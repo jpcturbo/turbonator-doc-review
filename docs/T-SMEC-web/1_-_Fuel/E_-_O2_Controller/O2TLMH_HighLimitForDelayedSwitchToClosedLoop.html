@@ -117,17 +117,7 @@
 <p>If the oxygen sensor voltage is not high enough to exceed <a href="../../1_-_Fuel/E_-_O2_Controller/O2HIGH_HighLimitForImmediateSwitchToClosedLoop.html"><code>O2HIGH</code></a> for immediate closed-loop entry, but falls between <a href="../../1_-_Fuel/E_-_O2_Controller/O2TLML_LowLimitForDelayedSwitchToClosedLoop.html"><code>O2TLML</code></a> and <code>O2TLMH</code>, the sensor is demonstrating partial activity as it warms up. The controller marks this condition and starts the delayed qualification timer <a href="../../1_-_Fuel/E_-_O2_Controller/O2TIME_DelayTimeToClosedLoop.html"><code>O2TIME</code></a> rather than locking out closed loop completely.</p>
 <p>In factory calibrations, <code>O2TLMH</code> is set to 31 counts, corresponding to approximately 0.61 volts.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> / <code>O2_InvalidSignal_InMiddleRange</code> (<code>T-SMEC_v19.asm:3019-3038</code>), instruction line 3021.</li>
-<li><strong>Gating Conditions</strong>: Signal failed immediate validation checks (<code>O2LOW &lt;= O2SensorValue &lt; O2HIGH</code>).</li>
-<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
-<li>Line 3021 executes <code>cmpb O2TLMH_HighLimitForDelayedSwitchToClosedLoop</code>.</li>
-<li>If <code>O2SensorValue &gt;= O2TLMH</code> (<code>bcc</code>), execution branches to line 3025 (<code>L1206</code>), setting bit 7 of <code>Timer_CLTIME_ClosedLoopTimer</code>.</li>
-<li>If <code>O2SensorValue &lt; O2TLMH</code>, execution proceeds to test <a href="../../1_-_Fuel/E_-_O2_Controller/O2TLML_LowLimitForDelayedSwitchToClosedLoop.html"><code>O2TLML</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Warmup Window Upper Edge</strong>:</li>
 <li>Defines the upper limit of the delayed qualification zone (0.61V).</li>
@@ -135,6 +125,17 @@
 <li>On downpipe-mounted sensors with slower warmup, raising <code>O2TLMH</code> allows the qualification countdown to begin earlier.</li>
 <li><strong>Relationship to O2HIGH</strong>:</li>
 <li>Must be maintained strictly lower than <a href="../../1_-_Fuel/E_-_O2_Controller/O2HIGH_HighLimitForImmediateSwitchToClosedLoop.html"><code>O2HIGH</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if the oxygen sensor voltage is not high enough to exceed O2HIGH for immediate closed-loop entry, but falls between O2TLML and O2TLMH, the sensor is demonstrating partial activity as it warms up.</p>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> / <code>O2_InvalidSignal_InMiddleRange</code> (<code>T-SMEC_v19.asm:3019-3038</code>), instruction line 3021.</li>
+<li><strong>Gating Conditions</strong>: Signal failed immediate validation checks (<code>O2LOW &lt;= O2SensorValue &lt; O2HIGH</code>).</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Line 3021 executes <code>cmpb O2TLMH_HighLimitForDelayedSwitchToClosedLoop</code>.</li>
+<li>If <code>O2SensorValue &gt;= O2TLMH</code> (<code>bcc</code>), execution branches to line 3025 (<code>L1206</code>), setting bit 7 of <code>Timer_CLTIME_ClosedLoopTimer</code>.</li>
+<li>If <code>O2SensorValue &lt; O2TLMH</code>, execution proceeds to test <a href="../../1_-_Fuel/E_-_O2_Controller/O2TLML_LowLimitForDelayedSwitchToClosedLoop.html"><code>O2TLML</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

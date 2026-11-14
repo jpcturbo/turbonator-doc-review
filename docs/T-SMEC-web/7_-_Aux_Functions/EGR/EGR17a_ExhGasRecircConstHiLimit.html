@@ -117,21 +117,22 @@
 <p>Positioned immediately following <a href="../../7_-_Aux_Functions/EGR/EGR17_ExhGasRecircConstLoLimit.html"><code>EGR17</code></a> in calibration ROM, this constant caps the maximum engine speed allowed while the engine controller commands the EGR valve closed and tests for oxygen sensor response. If the driver downshifts or accelerates and engine speed exceeds <code>EGR17A</code>, the boundary checking routine aborts Phase 2 and resets the diagnostic sequence.</p>
 <p>In the factory calibration, <code>EGR17A</code> is set to 255 counts (8160 RPM), allowing the shutoff flow test to execute across the entire engine speed cruising spectrum.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Lowering EGR17A</strong>: Caps the maximum RPM allowed during Phase 2 flow verification. Useful to prevent testing at high RPM where closed-loop fueling transitions are more dynamic.</li>
+<li><strong>Factory Ceiling (255 counts)</strong>: Keeps the upper boundary wide open up to 8160 RPM in stock calibrations.</li>
+<li><strong>Window Logic</strong>: Must always be configured greater than or equal to <a href="../../7_-_Aux_Functions/EGR/EGR17_ExhGasRecircConstLoLimit.html"><code>EGR17</code></a>.</li>
+<li><strong>Scaling</strong>: Scaled at 32 RPM per count based on the high byte of engine speed.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle cruising, modulating the exhaust gas recirculation (EGR) solenoid duty cycle to control combustion temperatures.</p>
 <ul>
 <li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically via call at line 5499.</li>
 <li><strong>Subroutine Called</strong>: <code>EGR_CheckHiLoLimits</code> (lines 5462–5468), specifically line 5465.</li>
 <li><strong>Input Variable</strong>: <code>EngineRpm_HB</code> evaluated in accumulator A against offset <code>0x01,x</code>.</li>
 <li><strong>State Condition</strong>: Phase 2 active (<code>EGRVar2</code> bit 7 set).</li>
 <li><strong>Branch Behavior</strong>: If <code>EngineRpm_HB &gt; EGR17A</code> (<code>bhi L1464</code>), subroutine discards stack frame (<code>pulx</code>) and branches to <code>EGR_ResetEGRVars</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Lowering EGR17A</strong>: Caps the maximum RPM allowed during Phase 2 flow verification. Useful to prevent testing at high RPM where closed-loop fueling transitions are more dynamic.</li>
-<li><strong>Factory Ceiling (255 counts)</strong>: Keeps the upper boundary wide open up to 8160 RPM in stock calibrations.</li>
-<li><strong>Window Logic</strong>: Must always be configured greater than or equal to <a href="../../7_-_Aux_Functions/EGR/EGR17_ExhGasRecircConstLoLimit.html"><code>EGR17</code></a>.</li>
-<li><strong>Scaling</strong>: Scaled at 32 RPM per count based on the high byte of engine speed.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

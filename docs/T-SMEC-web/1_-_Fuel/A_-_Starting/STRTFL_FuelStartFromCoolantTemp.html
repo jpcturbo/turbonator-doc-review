@@ -129,19 +129,7 @@
 <p>When starting a cold engine, fuel droplets condense onto cold intake runners, intake valves, and cylinder walls rather than remaining suspended in the intake airflow. To establish an ignitable air-fuel vapor cloud in the combustion chamber, <code>STRTFL</code> provides heavy initial fuel pulsewidths at low coolant temperatures, tapering down smoothly as the engine warms toward operating temperature.</p>
 <p>The engine controller uses this base table while the starter motor is actively rotating the crankshaft below running speed.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateInjectorPulsewidthForStarting_MM</code> (<code>T-SMEC_v19.asm:5546-5606</code>), instruction line 5565.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Active only when engine not running flag <code>b54_FuelEngineNotRunning</code> in <code>BitFlags_54</code> is set (<code>T-SMEC_v19.asm:5547</code>).</li>
-<li>Bypassed if flood clear mode is triggered via high throttle position (<code>TpsVolts &gt;= 0xD0</code> or <code>TpsVolts - MINTHR &gt;= UNLOAD</code>).</li>
-<li>If throttle is closed (<code>b4f_OffIdle</code> clear), coolant temperature is clamped to <a href="../../1_-_Fuel/A_-_Starting/STRLMT_ColdestTempAllowedAtClosedThrottle.html"><code>STRLMT</code></a>.</li>
-<li><strong>Mathematical Processing</strong>:</li>
-<li>Looked up via <code>Lookup4ByteTable</code>, then squared (<code>mul</code>) to yield quadratic cranking fuel in <code>Temp0</code>.</li>
-<li>Scaled by <a href="../../1_-_Fuel/A_-_Starting/EPPMUL_FuelStartFuelPerEPP.html"><code>EPPMUL</code></a> based on crankshaft pulse count, then modified by <a href="../../1_-_Fuel/A_-_Starting/STFBAR_FuelStartReductionFromBaro.html"><code>STFBAR</code></a> and <a href="../../1_-_Fuel/A_-_Starting/STFTMP_FuelStartFuelFromCoolant.html"><code>STFTMP</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Injector Size Scaling</strong>:</li>
 <li>When installing larger injectors, scale the entire <code>STRTFL</code> table downward by the flow ratio (stock flow divided by new flow) to avoid flooding.</li>
@@ -151,6 +139,19 @@
 <li>Lowering values eliminates black exhaust smoke and flooded spark plugs on hot restarts.</li>
 <li><strong>Starting Symptoms</strong>:</li>
 <li>If the engine spins without catching on cold mornings, raise the lower temperature points incrementally.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when starting a cold engine, fuel droplets condense onto cold intake runners, intake valves, and cylinder walls rather than remaining suspended in the intake airflow.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateInjectorPulsewidthForStarting_MM</code> (<code>T-SMEC_v19.asm:5546-5606</code>), instruction line 5565.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Active only when engine not running flag <code>b54_FuelEngineNotRunning</code> in <code>BitFlags_54</code> is set (<code>T-SMEC_v19.asm:5547</code>).</li>
+<li>Bypassed if flood clear mode is triggered via high throttle position (<code>TpsVolts &gt;= 0xD0</code> or <code>TpsVolts - MINTHR &gt;= UNLOAD</code>).</li>
+<li>If throttle is closed (<code>b4f_OffIdle</code> clear), coolant temperature is clamped to <a href="../../1_-_Fuel/A_-_Starting/STRLMT_ColdestTempAllowedAtClosedThrottle.html"><code>STRLMT</code></a>.</li>
+<li><strong>Mathematical Processing</strong>:</li>
+<li>Looked up via <code>Lookup4ByteTable</code>, then squared (<code>mul</code>) to yield quadratic cranking fuel in <code>Temp0</code>.</li>
+<li>Scaled by <a href="../../1_-_Fuel/A_-_Starting/EPPMUL_FuelStartFuelPerEPP.html"><code>EPPMUL</code></a> based on crankshaft pulse count, then modified by <a href="../../1_-_Fuel/A_-_Starting/STFBAR_FuelStartReductionFromBaro.html"><code>STFBAR</code></a> and <a href="../../1_-_Fuel/A_-_Starting/STFTMP_FuelStartFuelFromCoolant.html"><code>STFTMP</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

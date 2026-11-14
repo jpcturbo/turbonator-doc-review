@@ -117,7 +117,20 @@
 <p>The throttle position sensor is a potentiometer powered by a 5.0-volt reference supply that produces an output voltage proportional to throttle plate angle. Under normal operating conditions, a fully closed throttle plate produces a signal between 0.50 and 0.90 volts. If the signal wire breaks, the wiper loses contact, or the sensor circuit shorts directly to ground, the input voltage drops below <code>THRLOW</code>.</p>
 <p>In factory calibrations, <code>THRLOW</code> is set to 8 counts, corresponding to approximately 0.16 volts. If sensor voltage drops below <code>THRLOW</code>, the engine controller flags <strong>Fault Code 24</strong>, latches a bad throttle signal error, and activates synthetic throttle emulation from manifold pressure.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Throttle Stop Adjustment &amp; False Codes</strong>:</li>
+<li>If an aftermarket throttle body is adjusted so the closed-throttle resting voltage drops near 0.30 volts, raising <code>THRLOW</code> can cause false Fault Code 24 triggers.</li>
+<li>Keep <code>THRLOW</code> at or below 8 counts (0.16 volts) to maintain an adequate safety margin below base idle voltage.</li>
+<li><strong>Sensor Wiring Diagnostics</strong>:</li>
+<li>A continuous Fault Code 24 with 0.0 volts measured at the sensor signal pin typically indicates a broken signal wire or cracked potentiometer wiper.</li>
+<li><strong>Lowering &amp; Edge Cases</strong>:</li>
+<li>Zeroing <code>THRLOW</code> disables short-to-ground detection.</li>
+<li>Setting <code>THRLOW</code> higher than base idle voltage forces the vehicle into permanent limp-home throttle emulation.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect continuously during throttle sensor diagnostics, flagging fault codes if the TPS voltage reads below ground.</p>
 <ul>
 <li><strong>Routine &amp; Line Numbers</strong>: <code>CheckThrottleRoutine_MM</code> (<code>T-SMEC_v19.asm:7769-7783</code>), instruction at line 7772.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -128,18 +141,6 @@
 <li><code>cmpa THRLOW_ThrottleLowerLimit</code> at line 7772 compares against 8 counts.</li>
 <li>If lower (<code>bcs</code>), branches to <code>CheckThrottle_BadTpsSignal</code> at line 7773.</li>
 <li>Throws non-critical error code 0x1A94 (Fault Code 24) and sets <code>b45_IPL1</code> bit <code>b45_TpsBadSignal</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Throttle Stop Adjustment &amp; False Codes</strong>:</li>
-<li>If an aftermarket throttle body is adjusted so the closed-throttle resting voltage drops near 0.30 volts, raising <code>THRLOW</code> can cause false Fault Code 24 triggers.</li>
-<li>Keep <code>THRLOW</code> at or below 8 counts (0.16 volts) to maintain an adequate safety margin below base idle voltage.</li>
-<li><strong>Sensor Wiring Diagnostics</strong>:</li>
-<li>A continuous Fault Code 24 with 0.0 volts measured at the sensor signal pin typically indicates a broken signal wire or cracked potentiometer wiper.</li>
-<li><strong>Lowering &amp; Edge Cases</strong>:</li>
-<li>Zeroing <code>THRLOW</code> disables short-to-ground detection.</li>
-<li>Setting <code>THRLOW</code> higher than base idle voltage forces the vehicle into permanent limp-home throttle emulation.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

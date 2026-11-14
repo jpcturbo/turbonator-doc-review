@@ -116,7 +116,18 @@
 <p><code>PTUMP1</code> defines the primary manifold pressure delta threshold for Part Throttle Unlock lockup enforcement under moderate-to-heavy throttle modulation.</p>
 <p>When the driver applies more throttle than <a href="../../../7_-_Aux_Functions/PTU_Control/Hysteresis/PTUDTP_PTUDeltaTPSForUnlock.html"><code>PTUDTP</code></a>, the controller selects <code>PTUMP1</code> to evaluate engine load changes. If manifold pressure rise (stored in <code>Temp0</code>) meets or exceeds <code>PTUMP1</code>, the controller commands the torque converter clutch to lock, preventing converter slippage under engine load. In factory calibrations, <code>PTUMP1</code> is set to 120 counts, corresponding to approximately 13.8 psi on the 0 to 29.4 psi MAP scale. If manifold pressure increases by more than this threshold, the torque converter is locked to protect transmission friction plates.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>3-Bar MAP Rescaling</strong>:</li>
+<li>Rescale <code>PTUMP1</code> to ~80 counts on 3-bar sensor conversions to preserve 13.8 psi delta threshold.</li>
+<li><strong>Torque Converter Multiplication</strong>:</li>
+<li>Raise <code>PTUMP1</code> to permit longer unlocked operation during moderate acceleration for better torque multiplication.</li>
+<li><strong>Clutch Slippage Prevention</strong>:</li>
+<li>Lower <code>PTUMP1</code> on high-torque turbocharged engines to lock the converter before high cylinder pressure can slip the clutch.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the driver applies more throttle than PTUDTP, the controller selects PTUMP1 to evaluate engine load changes.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>ControlPTU_MM</code> / <code>PTU_CheckMAPThresholdsForLock</code> (<code>T-SMEC_v19.asm:10437-10450</code>), instruction line 10437.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -125,16 +136,6 @@
 <li>Index register X points to <code>PTUMP1_PTUMAPThresholdForLock1</code> (line 10437).</li>
 <li>Compares manifold pressure change in accumulator B against <code>0x00,x</code> at line 10449.</li>
 <li>If delta <code>&gt;= PTUMP1</code> (<code>bcc PTU_SetPTUBits</code>), branches to lock torque converter.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>3-Bar MAP Rescaling</strong>:</li>
-<li>Rescale <code>PTUMP1</code> to ~80 counts on 3-bar sensor conversions to preserve 13.8 psi delta threshold.</li>
-<li><strong>Torque Converter Multiplication</strong>:</li>
-<li>Raise <code>PTUMP1</code> to permit longer unlocked operation during moderate acceleration for better torque multiplication.</li>
-<li><strong>Clutch Slippage Prevention</strong>:</li>
-<li>Lower <code>PTUMP1</code> on high-torque turbocharged engines to lock the converter before high cylinder pressure can slip the clutch.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

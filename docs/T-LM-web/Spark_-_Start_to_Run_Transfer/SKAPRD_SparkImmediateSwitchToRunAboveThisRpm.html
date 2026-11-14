@@ -117,13 +117,7 @@
 <p>When starting a car, the ECU remains in a dedicated "Cranking / Start Mode" (running locked distributor trigger timing and fixed cranking fuel pulse widths) until the engine flares to life. Under normal cranking, the ECU requires the engine to exceed a lower threshold (<a href="../Spark_-_Start_to_Run_Transfer/STRNTR_SparkStartRunTransferPointRpm.html"><code>STRNTR</code></a>, ~600 RPM) for a set number of consecutive cylinder pulses (<a href="../Spark_-_Start_to_Run_Transfer/SRTIME_SparkEPPsNeededToBeAboveSR_Hot.html"><code>SRTIME</code></a>) before transferring to "Run Mode". </p>
 <p>However, if the engine flares violently or catches immediately and revs past ~800 RPM, waiting for multiple cylinder pulses is unnecessary and could delay dynamic spark advance. <code>SKAPRD</code> provides an immediate bypass: if the distributor pulse period drops below <code>SKAPRD</code> (speed exceeds ~813 RPM), the ECU switches instantly into Run Mode.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<p><code>SKAPRD</code> is checked on every distributor ignition interrupt during cranking:
-* <strong>Measured Variable:</strong> <code>TimerOverflowsBetweenDistPulses</code> (the 16-bit timer duration between distributor reference pulses).
-* <strong>Inverse Period Relationship:</strong> In the 6803 timer, a shorter pulse period represents a higher engine speed.
-* <strong>Trigger Condition:</strong> If <code>TimerOverflowsBetweenDistPulses &lt; SKAPRD</code> (engine speed &gt; ~813 RPM), the ECU branches immediately to <code>ENGINE_IDLING_FASTERTHAN_813RPM</code>, bypassing pulse counters and entering Run Mode.</p>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Increasing the Value (Lower RPM Threshold):</strong></li>
 <li><strong>What it does:</strong> Allows a lower RPM flare to trigger immediate Run Mode.</li>
@@ -132,6 +126,13 @@
 <li><strong>What it does:</strong> Requires the engine to flare higher before immediate transfer occurs.</li>
 <li><strong>Real-World Driving Feel:</strong> Forces the ECU to rely on the consecutive pulse counters (<a href="../Spark_-_Start_to_Run_Transfer/STRNTR_SparkStartRunTransferPointRpm.html"><code>STRNTR</code></a> and <a href="../Spark_-_Start_to_Run_Transfer/SRTIME_SparkEPPsNeededToBeAboveSR_Hot.html"><code>SRTIME</code></a>), which can make cold starts feel more deliberate but may slightly delay throttle catch.</li>
 </ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when starting a car, the ECU remains in a dedicated "Cranking / Start Mode" (running locked distributor trigger timing and fixed cranking fuel pulse widths) until the engine flares to life.</p>
+<p><code>SKAPRD</code> is checked on every distributor ignition interrupt during cranking:
+* <strong>Measured Variable:</strong> <code>TimerOverflowsBetweenDistPulses</code> (the 16-bit timer duration between distributor reference pulses).
+* <strong>Inverse Period Relationship:</strong> In the 6803 timer, a shorter pulse period represents a higher engine speed.
+* <strong>Trigger Condition:</strong> If <code>TimerOverflowsBetweenDistPulses &lt; SKAPRD</code> (engine speed &gt; ~813 RPM), the ECU branches immediately to <code>ENGINE_IDLING_FASTERTHAN_813RPM</code>, bypassing pulse counters and entering Run Mode.</p>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>
 <p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 4698–4701):</p>

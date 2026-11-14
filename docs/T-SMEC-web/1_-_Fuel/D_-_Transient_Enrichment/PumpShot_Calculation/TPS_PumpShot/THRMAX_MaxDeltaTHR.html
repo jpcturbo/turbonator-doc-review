@@ -117,20 +117,21 @@
 <p>When the accelerator is rapidly floored from idle, the throttle sensor voltage can jump by more than 3.5 volts in a fraction of a second. If this entire voltage swing were multiplied by the enrichment slope, the controller would inject a massive flood of fuel that would bog or drown the engine. <code>THRMAX</code> clamps the effective throttle opening delta after the trigger threshold is subtracted, capping the maximum allowable transient pulse width.</p>
 <p>The factory setting of 35 counts limits the active calculation range to approximately 0.70 volts above the trigger threshold.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li>Enclosed in routine <code>TransFuel_IncludeTPSTransients</code> at lines 6484-6510 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
-<li>Evaluated immediately after <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/POSTRG_PositiveTransientTriggerLevel.html"><code>POSTRG</code></a> subtraction at line 6496.</li>
-<li>Clamp comparison: Line 6498 executes <code>cmpa THRMAX_MaxDeltaTHR</code>.</li>
-<li>Limiting logic: If accumulator A is less than <code>THRMAX</code>, branch <code>bcs L1554</code> skips the cap; if greater or equal, line 6500 loads <code>THRMAX</code> directly into accumulator A before storing into <code>Temp1</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Curing Rich Tip-in Bog</strong>: Lowering <code>THRMAX</code> limits the maximum volume of fuel that a rapid throttle depression can deliver, which is especially critical when running high-flow aftermarket fuel injectors that deliver substantially more fuel per millisecond.</li>
 <li><strong>Eliminating Exhaust Smoke</strong>: If aggressive off-idle throttle stomps produce a momentary rich stumble with black exhaust smoke, lowering <code>THRMAX</code> cures the bog.</li>
 <li><strong>High-Flow Manifolds</strong>: Raising <code>THRMAX</code> permits larger transient pump shots during violent wide-open throttle transitions, which may be required on engines with high-flow intake manifolds or dry nitrous transitions.</li>
 <li><strong>Injector Rescaling Rule</strong>: When doubling injector flow capacity, reduce <code>THRMAX</code> by roughly 25 to 40 percent alongside <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/POSSLP_DeltaTPSEnrichment_FromTemp.html"><code>POSSLP</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the accelerator is rapidly floored from idle, the throttle sensor voltage can jump by more than 3.5 volts in a fraction of a second.</p>
+<ul>
+<li>Enclosed in routine <code>TransFuel_IncludeTPSTransients</code> at lines 6484-6510 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Evaluated immediately after <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/POSTRG_PositiveTransientTriggerLevel.html"><code>POSTRG</code></a> subtraction at line 6496.</li>
+<li>Clamp comparison: Line 6498 executes <code>cmpa THRMAX_MaxDeltaTHR</code>.</li>
+<li>Limiting logic: If accumulator A is less than <code>THRMAX</code>, branch <code>bcs L1554</code> skips the cap; if greater or equal, line 6500 loads <code>THRMAX</code> directly into accumulator A before storing into <code>Temp1</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

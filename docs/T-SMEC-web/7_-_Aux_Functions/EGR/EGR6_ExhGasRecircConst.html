@@ -117,21 +117,22 @@
 <p>During Phase 2, the engine controller de-energizes the EGR solenoid to shut off exhaust gas flow into the intake manifold and waits for closed-loop oxygen sensor feedback to register a lean shift. The controller requires an upper time limit on this test so that prolonged solenoid de-energization does not unnecessarily alter emissions or driveability if the valve is stuck.</p>
 <p>Although defined in calibration templates as an 8-bit constant, the CPU reads <code>EGR6</code> with a 16-bit comparison instruction at line 5485, pairing <code>EGR6</code> (1 count) as the high byte with adjacent byte <a href="../../7_-_Aux_Functions/EGR/EGR15a_ExhGasRecircConstFromRPMHiLimit.html"><code>EGR15A</code></a> (108 counts) as the low byte. This combined 16-bit threshold of 364 loop iterations corresponds to approximately 3.6 to 5.5 seconds.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>16-Bit Firmware Anomaly</strong>: In <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a> line 5485, the CPU executes a 16-bit comparison against <code>EGR6_ExhGasRecircConst</code>. <code>EGR6</code> serves as the high byte (1 count) and contiguous byte <a href="../../7_-_Aux_Functions/EGR/EGR15a_ExhGasRecircConstFromRPMHiLimit.html"><code>EGR15A</code></a> serves as the low byte (108 counts), forming the 16-bit threshold of 364 counts.</li>
+<li><strong>Raising EGR6</strong>: Adds 256 loop counts (roughly 2.5 to 3.8 seconds) per integer increase to the Phase 2 timeout window. Highly beneficial for headers or high-flow plenums where exhaust gas transport delay is longer.</li>
+<li><strong>Lowering EGR6 (to 0)</strong>: Reduces the timeout window to strictly the low byte <a href="../../7_-_Aux_Functions/EGR/EGR15a_ExhGasRecircConstFromRPMHiLimit.html"><code>EGR15A</code></a> (108 counts / ~1.1 to 1.6 seconds), which risks false diagnostic failures.</li>
+<li><strong>Calibration Protocol</strong>: When adjusting Phase 2 timeout, calculate <code>(EGR6 * 256) + EGR15A</code> to determine the exact 16-bit threshold.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle cruising, modulating the exhaust gas recirculation (EGR) solenoid duty cycle to control combustion temperatures.</p>
 <ul>
 <li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5485.</li>
 <li><strong>State Condition</strong>: Phase 2 active (<code>EGRVar2</code> bit 7 set).</li>
 <li><strong>Input Variable</strong>: 16-bit RAM loop counter <code>EGRVar3</code> evaluated in index register X.</li>
 <li><strong>Comparison</strong>: 16-bit index comparison <code>cpx EGR6_ExhGasRecircConst</code>.</li>
 <li><strong>Branch Behavior</strong>: If <code>EGRVar3 &gt;= 0x016C</code> (<code>bcc L1470</code>), Phase 2 times out, branching to <code>L1470</code> to increment failure counter <code>EGRVar1</code>. If <code>EGRVar3 &lt; 0x016C</code>, increments <code>EGRVar3</code> and proceeds to window checks.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>16-Bit Firmware Anomaly</strong>: In <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a> line 5485, the CPU executes a 16-bit comparison against <code>EGR6_ExhGasRecircConst</code>. <code>EGR6</code> serves as the high byte (1 count) and contiguous byte <a href="../../7_-_Aux_Functions/EGR/EGR15a_ExhGasRecircConstFromRPMHiLimit.html"><code>EGR15A</code></a> serves as the low byte (108 counts), forming the 16-bit threshold of 364 counts.</li>
-<li><strong>Raising EGR6</strong>: Adds 256 loop counts (roughly 2.5 to 3.8 seconds) per integer increase to the Phase 2 timeout window. Highly beneficial for headers or high-flow plenums where exhaust gas transport delay is longer.</li>
-<li><strong>Lowering EGR6 (to 0)</strong>: Reduces the timeout window to strictly the low byte <a href="../../7_-_Aux_Functions/EGR/EGR15a_ExhGasRecircConstFromRPMHiLimit.html"><code>EGR15A</code></a> (108 counts / ~1.1 to 1.6 seconds), which risks false diagnostic failures.</li>
-<li><strong>Calibration Protocol</strong>: When adjusting Phase 2 timeout, calculate <code>(EGR6 * 256) + EGR15A</code> to determine the exact 16-bit threshold.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

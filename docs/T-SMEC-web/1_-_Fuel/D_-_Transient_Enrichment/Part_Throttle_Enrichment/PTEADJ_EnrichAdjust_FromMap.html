@@ -135,20 +135,21 @@
 <p>Because engine air density and knock vulnerability vary dramatically across vacuum and positive boost, a static RPM ceiling is insufficient. <code>PTEADJ</code> modifies the maximum allowable enrichment multiplier based on instantaneous manifold absolute pressure.</p>
 <p>In calibration software, zero counts represents a neutral 1.00 multiplier, leaving the RPM ceiling unchanged. Negative and positive values in <code>PTEADJ</code> scale the enrichment ceiling down or up, providing extra fuel headroom at high boost while capping enrichment at light loads.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li>Enclosed in routine <code>Bit7_IsSet</code> at lines 5865-5925 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
-<li>Looked up via <code>jsr Lookup4ByteTable</code> at line 5890 using <code>MapValue</code> with pointer <code>ldx #PTEADJ_EnrichAdjust_FromMap</code>.</li>
-<li>Arithmetic check: Line 5892 executes <code>tstb</code>. If accumulator B is zero, <code>beq L1501</code> bypasses multiplication, leaving <code>Temp4</code> (from <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTELMT_MultiplierMaxLimitFromRpm.html"><code>PTELMT</code></a>) unchanged.</li>
-<li>If non-zero, lines 5894-5895 execute <code>mul; adca #0x00</code>, scaling <code>Temp4</code> by the signed factor before comparing against <code>Temp0</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Boost-Dependent Fuel Headroom</strong>: Increasing table values in the positive boost region raises the maximum enrichment ceiling, ensuring that heavily boosted engines receive sufficient fuel under sustained part-throttle acceleration.</li>
 <li><strong>Trimming Low-Load Fueling</strong>: Lowering values in moderate vacuum or low boost ranges prevents excessive fuel buildup during mild acceleration.</li>
 <li><strong>Signed Table Behavior</strong>: Remember that zero represents a neutral 1.00 multiplier in firmware math. Positive and negative offsets scale the RPM limit proportionally.</li>
 <li><strong>3-Bar MAP Alignment</strong>: When converting to a 3-bar MAP sensor, verify that table pressure axis breakpoints are updated so that boost-dependent ceiling scaling takes effect at the intended real-world manifold pressures.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during engine running fuel calculation to calibrate FromMap.</p>
+<ul>
+<li>Enclosed in routine <code>Bit7_IsSet</code> at lines 5865-5925 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Looked up via <code>jsr Lookup4ByteTable</code> at line 5890 using <code>MapValue</code> with pointer <code>ldx #PTEADJ_EnrichAdjust_FromMap</code>.</li>
+<li>Arithmetic check: Line 5892 executes <code>tstb</code>. If accumulator B is zero, <code>beq L1501</code> bypasses multiplication, leaving <code>Temp4</code> (from <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTELMT_MultiplierMaxLimitFromRpm.html"><code>PTELMT</code></a>) unchanged.</li>
+<li>If non-zero, lines 5894-5895 execute <code>mul; adca #0x00</code>, scaling <code>Temp4</code> by the signed factor before comparing against <code>Temp0</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

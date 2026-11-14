@@ -116,16 +116,7 @@
 <p><code>PTUMSP</code> defines the vehicle speed boundary that splits the Part Throttle Unlock control logic between low-speed city operation and high-speed highway cruising.</p>
 <p>Automatic transmission torque converter lockup behavior must balance low-speed drivability against highway fuel efficiency. In factory calibrations, <code>PTUMSP</code> is set to 90 counts, corresponding to approximately 45 MPH on the 0 to 127.5 MPH scale. Below 45 MPH, the controller enforces manifold pressure delta checks (<a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP3_PTUMAPThresholdForLock3.html"><code>PTUMP3</code></a> and <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP1_PTUMAPThresholdForLock1.html"><code>PTUMP1</code></a>/<a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP2_PTUMAPThresholdForLock2.html"><code>PTUMP2</code></a>) to prevent torque converter slippage under load, and reloads low-speed counter <a href="../../../7_-_Aux_Functions/PTU_Control/Hysteresis/PTUCNL_PTUCounterLoSpeed.html"><code>PTUCNL</code></a>. Above 45 MPH, manifold pressure checks are bypassed and high-speed counter <a href="../../../7_-_Aux_Functions/PTU_Control/Hysteresis/PTUCNH_PTUCounterHiSpeed.html"><code>PTUCNH</code></a> governs unlock debounce timing.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ControlPTU_MM</code> / <code>PTU_CheckThrottleForLock</code> (<code>T-SMEC_v19.asm:10412-10417</code>) and <code>PTU_CheckVehicleSpeed</code> (<code>T-SMEC_v19.asm:10478-10488</code>), instruction lines 10416, 10484.</li>
-<li><strong>Speed Calculation</strong>: <code>VehicleSpeed_HB</code> shifted left 3 times (<code>asld; asld; asld</code>).</li>
-<li><strong>Comparison &amp; Decision</strong>:</li>
-<li>Line 10416: If speed <code>&gt;= PTUMSP</code> (<code>bcc PTU_CheckMAPThresholdsForLock</code>), bypasses low-speed <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP3_PTUMAPThresholdForLock3.html"><code>PTUMP3</code></a> check.</li>
-<li>Line 10484: If speed <code>&gt;= PTUMSP</code> (<code>bcc LD67B</code>), loads <a href="../../../7_-_Aux_Functions/PTU_Control/Hysteresis/PTUCNH_PTUCounterHiSpeed.html"><code>PTUCNH</code></a>; otherwise loads <a href="../../../7_-_Aux_Functions/PTU_Control/Hysteresis/PTUCNL_PTUCounterLoSpeed.html"><code>PTUCNL</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Suburban Drivability Tuning</strong>:</li>
 <li>Lower <code>PTUMSP</code> to 35 to 40 MPH to allow earlier converter unlocking for passing maneuvers without reaching highway speeds.</li>
@@ -133,6 +124,16 @@
 <li>Raise <code>PTUMSP</code> to 50 MPH to hold torque converter lockup tighter on rolling hills.</li>
 <li><strong>Counter Selection Interlock</strong>:</li>
 <li>Selects whether <a href="../../../7_-_Aux_Functions/PTU_Control/Hysteresis/PTUCNH_PTUCounterHiSpeed.html"><code>PTUCNH</code></a> or <a href="../../../7_-_Aux_Functions/PTU_Control/Hysteresis/PTUCNL_PTUCounterLoSpeed.html"><code>PTUCNL</code></a> reloads into <code>Counter_PartThrottleUnlock</code> when timer expires.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect while cruising in gear, establishing the minimum vehicle road speed required before torque converter clutch lockup is permitted.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ControlPTU_MM</code> / <code>PTU_CheckThrottleForLock</code> (<code>T-SMEC_v19.asm:10412-10417</code>) and <code>PTU_CheckVehicleSpeed</code> (<code>T-SMEC_v19.asm:10478-10488</code>), instruction lines 10416, 10484.</li>
+<li><strong>Speed Calculation</strong>: <code>VehicleSpeed_HB</code> shifted left 3 times (<code>asld; asld; asld</code>).</li>
+<li><strong>Comparison &amp; Decision</strong>:</li>
+<li>Line 10416: If speed <code>&gt;= PTUMSP</code> (<code>bcc PTU_CheckMAPThresholdsForLock</code>), bypasses low-speed <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP3_PTUMAPThresholdForLock3.html"><code>PTUMP3</code></a> check.</li>
+<li>Line 10484: If speed <code>&gt;= PTUMSP</code> (<code>bcc LD67B</code>), loads <a href="../../../7_-_Aux_Functions/PTU_Control/Hysteresis/PTUCNH_PTUCounterHiSpeed.html"><code>PTUCNH</code></a>; otherwise loads <a href="../../../7_-_Aux_Functions/PTU_Control/Hysteresis/PTUCNL_PTUCounterLoSpeed.html"><code>PTUCNL</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

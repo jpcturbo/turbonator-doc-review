@@ -116,17 +116,7 @@
 <p><code>PTUDTP</code> defines the throttle position sensor voltage delta threshold used to classify throttle application as either gentle or aggressive in the Part Throttle Unlock system.</p>
 <p>When evaluating entry conditions for lockup retention, the controller subtracts learned closed-throttle <code>MINTHR</code> from current TPS voltage to calculate throttle opening delta. In factory calibrations, <code>PTUDTP</code> is configured to 52 counts, corresponding to approximately 1.02 Volts above closed throttle. If throttle delta is below <code>PTUDTP</code>, the controller sets state flag <code>b52_PTU_A</code> and checks secondary MAP threshold <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP2_PTUMAPThresholdForLock2.html"><code>PTUMP2</code></a>. If throttle delta equals or exceeds <code>PTUDTP</code>, the controller sets flag <code>b52_PTU_B</code> and evaluates primary MAP threshold <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP1_PTUMAPThresholdForLock1.html"><code>PTUMP1</code></a>.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ControlPTU_MM</code> / <code>PTU_CheckMAPThresholdsForLock</code> (<code>T-SMEC_v19.asm:10432-10446</code>), instruction line 10441.</li>
-<li><strong>Variable Evaluated</strong>: <code>Temp4</code> (calculated as <code>TpsVolts - MINTHR_LowestSessionTPS</code>).</li>
-<li><strong>Comparison &amp; State Logic</strong>:</li>
-<li>Compares <code>Temp4</code> against <code>PTUDTP_PTUDeltaTPSForUnlock</code> at line 10441.</li>
-<li>If <code>Temp4 &lt; PTUDTP</code> (<code>bcs LD62E</code>), branches to set <code>b52_PTU_A</code> and advances pointer to <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP2_PTUMAPThresholdForLock2.html"><code>PTUMP2</code></a>.</li>
-<li>If <code>Temp4 &gt;= PTUDTP</code>, sets <code>b52_PTU_B</code> and branches to evaluate <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP1_PTUMAPThresholdForLock1.html"><code>PTUMP1</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Pedal Sensitivity Classification</strong>:</li>
 <li>Establishes the 1.02 V boundary dividing light throttle modulation from aggressive throttle application.</li>
@@ -134,6 +124,17 @@
 <li>Raise <code>PTUDTP</code> to 60 to 70 counts (~1.2 to 1.4 V) to allow more throttle movement before aggressive lockup logic engages.</li>
 <li><strong>State Flag Routing</strong>:</li>
 <li>Sets <code>b52_PTU_A</code> (below threshold) or <code>b52_PTU_B</code> (above threshold) to select between <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP2_PTUMAPThresholdForLock2.html"><code>PTUMP2</code></a> and <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP1_PTUMAPThresholdForLock1.html"><code>PTUMP1</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when evaluating entry conditions for lockup retention, the controller subtracts learned closed-throttle MINTHR from current TPS voltage to calculate throttle opening delta.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ControlPTU_MM</code> / <code>PTU_CheckMAPThresholdsForLock</code> (<code>T-SMEC_v19.asm:10432-10446</code>), instruction line 10441.</li>
+<li><strong>Variable Evaluated</strong>: <code>Temp4</code> (calculated as <code>TpsVolts - MINTHR_LowestSessionTPS</code>).</li>
+<li><strong>Comparison &amp; State Logic</strong>:</li>
+<li>Compares <code>Temp4</code> against <code>PTUDTP_PTUDeltaTPSForUnlock</code> at line 10441.</li>
+<li>If <code>Temp4 &lt; PTUDTP</code> (<code>bcs LD62E</code>), branches to set <code>b52_PTU_A</code> and advances pointer to <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP2_PTUMAPThresholdForLock2.html"><code>PTUMP2</code></a>.</li>
+<li>If <code>Temp4 &gt;= PTUDTP</code>, sets <code>b52_PTU_B</code> and branches to evaluate <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP1_PTUMAPThresholdForLock1.html"><code>PTUMP1</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -116,7 +116,18 @@
 <p><code>RVLSPD</code> establishes the vehicle speed threshold that determines how the engine controller handles rev limiting when the throttle position sensor signal is invalid or failing.</p>
 <p>If the throttle position sensor produces a bad signal (for instance, an open wiper trace or erratic voltage), the controller cannot ascertain throttle blade position. If the vehicle is moving at road speeds, the controller presumes the driver is cruising and permits normal engine operation up to the standard rev limiter (<a href="../../4_-_OB,_Speed,_and_Rev_Limiter/B_-_Rev_Limiter/REVLMT6_RPMLimiterNormalOffRPM.html"><code>REVLMT6</code></a>). However, if the vehicle is stationary or moving at very low speeds, the controller enforces the restrictive plausibility rev limiter (<a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/REVLMT4_MapAbove75PctAndThrLimpin2000.html"><code>REVLMT4</code></a> and <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/REVLMT3_MapAbove75PctAndIdleSwitchClosed2000.html"><code>REVLMT3</code></a>) to prevent accidental runaway. In factory calibrations, <code>RVLSPD</code> is set to 20 counts, representing 10.0 mph on a 0 to 127.5 mph scale.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Fault Gating Threshold</strong>:</li>
+<li>When <code>b45_TpsBadSignal</code> is active, speeds above <code>RVLSPD</code> allow normal engine rev limits (<a href="../../4_-_OB,_Speed,_and_Rev_Limiter/B_-_Rev_Limiter/REVLMT6_RPMLimiterNormalOffRPM.html"><code>REVLMT6</code></a>), while speeds below <code>RVLSPD</code> enforce safety rev limits (<a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/REVLMT4_MapAbove75PctAndThrLimpin2000.html"><code>REVLMT4</code></a>).</li>
+<li><strong>Raising for Paddock Safety</strong>:</li>
+<li>Increasing <code>RVLSPD</code> to 25 mph prevents high-speed driving if the throttle sensor fails during competition.</li>
+<li><strong>Preserving Factory Setting</strong>:</li>
+<li>The 10 mph factory threshold prevents stationary runaway while allowing normal road speeds.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if the throttle position sensor produces a bad signal (for instance, an open wiper trace or erratic voltage), the controller cannot ascertain throttle blade position.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>MAPSENSOR_OKAY_OR_LIGHTTHROTTLE</code> (<code>T-SMEC_v19.asm:5680-5686</code>) and <code>MAPSENSOR_OKAY_OR_LIGHTTHROTTLE2</code> (<code>T-SMEC_v19.asm:5783-5790</code>).</li>
 <li><strong>Fault Condition</strong>:</li>
@@ -125,16 +136,6 @@
 <li>Low-range vehicle speed <code>Temp0</code> (0.5 mph per count) is compared against <code>RVLSPD</code> (<code>cmpa RVLSPD_CarSpeedForRevLimitWithTBOff</code>).</li>
 <li>If <code>Temp0 &gt;= RVLSPD</code> (<code>bcc L1484</code> / <code>bcc L1492</code>), branches to select <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/B_-_Rev_Limiter/REVLMT6_RPMLimiterNormalOffRPM.html"><code>REVLMT6</code></a> (cutout) or <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/B_-_Rev_Limiter/REVLMT5_RPMLimiterNormalOnRPM.html"><code>REVLMT5</code></a> (restore).</li>
 <li>If <code>Temp0 &lt; RVLSPD</code>, branches to <code>L1483</code> / <code>L1491</code> to check for closed-throttle high MAP.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Fault Gating Threshold</strong>:</li>
-<li>When <code>b45_TpsBadSignal</code> is active, speeds above <code>RVLSPD</code> allow normal engine rev limits (<a href="../../4_-_OB,_Speed,_and_Rev_Limiter/B_-_Rev_Limiter/REVLMT6_RPMLimiterNormalOffRPM.html"><code>REVLMT6</code></a>), while speeds below <code>RVLSPD</code> enforce safety rev limits (<a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/REVLMT4_MapAbove75PctAndThrLimpin2000.html"><code>REVLMT4</code></a>).</li>
-<li><strong>Raising for Paddock Safety</strong>:</li>
-<li>Increasing <code>RVLSPD</code> to 25 mph prevents high-speed driving if the throttle sensor fails during competition.</li>
-<li><strong>Preserving Factory Setting</strong>:</li>
-<li>The 10 mph factory threshold prevents stationary runaway while allowing normal road speeds.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

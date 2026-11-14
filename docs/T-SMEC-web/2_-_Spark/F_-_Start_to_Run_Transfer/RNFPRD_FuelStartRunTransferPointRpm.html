@@ -116,17 +116,7 @@
 <p><code>RNFPRD</code> defines the fuel injection start-to-run transfer distributor pulse period threshold.</p>
 <p>During starter cranking, the engine controller delivers rich, fixed-duration cranking priming pulses to wet the intake manifold runners and spark ignition. Once the engine catches and spins past <code>RNFPRD</code>, the controller cuts off cranking enrichment pulses and initiates normal running speed-density fuel calculation. In period-based logic, smaller count values represent faster engine speeds. In factory calibrations, <code>RNFPRD</code> is set to 48 counts, corresponding to approximately 625 RPM. Grouped under the Start-to-Run Transfer category in calibration templates, <code>RNFPRD</code> synchronizes the fueling transition with the ignition transition.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>HandleFuelStartRunStartTransfer</code> (<code>T-SMEC_v19.asm:6972-6984</code>).</li>
-<li><strong>Input Variable</strong>: <code>DistributorFallingEdgePulsewidth_HB</code> (RAM address 0x0090).</li>
-<li><strong>Comparison &amp; Branch</strong>:</li>
-<li><code>cmpb RNFPRD_FuelStartRunTransferPointRpm</code> at line 6974.</li>
-<li>If period &lt; <code>RNFPRD</code> (carry clear / <code>bcc RpmBelowStartRunTransfer</code> not taken), engine speed is above 625 RPM.</li>
-<li>Clears bits <code>b54_FuelEngineNotRunning</code> and <code>b54_JustStarted</code> in <code>BitFlags_54</code>, initialises running timers, and decrements <code>AdaptiveRetardIndex</code> by <a href="../../2_-_Spark/D_-_Adaptive_Retard/ARSUBC_AdaptiveRetardFactorSubtract.html"><code>ARSUBC</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Preventing Large Injector Flooding</strong>:</li>
 <li>When running large aftermarket injectors, raising <code>RNFPRD</code> cuts off rich cranking priming pulses earlier, preventing cylinder flooding on hot restarts.</li>
@@ -134,6 +124,17 @@
 <li>On alcohol or E85 conversions, lowering <code>RNFPRD</code> keeps rich cranking fuel active higher into the start flare to prevent cold die-out.</li>
 <li><strong>Period Scaling</strong>:</li>
 <li>Period is inversely related to RPM: RPM ≈ 30,000 / count. Factory setting 48 counts = 625 RPM.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during engine cranking, defining the engine speed threshold where the ECU transitions from cranking fuel into normal running mode.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>HandleFuelStartRunStartTransfer</code> (<code>T-SMEC_v19.asm:6972-6984</code>).</li>
+<li><strong>Input Variable</strong>: <code>DistributorFallingEdgePulsewidth_HB</code> (RAM address 0x0090).</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li><code>cmpb RNFPRD_FuelStartRunTransferPointRpm</code> at line 6974.</li>
+<li>If period &lt; <code>RNFPRD</code> (carry clear / <code>bcc RpmBelowStartRunTransfer</code> not taken), engine speed is above 625 RPM.</li>
+<li>Clears bits <code>b54_FuelEngineNotRunning</code> and <code>b54_JustStarted</code> in <code>BitFlags_54</code>, initialises running timers, and decrements <code>AdaptiveRetardIndex</code> by <a href="../../2_-_Spark/D_-_Adaptive_Retard/ARSUBC_AdaptiveRetardFactorSubtract.html"><code>ARSUBC</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

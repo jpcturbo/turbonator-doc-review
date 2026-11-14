@@ -117,18 +117,7 @@
 <p>The engine controller monitors how quickly the engine warms up to operating temperature to detect a stuck-open thermostat (<strong>Fault Code 17</strong>). However, during severe sub-freezing arctic cold starts, engine oil and coolant are extremely cold, and the engine takes substantially longer to warm up even with a perfectly functioning thermostat.</p>
 <p>In factory calibrations, <code>TTEMPL</code> is set to 99 counts, corresponding to approximately 40 deg F. If coolant temperature at key-on is colder than <code>TTEMPL</code>, the controller suspends arming of the thermostat diagnostic timer, preventing false fault codes in sub-freezing winter weather.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Routine &amp; Line Numbers</strong>: <code>ConvertCoolantRawReadingToTemperature</code> (<code>T-SMEC_v19.asm:7411-7425</code>), instruction at line 7421.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Evaluated once during engine startup after converting raw coolant voltage to temperature.</li>
-<li><strong>Math &amp; Comparison</strong>:</li>
-<li><code>CoolantTemp</code> in accumulator A compared against <code>TTEMPL_TstatDiagnosticsMinTempToArmDiagnosticsAtStartup</code> (99 counts) at line 7421.</li>
-<li>If lower (<code>bcs</code>), branches to <code>L1616</code> at line 7422, bypassing timer increment.</li>
-<li>If higher or equal, checks against <a href="../../../7_-_Aux_Functions/On-Board_Diagnostics/T-Stat_Diagnostics/TTEMPH_TstatDiagnosticsMaxTempToArmDiagnosticsAtStartup.html"><code>TTEMPH</code></a>; if within window, increments <code>Timer_ThermostatDiagnostics</code> to arm the monitor.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Winter Climate Lockout</strong>:</li>
 <li>Factory setting of 40 deg F disables the thermostat warm-up test during freezing starts, preventing false stuck-open codes.</li>
@@ -137,6 +126,18 @@
 <li><strong>Edge Cases</strong>:</li>
 <li>Setting <code>TTEMPL</code> to zero forces the warm-up test on freezing starts, reliably triggering Fault Code 17 in winter.</li>
 <li>Setting <code>TTEMPL</code> higher than <a href="../../../7_-_Aux_Functions/On-Board_Diagnostics/T-Stat_Diagnostics/TTEMPH_TstatDiagnosticsMaxTempToArmDiagnosticsAtStartup.html"><code>TTEMPH</code></a> permanently disables thermostat diagnostics.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if coolant temperature at key-on is colder than TTEMPL, the controller suspends arming of the thermostat diagnostic timer, preventing false fault codes in sub-freezing winter weather.</p>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>ConvertCoolantRawReadingToTemperature</code> (<code>T-SMEC_v19.asm:7411-7425</code>), instruction at line 7421.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated once during engine startup after converting raw coolant voltage to temperature.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li><code>CoolantTemp</code> in accumulator A compared against <code>TTEMPL_TstatDiagnosticsMinTempToArmDiagnosticsAtStartup</code> (99 counts) at line 7421.</li>
+<li>If lower (<code>bcs</code>), branches to <code>L1616</code> at line 7422, bypassing timer increment.</li>
+<li>If higher or equal, checks against <a href="../../../7_-_Aux_Functions/On-Board_Diagnostics/T-Stat_Diagnostics/TTEMPH_TstatDiagnosticsMaxTempToArmDiagnosticsAtStartup.html"><code>TTEMPH</code></a>; if within window, increments <code>Timer_ThermostatDiagnostics</code> to arm the monitor.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

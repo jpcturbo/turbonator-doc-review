@@ -117,21 +117,22 @@
 <p>When the staging rev limiter cuts spark at the upper ceiling, engine speed begins to decay. Once RPM falls below <code>STGRON</code>, the engine controller clears the cut flags and re-enables combustion. This two-threshold hysteresis design prevents rapid, erratic flutter by enforcing a controlled RPM cycle.</p>
 <p>The factory setting of 119 counts corresponds to approximately 3808 RPM, creating a 200 RPM staging window below the 4000 RPM cut ceiling.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Hysteresis Bandwidth</strong>: Set roughly 150 to 250 RPM below <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_RPM/STGROF_StageLimiterRPMOffSetpoint.html"><code>STGROF</code></a> (factory gap is 192 RPM) for smooth, stable boost spooling.</li>
+<li><strong>Excessively Narrow Gap</strong>: Setting within 32-64 RPM of <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_RPM/STGROF_StageLimiterRPMOffSetpoint.html"><code>STGROF</code></a> creates harsh high-frequency vibration and unstable wastegate operation.</li>
+<li><strong>Excessively Wide Gap</strong>: Setting more than 400 RPM below <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_RPM/STGROF_StageLimiterRPMOffSetpoint.html"><code>STGROF</code></a> causes engine speed to sag noticeably, dropping boost pressure between cycles.</li>
+<li><strong>Calibration Ordering</strong>: Always ensure <code>STGRON</code> is strictly lower than <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_RPM/STGROF_StageLimiterRPMOffSetpoint.html"><code>STGROF</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when launch control rev limiting is active, establishing the lower engine speed threshold where fuel injection and ignition spark are restored.</p>
 <ul>
 <li>Enclosed in subroutine <code>LaunchControl_CheckLowerRPM</code> at lines 10196-10205 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
 <li>Evaluated when <code>Turbonator_Staging</code> is active and fuel or spark cut is currently in effect (<code>jmp LaunchControl_CheckLowerRPM</code> at line 10173).</li>
 <li>Comparison: <code>cmpa STGRON_StageLimiterRPMOnSetpoint</code> against <code>EngineRpm_HB</code> (line 10198).</li>
 <li>If <code>EngineRpm_HB &gt;= STGRON</code> (<code>bcc LaunchControl_Return</code>), cuts remain active.</li>
 <li>When <code>EngineRpm_HB &lt; STGRON</code>, execution falls through to <code>LaunchControl_AllowFuelSpark</code> (line 10202), clearing <code>Turbonator_FuelOff</code> and <code>Turbonator_SparkCut</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Hysteresis Bandwidth</strong>: Set roughly 150 to 250 RPM below <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_RPM/STGROF_StageLimiterRPMOffSetpoint.html"><code>STGROF</code></a> (factory gap is 192 RPM) for smooth, stable boost spooling.</li>
-<li><strong>Excessively Narrow Gap</strong>: Setting within 32-64 RPM of <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_RPM/STGROF_StageLimiterRPMOffSetpoint.html"><code>STGROF</code></a> creates harsh high-frequency vibration and unstable wastegate operation.</li>
-<li><strong>Excessively Wide Gap</strong>: Setting more than 400 RPM below <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_RPM/STGROF_StageLimiterRPMOffSetpoint.html"><code>STGROF</code></a> causes engine speed to sag noticeably, dropping boost pressure between cycles.</li>
-<li><strong>Calibration Ordering</strong>: Always ensure <code>STGRON</code> is strictly lower than <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_RPM/STGROF_StageLimiterRPMOffSetpoint.html"><code>STGROF</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

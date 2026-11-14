@@ -118,16 +118,7 @@
 <p>In factory calibrations, <code>RPMTHS</code> is set to 25 counts, representing an engine speed threshold of 200 RPM.</p>
 <p>Once crankshaft rotation exceeds 200 RPM, the controller recognizes that combustion has initiated and begins transitioning toward normal closed-loop idle air control.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>LoadDiagIdleSpeed</code> (<code>T-SMEC_v19.asm:2080-2145</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Bit <code>b0c_bit6</code> in <code>BitFlags_AIS</code> must be clear at line 2134.</li>
-<li>Engine run flag <code>b54_FuelEngineNotRunning</code> must be set in <code>BitFlags_54</code> at line 2135.</li>
-<li>Evaluates <code>EngineRpm_HB</code> against <code>RPMTHS</code> at line 2137. If engine RPM is greater than or equal to <code>RPMTHS</code> (<code>bcc</code>), it branches to <code>L1093</code> to set <code>b0c_bit6</code>; otherwise it falls through to load <a href="../../5_-_Idle/A_-_AIS_Control/RPMDEF_RPMDefaultForIdleControl.html"><code>RPMDEF</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Cranking vs Running Boundary</strong>:</li>
 <li>Keep <code>RPMTHS</code> at 200 RPM (25 counts) to maintain an unambiguous separation between starter cranking and autonomous engine idle.</li>
@@ -135,6 +126,16 @@
 <li>Lowering <code>RPMTHS</code> below starter cranking speed causes premature engagement of closed-loop idle feedback, inducing stepper motor hunting during cranking.</li>
 <li><strong>High Setting Delay</strong>:</li>
 <li>Setting <code>RPMTHS</code> too high traps the controller in startup mode after firing, delaying normal closed-loop idle regulation.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect while the engine is being cranked by the starter or if the engine stalls and RPM drops precipitously, normal closed-loop idle speed regulation must be suspended to prevent erratic stepper motor oscillations.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>LoadDiagIdleSpeed</code> (<code>T-SMEC_v19.asm:2080-2145</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Bit <code>b0c_bit6</code> in <code>BitFlags_AIS</code> must be clear at line 2134.</li>
+<li>Engine run flag <code>b54_FuelEngineNotRunning</code> must be set in <code>BitFlags_54</code> at line 2135.</li>
+<li>Evaluates <code>EngineRpm_HB</code> against <code>RPMTHS</code> at line 2137. If engine RPM is greater than or equal to <code>RPMTHS</code> (<code>bcc</code>), it branches to <code>L1093</code> to set <code>b0c_bit6</code>; otherwise it falls through to load <a href="../../5_-_Idle/A_-_AIS_Control/RPMDEF_RPMDefaultForIdleControl.html"><code>RPMDEF</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -133,17 +133,7 @@
 <p>Internal combustion engines exhibit significantly higher mechanical pumping friction and fuel condensation when cold, requiring substantial auxiliary bypass airflow to catch reliably and flare cleanly to starting idle speed. Before the engine starts and before closed-loop idle feedback can begin, the SMEC references <code>AISTRT</code> using engine coolant temperature to pre-position the stepper pintle.</p>
 <p>In factory calibrations, <code>AISTRT</code> commands approximately 134 open steps during extreme sub-zero cold starts, tapering down through 90 steps at freezing, 50 steps at mild temperatures, and settling at 30 steps when the engine is fully warmed up to 200 °F.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>LoadDiagIdleSpeed</code> (<code>T-SMEC_v19.asm:2080-2165</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Engine startup or not-running state detected: <code>BitFlags_AIS</code> bit <code>b0c_bit6</code> tested at line 2134; if set, jumps to <code>L1094</code>.</li>
-<li>At line 2147, checks <code>BitFlags_AIS</code> and <code>BitFlags_54</code> for engine running condition.</li>
-<li>Sets startup flags <code>b0c_bit4</code> and <code>b2e_bit2</code> at lines 2153-2154.</li>
-<li>Loads <code>CoolantTemp</code> into accumulator A and indexes <code>AISTRT</code> at line 2156 via table lookup, jumping to <code>L1149</code> to store into <code>DesiredNewAisPosition</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Cold Cranking Stumble &amp; Die-Out</strong>:</li>
 <li>If the engine catches during cranking but stalls out immediately before entering run mode, increase <code>AISTRT</code> steps by 10 to 15 steps in the corresponding coolant temperature cells.</li>
@@ -151,6 +141,17 @@
 <li>If cold starts flare aggressively above 2000 RPM, reduce <code>AISTRT</code> step values to limit the initial air surge.</li>
 <li><strong>Large Throttle Bodies</strong>:</li>
 <li>Aftermarket 52mm or 58mm throttle bodies flow significantly more air per step than factory units; reduce <code>AISTRT</code> table values by 15% to 25% to retain factory startup manners.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during engine cranking and initial startup flare.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>LoadDiagIdleSpeed</code> (<code>T-SMEC_v19.asm:2080-2165</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Engine startup or not-running state detected: <code>BitFlags_AIS</code> bit <code>b0c_bit6</code> tested at line 2134; if set, jumps to <code>L1094</code>.</li>
+<li>At line 2147, checks <code>BitFlags_AIS</code> and <code>BitFlags_54</code> for engine running condition.</li>
+<li>Sets startup flags <code>b0c_bit4</code> and <code>b2e_bit2</code> at lines 2153-2154.</li>
+<li>Loads <code>CoolantTemp</code> into accumulator A and indexes <code>AISTRT</code> at line 2156 via table lookup, jumping to <code>L1149</code> to store into <code>DesiredNewAisPosition</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

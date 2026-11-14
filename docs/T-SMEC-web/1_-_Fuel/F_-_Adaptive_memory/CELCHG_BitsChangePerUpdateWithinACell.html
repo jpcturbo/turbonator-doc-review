@@ -117,7 +117,18 @@
 <p>The SMEC applies long-term fuel trim using a signed mathematical modifier where one unit in an AutoCal cell represents approximately 0.1953 percent (about 0.2 percent) of base fuel delivery.</p>
 <p>In stock calibrations, <code>CELCHG</code> is set to 1 count (1 bit). When the update timer expires and short-term trim indicates a rich or lean bias, the active cell is stepped by exactly <code>CELCHG</code> toward stoichiometric balance, ensuring gradual and stable long-term learning without sudden fueling jumps.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Adaptation Speed</strong>:</li>
+<li>Higher values (2-3 counts) speed up the rate at which adaptive cells correct for fuel delivery errors, useful when testing new calibrations.</li>
+<li><strong>Fuel Trim Stability</strong>:</li>
+<li>The factory setting of 1 count ensures very smooth, non-intrusive adaptation (approx 0.2% per update).</li>
+<li><strong>Freezing Adaptive Memory</strong>:</li>
+<li>Setting <code>CELCHG</code> to 0 freezes all 13 adaptive cells in their current state, preventing further updates while retaining existing trim offsets.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when transitioning between adaptive fuel cells, enforcing a delay timer before the new cell's adaptive trim begins updating.</p>
 <ul>
 <li><strong>Enclosing Subroutine</strong>: <code>AdaptiveMemory_UpdateCellIfRequired_MM</code> / <code>UpdateAdaptive_OffIdle</code> (<code>T-SMEC_v19.asm:3291-3349</code>), instruction line 3314.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -129,16 +140,6 @@
 <li>Line 3315 loads <code>Counter_PrimaryAndSecondaryRamp</code> (STFT) into register B.</li>
 <li>If STFT is negative (<code>bpl L1241</code> branch not taken), line 3317 negates register A via <code>nega</code> to step the cell leaner.</li>
 <li>If STFT is positive, register A remains positive to step the cell richer.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Adaptation Speed</strong>:</li>
-<li>Higher values (2-3 counts) speed up the rate at which adaptive cells correct for fuel delivery errors, useful when testing new calibrations.</li>
-<li><strong>Fuel Trim Stability</strong>:</li>
-<li>The factory setting of 1 count ensures very smooth, non-intrusive adaptation (approx 0.2% per update).</li>
-<li><strong>Freezing Adaptive Memory</strong>:</li>
-<li>Setting <code>CELCHG</code> to 0 freezes all 13 adaptive cells in their current state, preventing further updates while retaining existing trim offsets.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

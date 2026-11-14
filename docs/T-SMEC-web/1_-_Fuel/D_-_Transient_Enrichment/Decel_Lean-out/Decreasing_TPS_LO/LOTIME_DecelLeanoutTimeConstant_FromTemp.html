@@ -130,20 +130,21 @@
 <p>When the driver lifts off the accelerator pedal and throttle voltage drops below the rolling average, <code>LOTIME</code> dictates how quickly the rolling average decays downward to match the new, lower throttle position.</p>
 <p>The factory setting of 40 counts provides smooth filtering that stabilizes throttle delta calculations during sudden lift-off transitions.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li>Enclosed in routine <code>TransFuel_CalculateDecreasingTPSTransientFuel</code> at lines 6511-6537 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
-<li>Evaluated when <code>TpsVolts &lt; AverageTPSVolts</code> (line 6489).</li>
-<li>Table lookup: Line 6512 loads index register X with <code>#LOTIME_DecelLeanoutTimeConstant_FromTemp</code> and line 6513 calls <code>Lookup4ByteTable</code> with <code>CoolantTemp</code>.</li>
-<li>Result stored into <code>Factor_LeanoutOrEnrichTime_TPS</code> at line 6514, which updates <code>AverageTPSVolts</code> in <code>ProcessMapOrTpsBlockData</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Filter Decay Speed</strong>: Lowering table values slows the decay of the rolling average, keeping the calculated throttle drop active across more engine cycles and prolonging throttle deceleration lean-out.</li>
 <li><strong>Shortening Decel Window</strong>: Raising table values causes the average to match the closed throttle position faster, terminating deceleration lean-out sooner.</li>
 <li><strong>Filter Tracking Stability</strong>: For most builds, leaving this parameter stock ensures proper filter tracking without lag.</li>
 <li><strong>Companion Parameter</strong>: Coordinates with <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/THRTCN_EnrichmentTime_FromTemp.html"><code>THRTCN</code></a> (which governs increasing throttle transitions).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the driver lifts off the accelerator pedal and throttle voltage drops below the rolling average, LOTIME dictates how quickly the rolling average decays downward to match the new, lower throttle position.</p>
+<ul>
+<li>Enclosed in routine <code>TransFuel_CalculateDecreasingTPSTransientFuel</code> at lines 6511-6537 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Evaluated when <code>TpsVolts &lt; AverageTPSVolts</code> (line 6489).</li>
+<li>Table lookup: Line 6512 loads index register X with <code>#LOTIME_DecelLeanoutTimeConstant_FromTemp</code> and line 6513 calls <code>Lookup4ByteTable</code> with <code>CoolantTemp</code>.</li>
+<li>Result stored into <code>Factor_LeanoutOrEnrichTime_TPS</code> at line 6514, which updates <code>AverageTPSVolts</code> in <code>ProcessMapOrTpsBlockData</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

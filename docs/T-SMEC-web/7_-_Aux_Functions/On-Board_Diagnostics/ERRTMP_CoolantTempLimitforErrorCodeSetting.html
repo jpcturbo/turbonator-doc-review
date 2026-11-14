@@ -117,7 +117,19 @@
 <p>During cold engine warm-up, air-fuel mixtures are enriched, combustion stability is lower, and emissions systems have not reached operating temperature. To avoid setting premature trouble codes or alarming the driver during routine cold starts, the engine controller suppresses major fault confirmation until the engine reaches <code>ERRTMP</code>.</p>
 <p>In factory calibrations, <code>ERRTMP</code> is set to 160 counts, corresponding to approximately 140 deg F. If coolant temperature is below <code>ERRTMP</code>, the controller bypasses major fault setting, allowing the engine to warm up smoothly before enforcing strict diagnostic monitoring.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Cold Climate &amp; Low-Temp Thermostat Tuning</strong>:</li>
+<li>If running a 160 deg F thermostat in cold winter weather, lower <code>ERRTMP</code> from 140 deg F down to 125-130 deg F to ensure major fault diagnostics engage.</li>
+<li><strong>Warm-Up Suppression</strong>:</li>
+<li>Prevents cold-start fuel enrichment and cold-engine misfire blips from setting latched trouble codes.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Setting <code>ERRTMP</code> to zero enables major fault escalation on freezing cold starts.</li>
+<li>Setting <code>ERRTMP</code> to maximum (255 counts) permanently disables major error code latching.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during ECU self-diagnostics, establishing the minimum engine coolant temperature required before recording diagnostic trouble codes.</p>
 <ul>
 <li><strong>Routine &amp; Line Numbers</strong>: <code>CheckForErrorsAndSetCodes_MM</code> (<code>T-SMEC_v19.asm:4731-4763</code>), instruction at line 4734.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -127,17 +139,6 @@
 <li><code>cmpa ERRTMP_CoolantTempLimitforErrorCodeSetting</code> at line 4734 compares against 160 counts.</li>
 <li>If lower (<code>bcs</code>), branches to <code>R1363</code> at line 4735, exiting immediately.</li>
 <li>If higher or equal, proceeds to check ATX in-gear status, running time, and RPM.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Cold Climate &amp; Low-Temp Thermostat Tuning</strong>:</li>
-<li>If running a 160 deg F thermostat in cold winter weather, lower <code>ERRTMP</code> from 140 deg F down to 125-130 deg F to ensure major fault diagnostics engage.</li>
-<li><strong>Warm-Up Suppression</strong>:</li>
-<li>Prevents cold-start fuel enrichment and cold-engine misfire blips from setting latched trouble codes.</li>
-<li><strong>Edge Cases</strong>:</li>
-<li>Setting <code>ERRTMP</code> to zero enables major fault escalation on freezing cold starts.</li>
-<li>Setting <code>ERRTMP</code> to maximum (255 counts) permanently disables major error code latching.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

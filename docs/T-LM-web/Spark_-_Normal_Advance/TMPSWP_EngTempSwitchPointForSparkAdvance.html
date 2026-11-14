@@ -116,15 +116,7 @@
 <p><code>TMPSWP_EngTempSwitchPointForSparkAdvance</code> is the primary coolant temperature threshold that divides the ECU's ignition timing logic into two distinct modes: <strong>Cold Engine Operation</strong> and <strong>Warm (Normal) Engine Operation</strong>.</p>
 <p>Cold engines have lower combustion chamber temperatures, slower fuel vaporization, and slower flame propagation speeds, requiring a dedicated ignition advance strategy (<a href="../Spark_-_Normal_Advance/CLDMAP_AdvanceFromMAPCold.html"><code>CLDMAP</code></a>) to maintain stability and warm up the engine quickly. Once the coolant reaches normal operating temperature, the ECU switches to its primary warm timing tables (<a href="../Spark_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a> and <a href="../Spark_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP</code></a>). <code>TMPSWP</code> defines the exact temperature where this transition occurs.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<p><code>TMPSWP</code> is evaluated on every execution pass of the main spark advance routine (<code>CalculateSparkAdvance_MM</code>):</p>
-<ul>
-<li><strong>Evaluated Input:</strong> <code>CoolantTemp</code> (analog-to-digital reading of the Coolant Temperature Sensor, stored in RAM).</li>
-<li><strong>Cold Path (<code>CoolantTemp &lt; TMPSWP</code>):</strong> The ECU branches to the cold MAP advance table (<a href="../Spark_-_Normal_Advance/CLDMAP_AdvanceFromMAPCold.html"><code>CLDMAP</code></a>) and applies cold closed-throttle clamping (<a href="../Spark_-_Normal_Advance/CLDLMT_LimitForColdMapAtClosedThrottle.html"><code>CLDLMT</code></a>).</li>
-<li><strong>Warm Path (<code>CoolantTemp &gt;= TMPSWP</code>):</strong> The ECU branches to warm spark advance logic, selecting between part-throttle (<a href="../Spark_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a>) and full-throttle (<a href="../Spark_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP</code></a>).</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Increasing the Value (Higher Temp Threshold):</strong></li>
 <li><strong>What it does:</strong> Forces the engine to stay in cold-engine ignition mode longer into its warmup cycle.</li>
@@ -144,6 +136,15 @@
 <p><strong>Typical Tuning Practice:</strong></p>
 </li>
 <li>In stock calibrations, <code>TMPSWP</code> is set to <code>0xA6</code> (~166°F / 74°C), matching the factory 180°F thermostat warm-up curve. If running a cooler thermostat (such as a 160°F unit), tuners occasionally lower this constant slightly so the ECU consistently enters warm-engine spark mode.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect once the coolant reaches normal operating temperature, the ECU switches to its primary warm timing tables (HOTMAP and WOTMAP).</p>
+<p><code>TMPSWP</code> is evaluated on every execution pass of the main spark advance routine (<code>CalculateSparkAdvance_MM</code>):</p>
+<ul>
+<li><strong>Evaluated Input:</strong> <code>CoolantTemp</code> (analog-to-digital reading of the Coolant Temperature Sensor, stored in RAM).</li>
+<li><strong>Cold Path (<code>CoolantTemp &lt; TMPSWP</code>):</strong> The ECU branches to the cold MAP advance table (<a href="../Spark_-_Normal_Advance/CLDMAP_AdvanceFromMAPCold.html"><code>CLDMAP</code></a>) and applies cold closed-throttle clamping (<a href="../Spark_-_Normal_Advance/CLDLMT_LimitForColdMapAtClosedThrottle.html"><code>CLDLMT</code></a>).</li>
+<li><strong>Warm Path (<code>CoolantTemp &gt;= TMPSWP</code>):</strong> The ECU branches to warm spark advance logic, selecting between part-throttle (<a href="../Spark_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a>) and full-throttle (<a href="../Spark_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP</code></a>).</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

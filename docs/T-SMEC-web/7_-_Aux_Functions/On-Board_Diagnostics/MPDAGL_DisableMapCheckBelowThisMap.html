@@ -117,7 +117,19 @@
 <p>While the engine is operating between the calibrated low and high engine speed boundaries, the engine controller checks whether manifold pressure falls within a realistic intake vacuum band. During high-RPM overrun or deep trailing-throttle deceleration, intake manifold vacuum reaches extreme levels that lie outside normal idle operating conditions.</p>
 <p>In factory calibrations, <code>MPDAGL</code> is set to 16 counts, representing approximately 1.8 psi absolute pressure (equivalent to -12.9 psi gauge pressure or roughly 26.2 inHg of manifold vacuum). If manifold pressure drops below <code>MPDAGL</code>, the controller suspends the steady-state rationality validation, preventing deceleration vacuum spikes from failing the sensor health check.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
+<li>Rescale <code>MPDAGL</code> by multiplying by 0.667 when upgrading to a 3-bar MAP sensor (from 16 counts down to 11 counts) to preserve the 1.8 psi absolute lower limit.</li>
+<li><strong>Deceleration Overrun Margin</strong>:</li>
+<li>Factory setting of 1.8 psi absolute (26.2 inHg vacuum) keeps trailing-throttle overrun vacuum from interfering with steady-state sensor validation.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Setting <code>MPDAGL</code> higher than warm idle manifold pressure (e.g., above 35 counts / 18 inHg vacuum) prevents <code>b47_MapOK</code> from ever setting.</li>
+<li>Zeroing <code>MPDAGL</code> allows sensor validation down to absolute zero pressure.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect while the engine is operating between the calibrated low and high engine speed boundaries, the engine controller checks whether manifold pressure falls within a realistic intake vacuum band.</p>
 <ul>
 <li><strong>Routine &amp; Line Numbers</strong>: <code>StoreAntiDwell</code> (<code>T-SMEC_v19.asm:7040-7063</code>), instruction at line 7057.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -127,17 +139,6 @@
 <li><code>cmpa MPDAGL_DisableMapCheckBelowThisMap</code> at line 7057 compares against 16 counts.</li>
 <li>If lower (<code>bcs</code>), branches to <code>L1595</code> at line 7058, bypassing assertion of <code>b47_MapOK</code>.</li>
 <li>If higher or equal, proceeds to check upper boundary <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPDAGH_DisableMapCheckAboveThisMap.html"><code>MPDAGH</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
-<li>Rescale <code>MPDAGL</code> by multiplying by 0.667 when upgrading to a 3-bar MAP sensor (from 16 counts down to 11 counts) to preserve the 1.8 psi absolute lower limit.</li>
-<li><strong>Deceleration Overrun Margin</strong>:</li>
-<li>Factory setting of 1.8 psi absolute (26.2 inHg vacuum) keeps trailing-throttle overrun vacuum from interfering with steady-state sensor validation.</li>
-<li><strong>Edge Cases</strong>:</li>
-<li>Setting <code>MPDAGL</code> higher than warm idle manifold pressure (e.g., above 35 counts / 18 inHg vacuum) prevents <code>b47_MapOK</code> from ever setting.</li>
-<li>Zeroing <code>MPDAGL</code> allows sensor validation down to absolute zero pressure.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

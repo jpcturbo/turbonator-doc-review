@@ -116,18 +116,7 @@
 <p><code>LWRLIM</code> specifies the lower authority clamp applied to the dynamic manifold pressure response correction (<code>MPCORR</code>) in T2 boost creep control when the rate of boost change is negative.</p>
 <p>If boost is falling or dipping, the T2 algorithm applies a negative correction to restore duty cycle. Chrysler configured <code>LWRLIM</code> to 32 counts (16.0 percent duty cycle offset), exactly twice the magnitude of <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Adaptives/UPRLIM_UpperLimitOnMPCORR.html"><code>UPRLIM</code></a>, giving the controller stronger authority to recover duty cycle and prevent boost sagging during transient shifts.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9844-9848</code>), called from <code>CalcWGDutyCycle_MM</code> (<code>T-SMEC_v19.asm:9506-9510</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Active when <code>BoostDelta_Signed</code> (<code>Temp1</code>) is negative (boost falling, high bit set at line 9839).</li>
-<li><strong>Clamp Comparison</strong>:</li>
-<li>Line 9845 loads <code>LWRLIM_LowerLimitOnMPCORR</code> into accumulator A.</li>
-<li>Line 9846 executes <code>cba</code> to compare accumulator B against <code>LWRLIM</code>.</li>
-<li>If accumulator B exceeds <code>LWRLIM</code>, accumulator B is clamped to <code>LWRLIM</code> at line 9848.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Negative Boost Creep Authority Clamp</strong>:</li>
 <li>Caps maximum dynamic correction applied when boost rate is falling or dipping.</li>
@@ -136,6 +125,18 @@
 <li>Increasing <code>LWRLIM</code> provides stronger authority to prop up wastegate duty cycle after an upshift.</li>
 <li><strong>Asymmetric Authority Architecture</strong>:</li>
 <li>Configured twice as large as <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Adaptives/UPRLIM_UpperLimitOnMPCORR.html"><code>UPRLIM</code></a> to ensure rapid recovery from boost drops without causing runaway overboost.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during adaptive wastegate control, setting the maximum allowable negative duty cycle reduction to prevent underboost.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9844-9848</code>), called from <code>CalcWGDutyCycle_MM</code> (<code>T-SMEC_v19.asm:9506-9510</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Active when <code>BoostDelta_Signed</code> (<code>Temp1</code>) is negative (boost falling, high bit set at line 9839).</li>
+<li><strong>Clamp Comparison</strong>:</li>
+<li>Line 9845 loads <code>LWRLIM_LowerLimitOnMPCORR</code> into accumulator A.</li>
+<li>Line 9846 executes <code>cba</code> to compare accumulator B against <code>LWRLIM</code>.</li>
+<li>If accumulator B exceeds <code>LWRLIM</code>, accumulator B is clamped to <code>LWRLIM</code> at line 9848.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

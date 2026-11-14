@@ -116,7 +116,18 @@
 <p><code>REVLMT</code> defines the lower engine speed recovery threshold used to restore fuel injection when the engine controller is operating in MAP sensor limp-in mode with the throttle opened beyond 25 percent.</p>
 <p>If the manifold absolute pressure sensor fails due to an open circuit, short to ground, or stuck signal, the controller cannot directly measure engine load and must synthesize an estimated pressure value from throttle position and engine speed. To prevent runaway engine speeds and high-load detonation under synthetic fueling, the controller restricts maximum engine speed. When engine speed exceeds <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/REVLMT2_MapLimpinAndThrAbove25PercentUpper2000.html"><code>REVLMT2</code></a> (approximately 2000 RPM), fuel injection is cut. <code>REVLMT</code> establishes the lower hysteresis setpoint (58 counts, or approximately 1850 RPM), allowing fuel to re-engage once the engine slows down.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Hysteresis Relationship</strong>:</li>
+<li>Paired with <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/REVLMT2_MapLimpinAndThrAbove25PercentUpper2000.html"><code>REVLMT2</code></a> (upper cutout threshold). Always keep <code>REVLMT</code> 100 to 200 RPM below <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/REVLMT2_MapLimpinAndThrAbove25PercentUpper2000.html"><code>REVLMT2</code></a> to avoid rapid fuel cut oscillation.</li>
+<li><strong>Limp-Home Speed Adjustment</strong>:</li>
+<li>Raising <code>REVLMT</code> and <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/REVLMT2_MapLimpinAndThrAbove25PercentUpper2000.html"><code>REVLMT2</code></a> allows higher road speed when limping a vehicle with a disconnected or failed MAP sensor.</li>
+<li><strong>Inversion Risk</strong>:</li>
+<li>Never set <code>REVLMT</code> above <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/REVLMT2_MapLimpinAndThrAbove25PercentUpper2000.html"><code>REVLMT2</code></a>, as doing so prevents fuel restoration once the rev limiter trips.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect at high engine speed, cutting fuel injection or ignition spark when engine RPM reaches this rev limiter threshold to protect the engine from mechanical failure.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>Cutout_DetermineLimpModeCutoutRPM</code> (<code>T-SMEC_v19.asm:5776-5782</code>), called from <code>Cutout_UseHysteresisToDetermineWhenToTurnFuelBackOn</code> (<code>T-SMEC_v19.asm:5731-5811</code>).</li>
 <li><strong>Fault Activation</strong>:</li>
@@ -126,16 +137,6 @@
 <li>Index register X is loaded with <code>#REVLMT_MapLimpinAndThrAbove25PercentLower1850</code>.</li>
 <li>In <code>CHECK_IFOVER_1850_2000_6167RPM</code> (<code>T-SMEC_v19.asm:5802-5811</code>), <code>EngineRpm_HB</code> is compared against <code>0x00,x</code>.</li>
 <li>If <code>EngineRpm_HB &lt; REVLMT</code> (and speed criteria pass), branches to <code>Cutout_TurnFuelBackOn</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Hysteresis Relationship</strong>:</li>
-<li>Paired with <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/REVLMT2_MapLimpinAndThrAbove25PercentUpper2000.html"><code>REVLMT2</code></a> (upper cutout threshold). Always keep <code>REVLMT</code> 100 to 200 RPM below <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/REVLMT2_MapLimpinAndThrAbove25PercentUpper2000.html"><code>REVLMT2</code></a> to avoid rapid fuel cut oscillation.</li>
-<li><strong>Limp-Home Speed Adjustment</strong>:</li>
-<li>Raising <code>REVLMT</code> and <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/REVLMT2_MapLimpinAndThrAbove25PercentUpper2000.html"><code>REVLMT2</code></a> allows higher road speed when limping a vehicle with a disconnected or failed MAP sensor.</li>
-<li><strong>Inversion Risk</strong>:</li>
-<li>Never set <code>REVLMT</code> above <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/REVLMT2_MapLimpinAndThrAbove25PercentUpper2000.html"><code>REVLMT2</code></a>, as doing so prevents fuel restoration once the rev limiter trips.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

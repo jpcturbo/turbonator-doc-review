@@ -116,18 +116,7 @@
 <p><code>SCNVLO</code> defines the lower gear ratio threshold for manual transmission clutch disengagement and downshift cutout detection.</p>
 <p>In manual transmission Chrysler vehicles, cruise control is intended to operate in 4th or 5th gear. If the driver downshifts to 2nd or 3rd gear without touching the brake, or if the clutch pedal is partially depressed, engine RPM rises relative to vehicle speed, driving the calculated speed-to-RPM product downward. If the ratio drops below <code>SCNVLO</code>, the engine controller detects that the transmission is no longer operating in an approved high gear and immediately disengages cruise control.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CruiseResumeSwitchPressed</code> (<code>T-SMEC_v19.asm:8532-8533</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Manual transmission vehicle (<code>cfg_ATX</code> clear).</li>
-<li>Ratio product passed upper check (<code>ratio &lt; SCNVHI</code>).</li>
-<li><strong>Comparison &amp; Branch</strong>:</li>
-<li>Compares calculated gear ratio in accumulator B against <code>SCNVLO</code> via <code>cmpb SCNVLO</code> at line 8532.</li>
-<li>If lower (<code>bcs DropOutOfCruise</code>), execution jumps to disengage cruise immediately.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Downshift Lockout</strong>:</li>
 <li>Disengages cruise control if the driver downshifts to lower gears without pressing the brake pedal.</li>
@@ -136,6 +125,18 @@
 <li>When converting to short final drive ratios (such as 3.87 or 4.05 gearing), verify the 4th gear ratio product does not drop below <code>SCNVLO</code>.</li>
 <li><strong>Companion Parameter</strong>:</li>
 <li>Forms the lower bound of the manual transmission ratio window, with <a href="../../7_-_Aux_Functions/Cruise_Control/SCNVHI_CruiseControlForBrakeFlagManualTransmissionClutchDisable.html"><code>SCNVHI</code></a> forming the upper bound.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect continuously while cruise control is armed, forming the lower threshold of the analog voltage safety window that instantly disengages cruise when the brake or clutch pedal is tapped.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CruiseResumeSwitchPressed</code> (<code>T-SMEC_v19.asm:8532-8533</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Manual transmission vehicle (<code>cfg_ATX</code> clear).</li>
+<li>Ratio product passed upper check (<code>ratio &lt; SCNVHI</code>).</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Compares calculated gear ratio in accumulator B against <code>SCNVLO</code> via <code>cmpb SCNVLO</code> at line 8532.</li>
+<li>If lower (<code>bcs DropOutOfCruise</code>), execution jumps to disengage cruise immediately.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -116,7 +116,19 @@
 <p><code>MPDEL1</code> defines the minimum positive boost error threshold (overboost) required before the engine controller begins timing an adaptive duty cycle reduction in T1 control.</p>
 <p>If actual manifold pressure exceeds the target boost by at least <code>MPDEL1</code>, the controller starts incrementing an internal error timer (<code>Timer_BoostErrTimer</code>). If the overboost condition persists continuously until the timer expires, the active adaptive wastegate cell is decremented, reducing base duty cycle to bring sustained boost back down to target.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Overboost Adaptive Sensitivity</strong>:</li>
+<li>Minimum pressure delta above target (<code>Actual - Target</code>) required to start timing an adaptive cell decrement.</li>
+<li>Factory setting is 2 counts (approximately 0.23 psi overboost).</li>
+<li><strong>Preventing False Downward Trims</strong>:</li>
+<li>Setting <code>MPDEL1</code> higher (0.5 to 1.0 psi) prevents brief gear-change spikes from causing downward adaptation of base WGDC.</li>
+<li><strong>3-Bar MAP Scaling</strong>:</li>
+<li>On 3-bar MAP conversions, divide the count value in half to preserve the same physical psi sensitivity threshold.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during boost control, setting the first manifold pressure delta threshold for incrementing the boost control counter.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_DecrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9676-9679</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -126,17 +138,6 @@
 <li>Accumulator A holds the negated boost delta (<code>MapValue - BoostTarget</code>).</li>
 <li>Line 9678 compares accumulator A against <code>MPDEL1_IncCounterWhenDeltaMapBelowThis</code> (<code>cmpa MPDEL1</code>).</li>
 <li>If delta is below <code>MPDEL1</code> (<code>bcs</code>), branches to <code>WGDC_ClearBoostErrTimer</code>, resetting the timer without adapting.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Overboost Adaptive Sensitivity</strong>:</li>
-<li>Minimum pressure delta above target (<code>Actual - Target</code>) required to start timing an adaptive cell decrement.</li>
-<li>Factory setting is 2 counts (approximately 0.23 psi overboost).</li>
-<li><strong>Preventing False Downward Trims</strong>:</li>
-<li>Setting <code>MPDEL1</code> higher (0.5 to 1.0 psi) prevents brief gear-change spikes from causing downward adaptation of base WGDC.</li>
-<li><strong>3-Bar MAP Scaling</strong>:</li>
-<li>On 3-bar MAP conversions, divide the count value in half to preserve the same physical psi sensitivity threshold.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

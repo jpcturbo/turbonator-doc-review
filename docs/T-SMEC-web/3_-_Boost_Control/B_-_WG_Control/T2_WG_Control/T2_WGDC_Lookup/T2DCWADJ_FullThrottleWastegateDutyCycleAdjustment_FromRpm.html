@@ -134,19 +134,7 @@
 <p><code>T2DCWADJ</code> supplies an engine-speed-dependent signed duty cycle adjustment to the base wastegate duty cycle in T2 control.</p>
 <p>As engine speed climbs, changing exhaust manifold pressure and turbine flow characteristics alter the force acting against the internal wastegate flapper valve. <code>T2DCWADJ</code> allows the calibrator to tailor solenoid duty cycle across the rev range, adding or subtracting duty cycle at specific engine speeds to keep manifold boost flat and stable from initial spool-up through redline.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>T2WGDC_LookupWGDutyCycleBase</code> (<code>T-SMEC_v19.asm:9867-9873</code>), called from <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9755-10040</code>).</li>
-<li><strong>Wide-Open Throttle Gate</strong>:</li>
-<li>Line 9867 tests <code>BitFlags_4f</code> bit <code>b4f_FullThrottle</code> (<code>brclr *BitFlags_4f, #b4f_FullThrottle, L7754</code>).</li>
-<li>If at part throttle, this table is completely bypassed.</li>
-<li><strong>Adjustment Application</strong>:</li>
-<li>Line 9868 loads <code>EngineRpm_HB</code> (32 RPM per count) into accumulator A.</li>
-<li>Line 9869 loads index X with <code>#T2DCWADJ_FullThrottleWastegateDutyCycleAdjustment_FromRpm</code>.</li>
-<li>Signed output is added to <code>Temp4</code> via <code>jsr WGDC_AdjustWGDutyCycle</code> (line 9872).</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>RPM-Dependent Duty Cycle Trim</strong>:</li>
 <li>Signed Type 2 curve mapping engine speed to duty cycle offset in T2 mode (-64.0% to +63.5%).</li>
@@ -156,6 +144,19 @@
 <li>Add duty cycle at high RPM to force actuator open if boost rises above target near redline.</li>
 <li><strong>Wide-Open Throttle Gate</strong>:</li>
 <li>Bypassed at partial throttle openings (<code>b4f_FullThrottle</code> clear).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under turbocharger boost operation to control FromRpm.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>T2WGDC_LookupWGDutyCycleBase</code> (<code>T-SMEC_v19.asm:9867-9873</code>), called from <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9755-10040</code>).</li>
+<li><strong>Wide-Open Throttle Gate</strong>:</li>
+<li>Line 9867 tests <code>BitFlags_4f</code> bit <code>b4f_FullThrottle</code> (<code>brclr *BitFlags_4f, #b4f_FullThrottle, L7754</code>).</li>
+<li>If at part throttle, this table is completely bypassed.</li>
+<li><strong>Adjustment Application</strong>:</li>
+<li>Line 9868 loads <code>EngineRpm_HB</code> (32 RPM per count) into accumulator A.</li>
+<li>Line 9869 loads index X with <code>#T2DCWADJ_FullThrottleWastegateDutyCycleAdjustment_FromRpm</code>.</li>
+<li>Signed output is added to <code>Temp4</code> via <code>jsr WGDC_AdjustWGDutyCycle</code> (line 9872).</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

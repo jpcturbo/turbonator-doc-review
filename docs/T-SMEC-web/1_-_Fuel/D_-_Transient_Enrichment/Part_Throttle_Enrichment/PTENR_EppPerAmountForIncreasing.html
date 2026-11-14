@@ -117,20 +117,21 @@
 <p>Formatted as a 16-bit word, the high byte defines the number of distributor reference pulses that must elapse between enrichment steps, while the low byte defines the increment added to the open-loop enrichment fraction timer. This pulse countdown structure ensures that transient enrichment builds progressively with engine revolutions rather than jumping instantaneously, providing a smooth transition into boost.</p>
 <p>The factory setting of 50 pulses and 1 count increment ensures that enrichment builds smoothly over approximately 25 engine revolutions on a four-cylinder engine.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li>Enclosed in routine <code>CalculatePartThrottleEnrichmentAndSparkScatterFuel_MM</code> at lines 5840-5877 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
-<li>Selected when <code>MapValue &gt; RPMMAP_SwitchPointForDownUp_FromRpm</code> (lines 5844-5848).</li>
-<li>At line 5866, instruction <code>ldab 0x00,x</code> loads the high byte (50 pulses) into accumulator B for countdown timer verification.</li>
-<li>At line 5877, instruction <code>addb 0x01,x</code> adds the low byte (1 count increment) to <code>Timer_OpenLoopFraction</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Faster Enrichment Ramp</strong>: Lowering the pulse countdown value in the high byte causes the enrichment multiplier to ramp upward faster, curing hesitation, lean air-fuel ratio spikes, or sluggish turbocharger spool-up when rolling into the throttle.</li>
 <li><strong>Gentler Ramp and Fuel Economy</strong>: Raising the pulse countdown value slows down the rate of enrichment buildup, creating a more conservative ramp that conserves fuel during brief transient accelerations.</li>
 <li><strong>Step Size Adjustment</strong>: Increasing the low byte step value increases the percentage added on each countdown expiration, producing a more aggressive step-up.</li>
 <li><strong>Injector Upgrades</strong>: When running very large injectors, ensure the ramp-in rate is not overly rapid to prevent transient rich bogging.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when manifold pressure exceeds the RPMMAP boundary curve.</p>
+<ul>
+<li>Enclosed in routine <code>CalculatePartThrottleEnrichmentAndSparkScatterFuel_MM</code> at lines 5840-5877 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Selected when <code>MapValue &gt; RPMMAP_SwitchPointForDownUp_FromRpm</code> (lines 5844-5848).</li>
+<li>At line 5866, instruction <code>ldab 0x00,x</code> loads the high byte (50 pulses) into accumulator B for countdown timer verification.</li>
+<li>At line 5877, instruction <code>addb 0x01,x</code> adds the low byte (1 count increment) to <code>Timer_OpenLoopFraction</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

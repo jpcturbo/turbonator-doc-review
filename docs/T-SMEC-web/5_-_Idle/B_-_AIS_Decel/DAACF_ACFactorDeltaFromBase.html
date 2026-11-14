@@ -118,17 +118,7 @@
 <p><code>DAACF</code> elevates the calculated decel control manifold pressure whenever the A/C clutch is active, which commands extra opening steps from <a href="../../5_-_Idle/B_-_AIS_Decel/DAISOP_DecelAisOpenStepsFromNeg_FromDeltaMap.html"><code>DAISOP</code></a> during throttle lift-off to cushion the compressor load.</p>
 <p>In factory calibrations, <code>DAACF</code> is set to 18 counts (approximately 2.1 psi absolute / 4.2 inHg), providing a dedicated decel dashpot buffer for air conditioning operation.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1996</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Fall-to-idle deceleration flag <code>b50_FallToIdle</code> must be set in <code>BitFlags_50</code> at line 1877.</li>
-<li>Air conditioning clutch flag <code>sw2_ACclutch</code> in <code>StartupSwitchMirror2</code> is tested at line 1890.</li>
-<li>If clutch is engaged (bit clear), execution continues to line 1891, adding <code>DAACF</code> directly to accumulator A.</li>
-<li>If clutch is disengaged (bit set), branches around line 1891 directly to <code>L1065</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Curing A/C Decel Stalls</strong>:</li>
 <li>Increase <code>DAACF</code> from 18 to 22 to 26 counts if the engine stalls on throttle lift-off only when the air conditioning is engaged.</li>
@@ -136,6 +126,17 @@
 <li>If engine speed refuses to come down cleanly when decelerating with the A/C on, reduce <code>DAACF</code> slightly.</li>
 <li><strong>Parasitic Drag Compensation</strong>:</li>
 <li>Directly counteracts compressor torque absorption on the crankshaft during closed-throttle overrun.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during idle air calculation, applying an airflow factor delta when the air conditioning compressor is running.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1996</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Fall-to-idle deceleration flag <code>b50_FallToIdle</code> must be set in <code>BitFlags_50</code> at line 1877.</li>
+<li>Air conditioning clutch flag <code>sw2_ACclutch</code> in <code>StartupSwitchMirror2</code> is tested at line 1890.</li>
+<li>If clutch is engaged (bit clear), execution continues to line 1891, adding <code>DAACF</code> directly to accumulator A.</li>
+<li>If clutch is disengaged (bit set), branches around line 1891 directly to <code>L1065</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

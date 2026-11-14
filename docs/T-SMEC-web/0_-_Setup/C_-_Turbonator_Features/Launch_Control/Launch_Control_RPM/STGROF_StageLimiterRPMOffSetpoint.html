@@ -117,20 +117,21 @@
 <p>When staging at wide-open throttle, the engine revs rapidly toward this setpoint. The instant engine speed reaches <code>STGROF</code>, the engine controller triggers rotating spark cuts and/or fuel cuts depending on configured options, arresting engine acceleration and locking RPM within the staging window.</p>
 <p>The factory setting of 125 counts corresponds to 4000 RPM, providing a solid rev limit ceiling for turbo boost generation on the starting line.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Target Staging RPM</strong>: Calibrate to desired launch ceiling (3200-3600 RPM for street tires, 4200-4800 RPM for drag slicks or high-stall converters).</li>
+<li><strong>Pairing With Resume Point</strong>: Always maintain <code>STGROF</code> strictly higher than <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_RPM/STGRON_StageLimiterRPMOnSetpoint.html"><code>STGRON</code></a> by roughly 150 to 250 RPM to establish proper hysteresis.</li>
+<li><strong>Rev Limit Strategy</strong>: Enable <code>opt_SprkRevLim</code> in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a> for boost building via rotating spark cut. Fuel cut (<code>opt_FuelRevLim</code>) halts turbine drive energy and slows boost spool.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when staging at wide-open throttle, the engine revs rapidly toward this setpoint.</p>
 <ul>
 <li>Enclosed in subroutine <code>LaunchControl_CheckUpperRPM</code> at lines 10175-10191 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
 <li>Evaluated when <code>Turbonator_Staging</code> is active and neither spark nor fuel cut is currently asserted (<code>brclr 0, x, #Turbonator_FuelOff | Turbonator_SparkCut, LaunchControl_CheckUpperRPM</code> at line 10172).</li>
 <li>High-byte engine speed <code>EngineRpm_HB</code> is compared against <code>STGROF_StageLimiterRPMOffSetpoint</code> (line 10177).</li>
 <li>If <code>EngineRpm_HB &lt; STGROF</code>, execution branches to <code>LaunchControl_AllowFuelSpark</code>.</li>
 <li>If <code>EngineRpm_HB &gt;= STGROF</code>, execution advances to <code>LaunchControl_ShutOffFuelSpark</code>, asserting <code>Turbonator_FuelOff</code> and/or <code>Turbonator_SparkCut</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Target Staging RPM</strong>: Calibrate to desired launch ceiling (3200-3600 RPM for street tires, 4200-4800 RPM for drag slicks or high-stall converters).</li>
-<li><strong>Pairing With Resume Point</strong>: Always maintain <code>STGROF</code> strictly higher than <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Launch_Control_RPM/STGRON_StageLimiterRPMOnSetpoint.html"><code>STGRON</code></a> by roughly 150 to 250 RPM to establish proper hysteresis.</li>
-<li><strong>Rev Limit Strategy</strong>: Enable <code>opt_SprkRevLim</code> in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a> for boost building via rotating spark cut. Fuel cut (<code>opt_FuelRevLim</code>) halts turbine drive energy and slows boost spool.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

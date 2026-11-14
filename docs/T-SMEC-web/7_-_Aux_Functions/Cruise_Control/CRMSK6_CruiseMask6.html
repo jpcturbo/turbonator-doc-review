@@ -116,18 +116,7 @@
 <p><code>CRMSK6</code> defines the positive clamp ceiling for the adaptive integrator trim.</p>
 <p>In closed-loop cruise control, integral windup occurs if the controller continues incrementing its learned trim indefinitely when the vehicle cannot maintain speed (such as on an extremely steep mountain pass). Without an upper ceiling, the integrator would build up massive throttle authority that would keep the throttle held wide open long after reaching flat ground. <code>CRMSK6</code> caps learned positive integrator authority at +30 counts, preventing integrator windup and ensuring safe throttle boundaries.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8777-8780</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Evaluated whenever <code>BitFlags_27</code> is incremented by <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK7_CruiseMask7.html"><code>CRMSK7</code></a>.</li>
-<li>Incremented value held in accumulator B.</li>
-<li><strong>Comparison &amp; Clamp</strong>:</li>
-<li>Compares accumulator B against <code>CRMSK6</code> via <code>cmpb CRMSK6</code> at line 8777.</li>
-<li>If less or equal (<code>ble L1763</code>), stores result; if greater, line 8779 reloads <code>CRMSK6</code> into B before storing.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Integrator Windup Prevention</strong>:</li>
 <li>Caps positive learned trim <code>BitFlags_27</code> at +30 counts.</li>
@@ -136,6 +125,18 @@
 <li>Increasing to 40 or 45 counts provides additional steady-state climbing authority for heavy vehicles.</li>
 <li><strong>Symmetrical Clamping</strong>:</li>
 <li>Forms the positive boundary paired with negative boundary <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK5_CruiseMask5.html"><code>CRMSK5</code></a> (-30 counts).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect while cruise control is active to regulate CruiseMask6.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8777-8780</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated whenever <code>BitFlags_27</code> is incremented by <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK7_CruiseMask7.html"><code>CRMSK7</code></a>.</li>
+<li>Incremented value held in accumulator B.</li>
+<li><strong>Comparison &amp; Clamp</strong>:</li>
+<li>Compares accumulator B against <code>CRMSK6</code> via <code>cmpb CRMSK6</code> at line 8777.</li>
+<li>If less or equal (<code>ble L1763</code>), stores result; if greater, line 8779 reloads <code>CRMSK6</code> into B before storing.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

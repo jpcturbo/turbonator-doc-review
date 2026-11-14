@@ -130,20 +130,21 @@
 <p>When manifold absolute pressure rises above the rolling average, the engine controller calculates an acceleration pump shot based on the pressure delta. To prevent the enrichment from vanishing on the very next engine cycle, <code>AETIME</code> sets the weighting factor used to update the rolling average manifold pressure.</p>
 <p>The factory setting of 20 counts allows the rolling average to track upward smoothly, sustaining transient enrichment across several engine cycles while the intake plenum fills.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li>Enclosed in routine <code>CalculatePartThrottleTransientFuel_MM</code> at lines 6395-6418 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
-<li>Evaluated when <code>MapValue &gt;= AverageMAPValue</code> (line 6407, branch <code>bcs TransFuel_CalculateDecreasingMAPTransientFuel</code> not taken).</li>
-<li>Table lookup: Line 6408 loads pointer <code>ldx #AETIME_EnrichmentTime_FromTemp</code> and line 6409 calls <code>Lookup4ByteTable</code> with <code>CoolantTemp</code>.</li>
-<li>Stored in <code>Factor_LeanoutOrEnrichTime_MAP</code> at line 6410, which is processed in <code>ProcessMapOrTpsBlockData</code> to update <code>AverageMAPValue</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Shortening Pulse Duration</strong>: Increasing <code>AETIME</code> causes the rolling average to catch up faster, shortening the duration of the MAP pump shot for crisper throttle response on light cars.</li>
 <li><strong>Supporting Large Plenums</strong>: Decreasing <code>AETIME</code> slows the filter update rate, allowing the rolling average to lag longer and extending the duration of transient enrichment.</li>
 <li><strong>Turbocharger Spool Support</strong>: Extending transient enrichment helps turbocharged engines with large intercoolers or significant turbo lag maintain stable air-fuel ratios while boost pressure builds.</li>
 <li><strong>Filter Stability</strong>: Avoid setting <code>AETIME</code> to zero, which freezes the rolling average and locks transient fuel permanently active.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when manifold absolute pressure rises above the rolling average, the engine controller calculates an acceleration pump shot based on the pressure delta.</p>
+<ul>
+<li>Enclosed in routine <code>CalculatePartThrottleTransientFuel_MM</code> at lines 6395-6418 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Evaluated when <code>MapValue &gt;= AverageMAPValue</code> (line 6407, branch <code>bcs TransFuel_CalculateDecreasingMAPTransientFuel</code> not taken).</li>
+<li>Table lookup: Line 6408 loads pointer <code>ldx #AETIME_EnrichmentTime_FromTemp</code> and line 6409 calls <code>Lookup4ByteTable</code> with <code>CoolantTemp</code>.</li>
+<li>Stored in <code>Factor_LeanoutOrEnrichTime_MAP</code> at line 6410, which is processed in <code>ProcessMapOrTpsBlockData</code> to update <code>AverageMAPValue</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

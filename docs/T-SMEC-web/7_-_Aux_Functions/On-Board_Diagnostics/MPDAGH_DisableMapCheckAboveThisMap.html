@@ -117,18 +117,7 @@
 <p>When testing whether the pressure sensor is healthy and delivering plausible signals, the engine controller requires manifold pressure to stay below heavy load or boost levels. Under wide-open throttle or positive turbocharger boost pressure, rapid airflow changes make steady-state rationality validation unreliable.</p>
 <p>In factory calibrations, <code>MPDAGH</code> is set to 129 counts, corresponding to approximately 14.9 psi absolute pressure (roughly 0.2 psi gauge boost or atmospheric barometric pressure). If manifold pressure equals or exceeds <code>MPDAGH</code>, the engine controller suspends the steady-state sensor rationality check, ensuring validation occurs strictly under light-load intake vacuum.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Routine &amp; Line Numbers</strong>: <code>StoreAntiDwell</code> (<code>T-SMEC_v19.asm:7040-7063</code>), instruction at line 7059.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Engine speed within <code>[MPRPML, MPRPMH]</code> and <code>MapVolts &gt;= MPDAGL</code>.</li>
-<li><strong>Math &amp; Comparison</strong>:</li>
-<li><code>cmpa MPDAGH_DisableMapCheckAboveThisMap</code> at line 7059 compares <code>MapVolts</code> against 129 counts.</li>
-<li>If greater or equal (<code>bcc</code>), branches to <code>L1595</code> at line 7060, bypassing <code>b47_MapOK</code>.</li>
-<li>If lower, line 7061 executes <code>bset *BitFlags_47, #b47_MapOK</code>, asserting the MAP sensor healthy flag.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
 <li>Crucial calibration requirement: rescale <code>MPDAGH</code> by multiplying by 0.667 (from 129 counts down to 86 counts) when converting to a 3-bar MAP sensor.</li>
@@ -138,6 +127,18 @@
 <li><strong>Edge Cases</strong>:</li>
 <li>Setting <code>MPDAGH</code> below normal idle manifold pressure prevents <code>b47_MapOK</code> from ever setting.</li>
 <li>Setting <code>MPDAGH</code> to maximum (255 counts) allows steady-state validation during peak turbo boost.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when testing whether the pressure sensor is healthy and delivering plausible signals, the engine controller requires manifold pressure to stay below heavy load or boost levels.</p>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>StoreAntiDwell</code> (<code>T-SMEC_v19.asm:7040-7063</code>), instruction at line 7059.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Engine speed within <code>[MPRPML, MPRPMH]</code> and <code>MapVolts &gt;= MPDAGL</code>.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li><code>cmpa MPDAGH_DisableMapCheckAboveThisMap</code> at line 7059 compares <code>MapVolts</code> against 129 counts.</li>
+<li>If greater or equal (<code>bcc</code>), branches to <code>L1595</code> at line 7060, bypassing <code>b47_MapOK</code>.</li>
+<li>If lower, line 7061 executes <code>bset *BitFlags_47, #b47_MapOK</code>, asserting the MAP sensor healthy flag.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

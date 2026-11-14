@@ -117,19 +117,7 @@
 <p>Because the <a href="../../1_-_Fuel/A_-_Starting/STRTFL_FuelStartFromCoolantTemp.html"><code>STRTFL</code></a> starting fuel calculation squares the table lookup result, unconstrained sub-zero temperature sensor readings could command excessive injector pulsewidths that flood the cylinders. In factory calibrations, <code>STRLMT</code> is set to 105 counts, corresponding to approximately 38 degF.</p>
 <p>If an engine is cranked with the throttle closed at temperatures colder than 38 degF, the controller clamps the input temperature to 38 degF, preventing excessive cranking fuel accumulation.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateInjectorPulsewidthForStarting_MM</code> (<code>T-SMEC_v19.asm:5560-5565</code>), instruction lines 5562, 5564.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Evaluated only during cranking (<code>b54_FuelEngineNotRunning</code> set).</li>
-<li>Evaluated only when throttle is closed (<code>b4f_OffIdle</code> in <code>BitFlags_4f</code> is clear).</li>
-<li><strong>Comparison &amp; Branch</strong>:</li>
-<li><code>cmpa STRLMT_ColdestTempAllowedAtClosedThrottle</code> compares current coolant temperature.</li>
-<li>If <code>CoolantTemp &gt;= STRLMT</code> (<code>bcc L1477</code>), the actual temperature is preserved.</li>
-<li>If <code>CoolantTemp &lt; STRLMT</code>, <code>STRLMT</code> is loaded into accumulator A at line 5564.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Cold Cranking Protection</strong>:</li>
 <li>Raising <code>STRLMT</code> caps the maximum cranking pulsewidth, preventing wet-fouling on large injectors in freezing weather.</li>
@@ -139,6 +127,19 @@
 <li><code>STRLMT</code> is only applied when the throttle is fully closed; cracking the throttle off-idle bypasses the clamp immediately.</li>
 <li><strong>Stock Calibration Matching</strong>:</li>
 <li>Factory setting of 105 counts (38 degF) balances cold fuel vaporization against the risk of unburned fuel flooding.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if an engine is cranked with the throttle closed at temperatures colder than 38 degF, the controller clamps the input temperature to 38 degF, preventing excessive cranking fuel accumulation.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateInjectorPulsewidthForStarting_MM</code> (<code>T-SMEC_v19.asm:5560-5565</code>), instruction lines 5562, 5564.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated only during cranking (<code>b54_FuelEngineNotRunning</code> set).</li>
+<li>Evaluated only when throttle is closed (<code>b4f_OffIdle</code> in <code>BitFlags_4f</code> is clear).</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li><code>cmpa STRLMT_ColdestTempAllowedAtClosedThrottle</code> compares current coolant temperature.</li>
+<li>If <code>CoolantTemp &gt;= STRLMT</code> (<code>bcc L1477</code>), the actual temperature is preserved.</li>
+<li>If <code>CoolantTemp &lt; STRLMT</code>, <code>STRLMT</code> is loaded into accumulator A at line 5564.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

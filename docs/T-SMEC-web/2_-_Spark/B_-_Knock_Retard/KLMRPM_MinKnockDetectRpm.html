@@ -116,7 +116,18 @@
 <p><code>KLMRPM</code> defines the engine speed transition boundary that separates the restricted low-RPM knock retard limit (<a href="../../2_-_Spark/B_-_Knock_Retard/KNKLIM_MaxKnockRetard.html"><code>KNKLIM</code></a>) from the standard dynamic knock retard curve (<a href="../../2_-_Spark/B_-_Knock_Retard/RETMAX_MaxKnockRetardFromMap.html"><code>RETMAX</code></a>).</p>
 <p>While <a href="../../2_-_Spark/B_-_Knock_Retard/KNKRPM_MinRpmforKnockRetard.html"><code>KNKRPM</code></a> completely turns off knock retard below 1024 RPM, <code>KLMRPM</code> establishes the speed threshold below which the controller enforces the restricted low-RPM knock clamp (<a href="../../2_-_Spark/B_-_Knock_Retard/KNKLIM_MaxKnockRetard.html"><code>KNKLIM</code></a>) during high-throttle transitions. In factory calibrations, <code>KLMRPM</code> is calibrated to 32 counts, corresponding to 1024 RPM. Once engine speed meets or exceeds <code>KLMRPM</code>, the controller unlocks full knock retard authority using the load-dependent <a href="../../2_-_Spark/B_-_Knock_Retard/RETMAX_MaxKnockRetardFromMap.html"><code>RETMAX</code></a> curve.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Extending False Knock Protection</strong>:</li>
+<li>On engines with noisy forged pistons or loud valvetrain assemblies, raise <code>KLMRPM</code> to 1500 RPM (47 counts) to suppress false knock retard during off-idle acceleration.</li>
+<li><strong>Unlocking Full Retard Sooner</strong>:</li>
+<li>For whisper-quiet stock engines, keeping <code>KLMRPM</code> low ensures full <a href="../../2_-_Spark/B_-_Knock_Retard/RETMAX_MaxKnockRetardFromMap.html"><code>RETMAX</code></a> retard authority is available as soon as the engine leaves idle.</li>
+<li><strong>Architecture Symmetry</strong>:</li>
+<li>In stock calibrations, <code>KLMRPM</code> and <a href="../../2_-_Spark/B_-_Knock_Retard/KNKRPM_MinRpmforKnockRetard.html"><code>KNKRPM</code></a> are both set to 1024 RPM (32 counts).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect while KNKRPM completely turns off knock retard below 1024 RPM, KLMRPM establishes the speed threshold below which the controller enforces the restricted low-RPM knock clamp (KNKLIM) during high-throttle transitions.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateKnockRetard_MM</code> (<code>T-SMEC_v19.asm:8240-8242</code>).</li>
 <li><strong>Comparison &amp; Branch</strong>:</li>
@@ -125,16 +136,6 @@
 <li><code>cmpb KLMRPM_MinKnockDetectRpm</code> at line 8241.</li>
 <li>If <code>EngineRpm_HB</code> &gt;= <code>KLMRPM</code> (<code>bcc CalculateMaxAllowedRetard</code>), branches to line 8246 to use <a href="../../2_-_Spark/B_-_Knock_Retard/RETMAX_MaxKnockRetardFromMap.html"><code>RETMAX</code></a>.</li>
 <li>If <code>EngineRpm_HB</code> &lt; <code>KLMRPM</code>, execution falls through to line 8243 to load <a href="../../2_-_Spark/B_-_Knock_Retard/KNKLIM_MaxKnockRetard.html"><code>KNKLIM</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Extending False Knock Protection</strong>:</li>
-<li>On engines with noisy forged pistons or loud valvetrain assemblies, raise <code>KLMRPM</code> to 1500 RPM (47 counts) to suppress false knock retard during off-idle acceleration.</li>
-<li><strong>Unlocking Full Retard Sooner</strong>:</li>
-<li>For whisper-quiet stock engines, keeping <code>KLMRPM</code> low ensures full <a href="../../2_-_Spark/B_-_Knock_Retard/RETMAX_MaxKnockRetardFromMap.html"><code>RETMAX</code></a> retard authority is available as soon as the engine leaves idle.</li>
-<li><strong>Architecture Symmetry</strong>:</li>
-<li>In stock calibrations, <code>KLMRPM</code> and <a href="../../2_-_Spark/B_-_Knock_Retard/KNKRPM_MinRpmforKnockRetard.html"><code>KNKRPM</code></a> are both set to 1024 RPM (32 counts).</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

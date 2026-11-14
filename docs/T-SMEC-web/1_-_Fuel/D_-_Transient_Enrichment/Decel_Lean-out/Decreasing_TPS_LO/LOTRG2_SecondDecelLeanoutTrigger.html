@@ -117,20 +117,21 @@
 <p>While small throttle closures between the primary trigger and <code>LOTRG2</code> cause the engine controller to increment lean-out gradually, rapid throttle closures that exceed <code>LOTRG2</code> immediately engage full deceleration lean-out from the temperature table.</p>
 <p>In the stock calibration, this parameter is set to 255 counts, preventing maximum throttle decel lean-out from ever being triggered.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li>Enclosed in routine <code>TransFuel_CalculateDecreasingTPSTransientFuel</code> at lines 6511-6537 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
-<li>Evaluated after passing <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_TPS_LO/LOTTRG_DeltaTriggerForDecelLeanout.html"><code>LOTTRG</code></a> at line 6524.</li>
-<li>Threshold comparison: Line 6526 executes <code>cmpa LOTRG2_SecondDecelLeanoutTrigger</code>.</li>
-<li>Polarity: If drop is less than <code>LOTRG2</code>, branch <code>bcs L1556</code> increments the leanout factor; if greater or equal, execution falls through to line 6528 to look up full lean-out from <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_TPS_LO/LOTTHR_DecelLeanoutFactor_FromTemp.html"><code>LOTTHR</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Two-Stage Deceleration Tuning</strong>: When enabling throttle deceleration lean-out, set <code>LOTRG2</code> approximately 5 to 10 counts higher than <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_TPS_LO/LOTTRG_DeltaTriggerForDecelLeanout.html"><code>LOTTRG</code></a> (e.g. <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_TPS_LO/LOTTRG_DeltaTriggerForDecelLeanout.html"><code>LOTTRG</code></a> = 5 counts, <code>LOTRG2</code> = 10 counts).</li>
 <li><strong>Immediate Full Lean-out</strong>: Abrupt pedal lift-offs that exceed <code>LOTRG2</code> bypass the gradual ramping logic and jump directly to full table lean-out.</li>
 <li><strong>Incremental-Only Configuration</strong>: Leaving <code>LOTRG2</code> at 255 counts while lowering <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_TPS_LO/LOTTRG_DeltaTriggerForDecelLeanout.html"><code>LOTTRG</code></a> limits deceleration lean-out to gradual, incremental mode only.</li>
 <li><strong>Threshold Alignment</strong>: Must always be set strictly greater than <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_TPS_LO/LOTTRG_DeltaTriggerForDecelLeanout.html"><code>LOTTRG</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during aggressive throttle drop-off, activating a secondary, stronger deceleration leanout rate.</p>
+<ul>
+<li>Enclosed in routine <code>TransFuel_CalculateDecreasingTPSTransientFuel</code> at lines 6511-6537 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Evaluated after passing <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_TPS_LO/LOTTRG_DeltaTriggerForDecelLeanout.html"><code>LOTTRG</code></a> at line 6524.</li>
+<li>Threshold comparison: Line 6526 executes <code>cmpa LOTRG2_SecondDecelLeanoutTrigger</code>.</li>
+<li>Polarity: If drop is less than <code>LOTRG2</code>, branch <code>bcs L1556</code> increments the leanout factor; if greater or equal, execution falls through to line 6528 to look up full lean-out from <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_TPS_LO/LOTTHR_DecelLeanoutFactor_FromTemp.html"><code>LOTTHR</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -118,16 +118,7 @@
 <p><code>DCLRFQ</code> acts as a pacing filter, enforcing a minimum settling delay between decel stepper motor movements.</p>
 <p>In factory calibrations, <code>DCLRFQ</code> is set to 63 counts, enforcing a settling interval of approximately 700 milliseconds between decel stepper pulses.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1996</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Fall-to-idle deceleration flag <code>b50_FallToIdle</code> must be set at line 1921 (branches to <code>L1076</code> at line 1979).</li>
-<li>Compares elapsed timer <code>Timer_AisChanges</code> against <code>DCLRFQ</code> at line 1980.</li>
-<li>If <code>Timer_AisChanges</code> is less than <code>DCLRFQ</code> (<code>bcs R1075</code>), execution aborts without adjusting decel stepper position.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Catching Rapid Decel Plunges</strong>:</li>
 <li>Lower <code>DCLRFQ</code> from 63 to 35 to 45 counts on cars with lightweight flywheels to allow faster stepper motor intervention on throttle snap-shut.</li>
@@ -135,6 +126,16 @@
 <li>Do not lower <code>DCLRFQ</code> below 20 counts, as pulsing the coils faster than the motor pintle can move will cause skipped steps.</li>
 <li><strong>Factory Pacing</strong>:</li>
 <li>Factory setting of 63 counts (~700 ms) provides conservative, reliable stepper motor tracking on standard rotating assemblies.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the vehicle decelerates with closed throttle, manifold pressure drops rapidly, triggering the decel dashpot routines to open the stepper motor to catch the descent.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1996</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Fall-to-idle deceleration flag <code>b50_FallToIdle</code> must be set at line 1921 (branches to <code>L1076</code> at line 1979).</li>
+<li>Compares elapsed timer <code>Timer_AisChanges</code> against <code>DCLRFQ</code> at line 1980.</li>
+<li>If <code>Timer_AisChanges</code> is less than <code>DCLRFQ</code> (<code>bcs R1075</code>), execution aborts without adjusting decel stepper position.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

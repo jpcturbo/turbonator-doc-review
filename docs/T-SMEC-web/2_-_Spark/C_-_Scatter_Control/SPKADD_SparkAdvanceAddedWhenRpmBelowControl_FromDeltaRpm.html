@@ -130,7 +130,18 @@
 <p><code>SPKADD</code> defines the spark advance addition curve applied by the spark scatter algorithm when engine speed drops below target idle speed.</p>
 <p>Because the mechanical automatic idle speed stepper motor reacts relatively slowly to airflow demands, the engine controller uses ignition timing advance as an instantaneous torque actuator. When engine RPM falls below target idle speed, <code>SPKADD</code> looks up an advance adder indexed by the RPM undershoot delta (scaled in 16 RPM increments). The looked-up advance (up to 8.0 degrees BTDC) is added immediately on the very next distributor firing pulse, boosting combustion cylinder pressure and generating immediate torque to arrest the RPM dip.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Arresting Idle Dips</strong>:</li>
+<li>Increasing <code>SPKADD</code> delivers instantaneous torque recovery when heavy loads (such as electric cooling fans or power steering) drag idle speed down.</li>
+<li><strong>Over-Correction Oscillation</strong>:</li>
+<li>If the engine bounces or rhythmically lopes between high and low idle, reduce <code>SPKADD</code> values to dampen the advance kick.</li>
+<li><strong>16 RPM Table Indexing</strong>:</li>
+<li>Table delta RPM is shifted right 4 times (divided by 16); each table breakpoint represents 16 RPM of undershoot.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when engine RPM falls below target idle speed, SPKADD looks up an advance adder indexed by the RPM undershoot delta (scaled in 16 RPM increments).</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>HandleSparkScatter</code> (<code>T-SMEC_v19.asm:8131-8151</code>).</li>
 <li><strong>Delta RPM Calculation</strong>:</li>
@@ -140,16 +151,6 @@
 <li>Register D is inverted (<code>coma; comb; addd #1</code>) and divided by 16 (<code>lsrd</code> x4) with rounding.</li>
 <li><strong>Table Lookup &amp; Addition</strong>:</li>
 <li><code>Lookup4ByteTable</code> returns advance in accumulator B, added to <code>CalculatedSparkAdvance</code> and stored in <code>Temp5</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Arresting Idle Dips</strong>:</li>
-<li>Increasing <code>SPKADD</code> delivers instantaneous torque recovery when heavy loads (such as electric cooling fans or power steering) drag idle speed down.</li>
-<li><strong>Over-Correction Oscillation</strong>:</li>
-<li>If the engine bounces or rhythmically lopes between high and low idle, reduce <code>SPKADD</code> values to dampen the advance kick.</li>
-<li><strong>16 RPM Table Indexing</strong>:</li>
-<li>Table delta RPM is shifted right 4 times (divided by 16); each table breakpoint represents 16 RPM of undershoot.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

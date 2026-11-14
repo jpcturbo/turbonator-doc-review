@@ -118,17 +118,7 @@
 <p>Above <code>ACTMP</code>, the controller switches from the fixed cold step adder (<a href="../../5_-_Idle/A_-_AIS_Control/ACPOS_ACPositionWhenTempToCold.html"><code>ACPOS</code></a>) to the dynamic, speed-dependent lookup table <a href="../../5_-_Idle/B_-_AIS_Decel/ACCTBL_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a>.</p>
 <p>In factory calibrations, <code>ACTMP</code> is set to 127 counts, corresponding to a temperature transition threshold of 77 °F.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2468</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Air conditioning clutch active and not in idle-only kick state.</li>
-<li>Loads <code>CoolantTemp</code> into accumulator A at line 2451.</li>
-<li>Compares accumulator A against <code>ACTMP</code> at line 2452: <code>cmpa ACTMP_Use_ACCTBL_WhenTempAboveThisElseUse_ACPOS</code>.</li>
-<li>If <code>CoolantTemp</code> &lt; <code>ACTMP</code> (<code>bcs L1147</code>), selects <a href="../../5_-_Idle/A_-_AIS_Control/ACPOS_ACPositionWhenTempToCold.html"><code>ACPOS</code></a>; if &gt;= <code>ACTMP</code>, advances to look up <a href="../../5_-_Idle/B_-_AIS_Decel/ACCTBL_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Extending Cold A/C Protection</strong>:</li>
 <li>Raise <code>ACTMP</code> to 100 °F to 120 °F in cold northern climates to ensure generous cold compressor compensation remains active throughout early warm-up.</li>
@@ -136,6 +126,17 @@
 <li>Keep <code>ACTMP</code> below 150 °F to ensure the ECU switches over to dynamic speed-based compensation (<a href="../../5_-_Idle/B_-_AIS_Decel/ACCTBL_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a>) once the engine is hot.</li>
 <li><strong>Factory Baseline</strong>:</li>
 <li>127 counts equals 77 °F on the Chrysler coolant temperature scale.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during cold engine idle, establishing the coolant temperature threshold that switches between cold and warm A/C idle airflow compensations.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2468</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Air conditioning clutch active and not in idle-only kick state.</li>
+<li>Loads <code>CoolantTemp</code> into accumulator A at line 2451.</li>
+<li>Compares accumulator A against <code>ACTMP</code> at line 2452: <code>cmpa ACTMP_Use_ACCTBL_WhenTempAboveThisElseUse_ACPOS</code>.</li>
+<li>If <code>CoolantTemp</code> &lt; <code>ACTMP</code> (<code>bcs L1147</code>), selects <a href="../../5_-_Idle/A_-_AIS_Control/ACPOS_ACPositionWhenTempToCold.html"><code>ACPOS</code></a>; if &gt;= <code>ACTMP</code>, advances to look up <a href="../../5_-_Idle/B_-_AIS_Decel/ACCTBL_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

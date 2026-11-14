@@ -117,7 +117,19 @@
 <p>When the manifold pressure sensor is flagged as defective, the engine controller derives an approximate load value from throttle position using a reference curve. However, because an engine idling or decelerating with closed throttle still sustains a measurable minimum absolute pressure, a baseline offset must be added to the looked-up curve value.</p>
 <p>In factory calibrations, <code>MPLMOF</code> is configured to 32 counts, representing approximately 3.7 psi absolute pressure (or roughly 7.5 inHg of vacuum offset). This ensures that even if throttle calculation drops to zero, the engine controller schedules sufficient fuel pulse width and appropriate base spark timing to prevent stalling.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Raising for Radical Camshafts</strong>:</li>
+<li>Engines with high-duration camshafts generate lower idle vacuum, requiring a higher baseline offset in <code>MPLMOF</code> to prevent emergency limp-in stalling.</li>
+<li><strong>3-Bar MAP Sensor Scaling</strong>:</li>
+<li>Rescale <code>MPLMOF</code> down by multiplying by 0.667 (from 32 counts down to 21 counts) when upgrading to a 3-bar MAP sensor.</li>
+<li><strong>Lowering &amp; Edge Cases</strong>:</li>
+<li>Lowering <code>MPLMOF</code> leans out the emergency fuel schedule and advances spark timing.</li>
+<li>Setting <code>MPLMOF</code> to zero causes the engine to stall on closed-throttle decel when the MAP sensor faults, while setting it to maximum produces heavy rich fouling.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during MAP sensor limp-in operation, adding a calibration offset to the calculated limp-in manifold pressure.</p>
 <ul>
 <li><strong>Routine &amp; Line Numbers</strong>: <code>SimulateMapReadingFromTps</code> (<code>T-SMEC_v19.asm:4569-4589</code>), instruction at line 4588.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -127,17 +139,6 @@
 <li>Accumulator A contains interpolated pressure counts from <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/LMPINN_LimpinTableForMapFromThrottle.html"><code>LMPINN</code></a>.</li>
 <li>CPU executes <code>adda MPLMOF_OffsetForCalcMapInMapLimpin</code>, adding 32 counts.</li>
 <li>Result returned directly in accumulator A as synthesized <code>MapValue</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Raising for Radical Camshafts</strong>:</li>
-<li>Engines with high-duration camshafts generate lower idle vacuum, requiring a higher baseline offset in <code>MPLMOF</code> to prevent emergency limp-in stalling.</li>
-<li><strong>3-Bar MAP Sensor Scaling</strong>:</li>
-<li>Rescale <code>MPLMOF</code> down by multiplying by 0.667 (from 32 counts down to 21 counts) when upgrading to a 3-bar MAP sensor.</li>
-<li><strong>Lowering &amp; Edge Cases</strong>:</li>
-<li>Lowering <code>MPLMOF</code> leans out the emergency fuel schedule and advances spark timing.</li>
-<li>Setting <code>MPLMOF</code> to zero causes the engine to stall on closed-throttle decel when the MAP sensor faults, while setting it to maximum produces heavy rich fouling.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

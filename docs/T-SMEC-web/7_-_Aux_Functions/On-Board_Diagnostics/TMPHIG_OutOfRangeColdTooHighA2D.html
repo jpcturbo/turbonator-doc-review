@@ -117,7 +117,19 @@
 <p>The engine controller uses an internal 5.0-volt pull-up resistor connected to the negative temperature coefficient coolant sensor thermistor. As coolant temperature increases, thermistor resistance drops, lowering the measured voltage. Conversely, if the sensor harness is unplugged, a wire breaks, or the sensor develops an internal open circuit, the input voltage is pulled up to the 5.0-volt rail.</p>
 <p>In factory calibrations, <code>TMPHIG</code> is configured to 253 counts, representing approximately 4.96 volts (equivalent to a sub-zero reading colder than -40 deg F). If sensor voltage equals or exceeds <code>TMPHIG</code>, the engine controller flags <strong>Fault Code 22</strong>, commands the radiator cooling fan to run continuously as a safeguard, and substitutes default temperature values.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Diagnostics &amp; Field Service</strong>:</li>
+<li>If the radiator cooling fan engages at high speed immediately upon key-on and Fault Code 22 is stored, check whether the two-pin coolant sensor plug is disconnected or corroded.</li>
+<li><strong>Cold Climate Headroom</strong>:</li>
+<li>Lowering <code>TMPHIG</code> risks triggering false open-circuit faults during extreme sub-zero winter starts (colder than -30 deg F).</li>
+<li><strong>Raising &amp; Edge Cases</strong>:</li>
+<li>Setting <code>TMPHIG</code> to 255 counts blinds the open-circuit detection logic.</li>
+<li>Setting <code>TMPHIG</code> lower than normal warm engine voltage locks the engine controller permanently into Fault Code 22 failsafe mode.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during temperature sensor diagnostics, detecting short-circuit coolant and charge temperature sensor faults.</p>
 <ul>
 <li><strong>Routine &amp; Line Numbers</strong>: <code>CheckCoolantTempSensor</code> (<code>T-SMEC_v19.asm:7647-7659</code>), instruction at line 7650.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -127,17 +139,6 @@
 <li><code>cmpa TMPHIG_OutOfRangeColdTooHighA2D</code> at line 7650 compares against 253 counts.</li>
 <li>If greater or equal (<code>bcc</code>), branches to <code>SetCoolantTempError</code> at line 7651.</li>
 <li>Sets <code>b45_IPL1</code> bit <code>b45_BadCoolantTemp</code> and throws non-critical error code.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Diagnostics &amp; Field Service</strong>:</li>
-<li>If the radiator cooling fan engages at high speed immediately upon key-on and Fault Code 22 is stored, check whether the two-pin coolant sensor plug is disconnected or corroded.</li>
-<li><strong>Cold Climate Headroom</strong>:</li>
-<li>Lowering <code>TMPHIG</code> risks triggering false open-circuit faults during extreme sub-zero winter starts (colder than -30 deg F).</li>
-<li><strong>Raising &amp; Edge Cases</strong>:</li>
-<li>Setting <code>TMPHIG</code> to 255 counts blinds the open-circuit detection logic.</li>
-<li>Setting <code>TMPHIG</code> lower than normal warm engine voltage locks the engine controller permanently into Fault Code 22 failsafe mode.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

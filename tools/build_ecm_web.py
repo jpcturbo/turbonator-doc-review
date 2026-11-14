@@ -49,6 +49,7 @@ ECM_REGISTRY = {
         'subtitle': '1985–1987 Dual-Board Controller (Motorola 6803 MCU)',
         'default_json': 'docs/t_lm_descriptors.json',
         'default_out': 'docs/T-LM-web',
+        'tuning_guide': 'docs/tuning_guide_lm_modifications.html',
         'hardware_desc': 'Motorola 6803 MCU &bull; 1985–1987 dual-board architecture',
     },
     'LM-87': {
@@ -57,6 +58,7 @@ ECM_REGISTRY = {
         'subtitle': '1985–1987 Dual-Board Controller (Motorola 6803 MCU)',
         'default_json': 'docs/t_lm_descriptors.json',
         'default_out': 'docs/T-LM-web',
+        'tuning_guide': 'docs/tuning_guide_lm_modifications.html',
         'hardware_desc': 'Motorola 6803 MCU &bull; 1985–1987 dual-board architecture',
     },
     'SMEC': {
@@ -65,6 +67,7 @@ ECM_REGISTRY = {
         'subtitle': '1988–1989 Single Module (Motorola 68HC11 MCU)',
         'default_json': 'docs/t_smec_descriptors.json',
         'default_out': 'docs/T-SMEC-web',
+        'tuning_guide': 'docs/tuning_guide_smec_modifications.html',
         'hardware_desc': 'Motorola 68HC11 MCU &bull; 1988–1989 single module architecture',
     },
     'SBEC': {
@@ -73,6 +76,7 @@ ECM_REGISTRY = {
         'subtitle': '1990–1991 Consolidated Controller (Motorola 68HC11 MCU)',
         'default_json': 'docs/t_sbec_descriptors.json',
         'default_out': 'docs/T-SBEC-web',
+        'tuning_guide': 'docs/tuning_guide_sbec_modifications.html',
         'hardware_desc': 'Motorola 68HC11 MCU &bull; 1990–1991 consolidated single-board architecture',
     },
     'SBECII': {
@@ -81,6 +85,7 @@ ECM_REGISTRY = {
         'subtitle': '1992–1993 Sequential EFI Controller (Motorola 68HC11 MCU)',
         'default_json': 'docs/t_sbecii_descriptors.json',
         'default_out': 'docs/T-SBECII-web',
+        'tuning_guide': 'docs/tuning_guide_sbecii_modifications.html',
         'hardware_desc': 'Motorola 68HC11 MCU &bull; 1992–1993 sequential injection & CCD bus',
     },
     'T3-I': {
@@ -89,6 +94,7 @@ ECM_REGISTRY = {
         'subtitle': '1991–1992 Lotus DOHC 16V DDIS Platform',
         'default_json': 'docs/t_t3_i_descriptors.json',
         'default_out': 'docs/T3-I-web',
+        'tuning_guide': 'docs/tuning_guide_t3_i_modifications.html',
         'hardware_desc': '2.2L 16V Lotus DOHC &bull; 1991–1992 distributorless direct ignition',
     },
     'T3-II': {
@@ -97,6 +103,7 @@ ECM_REGISTRY = {
         'subtitle': '1993 Lotus DOHC 16V Sequential Platform',
         'default_json': 'docs/t_t3_ii_descriptors.json',
         'default_out': 'docs/T3-II-web',
+        'tuning_guide': 'docs/tuning_guide_t3_ii_modifications.html',
         'hardware_desc': '2.2L 16V Lotus DOHC &bull; 1993 sequential EFI platform',
     },
 }
@@ -801,8 +808,8 @@ def generate_identifier_page(desc: dict, crosslink_map: dict[str, str], ecm_info
 
     # Render standardized 5 content sections
     sec1_md = desc.get('overview_markdown') or desc.get('overview', '')
-    sec2_md = desc.get('operating_conditions', '')
-    sec3_md = desc.get('tuners_guide_markdown') or desc.get('tuners_guide', '')
+    sec2_md = desc.get('tuners_guide_markdown') or desc.get('tuners_guide', '')
+    sec3_md = desc.get('operating_conditions', '')
     tech_obj = desc.get('technical_mechanics') or {}
     sec4_text_md = tech_obj.get('text', '')
     sec4_asm = tech_obj.get('assembly_code', '')
@@ -920,10 +927,10 @@ def generate_identifier_page(desc: dict, crosslink_map: dict[str, str], ecm_info
 <h2>1. Overview &amp; Purpose</h2>
 {sec1_html}
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 {sec2_html}
 <hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
 {sec3_html}
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>
@@ -1297,7 +1304,7 @@ def render_tree_branch_html(node: dict, indent: int = 4) -> str:
     return '\n'.join(lines)
 
 
-def generate_index_html(descriptors: dict, ecm_info: dict, source_viewers: list[tuple[str, str]]) -> str:
+def generate_index_html(descriptors: dict, ecm_info: dict, source_viewers: list[tuple[str, str]], tuning_guide_rel: str = None) -> str:
     root_tree, calibration_data = build_tree_structure(descriptors)
     total_identifiers = len(descriptors)
     top_group_count = len(root_tree['_subgroups'])
@@ -1305,6 +1312,13 @@ def generate_index_html(descriptors: dict, ecm_info: dict, source_viewers: list[
     cal_data_json = json.dumps(calibration_data, ensure_ascii=False)
 
     source_nav_links = []
+    if tuning_guide_rel:
+        source_nav_links.append(
+            f'<a href="{html.escape(tuning_guide_rel)}" style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: var(--primary-light); border: 1px solid var(--primary); color: var(--primary); border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 13.5px;">'
+            f'📘 Engine Modifications Tuning Guide (Exhaust, TB, Injectors, MAP, Cam)'
+            f'</a>'
+        )
+
     for fname, stype in source_viewers:
         icon = '📄' if fname.endswith('.asm') else '📋'
         source_nav_links.append(
@@ -1738,43 +1752,27 @@ def build_ecm_site(json_path: str, output_dir: str, ecm_key: str = None, workspa
         else:
             print(f"  ! Warning: source file not found at {abs_path}")
 
-    # Copy / update engine tuning guide if applicable for LM (or generic)
-    old_web_dir = os.path.join(workspace_root, 'docs', 'T-LM-web-old')
-    guide_src = os.path.join(old_web_dir, 'tuning_guide_modifications.html')
-    if os.path.exists(guide_src) and norm_ecm in ['LM', 'LM-87']:
-        guide_txt = read_text_with_fallback(guide_src)
-        guide_txt = guide_txt.replace(
-            'Fuel_-_Transient_Enrichment/FPWUNK_FuelPulsewidthFunctionUnknown.html',
-            'Fuel_-_Running/PTPWOF_PartThrottlePulsewidthOffset.html'
-        )
-        guide_txt = guide_txt.replace('<html lang="en">', '<html lang="en" data-theme="dark">')
-        guide_txt = guide_txt.replace(
-            '<link rel="stylesheet" href="style.css">',
-            f'{THEME_HEAD_SCRIPT}\n    <link rel="stylesheet" href="style.css">'
-        )
-        guide_txt = guide_txt.replace(':root {', '[data-theme="light"] {', 1)
-        guide_txt = guide_txt.replace(
-            '@media (prefers-color-scheme: dark) {\n            :root {',
-            ':root, [data-theme="dark"] {'
-        )
-        guide_txt = guide_txt.replace(
-            '@media (prefers-color-scheme: dark) {\r\n            :root {',
-            ':root, [data-theme="dark"] {'
-        )
-        guide_txt = re.sub(r'(--alert-text:\s*#fef3c7;\s*\})\s*\}', r'\1', guide_txt)
-        guide_txt = guide_txt.replace('background: rgba(255, 255, 255, 0.96);', 'background: var(--bg-header);')
-        guide_txt = re.sub(r'@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*\.sticky-nav\s*\{[^}]*\}\s*\}', '', guide_txt)
-        guide_txt = guide_txt.replace(
-            '<li><a href="#matrix" class="nav-pill" style="border-color: var(--primary); color: var(--primary);">Master Matrix</a></li>\n            </ul>',
-            '<li><a href="#matrix" class="nav-pill" style="border-color: var(--primary); color: var(--primary);">Master Matrix</a></li>\n            </ul>\n            <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>'
-        )
-        guide_txt = guide_txt.replace(
-            '<li><a href="#matrix" class="nav-pill" style="border-color: var(--primary); color: var(--primary);">Master Matrix</a></li>\r\n            </ul>',
-            '<li><a href="#matrix" class="nav-pill" style="border-color: var(--primary); color: var(--primary);">Master Matrix</a></li>\r\n            </ul>\r\n            <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>'
-        )
-        with open(os.path.join(output_dir, 'tuning_guide_modifications.html'), 'w', encoding='utf-8') as gf:
-            gf.write(guide_txt)
-        source_viewers_list.insert(0, ('tuning_guide_modifications', 'Engine Modifications Guide'))
+    # 2. Locate Engine Modifications Tuning Guide if available for this ECM
+    tuning_guide_rel = None
+    guide_candidates = []
+    if ecm_info.get('tuning_guide'):
+        guide_candidates.append(ecm_info['tuning_guide'])
+
+    norm_lower = norm_ecm.lower().replace('-', '_')
+    code_lower = ecm_info.get('code', norm_ecm).lower().replace('-', '_')
+    guide_candidates.extend([
+        f"docs/tuning_guide_{code_lower}_modifications.html",
+        f"docs/tuning_guide_{norm_lower}_modifications.html",
+        f"docs/tuning_guide_{norm_ecm.lower()}_modifications.html",
+        f"tuning_guide_{code_lower}_modifications.html",
+        f"tuning_guide_{norm_lower}_modifications.html",
+    ])
+
+    for g_rel in guide_candidates:
+        g_abs = os.path.join(workspace_root, g_rel.replace('/', os.sep)) if not os.path.isabs(g_rel) else g_rel
+        if os.path.exists(g_abs):
+            tuning_guide_rel = os.path.relpath(g_abs, output_dir).replace('\\', '/')
+            break
 
     # 3. Generate all calibration identifier pages organized by mp_group
     crosslink_map = build_crosslink_map(descriptors)
@@ -1793,7 +1791,7 @@ def build_ecm_site(json_path: str, output_dir: str, ecm_key: str = None, workspa
     print(f"Generated {generated_pages} standardized calibration HTML pages.")
 
     # 4. Generate master index.html
-    index_html = generate_index_html(descriptors, ecm_info, source_viewers_list)
+    index_html = generate_index_html(descriptors, ecm_info, source_viewers_list, tuning_guide_rel=tuning_guide_rel)
     index_path = os.path.join(output_dir, 'index.html')
     with open(index_path, 'w', encoding='utf-8') as f:
         f.write(index_html)

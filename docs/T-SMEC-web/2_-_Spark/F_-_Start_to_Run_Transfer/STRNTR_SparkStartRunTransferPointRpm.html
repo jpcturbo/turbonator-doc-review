@@ -116,17 +116,7 @@
 <p><code>STRNTR</code> defines the engine speed distributor pulse period threshold required to transfer ignition control from cranking Start Mode to normal running Run Mode.</p>
 <p>During engine cranking with the starter motor, crankshaft rotation is slow and irregular (typically 150 to 250 RPM). The engine controller holds fixed base trigger spark advance and cranking dwell until the engine catches and spins past <code>STRNTR</code>. In period-based timing logic, smaller count values represent faster engine speeds. In factory calibrations, <code>STRNTR</code> is set to 49 counts, corresponding to approximately 612 RPM. Once the distributor pulse period drops below <code>STRNTR</code> for the consecutive pulse count specified by <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME_SparkEPPsNeededToBeAboveSR_Hot.html"><code>SRTIME</code></a> or <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME2_SparkEPPsNeededToBeAboveSR_Cold.html"><code>SRTIME2</code></a>, the controller formally transitions ignition into Run Mode.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>RpmBelowStartRunTransfer</code> (<code>T-SMEC_v19.asm:6996-7003</code>), called from <code>HandleFuelStartRunStartTransfer</code>.</li>
-<li><strong>Input Variable</strong>: <code>DistributorFallingEdgePulsewidth_HB</code> (RAM address 0x0090).</li>
-<li><strong>Comparison &amp; Branch</strong>:</li>
-<li><code>cmpb STRNTR_SparkStartRunTransferPointRpm</code> at line 6999.</li>
-<li>If period &lt; <code>STRNTR</code> (<code>bcs ENGINE_IDLING_BETWEEN598_813RPM</code>), engine speed is above ~612 RPM, branching to increment <code>Timer_NormalDwell</code>.</li>
-<li>If period &gt;= <code>STRNTR</code>, execution continues to evaluate <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/RNSTTR_SparkRunStartTransferPointRpm.html"><code>RNSTTR</code></a> stall hysteresis.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Period-vs-RPM Inverse Relationship</strong>:</li>
 <li>Increasing <code>STRNTR</code> lowers the target transfer RPM (RPM ≈ 30000 / count); decreasing <code>STRNTR</code> raises the required RPM flare.</li>
@@ -134,6 +124,17 @@
 <li>If an engine catches on cold mornings but stumbles and stalls when releasing the key, raising <code>STRNTR</code> slightly can help bridge the transfer into running spark tables sooner.</li>
 <li><strong>Starter Kickback Prevention</strong>:</li>
 <li>Keep <code>STRNTR</code> comfortably above maximum starter cranking speed (at least 550 to 600 RPM) to prevent premature advance during cranking.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during engine cranking with the starter motor, crankshaft rotation is slow and irregular (typically 150 to 250 RPM).</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>RpmBelowStartRunTransfer</code> (<code>T-SMEC_v19.asm:6996-7003</code>), called from <code>HandleFuelStartRunStartTransfer</code>.</li>
+<li><strong>Input Variable</strong>: <code>DistributorFallingEdgePulsewidth_HB</code> (RAM address 0x0090).</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li><code>cmpb STRNTR_SparkStartRunTransferPointRpm</code> at line 6999.</li>
+<li>If period &lt; <code>STRNTR</code> (<code>bcs ENGINE_IDLING_BETWEEN598_813RPM</code>), engine speed is above ~612 RPM, branching to increment <code>Timer_NormalDwell</code>.</li>
+<li>If period &gt;= <code>STRNTR</code>, execution continues to evaluate <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/RNSTTR_SparkRunStartTransferPointRpm.html"><code>RNSTTR</code></a> stall hysteresis.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -117,20 +117,21 @@
 <p>While smaller manifold pressure drops between <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DECTRG_DeltaMapTriggerForNoIncrementalLeanout.html"><code>DECTRG</code></a> and <code>DTRG2</code> apply gradual incremental fuel leaning, sudden drops that exceed <code>DTRG2</code> signal an abrupt throttle lift-off. In response, the engine controller immediately loads the full temperature-based fuel multiplier from <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DECEL_DecelLeanoutFactorMAP.html"><code>DECEL</code></a> and sets the oxygen sensor inhibit timer.</p>
 <p>The factory setting of 8 counts corresponds to approximately 0.92 psi of rapid manifold pressure reduction.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li>Enclosed in routine <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> at lines 6435-6476 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
-<li>Evaluated after passing <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DECTRG_DeltaMapTriggerForNoIncrementalLeanout.html"><code>DECTRG</code></a> at line 6456.</li>
-<li>Threshold comparison: Line 6458 executes <code>cmpa DTRG2_DeltaMapTriggerForMaxLeanout</code>.</li>
-<li>Polarity: If pressure drop is less than <code>DTRG2</code>, branch <code>bcs IncrementDecelLOMAPFactor</code> takes the incremental path; if greater or equal, lines 6460-6464 load <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DCELTM_O2CNTRInhibitAfterLeanoutDone.html"><code>DCELTM</code></a> and look up full lean-out from <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DECEL_DecelLeanoutFactorMAP.html"><code>DECEL</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Two-Stage Decel Transition</strong>: Set <code>DTRG2</code> higher than <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DECTRG_DeltaMapTriggerForNoIncrementalLeanout.html"><code>DECTRG</code></a> to create a smooth two-stage deceleration response.</li>
 <li><strong>Sharper Engine Braking</strong>: Lowering <code>DTRG2</code> causes the engine controller to jump directly to maximum lean-out on moderate throttle releases, sharpening engine braking and cutting emissions quickly.</li>
 <li><strong>Softening Overrun Jerkiness</strong>: Raising <code>DTRG2</code> keeps fuel delivery in the gradual incremental lean-out mode longer, softening deceleration transitions and helping prevent jerkiness in manual transmission vehicles.</li>
 <li><strong>3-Bar MAP Scaling</strong>: Scale <code>DTRG2</code> down by 33 percent when converting to a 3-bar MAP sensor to keep real-world pressure triggers aligned.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect while smaller manifold pressure drops between DECTRG and DTRG2 apply gradual incremental fuel leaning, sudden drops that exceed DTRG2 signal an abrupt throttle lift-off.</p>
+<ul>
+<li>Enclosed in routine <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> at lines 6435-6476 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Evaluated after passing <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DECTRG_DeltaMapTriggerForNoIncrementalLeanout.html"><code>DECTRG</code></a> at line 6456.</li>
+<li>Threshold comparison: Line 6458 executes <code>cmpa DTRG2_DeltaMapTriggerForMaxLeanout</code>.</li>
+<li>Polarity: If pressure drop is less than <code>DTRG2</code>, branch <code>bcs IncrementDecelLOMAPFactor</code> takes the incremental path; if greater or equal, lines 6460-6464 load <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DCELTM_O2CNTRInhibitAfterLeanoutDone.html"><code>DCELTM</code></a> and look up full lean-out from <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DECEL_DecelLeanoutFactorMAP.html"><code>DECEL</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

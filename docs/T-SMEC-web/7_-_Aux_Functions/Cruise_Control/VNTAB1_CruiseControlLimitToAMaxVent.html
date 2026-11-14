@@ -116,18 +116,7 @@
 <p><code>VNTAB1</code> defines the maximum overspeed error threshold above which the cruise control system bypasses proportional vent curve calculations and forces continuous maximum vent solenoid pulse duration.</p>
 <p>When vehicle speed exceeds the target setpoint by an extreme margin, such as during severe downhill coasting or following aggressive driver wide-open throttle acceleration, proportional modulation is insufficient to slow the car down quickly. In factory calibrations, <code>VNTAB1</code> is configured to 255 counts, corresponding to approximately 127.5 miles per hour of speed error. If speed error exceeds this ceiling, the controller bypasses normal table lookup and commands maximum vent pulse duration to drop throttle angle immediately.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8870-8872</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Reached only when vehicle speed exceeds setpoint (<code>VehicleSpeed &gt; CruiseSpeedSetpoint</code>).</li>
-<li>Absolute overspeed difference evaluated in accumulator B after right shifting.</li>
-<li><strong>Comparison &amp; Branch</strong>:</li>
-<li>Compares overspeed delta against <code>VNTAB1</code> via <code>cmpb VNTAB1_CruiseControlLimitToAMaxVent</code> at line 8870.</li>
-<li>If higher or equal (<code>bcc L1776</code>), branches to load fixed maximum vent pulse 0x8F, bypassing <a href="../../7_-_Aux_Functions/Cruise_Control/VENTRG_CruiseControlVentRegularGainCurve_FromDeltaSpeed.html"><code>VENTRG</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Full-Vent Cutout Ceiling</strong>:</li>
 <li>Establishes the hard overspeed threshold where proportional venting is abandoned in favor of maximum vent solenoid duty cycle.</li>
@@ -136,6 +125,18 @@
 <li>Lowering <code>VNTAB1</code> to 30 to 40 counts provides assertive engine braking on steep downhill slopes by venting the servo immediately.</li>
 <li><strong>Edge Cases &amp; Driveline Lash</strong>:</li>
 <li>Setting <code>VNTAB1</code> excessively low produces harsh throttle closure when driver accelerates slightly past set speed to pass a vehicle.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when cruise control overspeeds down a highway descent, clamping the maximum allowable vent solenoid pulse duration to prevent throttle surging.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8870-8872</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Reached only when vehicle speed exceeds setpoint (<code>VehicleSpeed &gt; CruiseSpeedSetpoint</code>).</li>
+<li>Absolute overspeed difference evaluated in accumulator B after right shifting.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Compares overspeed delta against <code>VNTAB1</code> via <code>cmpb VNTAB1_CruiseControlLimitToAMaxVent</code> at line 8870.</li>
+<li>If higher or equal (<code>bcc L1776</code>), branches to load fixed maximum vent pulse 0x8F, bypassing <a href="../../7_-_Aux_Functions/Cruise_Control/VENTRG_CruiseControlVentRegularGainCurve_FromDeltaSpeed.html"><code>VENTRG</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

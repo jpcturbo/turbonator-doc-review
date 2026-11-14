@@ -117,21 +117,22 @@
 <p>Following a Phase 2 timeout, the controller increments a retry counter stored in the low nibble of <code>EGRVar2</code>. At line 5532, this counter is compared against <code>EGR5</code>. If the count reaches or exceeds <code>EGR5</code>, the controller sets bit 6 of <code>EGRVar2</code>, which actively latches a test inhibit flag.</p>
 <p>Once bit 6 is set, the routine bypasses the diagnostic state machine on all subsequent execution loops until the ignition switch is cycled. The factory calibration of 0 counts causes the inhibit flag to latch after the initial sequence, preventing continuous diagnostic cycles during a single trip.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Raising EGR5</strong>: Increases the number of diagnostic retry attempts permitted per ignition cycle. Helpful in urban driving where traffic interruptions frequently abort Phase 2 before completion.</li>
+<li><strong>Factory Setting (0 counts)</strong>: Sets bit 6 on the first diagnostic cycle, locking out further testing until the next ignition key cycle to maintain smooth cruising.</li>
+<li><strong>Low-Nibble Counter</strong>: Evaluated against the lower 4 bits of <code>EGRVar2</code>, limiting practical calibration values to between 0 and 15.</li>
+<li><strong>Trip Inhibit Interlock</strong>: Governs bit 6 of <code>EGRVar2</code>, which is checked at line 5409 upon every pass of <code>ExhGasRecirc_MM</code>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle cruising, modulating the exhaust gas recirculation (EGR) solenoid duty cycle to control combustion temperatures.</p>
 <ul>
 <li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5532.</li>
 <li><strong>Trigger Site</strong>: <code>L1471</code> (line 5525), executed after failure counter check.</li>
 <li><strong>State Variable</strong>: Low nibble of <code>EGRVar2</code> (RAM address 0x009E), masked with <code>anda #bit_bothalf</code>.</li>
 <li><strong>Comparison</strong>: <code>cmpa EGR5_ExhGasRecircConst</code> at line 5532.</li>
 <li><strong>Inhibit Latch</strong>: If <code>EGRVar2_low &gt;= EGR5</code>, executes <code>orab #bit_bit6</code> at line 5534, latching the drive-cycle test inhibit flag in <code>EGRVar2</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Raising EGR5</strong>: Increases the number of diagnostic retry attempts permitted per ignition cycle. Helpful in urban driving where traffic interruptions frequently abort Phase 2 before completion.</li>
-<li><strong>Factory Setting (0 counts)</strong>: Sets bit 6 on the first diagnostic cycle, locking out further testing until the next ignition key cycle to maintain smooth cruising.</li>
-<li><strong>Low-Nibble Counter</strong>: Evaluated against the lower 4 bits of <code>EGRVar2</code>, limiting practical calibration values to between 0 and 15.</li>
-<li><strong>Trip Inhibit Interlock</strong>: Governs bit 6 of <code>EGRVar2</code>, which is checked at line 5409 upon every pass of <code>ExhGasRecirc_MM</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

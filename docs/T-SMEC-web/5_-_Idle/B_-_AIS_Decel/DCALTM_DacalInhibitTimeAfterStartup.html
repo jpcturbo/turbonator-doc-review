@@ -118,16 +118,7 @@
 <p><code>DCALTM</code> enforces a mandatory run-time delay before the DACAL adaptive integrator is unlocked.</p>
 <p>In factory calibrations, <code>DCALTM</code> is set to 25 counts, enforcing a post-start stabilization period of approximately 1.6 seconds.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1977</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Fall-to-idle flag <code>b50_FallToIdle</code> must be clear at line 1921 (vehicle must be in steady closed-throttle idle, not decelerating).</li>
-<li>Park/Neutral switch checked at line 1925 if automatic transmission.</li>
-<li>Compares <code>KeyOnOrEngineRunningTime</code> against <code>DCALTM</code> at line 1927. If running time is less than <code>DCALTM</code> (<code>bcs R1075</code>), the adaptive calibration routine exits immediately.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Preventing Post-Start Trim Corruption</strong>:</li>
 <li>Increase <code>DCALTM</code> to 5.0 to 10.0 seconds on modified engines with long post-start stabilization periods to prevent the ECU from learning inaccurate idle trim.</li>
@@ -135,6 +126,16 @@
 <li>Factory setting of 25 counts (~1.6 seconds) is suitable for stock and mild street setups.</li>
 <li><strong>Low Setting Hazard</strong>:</li>
 <li>Setting <code>DCALTM</code> too low allows cranking vacuum dips to skew the long-term idle airflow baseline.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if the adaptive learning routines were allowed to integrate intake manifold pressure during this settling period, transient post-start vacuum instability would corrupt the long-term learned idle airflow trim.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1977</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Fall-to-idle flag <code>b50_FallToIdle</code> must be clear at line 1921 (vehicle must be in steady closed-throttle idle, not decelerating).</li>
+<li>Park/Neutral switch checked at line 1925 if automatic transmission.</li>
+<li>Compares <code>KeyOnOrEngineRunningTime</code> against <code>DCALTM</code> at line 1927. If running time is less than <code>DCALTM</code> (<code>bcs R1075</code>), the adaptive calibration routine exits immediately.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

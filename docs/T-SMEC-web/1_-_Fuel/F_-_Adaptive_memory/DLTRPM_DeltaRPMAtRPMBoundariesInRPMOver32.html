@@ -117,17 +117,7 @@
 <p>When the engine is operating in a low-RPM cell, <code>DLTRPM</code> is added to <a href="../../1_-_Fuel/F_-_Adaptive_memory/R1_RPMCellBoundaryInRPMover32.html"><code>R1</code></a> before evaluating whether engine speed has climbed into the upper cell.</p>
 <p>In stock calibrations, <code>DLTRPM</code> is set to 2 counts, which corresponds to 64 RPM (2 counts multiplied by 32 RPM per count). This deadband prevents continuous cell swapping when engine speed hovers around the boundary during steady cruise.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Subroutine</strong>: <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code> / <code>ONTHROTTLE_OR_RPMTOOHIGHFORIDLE</code> (<code>T-SMEC_v19.asm:3380-3388</code>), instruction line 3383.</li>
-<li><strong>Gating Conditions</strong>: Evaluated when transitioning from an even (low-RPM) cell index (<code>lsrb</code> produces carry clear).</li>
-<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
-<li>Line 3381 executes <code>lsrb</code> on cell pointer in register B.</li>
-<li>If carry is clear (<code>bcc L1248</code>), line 3383 executes <code>adda DLTRPM_DeltaRPMAtRPMBoundariesInRPMOver32</code>.</li>
-<li>Sum is compared against <code>EngineRpm_HB</code> at line 3385.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Boundary Stability</strong>:</li>
 <li>Prevents rapid hunting between even and odd adaptive cells when cruising near <a href="../../1_-_Fuel/F_-_Adaptive_memory/R1_RPMCellBoundaryInRPMover32.html"><code>R1</code></a>.</li>
@@ -135,6 +125,17 @@
 <li>Raising to 3 or 4 counts (96 to 128 RPM) smooths cell switching on vehicles with manual transmissions or driveline lash.</li>
 <li><strong>Lowering Hysteresis</strong>:</li>
 <li>Makes the transition between low and high RPM cells sharper, but setting to zero causes boundary chatter.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when operating near adaptive cell boundaries, providing engine RPM hysteresis deadband to prevent erratic jumping between adjacent adaptive cells.</p>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code> / <code>ONTHROTTLE_OR_RPMTOOHIGHFORIDLE</code> (<code>T-SMEC_v19.asm:3380-3388</code>), instruction line 3383.</li>
+<li><strong>Gating Conditions</strong>: Evaluated when transitioning from an even (low-RPM) cell index (<code>lsrb</code> produces carry clear).</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Line 3381 executes <code>lsrb</code> on cell pointer in register B.</li>
+<li>If carry is clear (<code>bcc L1248</code>), line 3383 executes <code>adda DLTRPM_DeltaRPMAtRPMBoundariesInRPMOver32</code>.</li>
+<li>Sum is compared against <code>EngineRpm_HB</code> at line 3385.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

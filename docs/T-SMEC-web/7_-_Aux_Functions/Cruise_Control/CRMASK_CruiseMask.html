@@ -116,7 +116,19 @@
 <p><code>CRMASK</code> defines the startup delay count and reset mask applied to <code>Counter_Cruise</code> when cruise control is freshly engaged.</p>
 <p>Upon engaging cruise control by pressing set or resume, the mechanical throttle cable, vacuum actuator diaphragm, and engine operating conditions require a brief stabilization period before long-term adaptive integration can safely begin. <code>CRMASK</code> enforces a startup delay of 17 counts while initialization bit 0 of <code>CruiseStatus</code> is active, preventing premature integrator adjustments before the vehicle stabilizes at its target speed.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Engagement Stabilization Delay</strong>:</li>
+<li>Enforces a 17-count delay immediately following set or resume switch engagement.</li>
+<li>Prevents adaptive integrator updates before the vacuum actuator settles the throttle.</li>
+<li><strong>Status Flag Coordination</strong>:</li>
+<li>When <code>Counter_Cruise</code> reaches <code>CRMASK</code>, bit 0 of <code>CruiseStatus</code> is cleared and the counter resets to zero.</li>
+<li><strong>Factory Setting</strong>:</li>
+<li>Configured to 17 counts in production calibrations.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during cruise switch reading, masking and testing digital switch inputs from the multifunction steering column lever.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8740-8746</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -126,17 +138,6 @@
 <li>Compares <code>Counter_Cruise</code> against <code>CRMASK</code> via <code>cmpa CRMASK</code> at line 8742.</li>
 <li>If lower, increments counter and stores at line 8745.</li>
 <li>If greater or equal (<code>bcc L1758</code>), clears bit 0 of <code>CruiseStatus</code>, zeroes counter, and begins normal cycles.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Engagement Stabilization Delay</strong>:</li>
-<li>Enforces a 17-count delay immediately following set or resume switch engagement.</li>
-<li>Prevents adaptive integrator updates before the vacuum actuator settles the throttle.</li>
-<li><strong>Status Flag Coordination</strong>:</li>
-<li>When <code>Counter_Cruise</code> reaches <code>CRMASK</code>, bit 0 of <code>CruiseStatus</code> is cleared and the counter resets to zero.</li>
-<li><strong>Factory Setting</strong>:</li>
-<li>Configured to 17 counts in production calibrations.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

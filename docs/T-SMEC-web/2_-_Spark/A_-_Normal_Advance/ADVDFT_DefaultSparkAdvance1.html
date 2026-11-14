@@ -116,17 +116,7 @@
 <p><code>ADVDFT</code> establishes the default minimum mechanical baseline spark advance floor (factory setting 20 counts = 10.0 degrees BTDC).</p>
 <p>When the engine operates at closed throttle, the calculated mechanical advance from <a href="../../2_-_Spark/A_-_Normal_Advance/GOVNER_AdvanceFromRPM.html"><code>GOVNER</code></a> (after any adaptive retard subtraction) is compared against <code>ADVDFT</code>; if lower, it is clamped to <code>ADVDFT</code>. This ensures that closed-throttle engine operation maintains a stable minimum 10.0 degrees BTDC timing foundation, preventing excessive timing retard from causing rough idle, stalling, or poor off-idle throttle pickup.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>DetermineMechanicalAdvanceFromRpm</code> (<code>T-SMEC_v19.asm:8034-8038</code>), called from <code>CalculateSparkAdvance_MM</code>.</li>
-<li><strong>Comparison &amp; Branch</strong>:</li>
-<li>Accumulator A holds advance after <a href="../../2_-_Spark/A_-_Normal_Advance/GOVNER_AdvanceFromRPM.html"><code>GOVNER</code></a> and adaptive retard subtraction.</li>
-<li><code>cmpa ADVDFT_DefaultSparkAdvance1</code>: if accumulator A &gt;= <code>ADVDFT</code> (<code>bcc L1668</code>), branches to add <code>Temp0</code>.</li>
-<li>If accumulator A &lt; <code>ADVDFT</code>, checks <code>brset *BitFlags_4f, #b4f_OffIdle, L1668</code>; if off-idle, branch is taken.</li>
-<li>If closed throttle, accumulator A is loaded directly with <code>ADVDFT</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Idle Torque Support for Large Cams</strong>:</li>
 <li>Raising <code>ADVDFT</code> to 12-14 degrees BTDC provides additional base torque to stabilize idle on aggressive camshafts.</li>
@@ -134,6 +124,17 @@
 <li>If base idle speed is persistently high due to minor intake air leaks or large throttle bodies, lowering <code>ADVDFT</code> can reduce combustion torque to bring idle RPM down.</li>
 <li><strong>Closed-Throttle Gate</strong>:</li>
 <li><code>ADVDFT</code> is active strictly when <code>b4f_OffIdle</code> is clear; off-idle acceleration bypasses this clamp.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the engine operates at closed throttle, the calculated mechanical advance from GOVNER (after any adaptive retard subtraction) is compared against ADVDFT; if lower, it is clamped to ADVDFT.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>DetermineMechanicalAdvanceFromRpm</code> (<code>T-SMEC_v19.asm:8034-8038</code>), called from <code>CalculateSparkAdvance_MM</code>.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Accumulator A holds advance after <a href="../../2_-_Spark/A_-_Normal_Advance/GOVNER_AdvanceFromRPM.html"><code>GOVNER</code></a> and adaptive retard subtraction.</li>
+<li><code>cmpa ADVDFT_DefaultSparkAdvance1</code>: if accumulator A &gt;= <code>ADVDFT</code> (<code>bcc L1668</code>), branches to add <code>Temp0</code>.</li>
+<li>If accumulator A &lt; <code>ADVDFT</code>, checks <code>brset *BitFlags_4f, #b4f_OffIdle, L1668</code>; if off-idle, branch is taken.</li>
+<li>If closed throttle, accumulator A is loaded directly with <code>ADVDFT</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

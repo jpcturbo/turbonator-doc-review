@@ -116,7 +116,15 @@
 <p><code>OBCONST_OverboostConstant1</code> defines the <strong>baseline manifold pressure transition threshold</strong> used during running fuel pulse width and spark advance calculation to bifurcate moderate part-throttle fuel scheduling from higher-load boost fuel enrichment.</p>
 <p>Despite its historical label name containing "Overboost", in the fuel assembly logic this constant is <strong>not</strong> the overboost fuel cut threshold (which is handled separately by boost limit routines). Instead, <code>OBCONST</code> serves as a critical manifold pressure breakpoint where the ECU branches its injector pulse width calculation into a dedicated high-load scaling branch.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stock Value:</strong> <code>0xAA</code> (≈ 4.9 psig boost).</li>
+<li><strong>Transition Point:</strong> Below 4.9 psig boost, base running fuel pulse width scales according to the primary part-throttle equations. Above 4.9 psig boost, additional slope multipliers engage.</li>
+<li><strong>Tuning Guidance:</strong> Generally preserve at factory <code>0xAA</code> unless re-scaling the entire boost fuel delivery architecture for 3-bar MAP sensors.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during running fuel pulse width and spark advance calculation to bifurcate moderate part-throttle fuel scheduling from higher-load boost fuel enrichment.</p>
 <ul>
 <li><strong>Running Fuel Calculation:</strong></li>
 <li>In <code>CalculateInjectorPulsewidthForEngineRunning</code>:</li>
@@ -124,13 +132,6 @@
 <li>If <code>MapValue &gt;= OBCONST</code>: The engine has entered high-boost territory. The ECU subtracts <code>OBCONST</code> from <code>MapValue</code> and scales fuel using the dedicated high-load multiplier branch (<code>FuelPulsewidthFunctionUnknown</code>).</li>
 <li><strong>Spark Advance Calculation:</strong></li>
 <li>Also evaluated in <code>CalculateSparkAdvance_MM</code> for high-load spark timing compensation.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Stock Value:</strong> <code>0xAA</code> (≈ 4.9 psig boost).</li>
-<li><strong>Transition Point:</strong> Below 4.9 psig boost, base running fuel pulse width scales according to the primary part-throttle equations. Above 4.9 psig boost, additional slope multipliers engage.</li>
-<li><strong>Tuning Guidance:</strong> Generally preserve at factory <code>0xAA</code> unless re-scaling the entire boost fuel delivery architecture for 3-bar MAP sensors.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

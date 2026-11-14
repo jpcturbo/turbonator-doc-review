@@ -132,19 +132,7 @@
 <p><code>WSGPRT</code> controls the maximum allowable turbocharger boost target under part-throttle operating conditions based on throttle position sensor voltage.</p>
 <p>When cruising at partial throttle openings, allowing the turbocharger to build full manifold boost against a partially closed throttle plate can create unpleasant compressor surge, jerky driveability, and excessive intake air heating. If the throttle is not wide open, the controller references this table to ensure boost scales proportionally with accelerator pedal angle, reserving full target boost exclusively for heavy or wide-open throttle demands.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>GetBoostTargetFromTables</code> (<code>T-SMEC_v19.asm:9454-9461</code>), called from <code>CalcTargetBoost_MM</code> (<code>T-SMEC_v19.asm:9423-9504</code>).</li>
-<li><strong>Wide-Open Throttle Gate</strong>:</li>
-<li>At line 9454, tests <code>BitFlags_4f</code> bit <code>b4f_FullThrottle</code> (<code>brset *BitFlags_4f, #b4f_FullThrottle, LoadStagingBoostAndLookup</code>).</li>
-<li>If at WOT, this entire part-throttle table lookup is skipped.</li>
-<li><strong>Part-Throttle Evaluation</strong>:</li>
-<li>If at part throttle, index register loads <code>#WSGPRT_AllowedBoostPartThrottle_FromThrottle</code> (line 9455).</li>
-<li>Accumulator A loads <code>TpsVolts</code> and subtracts <code>MINTHR_LowestSessionTPS</code> (line 9457). If underflow occurs, accumulator A is zeroed.</li>
-<li>Evaluated via <code>bsr LookupAndKeepSmallerBoostGoal</code> (line 9460), clamping <code>Temp4</code> to the part-throttle ceiling.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Part-Throttle Boost Scaling</strong>:</li>
 <li>Matches boost ceiling to accelerator pedal position, preventing full boost against a partially closed throttle blade.</li>
@@ -156,6 +144,19 @@
 <li>At WOT (<code>b4f_FullThrottle</code> set), the controller completely skips this table, allowing full boost from <a href="../../3_-_Boost_Control/A_-_Target_Lookup/WSGRPM_AllowedBoost_FromRpm.html"><code>WSGRPM</code></a>.</li>
 <li><strong>Throttle Voltage Baseline</strong>:</li>
 <li>Indexed by TPS voltage minus closed-throttle minimum (<code>TpsVolts - MINTHR_LowestSessionTPS</code>).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during part-throttle boost operation, scaling target boost based on throttle position to provide progressive boost modulation.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>GetBoostTargetFromTables</code> (<code>T-SMEC_v19.asm:9454-9461</code>), called from <code>CalcTargetBoost_MM</code> (<code>T-SMEC_v19.asm:9423-9504</code>).</li>
+<li><strong>Wide-Open Throttle Gate</strong>:</li>
+<li>At line 9454, tests <code>BitFlags_4f</code> bit <code>b4f_FullThrottle</code> (<code>brset *BitFlags_4f, #b4f_FullThrottle, LoadStagingBoostAndLookup</code>).</li>
+<li>If at WOT, this entire part-throttle table lookup is skipped.</li>
+<li><strong>Part-Throttle Evaluation</strong>:</li>
+<li>If at part throttle, index register loads <code>#WSGPRT_AllowedBoostPartThrottle_FromThrottle</code> (line 9455).</li>
+<li>Accumulator A loads <code>TpsVolts</code> and subtracts <code>MINTHR_LowestSessionTPS</code> (line 9457). If underflow occurs, accumulator A is zeroed.</li>
+<li>Evaluated via <code>bsr LookupAndKeepSmallerBoostGoal</code> (line 9460), clamping <code>Temp4</code> to the part-throttle ceiling.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

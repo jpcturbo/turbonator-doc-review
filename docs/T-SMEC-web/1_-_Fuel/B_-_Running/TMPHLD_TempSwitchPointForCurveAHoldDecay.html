@@ -117,19 +117,7 @@
 <p>When an engine starts with coolant temperature below <code>TMPHLD</code>, the controller selects cold hold duration (<a href="../../1_-_Fuel/B_-_Running/CLDHLD_CurveAColdHoldTime.html"><code>CLDHLD</code></a>) and cold decay rate (<a href="../../1_-_Fuel/B_-_Running/DCYTMC_CurveAColdDecayTime.html"><code>DCYTMC</code></a>). When starting above <code>TMPHLD</code>, the controller switches to hot hold duration (<a href="../../1_-_Fuel/B_-_Running/HOTHLD_CurveAHotHoldTime.html"><code>HOTHLD</code></a>) and hot decay rate (<a href="../../1_-_Fuel/B_-_Running/DCYTMH_CurveAHotDecayTime.html"><code>DCYTMH</code></a>).</p>
 <p>In factory calibrations, <code>TMPHLD</code> is set to 177 counts, corresponding to approximately 176 degF, matching OEM 180 degF thermostat operating temperatures.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateSumOfAllFuelModifiers_MM</code> (<code>T-SMEC_v19.asm:6008-6013</code>), instruction line 6008.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Active when <code>b54_FuelEngineNotRunning</code> is clear (engine running).</li>
-<li>Reads <code>CoolantTemp</code>.</li>
-<li><strong>Indexed Pointer Math</strong>:</li>
-<li><code>ldx #TMPHLD_TempSwitchPointForCurveAHoldDecay</code>.</li>
-<li><code>cmpa 0x00,x</code> compares coolant temperature.</li>
-<li>If <code>CoolantTemp &gt;= TMPHLD</code>, <code>inx</code> advances pointer X by one byte, selecting <a href="../../1_-_Fuel/B_-_Running/HOTHLD_CurveAHotHoldTime.html"><code>HOTHLD</code></a> at offset <code>0x01,x</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Thermostat Matching</strong>:</li>
 <li>Lower <code>TMPHLD</code> to 155-160 degF when running a 160 degF performance thermostat to prevent warm restarts from triggering cold hold logic.</li>
@@ -139,6 +127,19 @@
 <li>Functions as the ROM base pointer for indexed lookups of <a href="../../1_-_Fuel/B_-_Running/CLDHLD_CurveAColdHoldTime.html"><code>CLDHLD</code></a> and <a href="../../1_-_Fuel/B_-_Running/HOTHLD_CurveAHotHoldTime.html"><code>HOTHLD</code></a>.</li>
 <li><strong>Over-Enrichment Prevention</strong>:</li>
 <li>Proper setting prevents dark exhaust smoke and flooded plugs when restarting a fully warmed engine.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when an engine starts with coolant temperature below TMPHLD, the controller selects cold hold duration (CLDHLD) and cold decay rate (DCYTMC).</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateSumOfAllFuelModifiers_MM</code> (<code>T-SMEC_v19.asm:6008-6013</code>), instruction line 6008.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Active when <code>b54_FuelEngineNotRunning</code> is clear (engine running).</li>
+<li>Reads <code>CoolantTemp</code>.</li>
+<li><strong>Indexed Pointer Math</strong>:</li>
+<li><code>ldx #TMPHLD_TempSwitchPointForCurveAHoldDecay</code>.</li>
+<li><code>cmpa 0x00,x</code> compares coolant temperature.</li>
+<li>If <code>CoolantTemp &gt;= TMPHLD</code>, <code>inx</code> advances pointer X by one byte, selecting <a href="../../1_-_Fuel/B_-_Running/HOTHLD_CurveAHotHoldTime.html"><code>HOTHLD</code></a> at offset <code>0x01,x</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

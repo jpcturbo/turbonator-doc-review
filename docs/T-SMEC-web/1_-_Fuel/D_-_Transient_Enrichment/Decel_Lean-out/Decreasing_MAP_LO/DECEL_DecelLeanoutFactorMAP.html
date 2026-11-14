@@ -131,20 +131,21 @@
 <p>As the throttle closes, intake manifold vacuum deepens sharply, vaporizing raw fuel off the intake runner walls and creating a rich air-fuel mixture. To prevent spark plug fouling, unburnt hydrocarbon emissions, and exhaust burble, the engine controller looks up <code>DECEL</code> when manifold pressure drops exceed the second trigger threshold.</p>
 <p>The factory calibration applies no fuel reduction at coolant temperatures below 144 degF to protect cold driveability, and ramps up to an 7.4 percent fuel reduction once the engine warms to 177 degF.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li>Enclosed in routine <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> at lines 6435-6476 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
-<li>Evaluated when <code>MapValue &lt; AverageMAPValue</code>, engine speed exceeds <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/LOTRPM_MinRpmForMapLeanout.html"><code>LOTRPM</code></a>, vehicle speed meets or exceeds 0x80 (approximately 2 to 3 mph), and the manifold pressure drop exceeds <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DTRG2_DeltaMapTriggerForMaxLeanout.html"><code>DTRG2</code></a> (line 6458).</li>
-<li>Looked up via <code>jsr Lookup4ByteTable</code> at line 6464 using <code>CoolantTemp</code> with pointer <code>ldx #DECEL_DecelLeanoutFactorMAP</code>.</li>
-<li>Stored in <code>Factor_DecelLeanoutWhenMAPDecreasing</code> at line 6476, which scales base fuel via <code>ScaleYbyA</code> at line 6158.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Adjusting Deceleration Leaning</strong>: Increasing table values (closer to 255 counts, or 1.00 factor) reduces the amount of deceleration fuel leaning, preserving richer mixtures during lift-off.</li>
 <li><strong>Fuel Economy and Engine Braking</strong>: Lowering table values cuts fuel more aggressively, improving fuel economy and engine braking on long downhill descents.</li>
 <li><strong>Exhaust Crackle and Pop Calibration</strong>: Tuners seeking exhaust crackle, burble, or pops on deceleration often zero out or disable this fuel reduction table while adjusting ignition timing.</li>
 <li><strong>Re-Acceleration Transition</strong>: Cutting too much fuel on turbocharged engines can cause lean hesitations upon re-acceleration if manifold wall-wetting is depleted.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during closed-throttle deceleration, reducing fuel injection pulsewidth under high manifold vacuum to improve engine braking and emissions.</p>
+<ul>
+<li>Enclosed in routine <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> at lines 6435-6476 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Evaluated when <code>MapValue &lt; AverageMAPValue</code>, engine speed exceeds <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/LOTRPM_MinRpmForMapLeanout.html"><code>LOTRPM</code></a>, vehicle speed meets or exceeds 0x80 (approximately 2 to 3 mph), and the manifold pressure drop exceeds <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DTRG2_DeltaMapTriggerForMaxLeanout.html"><code>DTRG2</code></a> (line 6458).</li>
+<li>Looked up via <code>jsr Lookup4ByteTable</code> at line 6464 using <code>CoolantTemp</code> with pointer <code>ldx #DECEL_DecelLeanoutFactorMAP</code>.</li>
+<li>Stored in <code>Factor_DecelLeanoutWhenMAPDecreasing</code> at line 6476, which scales base fuel via <code>ScaleYbyA</code> at line 6158.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

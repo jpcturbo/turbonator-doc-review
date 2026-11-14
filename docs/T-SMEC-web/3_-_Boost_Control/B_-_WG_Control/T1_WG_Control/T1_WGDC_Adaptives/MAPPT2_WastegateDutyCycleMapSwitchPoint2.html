@@ -116,18 +116,7 @@
 <p><code>MAPPT2</code> establishes the minimum manifold gauge pressure threshold that must be reached before the engine controller activates electronic wastegate duty cycle calculations.</p>
 <p>Below this threshold, manifold pressure is near or below atmospheric pressure, where modulating the wastegate solenoid is unnecessary and would cause needless solenoid wear and clicking. When manifold pressure is below atmospheric pressure plus <code>MAPPT2</code>, the controller zeros the wastegate duty cycle and clears all knock-reduction duty cycle offsets. In factory calibrations, this is set to 15 counts (approximately 1.7 psi of boost).</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9552-9556</code>) and <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9761-9765</code>).</li>
-<li><strong>T1 Comparison Logic</strong>:</li>
-<li>Line 9552 loads <code>BaroPressure</code> and executes <code>adda MAPPT2_WastegateDutyCycleMapSwitchPoint2</code> at line 9553.</li>
-<li>Compares against <code>MapValue</code> at line 9554 (<code>cmpa MapValue</code>). If <code>MapValue</code> is lower than the sum, branches to <code>WGDC_ClearWGDutyCycleVars</code> (line 9556).</li>
-<li><strong>T2 Comparison Logic</strong>:</li>
-<li>At line 9762, gauge boost is computed as <code>MapValue - BaroPressure</code>.</li>
-<li>Line 9764 executes <code>cmpa MAPPT2_WastegateDutyCycleMapSwitchPoint2</code>. If gauge boost is below <code>MAPPT2</code>, branches to <code>T2WGDC_ClearWGDutyCycleVars</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Boost Activation Threshold</strong>:</li>
 <li>Minimum boost above barometric pressure required before the ECU begins modulating the wastegate solenoid.</li>
@@ -138,6 +127,18 @@
 <li>Line 9764 in <code>CalcWGDutyCycleT2</code> incorrectly references <code>MAPPT2</code> instead of <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Adaptives/T2MAPPT2_WastegateDutyCycleMapSwitchPoint2.html"><code>T2MAPPT2</code></a>; modifying <code>MAPPT2</code> alters the activation threshold in both modes.</li>
 <li><strong>3-Bar MAP Scaling</strong>:</li>
 <li>In 3-bar sensor calibrations, scale <code>MAPPT2</code> to half its 2-bar count value to maintain the same 1.7 psi activation threshold.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when manifold pressure is below atmospheric pressure plus MAPPT2, the controller zeros the wastegate duty cycle and clears all knock-reduction duty cycle offsets.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9552-9556</code>) and <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9761-9765</code>).</li>
+<li><strong>T1 Comparison Logic</strong>:</li>
+<li>Line 9552 loads <code>BaroPressure</code> and executes <code>adda MAPPT2_WastegateDutyCycleMapSwitchPoint2</code> at line 9553.</li>
+<li>Compares against <code>MapValue</code> at line 9554 (<code>cmpa MapValue</code>). If <code>MapValue</code> is lower than the sum, branches to <code>WGDC_ClearWGDutyCycleVars</code> (line 9556).</li>
+<li><strong>T2 Comparison Logic</strong>:</li>
+<li>At line 9762, gauge boost is computed as <code>MapValue - BaroPressure</code>.</li>
+<li>Line 9764 executes <code>cmpa MAPPT2_WastegateDutyCycleMapSwitchPoint2</code>. If gauge boost is below <code>MAPPT2</code>, branches to <code>T2WGDC_ClearWGDutyCycleVars</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

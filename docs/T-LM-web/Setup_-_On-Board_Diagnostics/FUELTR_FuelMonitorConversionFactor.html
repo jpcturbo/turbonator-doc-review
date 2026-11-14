@@ -116,18 +116,19 @@
 <p><code>FUELTR</code> (FuelMonitorConversionFactor) is a 16-bit calibration constant (stock calibration = <code>0x0311</code> = 785 decimal) that calibrates the fuel consumption output signal sent from the ECU to the vehicle's dashboard Electronic Navigator / 12-button trip computer (often factory equipped in Daytona, Lancer, LeBaron, and Laser models).</p>
 <p>The ECU monitors injector pulsewidth duration. Each time cumulative injector on-time integrates to equal <code>FUELTR</code>, the ECU toggles Port B bit 6 (<code>Z83_PortBdata</code>, line 6283), sending a discrete electrical pulse to the trip computer. The overhead console uses these pulses, combined with vehicle distance sensor pulses, to calculate live Instant MPG, Average MPG, and Gallons Consumed.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li>Evaluated inside subroutine <code>A2DScan_MM</code> at line 6279.</li>
-<li>Subtracts <code>FUELTR</code> from accumulator <code>Timer_FuelMonitorOutputTimer_HB</code>.</li>
-<li>Whenever the subtraction does not borrow, toggles Port B bit 6 output.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Upgraded Injectors (e.g. +20%, +40%, or 52 lb/hr)</strong>: When installing larger fuel injectors, the trip computer will display absurdly optimistic fuel economy (e.g. 50+ MPG) because shorter pulsewidths are required to deliver the same fuel mass. To recalibrate the factory trip computer for larger injectors, increase <code>FUELTR</code> proportionally!</li>
 <li>Formula: New FUELTR = Stock FUELTR × ((New Flow Rate / Stock Flow Rate)).</li>
 <li>For example, installing +40% injectors (1.40× flow) requires increasing <code>FUELTR</code> by 40% (785 × 1.40 = 1099 / <code>0x044B</code>). This restores 100% factory-accurate MPG readouts on the dashboard!</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during diagnostic monitoring to evaluate FuelMonitorConversionFactor.</p>
+<ul>
+<li>Evaluated inside subroutine <code>A2DScan_MM</code> at line 6279.</li>
+<li>Subtracts <code>FUELTR</code> from accumulator <code>Timer_FuelMonitorOutputTimer_HB</code>.</li>
+<li>Whenever the subtraction does not borrow, toggles Port B bit 6 output.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

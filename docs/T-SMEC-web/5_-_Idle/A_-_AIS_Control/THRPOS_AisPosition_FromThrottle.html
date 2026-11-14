@@ -131,17 +131,7 @@
 <p>As the driver depresses the accelerator pedal and drives off-idle, the engine controller tracks throttle plate angle. THRPOS pre-positions the stepper motor further open as throttle opening increases, ensuring that when the driver suddenly lifts off the throttle, the bypass passage is already open to act as a dashpot cushion.</p>
 <p>In factory calibrations, <code>THRPOS</code> commands 0 steps at minimum throttle opening (below 0.1 Volts delta above idle stop), increasing linearly to 5 steps at approximately 0.3 Volts delta.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2448</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Off-idle driving state confirmed at line 2428.</li>
-<li>Throttle voltage delta calculated at line 2439: <code>suba MINTHR_LowestSessionTPS</code>.</li>
-<li>Loads index X with <code>#THRPOS_AisPosition_FromThrottle</code> at line 2442 and calls <code>jsr Lookup4ByteTable</code>.</li>
-<li>Compares returned steps against running floor in <code>Temp0</code> at line 2444; if <code>Temp0</code> is higher, retains <code>Temp0</code>, ensuring maximum floor is enforced.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Softening Lift-Off Jerk</strong>:</li>
 <li>Increase <code>THRPOS</code> steps in the 0.2 to 0.5 Volt range to cushion abrupt throttle lift-off during aggressive part-throttle driving.</li>
@@ -149,6 +139,17 @@
 <li>Lower <code>THRPOS</code> steps to zero or near-zero to allow the idle valve to close down further during off-idle coasting, increasing engine vacuum braking.</li>
 <li><strong>Zero-Throttle Clearance</strong>:</li>
 <li>Ensure the lowest voltage cell is set to zero steps so closed-throttle idle feedback is never obstructed.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect at closed throttle idle to regulate FromThrottle.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2448</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Off-idle driving state confirmed at line 2428.</li>
+<li>Throttle voltage delta calculated at line 2439: <code>suba MINTHR_LowestSessionTPS</code>.</li>
+<li>Loads index X with <code>#THRPOS_AisPosition_FromThrottle</code> at line 2442 and calls <code>jsr Lookup4ByteTable</code>.</li>
+<li>Compares returned steps against running floor in <code>Temp0</code> at line 2444; if <code>Temp0</code> is higher, retains <code>Temp0</code>, ensuring maximum floor is enforced.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

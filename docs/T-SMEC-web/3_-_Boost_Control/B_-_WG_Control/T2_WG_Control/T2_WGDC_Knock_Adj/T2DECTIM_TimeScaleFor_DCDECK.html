@@ -116,17 +116,7 @@
 <p><code>T2DECTIM</code> sets the timing prescaler bitmask that governs how frequently the knock duty cycle recovery decrement (<a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2DCDECK_WastegateDutyCycleDecrementWhenSparkStillDerated.html"><code>T2DCDECK</code></a>) is executed in T2 control.</p>
 <p>The controller checks this bitmask against the main program loop counter; only when the masked bits equal zero does the routine decrement the knock reduction penalty. Pacing the recovery rate ensures that boost returns smoothly and gradually as cylinder knock retard subsides.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>T2WGDC_LookAtCylRetards</code> (<code>T-SMEC_v19.asm:9914-9916</code>), called from <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9755-10040</code>).</li>
-<li><strong>Gating Conditions</strong>: At least one cylinder must have knock retard exceeding <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2WGKNRD_MinimumKnockToReduceWGDC.html"><code>T2WGKNRD</code></a>.</li>
-<li><strong>Prescaler Masking</strong>:</li>
-<li>Line 9914 loads <code>Counter_MainLoop</code> into accumulator B.</li>
-<li>Line 9915 executes <code>bitb T2DECTIM_TimeScaleFor_DCDECK</code>.</li>
-<li>If non-zero (<code>bne L7763</code>), execution branches past the decrement routine for this loop pass.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>T2 Recovery Interval Prescaler</strong>:</li>
 <li>Bitmask applied against <code>Counter_MainLoop</code> to control how often <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2DCDECK_WastegateDutyCycleDecrementWhenSparkStillDerated.html"><code>T2DCDECK</code></a> is subtracted from knock penalty.</li>
@@ -135,6 +125,17 @@
 <li>An 88 ms interval provides a cautious, stable recovery that prevents cycling back into detonation.</li>
 <li><strong>Fast Track Recovery</strong>:</li>
 <li>Lowering bitmask to 3 (every 4th pass) or 1 (every 2nd pass) restores boost faster on race fuel.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under turbocharger boost operation to control DCDECK.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>T2WGDC_LookAtCylRetards</code> (<code>T-SMEC_v19.asm:9914-9916</code>), called from <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9755-10040</code>).</li>
+<li><strong>Gating Conditions</strong>: At least one cylinder must have knock retard exceeding <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_Knock_Adj/T2WGKNRD_MinimumKnockToReduceWGDC.html"><code>T2WGKNRD</code></a>.</li>
+<li><strong>Prescaler Masking</strong>:</li>
+<li>Line 9914 loads <code>Counter_MainLoop</code> into accumulator B.</li>
+<li>Line 9915 executes <code>bitb T2DECTIM_TimeScaleFor_DCDECK</code>.</li>
+<li>If non-zero (<code>bne L7763</code>), execution branches past the decrement routine for this loop pass.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

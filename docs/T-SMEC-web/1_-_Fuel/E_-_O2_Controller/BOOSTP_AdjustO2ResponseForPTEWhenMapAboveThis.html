@@ -117,7 +117,20 @@
 <p>Under positive turbocharger boost pressure, the engine requires a rich air-fuel mixture to manage in-cylinder combustion temperatures and suppress knock. Standard closed-loop feedback attempts to oscillate fueling continuously around stoichiometric 14.7:1 air-fuel ratio, which is dangerously lean under positive boost.</p>
 <p>In factory stock calibrations, <code>BOOSTP</code> is configured to 255 counts, corresponding to approximately 29.4 psi absolute pressure or 14.7 psi gauge boost. Because 255 counts sits at the very top of the factory 2-bar sensor scale, this threshold acts as a secondary failsafe while throttle angle thresholds and power enrichment flags manage standard open-loop transitions.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Lowering the Threshold</strong>:</li>
+<li>Lowers the boost level where closed-loop feedback is terminated. Setting this value near barometric pressure (approximately 128 counts or 0 psi gauge) ensures immediate open-loop fueling as the turbocharger builds positive pressure during part-throttle operation.</li>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
+<li>Must be recalibrated when changing MAP sensor scaling. On a 3-bar sensor, 14.7 psi absolute sits at approximately 85 counts; failure to rescale leaves closed loop enabled deep into positive boost.</li>
+<li><strong>Raising the Threshold</strong>:</li>
+<li>Leaves closed loop active at higher manifold pressures. If set too high, the engine controller may attempt to command stoichiometric 14.7:1 fueling under mild boost conditions, causing high exhaust gas temperatures.</li>
+<li><strong>Open-Loop Verification</strong>:</li>
+<li>Works in concert with part-throttle enrichment flags and full-throttle detection to ensure positive cylinder enrichment under load.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under positive turbocharger boost pressure, the engine requires a rich air-fuel mixture to manage in-cylinder combustion temperatures and suppress knock.</p>
 <ul>
 <li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> / <code>O2Signal_BelowToggle</code> (<code>T-SMEC_v19.asm:3088-3094</code>), instruction line 3090.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -128,18 +141,6 @@
 <li><code>MapValue</code> is loaded into register A and compared against <code>BOOSTP_AdjustO2ResponseForPTEWhenMapAboveThis</code> via <code>cmpa</code>.</li>
 <li>If <code>MapValue &gt;= BOOSTP</code> (<code>bcc</code>), execution branches to <code>SwitchOrStayOpenLoop</code> (line 3095), setting bit <code>b50_OpenLoop</code> in <code>BitFlags_50</code>.</li>
 <li>If <code>MapValue &lt; BOOSTP</code>, execution clears bit <code>b50_OpenLoop</code> via <code>bclr</code> and continues in closed loop.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Lowering the Threshold</strong>:</li>
-<li>Lowers the boost level where closed-loop feedback is terminated. Setting this value near barometric pressure (approximately 128 counts or 0 psi gauge) ensures immediate open-loop fueling as the turbocharger builds positive pressure during part-throttle operation.</li>
-<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
-<li>Must be recalibrated when changing MAP sensor scaling. On a 3-bar sensor, 14.7 psi absolute sits at approximately 85 counts; failure to rescale leaves closed loop enabled deep into positive boost.</li>
-<li><strong>Raising the Threshold</strong>:</li>
-<li>Leaves closed loop active at higher manifold pressures. If set too high, the engine controller may attempt to command stoichiometric 14.7:1 fueling under mild boost conditions, causing high exhaust gas temperatures.</li>
-<li><strong>Open-Loop Verification</strong>:</li>
-<li>Works in concert with part-throttle enrichment flags and full-throttle detection to ensure positive cylinder enrichment under load.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

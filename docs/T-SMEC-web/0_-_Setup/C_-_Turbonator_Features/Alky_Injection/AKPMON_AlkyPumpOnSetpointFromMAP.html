@@ -117,20 +117,21 @@
 <p>In high-boost turbocharged applications, water and alcohol injection suppresses intake charge temperatures and dramatically elevates detonation resistance. To prevent delivery pressure lag when injection nozzles open, the supply pump must be energized early to pressurize lines and fuel rails. In Turbonator firmware, unused output drivers (such as the purge or EGR solenoid driver) can be repurposed to control the pump relay.</p>
 <p>The factory setting is 255 counts (disabled).</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Priming Strategy</strong>: Set <code>AKPMON</code> roughly 2 to 3 psi of boost below the stage one injector setpoint (<a href="../../../0_-_Setup/C_-_Turbonator_Features/Alky_Injection/AKI1ON_AlkyInj1OnSetpointFromMAP.html"><code>AKI1ON</code></a>) to build line pressure before fluid is sprayed.</li>
+<li><strong>Typical Setpoints</strong>: For an 8 psi primary injection stage, calibrate <code>AKPMON</code> between 5 and 6 psi of boost.</li>
+<li><strong>Disabling Setpoint</strong>: Setting to 255 counts (factory setting) permanently disables pump activation.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect as manifold pressure builds under boost, energizing the water/methanol injection delivery pump.</p>
 <ul>
 <li>Enclosed in subroutine <code>MM_AlkyPump_Control</code> at lines 10562-10577 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
 <li>Requires configuration flag <code>cfg_AlkyInj</code> set and <code>cfg_SpeedSenseAero</code> clear in <a href="../../../0_-_Setup/A_-_Cal_Configuration/CONFIG_ConfigurationFlags.html"><code>CONFIG_ConfigurationFlags</code></a> (lines 10565-10568).</li>
 <li>In active firmware, this subroutine is commented out with semicolons in <a href="../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a> (as documented in <code>smec_anomaly.md</code>), meaning the controller does not execute these instructions unless uncommented in source.</li>
 <li>Comparison: <code>cmpa AKPMON_AlkyPumpOnSetpointFromMAP</code> against <code>MapValue</code> (line 10572).</li>
 <li>When <code>MapValue &gt;= AKPMON</code>, bit <code>PortA_PurgeEGR</code> in <code>Z83_PortA_copy</code> is asserted to turn on the pump relay. If below setpoint, execution branches to <code>AlkyPump_CheckHysteresisAndTurnOff</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Priming Strategy</strong>: Set <code>AKPMON</code> roughly 2 to 3 psi of boost below the stage one injector setpoint (<a href="../../../0_-_Setup/C_-_Turbonator_Features/Alky_Injection/AKI1ON_AlkyInj1OnSetpointFromMAP.html"><code>AKI1ON</code></a>) to build line pressure before fluid is sprayed.</li>
-<li><strong>Typical Setpoints</strong>: For an 8 psi primary injection stage, calibrate <code>AKPMON</code> between 5 and 6 psi of boost.</li>
-<li><strong>Disabling Setpoint</strong>: Setting to 255 counts (factory setting) permanently disables pump activation.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

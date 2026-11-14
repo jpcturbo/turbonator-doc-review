@@ -116,16 +116,7 @@
 <p><code>FLTMSK</code> defines the first configurable error suppression slot in the engine controller diagnostic subsystem.</p>
 <p>In Chrysler nineteen eighty-nine engine controllers, diagnostic fault logging is managed through an internal fault code table. When an electronic sensor or actuator fault is detected, the error recording routine searches a sequential suppression array starting at <code>FLTMSK</code>. If an internal diagnostic code matching the detected fault is stored in this byte, the controller bypasses error recording completely, preventing the fault from being logged in memory or flashed on the check engine lamp. In factory calibrations, <code>FLTMSK</code> is initialized to zero, leaving all diagnostic fault reporting active.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ThrowNonCriticalError</code> (<code>T-SMEC_v19.asm:4440-4475</code>), instruction line 4441 (<code>ldx #FLTMSK_ErrorBitsMask1</code>).</li>
-<li><strong>Search Loop Mechanics</strong>:</li>
-<li>The error routine iterates across the mask array starting at <code>FLTMSK_ErrorBitsMask1</code>.</li>
-<li>If the array entry is zero (<code>brclr 0, X, #$%11111111, L1321</code>), the loop terminates and the error is processed.</li>
-<li>If the entry matches the incoming error code (<code>cmpa 0x00,x; beq L1323</code>), the error is suppressed and the routine exits immediately.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Selective Fault Code Suppression</strong>:</li>
 <li>Entering an internal error offset into <code>FLTMSK</code> prevents the controller from recording the corresponding diagnostic trouble code or illuminating the dashboard lamp for that failure.</li>
@@ -136,6 +127,16 @@
 <li>Purge solenoid deletion (Code 31): enter eighteen counts.</li>
 <li><strong>Factory Default</strong>:</li>
 <li>Set to zero counts, keeping all factory fault reporting active.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when an electronic sensor or actuator fault is detected, the error recording routine searches a sequential suppression array starting at FLTMSK.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ThrowNonCriticalError</code> (<code>T-SMEC_v19.asm:4440-4475</code>), instruction line 4441 (<code>ldx #FLTMSK_ErrorBitsMask1</code>).</li>
+<li><strong>Search Loop Mechanics</strong>:</li>
+<li>The error routine iterates across the mask array starting at <code>FLTMSK_ErrorBitsMask1</code>.</li>
+<li>If the array entry is zero (<code>brclr 0, X, #$%11111111, L1321</code>), the loop terminates and the error is processed.</li>
+<li>If the entry matches the incoming error code (<code>cmpa 0x00,x; beq L1323</code>), the error is suppressed and the routine exits immediately.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

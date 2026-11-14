@@ -117,7 +117,21 @@
 <p>If an engine thermostat is stuck partially open, missing, or opening prematurely, engine coolant will circulate continuously through the radiator, preventing the engine from reaching proper operating temperature. This increases cylinder bore wear, reduces fuel economy, and elevates emissions.</p>
 <p>In factory calibrations, <code>TDAGTP</code> is configured to 199 counts, representing approximately 176 to 180 deg F. While the vehicle is being driven, the engine controller tracks elapsed driving time; if coolant temperature reaches <code>TDAGTP</code> before the timer expires, the test passes and the timer disarms. If time runs out before reaching <code>TDAGTP</code>, the controller flags <strong>Fault Code 17</strong>.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>160°F Thermostat Tuning</strong>:</li>
+<li>Mandatory adjustment: lower <code>TDAGTP</code> from 180 deg F down to 150-155 deg F to prevent false Fault Code 17 codes on 160-degree thermostat setups.</li>
+<li><strong>180°F Thermostat Tuning</strong>:</li>
+<li>Lower <code>TDAGTP</code> to 170 deg F to account for highway airflow in cold ambient conditions.</li>
+<li><strong>Diagnostic Reset Mechanics</strong>:</li>
+<li>Reaching <code>TDAGTP</code> clears <code>Timer_ThermostatDiagnostics</code> to zero, successfully concluding the test for that key cycle.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Setting <code>TDAGTP</code> to zero causes the test to pass immediately upon engine start.</li>
+<li>Setting <code>TDAGTP</code> to 220 deg F guarantees Fault Code 17 on vehicles with healthy 195-degree thermostats.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if an engine thermostat is stuck partially open, missing, or opening prematurely, engine coolant will circulate continuously through the radiator, preventing the engine from reaching proper operating temperature.</p>
 <ul>
 <li><strong>Routine &amp; Line Numbers</strong>: <code>VerifyOperationOfThermostat_MM</code> (<code>T-SMEC_v19.asm:5028-5053</code>), instruction at line 5036.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -129,19 +143,6 @@
 <li><code>cmpb TDAGTP_TstatDiagnosticsTemperatureGoalWithin_HOTIME</code> at line 5036 compares <code>CoolantTemp</code> against 199 counts.</li>
 <li>If greater or equal (<code>bcc</code>), branches to <code>L1401</code> at line 5037, clearing <code>Timer_ThermostatDiagnostics</code> to 0 (pass).</li>
 <li>If lower, continues to track driving time against <a href="../../../7_-_Aux_Functions/On-Board_Diagnostics/T-Stat_Diagnostics/HOTIME_TstatDiagnosticsTimeToAchieveTemperatureGoal.html"><code>HOTIME</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>160°F Thermostat Tuning</strong>:</li>
-<li>Mandatory adjustment: lower <code>TDAGTP</code> from 180 deg F down to 150-155 deg F to prevent false Fault Code 17 codes on 160-degree thermostat setups.</li>
-<li><strong>180°F Thermostat Tuning</strong>:</li>
-<li>Lower <code>TDAGTP</code> to 170 deg F to account for highway airflow in cold ambient conditions.</li>
-<li><strong>Diagnostic Reset Mechanics</strong>:</li>
-<li>Reaching <code>TDAGTP</code> clears <code>Timer_ThermostatDiagnostics</code> to zero, successfully concluding the test for that key cycle.</li>
-<li><strong>Edge Cases</strong>:</li>
-<li>Setting <code>TDAGTP</code> to zero causes the test to pass immediately upon engine start.</li>
-<li>Setting <code>TDAGTP</code> to 220 deg F guarantees Fault Code 17 on vehicles with healthy 195-degree thermostats.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

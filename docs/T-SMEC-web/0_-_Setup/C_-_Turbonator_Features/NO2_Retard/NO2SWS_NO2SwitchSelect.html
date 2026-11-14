@@ -117,20 +117,21 @@
 <p>When nitrous oxide is sprayed into an engine, cylinder combustion pressure and flame speed rise sharply, requiring instantaneous ignition timing retard to prevent severe detonation. <code>NO2SWS</code> links a hardware input (such as a wide-open throttle switch, nitrous arming switch, or relay trigger) to the controller's nitrous timing retard routine.</p>
 <p>When the selected switch activates, the controller immediately subtracts the retard angle defined by <a href="../../../0_-_Setup/C_-_Turbonator_Features/NO2_Retard/NO2RET_NO2RetardConstant.html"><code>NO2RET</code></a> from total spark advance.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Hardware Input Selection</strong>: Select the digital input wired to your nitrous activation circuit (e.g., Speed Control On/Off, A/C Switch, or Brake Switch).</li>
+<li><strong>Polarity Configuration</strong>: Toggle <code>opt_NO2Pol</code> in <a href="../../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1</code></a> to match switch polarity (active-low ground signal vs. active-high 12V signal).</li>
+<li><strong>Safety Testing</strong>: Datalog <code>NO2Retard</code> in MPScan with the engine off to verify that the retard value activates when the nitrous switch engages and clears when released.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the nitrous oxide activation switch is triggered, immediately retarding ignition timing by a fixed safety angle to prevent detonation.</p>
 <ul>
 <li>Enclosed in subroutine <code>CalculateNO2Retard_Routine_MM</code> at lines 10335-10366 of <code>cals/SMEC/T-SMEC_v19.asm</code> (invoked via main loop at line 7547).</li>
 <li>Requires custom option flag <code>opt_NO2Retard</code> (bit 2) enabled in <a href="../../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1_CalCustomOptionConfigFlags1</code></a> (line 10341).</li>
 <li>Polarity branch: Line 10345 checks <code>opt_NO2Pol</code> in <a href="../../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1</code></a>. If set, branches to <code>NO2_Polarity_Hi</code>; if clear, branches to <code>NO2_Polarity_Lo</code>.</li>
 <li>In <code>NO2_Polarity_Hi</code> (lines 10347-10350), <code>bitb NO2SWS_NO2SwitchSelect</code> branches to <code>LoadNO2Retard</code> if bit is zero (active-low).</li>
 <li>In <code>NO2_Polarity_Lo</code> (lines 10352-10355), <code>bitb NO2SWS_NO2SwitchSelect</code> branches to <code>LoadNO2Retard</code> if bit is non-zero (active-high).</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Hardware Input Selection</strong>: Select the digital input wired to your nitrous activation circuit (e.g., Speed Control On/Off, A/C Switch, or Brake Switch).</li>
-<li><strong>Polarity Configuration</strong>: Toggle <code>opt_NO2Pol</code> in <a href="../../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1</code></a> to match switch polarity (active-low ground signal vs. active-high 12V signal).</li>
-<li><strong>Safety Testing</strong>: Datalog <code>NO2Retard</code> in MPScan with the engine off to verify that the retard value activates when the nitrous switch engages and clears when released.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

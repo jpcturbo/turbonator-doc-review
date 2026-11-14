@@ -116,7 +116,19 @@
 <p><code>MPROOF</code> sets the underboost deadband threshold below target boost where the controller permits adaptive duty cycle incrementing in T1 control.</p>
 <p>When manifold pressure is below target, the engine controller calculates the underboost delta. If manifold pressure is within <code>MPROOF</code> of target boost, the boost level is considered sufficiently accurate, and the controller freezes adaptive incrementing to avoid continuous hunting and trim oscillation around the target pressure.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Underboost Deadband Threshold</strong>:</li>
+<li>Minimum error delta below target (<code>Target - Actual</code>) required to trigger an adaptive duty cycle increment.</li>
+<li>Factory setting is 0 counts (adapts whenever actual boost is below target).</li>
+<li><strong>Eliminating Table Churn</strong>:</li>
+<li>Setting <code>MPROOF</code> to 2 to 3 counts (0.23 to 0.35 psi) creates a small deadband that stops adaptive hunting when boost is close to target.</li>
+<li><strong>Upward Adaptation Gating</strong>:</li>
+<li>Only affects the upward adaptive branch (<code>WGDC_IncrementWGAdaptive</code>).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect as manifold pressure approaches target boost, disabling adaptive wastegate increments to prevent overshooting boost.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_IncrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9698-9700</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -126,17 +138,6 @@
 <li>Accumulator A holds the positive underboost delta (<code>BoostTarget - MapValue</code>).</li>
 <li>Line 9699 executes <code>cmpa MPROOF_StopAdaptiveWGWhenMapIsThisCloseToBoostTarget</code>.</li>
 <li>If error is less than <code>MPROOF</code> (<code>bcs</code>), branches to <code>WGDC_ClearBoostErrTimer</code>, halting adaptive increment.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Underboost Deadband Threshold</strong>:</li>
-<li>Minimum error delta below target (<code>Target - Actual</code>) required to trigger an adaptive duty cycle increment.</li>
-<li>Factory setting is 0 counts (adapts whenever actual boost is below target).</li>
-<li><strong>Eliminating Table Churn</strong>:</li>
-<li>Setting <code>MPROOF</code> to 2 to 3 counts (0.23 to 0.35 psi) creates a small deadband that stops adaptive hunting when boost is close to target.</li>
-<li><strong>Upward Adaptation Gating</strong>:</li>
-<li>Only affects the upward adaptive branch (<code>WGDC_IncrementWGAdaptive</code>).</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

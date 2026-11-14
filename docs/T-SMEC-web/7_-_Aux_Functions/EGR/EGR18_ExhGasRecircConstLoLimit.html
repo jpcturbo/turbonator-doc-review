@@ -117,21 +117,22 @@
 <p>To measure baseline closed-loop oxygen sensor behavior with the EGR valve operating, the engine controller requires intake manifold pressure to fall within a bounded window. At line 5429, the controller points an index register to <code>EGR18</code> and calls the common boundary checking routine.</p>
 <p>In the factory calibration, <code>EGR18</code> is set to 255 counts (maximum scale, corresponding to full boost / wide open throttle). Because its companion upper limit is also set to 255, the factory calibration effectively disables the lower MAP window restriction during Phase 1, allowing baseline sampling at any manifold pressure where the other entry gates are satisfied.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Lowering EGR18</strong>: Establishes a real lower manifold pressure floor for Phase 1 baseline tracking. For example, setting 50 counts creates a requirement for at least moderate intake load before baseline sampling proceeds.</li>
+<li><strong>Stock Calibration (255 counts)</strong>: Acts as an open gate in stock firmware because <code>EGR18</code> and companion <a href="../../7_-_Aux_Functions/EGR/EGR18a_ExhGasRecircConstHiLimit.html"><code>EGRR18A</code></a> are both set to full scale (255), relying on <a href="../../7_-_Aux_Functions/EGR/EGR33_ExhGasRecircConstFromMAPBelowBaro.html"><code>EGR33</code></a> to enforce minimum manifold vacuum.</li>
+<li><strong>3-Bar MAP Sensor Conversions</strong>: If custom manifold pressure windows are defined, scale all MAP count thresholds by multiplying by 0.667 (two-thirds). This accounts for the expanded 3-bar pressure span (0 to 44.1 psi absolute vs 0 to 29.4 psi absolute).</li>
+<li><strong>EGR Delete Applications</strong>: Altering <code>EGR18</code> is not necessary when disabling EGR; use the configuration bit <code>cfg_EGR</code> or raise <a href="../../7_-_Aux_Functions/EGR/EGR1_ExhGasRecircConst.html"><code>EGR1</code></a> to 65535 instead.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle cruising, modulating the exhaust gas recirculation (EGR) solenoid duty cycle to control combustion temperatures.</p>
 <ul>
 <li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5429.</li>
 <li><strong>Subroutine Called</strong>: <code>EGR_CheckHiLoLimits</code> at line 5462.</li>
 <li><strong>Input Variable</strong>: <code>MapValue</code> (RAM address 0x0017) loaded into accumulator A.</li>
 <li><strong>Register Pointer</strong>: Index register X loaded with address <code>#EGR18_ExhGasRecircConstLoLimit</code>.</li>
 <li><strong>Boundary Logic</strong>: Compares <code>MapValue</code> against <code>0x00,x</code> (<code>EGR18</code>) and <code>0x01,x</code> (<a href="../../7_-_Aux_Functions/EGR/EGR18a_ExhGasRecircConstHiLimit.html"><code>EGRR18A</code></a>). If <code>MapValue &lt; EGR18</code> (<code>bcs L1464</code>), pulls return address off stack and aborts via <code>EGR_ResetEGRVars</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Lowering EGR18</strong>: Establishes a real lower manifold pressure floor for Phase 1 baseline tracking. For example, setting 50 counts creates a requirement for at least moderate intake load before baseline sampling proceeds.</li>
-<li><strong>Stock Calibration (255 counts)</strong>: Acts as an open gate in stock firmware because <code>EGR18</code> and companion <a href="../../7_-_Aux_Functions/EGR/EGR18a_ExhGasRecircConstHiLimit.html"><code>EGRR18A</code></a> are both set to full scale (255), relying on <a href="../../7_-_Aux_Functions/EGR/EGR33_ExhGasRecircConstFromMAPBelowBaro.html"><code>EGR33</code></a> to enforce minimum manifold vacuum.</li>
-<li><strong>3-Bar MAP Sensor Conversions</strong>: If custom manifold pressure windows are defined, scale all MAP count thresholds by multiplying by 0.667 (two-thirds). This accounts for the expanded 3-bar pressure span (0 to 44.1 psi absolute vs 0 to 29.4 psi absolute).</li>
-<li><strong>EGR Delete Applications</strong>: Altering <code>EGR18</code> is not necessary when disabling EGR; use the configuration bit <code>cfg_EGR</code> or raise <a href="../../7_-_Aux_Functions/EGR/EGR1_ExhGasRecircConst.html"><code>EGR1</code></a> to 65535 instead.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

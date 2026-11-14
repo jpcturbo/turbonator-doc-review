@@ -116,7 +116,18 @@
 <p><code>SRTIME2</code> defines the number of consecutive Engine Position Pulses (EPPs) above <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/STRNTR_SparkStartRunTransferPointRpm.html"><code>STRNTR</code></a> required to transfer ignition control into Run Mode when the engine is cold (coolant temperature below or equal to <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTMTP_SparkTempSwitchPointFor_SRTIME.html"><code>SRTMTP</code></a>).</p>
 <p>Cold engines have cold cylinder walls, high oil viscosity drag, and imperfect fuel vaporization, making them prone to false-start stalls where an initial cylinder firing spins the engine momentarily before dying. <code>SRTIME2</code> allows calibrators to set a distinct pulse duration requirement for cold conditions. In factory calibrations, <code>SRTIME2</code> is set to 4 pulses, requiring one complete crankshaft revolution above <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/STRNTR_SparkStartRunTransferPointRpm.html"><code>STRNTR</code></a> before engaging cold running spark tables. The firmware accesses <code>SRTIME2</code> via a one-byte pointer offset from <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME_SparkEPPsNeededToBeAboveSR_Hot.html"><code>SRTIME</code></a>.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Cold False-Start Prevention</strong>:</li>
+<li>Raising <code>SRTIME2</code> to 6 or 8 pulses keeps the engine in cranking spark mode longer during freezing starts, preventing stalls when releasing the starter key.</li>
+<li><strong>Pointer Offset Architecture</strong>:</li>
+<li>Evaluated via a one-byte pointer offset from <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME_SparkEPPsNeededToBeAboveSR_Hot.html"><code>SRTIME</code></a> when <code>CoolantTemp</code> is at or below <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTMTP_SparkTempSwitchPointFor_SRTIME.html"><code>SRTMTP</code></a>.</li>
+<li><strong>Starter Momentum Verification</strong>:</li>
+<li>Guarantees that multiple cylinders are firing under their own power before transitioning off cranking ignition control.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during cold engine startup, dictating how many engine revolutions must pass before the ECU transitions ignition timing from cranking to running mode.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>ENGINE_IDLING_FASTERTHAN_813RPM</code> (<code>T-SMEC_v19.asm:7015-7023</code>), called from <code>RpmBelowStartRunTransfer</code>.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -127,16 +138,6 @@
 <li>When <code>CoolantTemp</code> &lt;= <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTMTP_SparkTempSwitchPointFor_SRTIME.html"><code>SRTMTP</code></a>, line 7017 (<code>cmpb CoolantTemp; bcs ...</code>) does not branch, falling through to line 7019 (<code>inx</code>).</li>
 <li><code>inx</code> advances pointer X to <code>SRTIME2</code> (address 0x01,x off <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME_SparkEPPsNeededToBeAboveSR_Hot.html"><code>SRTIME</code></a>).</li>
 <li>Line 7021 compares accumulated pulses against <code>SRTIME2</code> (<code>cmpa 0x00,x</code>).</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Cold False-Start Prevention</strong>:</li>
-<li>Raising <code>SRTIME2</code> to 6 or 8 pulses keeps the engine in cranking spark mode longer during freezing starts, preventing stalls when releasing the starter key.</li>
-<li><strong>Pointer Offset Architecture</strong>:</li>
-<li>Evaluated via a one-byte pointer offset from <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME_SparkEPPsNeededToBeAboveSR_Hot.html"><code>SRTIME</code></a> when <code>CoolantTemp</code> is at or below <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTMTP_SparkTempSwitchPointFor_SRTIME.html"><code>SRTMTP</code></a>.</li>
-<li><strong>Starter Momentum Verification</strong>:</li>
-<li>Guarantees that multiple cylinders are firing under their own power before transitioning off cranking ignition control.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

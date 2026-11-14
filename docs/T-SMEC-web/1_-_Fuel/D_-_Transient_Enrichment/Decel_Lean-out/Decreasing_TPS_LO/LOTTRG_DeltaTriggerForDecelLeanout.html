@@ -117,20 +117,21 @@
 <p>When the driver begins closing the throttle, the engine controller calculates the rate of throttle voltage decrease relative to rolling average throttle voltage. If the closing rate exceeds <code>LOTTRG</code>, the controller initiates progressive deceleration lean-out, incrementing the lean-out factor each loop pass.</p>
 <p>In the stock calibration, this value is set to 255 counts, ensuring that the closing throttle delta never exceeds the threshold and keeping throttle-based decel lean-out completely inactive.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li>Enclosed in routine <code>TransFuel_CalculateDecreasingTPSTransientFuel</code> at lines 6511-6537 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
-<li>Evaluated when <code>TpsVolts &lt; AverageTPSVolts</code>.</li>
-<li>Threshold comparison: Line 6524 executes <code>cmpa LOTTRG_DeltaTriggerForDecelLeanout</code>.</li>
-<li>Polarity: If negated throttle delta is less than <code>LOTTRG</code>, instruction <code>bcs TransFuel_ClearLeanOutFactor</code> branches to line 6538, clearing <code>Factor_DecelLeanoutWhenThrottleDecreasing</code> to zero.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Enabling Trigger Threshold</strong>: In calibrations where throttle deceleration lean-out is desired, lower <code>LOTTRG</code> from 255 to a sensible threshold such as 5 to 10 counts (0.10 to 0.20 volts).</li>
 <li><strong>Surging Prevention</strong>: Setting the trigger too low causes minor pedal modulations during cruising to trigger unwanted fuel reductions, causing noticeable surging and hesitation.</li>
 <li><strong>Disabling Option</strong>: If tuning for crisp throttle response or if experiencing deceleration stumbling, keep <code>LOTTRG</code> maxed out at 255 counts to prevent any throttle-based fuel cuts.</li>
 <li><strong>Threshold Hierarchy</strong>: Must always be set lower than <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_TPS_LO/LOTRG2_SecondDecelLeanoutTrigger.html"><code>LOTRG2</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the driver begins closing the throttle, the engine controller calculates the rate of throttle voltage decrease relative to rolling average throttle voltage.</p>
+<ul>
+<li>Enclosed in routine <code>TransFuel_CalculateDecreasingTPSTransientFuel</code> at lines 6511-6537 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Evaluated when <code>TpsVolts &lt; AverageTPSVolts</code>.</li>
+<li>Threshold comparison: Line 6524 executes <code>cmpa LOTTRG_DeltaTriggerForDecelLeanout</code>.</li>
+<li>Polarity: If negated throttle delta is less than <code>LOTTRG</code>, instruction <code>bcs TransFuel_ClearLeanOutFactor</code> branches to line 6538, clearing <code>Factor_DecelLeanoutWhenThrottleDecreasing</code> to zero.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

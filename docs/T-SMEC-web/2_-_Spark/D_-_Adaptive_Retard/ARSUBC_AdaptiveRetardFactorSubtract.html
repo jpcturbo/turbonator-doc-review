@@ -116,7 +116,18 @@
 <p><code>ARSUBC</code> defines the decay step size subtracted from the adaptive retard index (<code>AdaptiveRetardIndex</code>) every time the engine undergoes a successful start-to-run transition.</p>
 <p>Once adaptive retard has accumulated in response to knock, the controller needs a systematic method to decay the learned retard back toward zero as fresh, higher-octane fuel is introduced. Rather than clearing learned retard instantly when the ignition key is cycled, the controller decrements <code>AdaptiveRetardIndex</code> by <code>ARSUBC</code> on each engine start. In factory calibrations, <code>ARSUBC</code> is set to 64 counts, representing a 25% reduction in learned adaptive retard per engine restart.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Restart Decay Pacing</strong>:</li>
+<li>Factory setting of 64 counts clears learned adaptive retard in four consecutive key cycles if no further knock occurs.</li>
+<li><strong>Instant Reset on Restart</strong>:</li>
+<li>Setting <code>ARSUBC</code> to 255 clears all learned adaptive retard on every restart, providing a fresh baseline on each drive.</li>
+<li><strong>Extended Memory for Safety</strong>:</li>
+<li>Lowering <code>ARSUBC</code> to 16 or 32 counts retains learned retard across 8 to 16 restarts, providing safety if lower octane fuel is persistent.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect once adaptive retard has accumulated in response to knock, the controller needs a systematic method to decay the learned retard back toward zero as fresh, higher-octane fuel is introduced.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>HandleFuelStartRunStartTransfer</code> (<code>T-SMEC_v19.asm:6985-6990</code>).</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -125,16 +136,6 @@
 <li><strong>Subtraction &amp; Floor</strong>:</li>
 <li><code>AdaptiveRetardIndex</code> is loaded and <code>ARSUBC_AdaptiveRetardFactorSubtract</code> is subtracted.</li>
 <li>If result underflows (<code>bcc L1588</code> not taken), accumulator A is clamped to zero before storing.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Restart Decay Pacing</strong>:</li>
-<li>Factory setting of 64 counts clears learned adaptive retard in four consecutive key cycles if no further knock occurs.</li>
-<li><strong>Instant Reset on Restart</strong>:</li>
-<li>Setting <code>ARSUBC</code> to 255 clears all learned adaptive retard on every restart, providing a fresh baseline on each drive.</li>
-<li><strong>Extended Memory for Safety</strong>:</li>
-<li>Lowering <code>ARSUBC</code> to 16 or 32 counts retains learned retard across 8 to 16 restarts, providing safety if lower octane fuel is persistent.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

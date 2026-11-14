@@ -129,18 +129,7 @@
 <p>While <a href="../../../1_-_Fuel/E_-_O2_Controller/O2_Controller_Ramps/PRIRMP_PrimaryRamp.html"><code>PRIRMP</code></a> handles smooth incremental corrections during normal switching, <code>SECRMP</code> activates when <code>Timer_O2ToggleDuration</code> exceeds the calibrated cell timeout limit, applying aggressive secondary fuel kicks to rapidly drive the mixture back toward stoichiometric.</p>
 <p><code>SECRMP</code> defines the RPM and MAP grid boundaries, the secondary kick values (with lean corrections represented in two's complement format), and the duration limits for each operating cell.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Subroutine</strong>: <code>WorkWithSecondaryRamp</code> (<code>T-SMEC_v19.asm:3195-3212</code>), instruction line 3196.</li>
-<li><strong>Gating Conditions</strong>: Closed loop active (<code>b4f_O2Valid</code> set, <code>b50_StayOpenLoop</code> clear), and primary ramp has not toggled.</li>
-<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
-<li>Line 3196 loads index register X with <code>#SECRMP_SecondaryRamp</code>.</li>
-<li><code>DetermineRampCellFromRPMandMAP</code> selects the active cell.</li>
-<li>Line 3199 loads <code>Timer_O2ToggleDuration</code> into register A.</li>
-<li>Evaluates timeout limit; if timer expired (<code>bcc O2_SensorStuckOnOneSideTooLong</code>), secondary ramp kick is loaded and applied.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Mitigating Surging on Cammed Engines</strong>:</li>
 <li>Aggressive secondary kicks can cause harsh surging when an exhaust sensor is slow to respond. Softening kick values in <code>SECRMP</code> eliminates abrupt overcorrections.</li>
@@ -150,6 +139,18 @@
 <li>Rich kicks are positive values; lean kicks are stored as negative two's complement signed values.</li>
 <li><strong>Companion Constants</strong>:</li>
 <li>Interacts with <a href="../../../7_-_Aux_Functions/EGR/SCRMP1_SecondaryRampSubtractor1.html"><code>SCRMP1</code></a> and <code>SCRMP2</code> subtractor constants during timer evaluation.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during closed-loop operation, controlling the secondary fuel trim ramp rate as the oxygen sensor switches.</p>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>WorkWithSecondaryRamp</code> (<code>T-SMEC_v19.asm:3195-3212</code>), instruction line 3196.</li>
+<li><strong>Gating Conditions</strong>: Closed loop active (<code>b4f_O2Valid</code> set, <code>b50_StayOpenLoop</code> clear), and primary ramp has not toggled.</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Line 3196 loads index register X with <code>#SECRMP_SecondaryRamp</code>.</li>
+<li><code>DetermineRampCellFromRPMandMAP</code> selects the active cell.</li>
+<li>Line 3199 loads <code>Timer_O2ToggleDuration</code> into register A.</li>
+<li>Evaluates timeout limit; if timer expired (<code>bcc O2_SensorStuckOnOneSideTooLong</code>), secondary ramp kick is loaded and applied.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

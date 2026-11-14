@@ -116,17 +116,7 @@
 <p><code>BAROHI</code> defines the maximum credible atmospheric pressure threshold used during barometric pressure validation.</p>
 <p>When the engine controller samples barometric pressure at key-on or during closed-throttle deceleration, it evaluates the measured reading against <code>BAROHI</code> to verify sensor plausibility. Standard sea level atmospheric pressure is approximately 14.7 psi absolute (29.9 inHg), and extreme meteorological high-pressure weather cells rarely exceed 15.2 psi absolute. In factory calibrations, <code>BAROHI</code> is configured to 133 counts, corresponding to approximately 15.3 psi absolute (31.1 inHg). If an atmospheric reading equals or exceeds <code>BAROHI</code>, the controller identifies the measurement as electrically implausible (such as a 5-volt reference short or broken sensor ground) and substitutes the failsafe default value <a href="../../7_-_Aux_Functions/Baro_Read/BARDFT_BaroReadDefaultValue.html"><code>BARDFT</code></a>.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>SaveBaroPressure</code> (<code>T-SMEC_v19.asm:1541-1554</code>), instruction line 1547.</li>
-<li><strong>Execution Trigger</strong>: Called at key-on startup and following successful in-flight baro read equalization.</li>
-<li><strong>Comparison &amp; Branch</strong>:</li>
-<li>Raw sensor reading converted to pressure count in accumulator B.</li>
-<li>Compares accumulator B against <code>BAROHI_BaroReadValidHighLimit</code> at line 1547.</li>
-<li>If accumulator B is greater than or equal (<code>bcc L1029</code>), branches to substitute <a href="../../7_-_Aux_Functions/Baro_Read/BARDFT_BaroReadDefaultValue.html"><code>BARDFT_BaroReadDefaultValue</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
 <li>On a 3-bar sensor, rescale <code>BAROHI</code> from factory 133 counts down to ~88 counts (15.2 psi on 44.1 psi scale).</li>
@@ -134,6 +124,17 @@
 <li>Any reading meeting or exceeding <code>BAROHI</code> is immediately rejected, and <a href="../../7_-_Aux_Functions/Baro_Read/BARDFT_BaroReadDefaultValue.html"><code>BARDFT</code></a> is loaded into memory.</li>
 <li><strong>Diagnostic Protection</strong>:</li>
 <li>Protects fuel calibration against high-voltage sensor wire shorts and disconnected sensor ground circuits.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during key-on and in-flight barometric pressure reads, establishing the acceptable high voltage limit for a valid atmospheric reading.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>SaveBaroPressure</code> (<code>T-SMEC_v19.asm:1541-1554</code>), instruction line 1547.</li>
+<li><strong>Execution Trigger</strong>: Called at key-on startup and following successful in-flight baro read equalization.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Raw sensor reading converted to pressure count in accumulator B.</li>
+<li>Compares accumulator B against <code>BAROHI_BaroReadValidHighLimit</code> at line 1547.</li>
+<li>If accumulator B is greater than or equal (<code>bcc L1029</code>), branches to substitute <a href="../../7_-_Aux_Functions/Baro_Read/BARDFT_BaroReadDefaultValue.html"><code>BARDFT_BaroReadDefaultValue</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

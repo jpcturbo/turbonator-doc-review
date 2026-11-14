@@ -116,7 +116,20 @@
 <p><code>CONFIG</code> serves as the master factory vehicle hardware configuration register for the engine controller.</p>
 <p>Configured in factory calibrations to one hundred sixty-two counts, <code>CONFIG</code> uses individual binary bits to declare the presence or absence of core vehicle hardware systems. These include whether the vehicle is equipped with air conditioning, exhaust gas recirculation, an automatic or manual transmission, an intake manifold air charge temperature sensor, a part throttle unlock solenoid, and throttle-position-based transient fueling. By reading <code>CONFIG</code> during initialization and main control loops, the controller enables or disables entire branches of control logic and diagnostic error tracking to match the physical powertrain hardware.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Automatic to Manual Drivetrain Swaps</strong>:</li>
+<li>Clearing the automatic transmission switch (Bit 5) transitions the controller from automatic to manual idle dashpot decay rates, park/neutral switch logic, and target idle speed curves.</li>
+<li><strong>Air Conditioning &amp; EGR Deletion</strong>:</li>
+<li>Clearing the air conditioning switch (Bit 7) or exhaust gas recirculation switch (Bit 6) disables diagnostic circuit testing and suppresses fault codes 32 and 33 when emissions or comfort equipment is removed.</li>
+<li><strong>Charge Temperature Sensor Bypass</strong>:</li>
+<li>Clearing the charge temperature sensor switch (Bit 4) directs the firmware to substitute engine coolant temperature directly into intake charge fueling equations if no intake air thermistor is installed.</li>
+<li><strong>Transient Fuel TPS Enable</strong>:</li>
+<li>Bit 0 toggles throttle-based transient fuel enrichment modifiers to tailor tip-in response.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect at ECU power-up, reading calibration option bitmasks that configure vehicle features, transmission type, and optional firmware functions.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: Evaluated across multiple subroutines in <a href="../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a>, including <code>Below44MPH</code> (<code>T-SMEC_v19.asm:1742-1755</code>, line 1744), <code>ExhGasRecirc_MM</code> (line 5384), <code>CalculateSumOfAllFuelModifiers_MM</code> (lines 6413, 6443), <code>SubstituteChargeTempForCoolantTemp</code> (line 7702), and <code>DetectParkNeutral_MM</code> (line 9034).</li>
 <li><strong>Bitmask Decoding</strong>:</li>
@@ -128,18 +141,6 @@
 <li>Bit 0 (<code>cfg_TransTPS</code>, 0x01): Transient fuel throttle position sensor modifier enabled.</li>
 <li><strong>Branch Polarity</strong>:</li>
 <li>Tested using <code>bita</code> / <code>beq</code> / <code>bne</code> or <code>brset</code> / <code>brclr</code> to conditionally branch around inactive subsystem code.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Automatic to Manual Drivetrain Swaps</strong>:</li>
-<li>Clearing the automatic transmission switch (Bit 5) transitions the controller from automatic to manual idle dashpot decay rates, park/neutral switch logic, and target idle speed curves.</li>
-<li><strong>Air Conditioning &amp; EGR Deletion</strong>:</li>
-<li>Clearing the air conditioning switch (Bit 7) or exhaust gas recirculation switch (Bit 6) disables diagnostic circuit testing and suppresses fault codes 32 and 33 when emissions or comfort equipment is removed.</li>
-<li><strong>Charge Temperature Sensor Bypass</strong>:</li>
-<li>Clearing the charge temperature sensor switch (Bit 4) directs the firmware to substitute engine coolant temperature directly into intake charge fueling equations if no intake air thermistor is installed.</li>
-<li><strong>Transient Fuel TPS Enable</strong>:</li>
-<li>Bit 0 toggles throttle-based transient fuel enrichment modifiers to tailor tip-in response.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

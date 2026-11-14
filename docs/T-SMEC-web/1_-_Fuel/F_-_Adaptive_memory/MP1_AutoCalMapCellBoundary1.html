@@ -117,18 +117,7 @@
 <p>The Chrysler SMEC organizes long-term fuel trim into 13 distinct memory cells, comprising 12 off-idle cells arranged across 6 manifold pressure load columns and 2 engine speed rows, plus one dedicated closed-throttle idle cell. <code>MP1</code> represents the transition from extreme high-vacuum conditions, such as trailing-throttle coastdown and steep deceleration overrun, into light-load cruise.</p>
 <p>In stock calibrations, <code>MP1</code> is set to 36 counts, which corresponds to approximately 4.1 psia or 21.6 inHg of vacuum.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Subroutine</strong>: <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code> (<code>T-SMEC_v19.asm:3350-3393</code>), instruction line 3354.</li>
-<li><strong>Gating Conditions</strong>: Off-idle flag confirmed (<code>BitFlags_4f</code> bit <code>b4f_OffIdle</code> set) or engine speed above idle threshold (<code>EngineRpm_HB &gt; TargetIdleSpeed_HB + IDLOFS</code>).</li>
-<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
-<li>Line 3354 loads index register X with <code>#MP1_AutoCalMapCellBoundary1</code>.</li>
-<li>Line 3371 compares <code>MapValue</code> against the boundary in register A via <code>cmpa MapValue</code>.</li>
-<li>If <code>boundary &gt;= MapValue</code> (<code>bcc</code>), execution branches to <code>L1247</code> (line 3380), selecting that MAP column.</li>
-<li>If <code>boundary &lt; MapValue</code>, line 3373 increments X via <code>inx</code> to evaluate <a href="../../1_-_Fuel/F_-_Adaptive_memory/MP2_AutoCalMapCellBoundary2.html"><code>MP2</code></a>, incrementing <code>Temp0</code> by 2.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Camshaft Upgrades</strong>:</li>
 <li>High-overlap cams produce less engine vacuum at light load; raising <code>MP1</code> prevents light cruise from being trapped in deceleration fuel cells.</li>
@@ -138,6 +127,18 @@
 <li><code>MP1</code> through <a href="../../1_-_Fuel/F_-_Adaptive_memory/MP5_AutoCalMapCellBoundary5.html"><code>MP5</code></a> must strictly maintain ascending numerical order: <code>MP1 &lt; MP2 &lt; MP3 &lt; MP4 &lt; MP5</code>.</li>
 <li><strong>Lowering the Boundary</strong>:</li>
 <li>Shrinks the decel fuel cell domain, causing Cell 2 and 3 to take effect at higher manifold vacuum.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during adaptive fuel memory operation, defining the manifold pressure load boundary separating Cell 0/1 from Cell 2/3.</p>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code> (<code>T-SMEC_v19.asm:3350-3393</code>), instruction line 3354.</li>
+<li><strong>Gating Conditions</strong>: Off-idle flag confirmed (<code>BitFlags_4f</code> bit <code>b4f_OffIdle</code> set) or engine speed above idle threshold (<code>EngineRpm_HB &gt; TargetIdleSpeed_HB + IDLOFS</code>).</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Line 3354 loads index register X with <code>#MP1_AutoCalMapCellBoundary1</code>.</li>
+<li>Line 3371 compares <code>MapValue</code> against the boundary in register A via <code>cmpa MapValue</code>.</li>
+<li>If <code>boundary &gt;= MapValue</code> (<code>bcc</code>), execution branches to <code>L1247</code> (line 3380), selecting that MAP column.</li>
+<li>If <code>boundary &lt; MapValue</code>, line 3373 increments X via <code>inx</code> to evaluate <a href="../../1_-_Fuel/F_-_Adaptive_memory/MP2_AutoCalMapCellBoundary2.html"><code>MP2</code></a>, incrementing <code>Temp0</code> by 2.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

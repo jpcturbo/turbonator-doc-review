@@ -116,7 +116,18 @@
 <p><code>FANMAP</code> defines the turbocharger boost pressure threshold relative to barometric pressure that turns on the radiator and intercooler cooling fan.</p>
 <p>In factory turbocharged vehicles where the radiator and intercooler share the forward front-end airflow duct, sustained turbo boost generates localized charge air heating and underhood thermal stress. When manifold pressure exceeds barometric pressure by <code>FANMAP</code>, the engine controller energizes the cooling fan regardless of coolant temperature, drawing extra airflow through the intercooler core. In factory 2.5L ATX calibrations, <code>FANMAP</code> is configured to 255 counts (29.4 psi boost), effectively disabling this boost-activated fan feature for conservative commuter driving.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Intercooler Heat Soak Prevention</strong>:</li>
+<li>Lower <code>FANMAP</code> to 2.0 to 4.0 psi boost (17 to 35 counts) to spool the fan upon turbo boost onset.</li>
+<li><strong>3-Bar MAP Scaling</strong>:</li>
+<li>Rescale <code>FANMAP</code> for 3-bar conversions to account for the wider 0 to 44.1 psi absolute sensor calibration.</li>
+<li><strong>Disabling Boost-Triggered Fan</strong>:</li>
+<li>Set <code>FANMAP</code> to 255 counts (factory setting) to prevent boost from activating the radiator fan.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under positive turbo boost pressure, turning the cooling fan ON when manifold pressure exceeds barometric pressure by this amount to lower charge temperatures.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>ControlFan_MM</code> / <code>PreventRadSteaming</code> (<code>T-SMEC_v19.asm:1756-1765</code>), instruction line 1757.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -126,16 +137,6 @@
 <li>If fan is already running, adds 2 counts hysteresis (<code>adda #0x02</code> at line 1761).</li>
 <li>Compares sum against <code>MapValue</code> (<code>cmpa MapValue</code> at line 1764).</li>
 <li>If <code>MapValue &lt;= BaroPressure + FANMAP</code>, branches to <code>TurnFanOffByTimer</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Intercooler Heat Soak Prevention</strong>:</li>
-<li>Lower <code>FANMAP</code> to 2.0 to 4.0 psi boost (17 to 35 counts) to spool the fan upon turbo boost onset.</li>
-<li><strong>3-Bar MAP Scaling</strong>:</li>
-<li>Rescale <code>FANMAP</code> for 3-bar conversions to account for the wider 0 to 44.1 psi absolute sensor calibration.</li>
-<li><strong>Disabling Boost-Triggered Fan</strong>:</li>
-<li>Set <code>FANMAP</code> to 255 counts (factory setting) to prevent boost from activating the radiator fan.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

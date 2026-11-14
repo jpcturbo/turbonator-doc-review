@@ -117,21 +117,22 @@
 <p>On manual transmission configurations, if engine speed does not satisfy the primary RPM threshold, the engine controller evaluates intake manifold pressure as an alternate enable path.</p>
 <p>At line 5394, the controller loads <code>EGR11</code> and compares it against current manifold pressure (<code>MapValue</code>). If manifold pressure exceeds <code>EGR11</code>, the controller allows EGR operation even if engine speed is below the <a href="../../7_-_Aux_Functions/EGR/EGR13_ExhGasRecircConstFromRPM.html"><code>EGR13</code></a> threshold. The factory calibration setting of 0 counts disables pressure-based gating, allowing EGR at any manifold pressure on manual vehicles.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Manual Transmission Logic</strong>: Evaluated only on manual transmission vehicles (<code>cfg_ATX</code> clear). Bypassed on automatics.</li>
+<li><strong>Alternate Enable Gate</strong>: Serves as an alternate check at line 5400; if engine speed check fails, exceeding <code>EGR11</code> permits EGR to continue.</li>
+<li><strong>3-Bar MAP Sensor Scaling</strong>: For non-zero settings, multiply by 0.667 to compensate for 3-bar sensor calibration slope.</li>
+<li><strong>Factory Calibration</strong>: 0 counts allows EGR under any intake manifold pressure on stock manual vehicles.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle cruising, modulating the exhaust gas recirculation (EGR) solenoid duty cycle to control combustion temperatures.</p>
 <ul>
 <li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5394.</li>
 <li><strong>Precondition</strong>: <code>cfg_ATX</code> clear (manual transmission) and <code>b4f_OffIdle</code> set.</li>
 <li><strong>Evaluation Site</strong>: Line 5400 (<code>cmpb MapValue</code>).</li>
 <li><strong>Hysteresis Logic</strong>: If EGR is currently off, line 5397 adds <a href="../../7_-_Aux_Functions/EGR/EGR12_ExhGasRecircConstFromMAP.html"><code>EGR12</code></a> to accumulator B.</li>
 <li><strong>Branch Behavior</strong>: If <code>MapValue &lt; threshold</code> (<code>bhi L1457</code>), branches to turn EGR off via <code>EGR_SetEGRtoOff</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Manual Transmission Logic</strong>: Evaluated only on manual transmission vehicles (<code>cfg_ATX</code> clear). Bypassed on automatics.</li>
-<li><strong>Alternate Enable Gate</strong>: Serves as an alternate check at line 5400; if engine speed check fails, exceeding <code>EGR11</code> permits EGR to continue.</li>
-<li><strong>3-Bar MAP Sensor Scaling</strong>: For non-zero settings, multiply by 0.667 to compensate for 3-bar sensor calibration slope.</li>
-<li><strong>Factory Calibration</strong>: 0 counts allows EGR under any intake manifold pressure on stock manual vehicles.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

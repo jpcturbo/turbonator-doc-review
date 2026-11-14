@@ -131,7 +131,20 @@
 <p><code>SETPW</code> defines the initial vacuum setup pulse duration applied to the cruise servo the instant the driver presses the set switch.</p>
 <p>Prior to engagement, the cruise servo diaphragm is fully vented to atmospheric pressure, and throttle position is maintained exclusively by the driver foot on the accelerator pedal. When set is pressed, the engine controller must pre-charge the servo bellows with engine vacuum to take over the mechanical throttle load before the driver lifts off the accelerator. <code>SETPW</code> scales this pre-charge pulse duration across vehicle road speed, ensuring a seamless, imperceptible handoff without a sudden deceleration dip or forward jerk.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Set-Speed Sag / Dip</strong>:</li>
+<li>If releasing the accelerator pedal right after hitting set causes the car to momentarily sag or lose 1 to 2 mph, increase <code>SETPW</code> at that speed.</li>
+<li>Provides a longer initial vacuum pulse to build servo holding tension faster.</li>
+<li><strong>Set-Speed Surge / Pedal Kick</strong>:</li>
+<li>If the car surges forward with unexpected acceleration when tapping set, reduce <code>SETPW</code>.</li>
+<li>Prevents over-charging the vacuum servo diaphragm before driver pedal lift-off.</li>
+<li><strong>Speed-Scaled Progression</strong>:</li>
+<li>Factory values scale from 0.49 seconds at 35 mph up to 0.94 seconds at 85 mph, compensating for higher aerodynamic load at highway velocities.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect the instant the driver presses the SET button, delivering an initial vacuum setup pulse to take the slack out of the servo bellows.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>CruiseBumpUpSpeedBy2Mph</code> (<code>T-SMEC_v19.asm:8648-8653</code>), called from <code>ControlCruiseServo0_MM</code> at line 8620 when <code>sw2_CruiseSet</code> is pressed.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -142,18 +155,6 @@
 <li><code>ldaa CruiseSpeedSetpoint</code> loads target road speed in 0.5 mph increments.</li>
 <li><code>ldx #SETPW_CruiseControlSetupPulseForSet_FromSpeed</code> loads table pointer.</li>
 <li>Calls <code>Lookup4ByteTable</code> and clamps positive pulse in <code>Temp1</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Set-Speed Sag / Dip</strong>:</li>
-<li>If releasing the accelerator pedal right after hitting set causes the car to momentarily sag or lose 1 to 2 mph, increase <code>SETPW</code> at that speed.</li>
-<li>Provides a longer initial vacuum pulse to build servo holding tension faster.</li>
-<li><strong>Set-Speed Surge / Pedal Kick</strong>:</li>
-<li>If the car surges forward with unexpected acceleration when tapping set, reduce <code>SETPW</code>.</li>
-<li>Prevents over-charging the vacuum servo diaphragm before driver pedal lift-off.</li>
-<li><strong>Speed-Scaled Progression</strong>:</li>
-<li>Factory values scale from 0.49 seconds at 35 mph up to 0.94 seconds at 85 mph, compensating for higher aerodynamic load at highway velocities.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

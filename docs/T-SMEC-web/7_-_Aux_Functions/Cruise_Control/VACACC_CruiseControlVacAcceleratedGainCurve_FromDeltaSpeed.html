@@ -131,7 +131,20 @@
 <p><code>VACACC</code> establishes the high-authority accelerated vacuum servo gain curve deployed when large speed deficits occur or when the driver engages the resume function.</p>
 <p>Under standard steady cruising, the controller utilizes moderate proportional gain to avoid abrupt throttle movements. However, when resuming a saved highway cruising speed from a significantly lower speed, or when an aggressive hill causes vehicle speed to drop substantially below the target, the controller sets an accelerated cruise flag and switches to <code>VACACC</code>. This curve commands substantially wider vacuum solenoid duty cycles to rapidly pull open the throttle plate and return the vehicle briskly to its target setpoint.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Resume Responsiveness</strong>:</li>
+<li>Increasing <code>VACACC</code> delivers faster acceleration when the driver taps the resume switch from a lower road speed.</li>
+<li>Useful for heavier vehicles or taller overdrive gearing where factory resume feels lethargic.</li>
+<li><strong>Overshoot Suppression</strong>:</li>
+<li>If the vehicle surges past the target setpoint by several miles per hour upon resuming, reduce the upper points of <code>VACACC</code>.</li>
+<li>Gated by <a href="../../7_-_Aux_Functions/Cruise_Control/ACLRST_CruiseControlDeltaSpeedToResetAccFlag.html"><code>ACLRST</code></a>: once road speed is within 4.5 mph of setpoint, the controller drops out of accelerated cruise and returns to <a href="../../7_-_Aux_Functions/Cruise_Control/VACREG_CruiseControlVacRegularGainGurve_FromDeltaSpeed.html"><code>VACREG</code></a>.</li>
+<li><strong>Aftermarket Throttle Bodies</strong>:</li>
+<li>Larger 52mm or 58mm throttle bodies flow significantly more air at moderate openings; soften <code>VACACC</code> to maintain OEM-like composure.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect while cruise control is engaged with a large speed deficit or during Resume, applying accelerated vacuum servo pulses to pull vehicle speed back up rapidly.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8879-8889</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -142,18 +155,6 @@
 <li>Tested at line 8879 via <code>brclr *CruiseStatus, #$%01000000, L1782</code>.</li>
 <li>When bit 6 is set, loads <code>ldx #VACACC_CruiseControlVacAcceleratedGainCurve_FromDeltaSpeed</code>.</li>
 <li>Compares speed deficit against <a href="../../7_-_Aux_Functions/Cruise_Control/ACLRST_CruiseControlDeltaSpeedToResetAccFlag.html"><code>ACLRST</code></a> at line 8886; if deficit is smaller, clears bit 6 to return to normal gain.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Resume Responsiveness</strong>:</li>
-<li>Increasing <code>VACACC</code> delivers faster acceleration when the driver taps the resume switch from a lower road speed.</li>
-<li>Useful for heavier vehicles or taller overdrive gearing where factory resume feels lethargic.</li>
-<li><strong>Overshoot Suppression</strong>:</li>
-<li>If the vehicle surges past the target setpoint by several miles per hour upon resuming, reduce the upper points of <code>VACACC</code>.</li>
-<li>Gated by <a href="../../7_-_Aux_Functions/Cruise_Control/ACLRST_CruiseControlDeltaSpeedToResetAccFlag.html"><code>ACLRST</code></a>: once road speed is within 4.5 mph of setpoint, the controller drops out of accelerated cruise and returns to <a href="../../7_-_Aux_Functions/Cruise_Control/VACREG_CruiseControlVacRegularGainGurve_FromDeltaSpeed.html"><code>VACREG</code></a>.</li>
-<li><strong>Aftermarket Throttle Bodies</strong>:</li>
-<li>Larger 52mm or 58mm throttle bodies flow significantly more air at moderate openings; soften <code>VACACC</code> to maintain OEM-like composure.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

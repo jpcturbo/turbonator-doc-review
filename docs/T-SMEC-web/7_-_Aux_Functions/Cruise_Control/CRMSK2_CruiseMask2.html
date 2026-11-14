@@ -116,7 +116,19 @@
 <p><code>CRMSK2</code> defines the positive accumulated servo error threshold for incrementing the adaptive integrator trim.</p>
 <p>While proportional gain curves respond immediately to transient speed changes, persistent highway grades require a steady increase in baseline throttle opening to prevent steady-state speed sag. When accumulated speed error exceeds <code>CRMSK2</code>, the engine controller recognizes that the vehicle is experiencing sustained resistance and increments the learned integrator trim by <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK7_CruiseMask7.html"><code>CRMSK7</code></a>. In factory calibrations, <code>CRMSK2</code> is set to 7 counts, establishing a tight threshold for initiating uphill compensation.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Uphill Trim Activation</strong>:</li>
+<li>Initiates ramp-up of adaptive trim <code>BitFlags_27</code> when accumulated error exceeds <code>CRMSK2</code>.</li>
+<li>Eliminates steady-state speed droop on extended highway inclines.</li>
+<li><strong>Deadband Sizing</strong>:</li>
+<li>Factory 7 counts prevents transient road bumps from triggering long-term trim changes.</li>
+<li><strong>Symmetrical Limiting</strong>:</li>
+<li>Pairs symmetrically with negative error threshold <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK3_CruiseMask3.html"><code>CRMSK3</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during cruise switch reading, masking and testing secondary digital switch inputs from the multifunction steering column lever.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8766-8769</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -126,17 +138,6 @@
 <li>Evaluates accumulated error in accumulator A via <code>cmpa CRMSK2</code> at line 8766.</li>
 <li>If greater (<code>bgt L1762</code>), branches to increment integrator <code>BitFlags_27</code> by <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK7_CruiseMask7.html"><code>CRMSK7</code></a>.</li>
 <li>If lower or equal, proceeds to test negative threshold <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK3_CruiseMask3.html"><code>CRMSK3</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Uphill Trim Activation</strong>:</li>
-<li>Initiates ramp-up of adaptive trim <code>BitFlags_27</code> when accumulated error exceeds <code>CRMSK2</code>.</li>
-<li>Eliminates steady-state speed droop on extended highway inclines.</li>
-<li><strong>Deadband Sizing</strong>:</li>
-<li>Factory 7 counts prevents transient road bumps from triggering long-term trim changes.</li>
-<li><strong>Symmetrical Limiting</strong>:</li>
-<li>Pairs symmetrically with negative error threshold <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK3_CruiseMask3.html"><code>CRMSK3</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

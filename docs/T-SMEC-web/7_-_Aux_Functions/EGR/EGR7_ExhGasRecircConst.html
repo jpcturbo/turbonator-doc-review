@@ -117,21 +117,22 @@
 <p>During Phase 2, the engine controller commands the EGR valve closed, cutting off inert exhaust gas into the cylinders. This causes combustion air/fuel ratio to shift lean, forcing the closed-loop integrator to ramp richer to restore stoichiometry. The controller subtracts the filtered Phase 1 baseline trim (<code>EGRVar5</code>) from the peak Phase 2 trim (<code>EGRVar6</code>) and compares the delta against <code>EGR7</code> at line 5506.</p>
 <p>The factory setting of 0 counts requires any positive fuel trim shift to confirm gas flow and pass the test.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Raising EGR7</strong>: Demands a more pronounced fuel trim shift (richer integration) when the EGR valve shuts off. Enhances diagnostic stringency on stock engines, but can trigger false failures if EGR passages are moderately carbon-fouled.</li>
+<li><strong>Factory Setting (0 counts)</strong>: Any positive shift between peak Phase 2 ramp and Phase 1 baseline passes the test, maximizing monitor completion under varied weather and fuel conditions.</li>
+<li><strong>EGR Block-Off Reality</strong>: When an EGR block-off plate is installed, no exhaust gas flows; closing the valve produces zero fuel trim shift, causing the delta to stay below <code>EGR7</code> and eventually setting Fault Code 32 unless <a href="../../7_-_Aux_Functions/EGR/EGR1_ExhGasRecircConst.html"><code>EGR1</code></a> or <code>cfg_EGR</code> is adjusted.</li>
+<li><strong>Diagnostic Pass Actions</strong>: Passing the test immediately clears <code>EGRVar1</code> (failure counter), latches bit 6 in <code>EGRVar2</code>, and clears bit 7 in <code>b46_IPL2</code> (clearing active Fault Code 32).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle cruising, modulating the exhaust gas recirculation (EGR) solenoid duty cycle to control combustion temperatures.</p>
 <ul>
 <li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5506.</li>
 <li><strong>State Condition</strong>: Phase 2 active (<code>EGRVar2</code> bit 7 set) and all Phase 2 window checks passed.</li>
 <li><strong>Calculated Delta</strong>: <code>Counter_PrimaryAndSecondaryRamp - EGRVar5</code> stored in <code>EGRVar7</code> (RAM address 0x00A1).</li>
 <li><strong>Comparison</strong>: <code>cmpa EGR7_ExhGasRecircConst</code> at line 5506.</li>
 <li><strong>Branch Behavior</strong>: If delta &gt;= <code>EGR7</code>, advances to <code>L1469</code> (clears failure counter <code>EGRVar1</code>, sets pass bit 6 in <code>EGRVar2</code>, clears fault bit 7 in <code>b46_IPL2</code>, and restores EGR to on). If delta &lt; <code>EGR7</code>, branches to <code>L1474</code> to keep checking until timeout.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Raising EGR7</strong>: Demands a more pronounced fuel trim shift (richer integration) when the EGR valve shuts off. Enhances diagnostic stringency on stock engines, but can trigger false failures if EGR passages are moderately carbon-fouled.</li>
-<li><strong>Factory Setting (0 counts)</strong>: Any positive shift between peak Phase 2 ramp and Phase 1 baseline passes the test, maximizing monitor completion under varied weather and fuel conditions.</li>
-<li><strong>EGR Block-Off Reality</strong>: When an EGR block-off plate is installed, no exhaust gas flows; closing the valve produces zero fuel trim shift, causing the delta to stay below <code>EGR7</code> and eventually setting Fault Code 32 unless <a href="../../7_-_Aux_Functions/EGR/EGR1_ExhGasRecircConst.html"><code>EGR1</code></a> or <code>cfg_EGR</code> is adjusted.</li>
-<li><strong>Diagnostic Pass Actions</strong>: Passing the test immediately clears <code>EGRVar1</code> (failure counter), latches bit 6 in <code>EGRVar2</code>, and clears bit 7 in <code>b46_IPL2</code> (clearing active Fault Code 32).</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

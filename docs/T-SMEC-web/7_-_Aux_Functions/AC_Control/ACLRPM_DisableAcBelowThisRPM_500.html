@@ -116,7 +116,18 @@
 <p><code>ACLRPM</code> defines the low engine speed emergency anti-stall cutout threshold for the air conditioning compressor clutch.</p>
 <p>An automotive air conditioning compressor imposes several horsepower of mechanical parasitic drag on the engine crankshaft. If engine speed suddenly plummets due to abrupt clutch release, panic braking with locked wheels, or idle air instability, dragging the mechanical compressor will cause the engine to stall. In factory calibrations, <code>ACLRPM</code> is set to 4000 counts (corresponding to 500 RPM in 16-bit word format). When engine speed drops below this safety floor, the controller immediately de-energizes the A/C clutch relay, dumping compressor load so the engine can catch and revive.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Lightweight Flywheel Anti-Stall</strong>:</li>
+<li>Raise <code>ACLRPM</code> to 600 to 700 RPM to dump compressor drag sooner during rapid deceleration dips.</li>
+<li><strong>Performance Camshaft Lope</strong>:</li>
+<li>Ensure <code>ACLRPM</code> sits comfortably below the lowest trough of idle lope to prevent unwanted A/C disengagement.</li>
+<li><strong>Lower Limit Rule</strong>:</li>
+<li>Keep at or above 450 RPM to protect against stalling during panic stops.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect whenever engine RPM drops dangerously low near stall speed while the air conditioning is operating, cutting compressor clutch drag so the engine can catch and revive.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>ControlAirConditioning_MM</code> (<code>T-SMEC_v19.asm:1633-1657</code>), instruction line 1651.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -125,16 +136,6 @@
 <li>Compares 16-bit <code>EngineRpm_HB</code> against <code>ACLRPM_DisableAcBelowThisRPM_500</code> at line 1651.</li>
 <li>If <code>EngineRpm_HB &lt; ACLRPM</code> (carry set), falls through to <code>SHUTOFF_AIRCONDITIONING</code> at line 1653.</li>
 <li>Disengages A/C clutch relay by setting <code>pia1abuf_ACRelay</code> in <code>PIA1_A_Buffer</code> (active-low drive).</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Lightweight Flywheel Anti-Stall</strong>:</li>
-<li>Raise <code>ACLRPM</code> to 600 to 700 RPM to dump compressor drag sooner during rapid deceleration dips.</li>
-<li><strong>Performance Camshaft Lope</strong>:</li>
-<li>Ensure <code>ACLRPM</code> sits comfortably below the lowest trough of idle lope to prevent unwanted A/C disengagement.</li>
-<li><strong>Lower Limit Rule</strong>:</li>
-<li>Keep at or above 450 RPM to protect against stalling during panic stops.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

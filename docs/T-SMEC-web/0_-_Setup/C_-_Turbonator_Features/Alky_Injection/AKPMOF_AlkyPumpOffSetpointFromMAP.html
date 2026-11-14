@@ -117,20 +117,21 @@
 <p>Once energized by high boost pressure, the delivery pump must remain running until boost drops cleanly below the operational window. <code>AKPMOF</code> provides the lower boundary of a hysteresis loop, preventing rapid pump relay cycling and pressure fluctuations during transient throttle adjustments.</p>
 <p>The factory setting is 255 counts (disabled).</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Hysteresis Band</strong>: Calibrate roughly 1 to 2 psi below <a href="../../../0_-_Setup/C_-_Turbonator_Features/Alky_Injection/AKPMON_AlkyPumpOnSetpointFromMAP.html"><code>AKPMON</code></a> to prevent relay chatter.</li>
+<li><strong>Threshold Ordering</strong>: <code>AKPMOF</code> must always be calibrated lower than <a href="../../../0_-_Setup/C_-_Turbonator_Features/Alky_Injection/AKPMON_AlkyPumpOnSetpointFromMAP.html"><code>AKPMON</code></a>.</li>
+<li><strong>Deactivation Baseline</strong>: Factory setting of 255 counts keeps the feature inactive.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect as boost falls off, shutting down the water/methanol injection delivery pump.</p>
 <ul>
 <li>Enclosed in subroutine <code>AlkyPump_CheckHysteresisAndTurnOff</code> at lines 10578-10585 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
 <li>Evaluated when <code>MapValue</code> falls below <a href="../../../0_-_Setup/C_-_Turbonator_Features/Alky_Injection/AKPMON_AlkyPumpOnSetpointFromMAP.html"><code>AKPMON</code></a> in <code>MM_AlkyPump_Control</code>.</li>
 <li>In active firmware, this subroutine is commented out with semicolons in <a href="../../../T-SMEC_v19.asm.html"><code>T-SMEC_v19.asm</code></a> (as documented in <code>smec_anomaly.md</code>), meaning the controller does not execute these instructions unless uncommented in source.</li>
 <li>Comparison: <code>cmpa AKPMOF_AlkyPumpOffSetpointFromMAP</code> against <code>MapValue</code> (line 10579).</li>
 <li>If <code>MapValue &gt;= AKPMOF</code> (<code>bcc AlkyPump_Return</code>), the pump remains energized. If <code>MapValue &lt; AKPMOF</code>, line 10581 clears <code>PortA_PurgeEGR</code> to shut off the pump.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Hysteresis Band</strong>: Calibrate roughly 1 to 2 psi below <a href="../../../0_-_Setup/C_-_Turbonator_Features/Alky_Injection/AKPMON_AlkyPumpOnSetpointFromMAP.html"><code>AKPMON</code></a> to prevent relay chatter.</li>
-<li><strong>Threshold Ordering</strong>: <code>AKPMOF</code> must always be calibrated lower than <a href="../../../0_-_Setup/C_-_Turbonator_Features/Alky_Injection/AKPMON_AlkyPumpOnSetpointFromMAP.html"><code>AKPMON</code></a>.</li>
-<li><strong>Deactivation Baseline</strong>: Factory setting of 255 counts keeps the feature inactive.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

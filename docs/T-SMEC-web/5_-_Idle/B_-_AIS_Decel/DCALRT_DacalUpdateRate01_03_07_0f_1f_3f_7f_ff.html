@@ -118,16 +118,7 @@
 <p><code>DCALRT</code> masks the main program loop counter to enforce a slow learning rate.</p>
 <p>In factory calibrations, <code>DCALRT</code> is set to 127 counts, representing a binary bitmask allowing the integrator to adjust only once every 128 main loop passes, or approximately every 1.4 seconds.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1977</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Steady-state idle confirmed, run time &gt; <a href="../../5_-_Idle/B_-_AIS_Decel/DCALTM_DacalInhibitTimeAfterStartup.html"><code>DCALTM</code></a>, and coolant temp &gt; <a href="../../5_-_Idle/B_-_AIS_Decel/DATHOT_EngineTempToStartCalibratingDacal.html"><code>DATHOT</code></a>.</li>
-<li>Bitwise AND of <code>Counter_MainLoop</code> with <code>DCALRT</code> must equal zero at lines 1933-1935 (<code>bitb DCALRT_DacalUpdateRate; bne L1072</code>).</li>
-<li>If non-zero, skips the adaptive integrator update and advances to line 1951.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Dyno Tuning &amp; Fast Learning</strong>:</li>
 <li>Temporarily lower <code>DCALRT</code> to 31 or 15 counts during dyno calibration to accelerate adaptive airflow learning.</li>
@@ -135,6 +126,16 @@
 <li>Retain factory setting of 127 counts (every 128th loop) for normal driving to ensure long-term stability and filter out short-term vacuum perturbations.</li>
 <li><strong>Mask Formatting</strong>:</li>
 <li>Must be configured as a power-of-two minus one value (15, 31, 63, 127, 255).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect at closed throttle idle to regulate ff.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1977</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Steady-state idle confirmed, run time &gt; <a href="../../5_-_Idle/B_-_AIS_Decel/DCALTM_DacalInhibitTimeAfterStartup.html"><code>DCALTM</code></a>, and coolant temp &gt; <a href="../../5_-_Idle/B_-_AIS_Decel/DATHOT_EngineTempToStartCalibratingDacal.html"><code>DATHOT</code></a>.</li>
+<li>Bitwise AND of <code>Counter_MainLoop</code> with <code>DCALRT</code> must equal zero at lines 1933-1935 (<code>bitb DCALRT_DacalUpdateRate; bne L1072</code>).</li>
+<li>If non-zero, skips the adaptive integrator update and advances to line 1951.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

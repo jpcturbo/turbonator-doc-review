@@ -116,7 +116,19 @@
 <p><code>CRMSK3</code> defines the negative accumulated servo error threshold for decrementing the adaptive integrator trim.</p>
 <p>When descending long highway grades or following sustained tailwinds, vehicle momentum causes speed to sit persistently above target. If accumulated error falls below <code>CRMSK3</code>, the engine controller recognizes that the vehicle is overspeeding and decrements the learned integrator trim by <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK4_CruiseMask4.html"><code>CRMSK4</code></a>. In factory calibrations, <code>CRMSK3</code> is set to 244 counts (representing negative 12 signed counts), establishing the trigger boundary for shedding learned uphill throttle trim.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Downhill Trim Shedding</strong>:</li>
+<li>Initiates ramp-down of adaptive trim <code>BitFlags_27</code> when negative error falls below <code>CRMSK3</code>.</li>
+<li>Sheds extra throttle angle learned while climbing previous hills.</li>
+<li><strong>Signed Arithmetic</strong>:</li>
+<li>Stored as negative 12 signed counts, evaluated with signed comparison instructions.</li>
+<li><strong>Companion Parameter</strong>:</li>
+<li>Pairs with positive error threshold <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK2_CruiseMask2.html"><code>CRMSK2</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during cruise switch reading, masking and testing tertiary digital switch inputs from the multifunction steering column lever.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8768-8770</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -126,17 +138,6 @@
 <li>Compares accumulated error against <code>CRMSK3</code> via <code>cmpa CRMSK3</code> at line 8768.</li>
 <li>If greater or equal (<code>bge L1764</code>), error is within deadband and trim is unchanged.</li>
 <li>If lower, decrements <code>BitFlags_27</code> by <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK4_CruiseMask4.html"><code>CRMSK4</code></a> at line 8770.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Downhill Trim Shedding</strong>:</li>
-<li>Initiates ramp-down of adaptive trim <code>BitFlags_27</code> when negative error falls below <code>CRMSK3</code>.</li>
-<li>Sheds extra throttle angle learned while climbing previous hills.</li>
-<li><strong>Signed Arithmetic</strong>:</li>
-<li>Stored as negative 12 signed counts, evaluated with signed comparison instructions.</li>
-<li><strong>Companion Parameter</strong>:</li>
-<li>Pairs with positive error threshold <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK2_CruiseMask2.html"><code>CRMSK2</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -116,13 +116,7 @@
 <p><code>O2HSWP_HighLimitForO2RampSwitching</code> is the <strong>upper voltage switching threshold</strong> used by the closed-loop air/fuel ratio controller to detect when the exhaust mixture has transitioned to the <strong>RICH</strong> side of stoichiometric (14.7:1 AFR for gasoline).</p>
 <p>A narrow-band zirconia oxygen sensor outputs a non-linear S-curve voltage: typically 0.1V when lean and 0.9V when rich, with an extremely steep cliff around 0.45V to 0.50V. When the sensor voltage climbs equal to or above <code>O2HSWP</code>, the ECU confirms that excess fuel is present in the exhaust gas and immediately initiates fuel enleanment ramps to drive the mixture back toward stoichiometry.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<p><code>O2HSWP</code> is active whenever the fuel feedback loop is closed:
-* <strong>Closed-Loop Active:</strong> Bit 4 of <code>BitFlags_81</code> is set (warm engine, delay expired, sensor valid).
-* <strong>Part-Throttle / Idle Cruise:</strong> Engine is operating within closed-loop MAP limits (not at WOT or under high-boost power enrichment).
-* <strong>Sensor Voltage Evaluation:</strong> Evaluated on every O2 sampling loop. If <code>O2SensorVolts &gt;= O2HSWP</code>, branch to <code>O2Signal_AboveToggle</code>.</p>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Pairing with <a href="../Fuel_-_O2_Controller/O2LSWP_LowLimitForO2RampSwitching.html"><code>O2LSWP</code></a>:</strong> <code>O2HSWP</code> (<code>0x19</code> ≈ 0.488V) works as a tight hysteresis pair with <a href="../Fuel_-_O2_Controller/O2LSWP_LowLimitForO2RampSwitching.html"><code>O2LSWP</code></a> (<code>0x18</code> ≈ 0.469V). This tight 19mV window ensures rapid, responsive switching around the narrow-band midpoint.</li>
 <li><strong>Raising <code>O2HSWP</code> (e.g., to <code>0x22</code> / 0.66V):</strong></li>
@@ -131,6 +125,13 @@
 <li><strong>Lowering <code>O2HSWP</code>:</strong></li>
 <li>Narrowing the gap between high and low switch points makes the feedback loop twitchy, increasing susceptibility to electrical noise in the sensor wiring.</li>
 </ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect in closed-loop cruise, establishing the rich-to-lean switching threshold for air-fuel ratio control.</p>
+<p><code>O2HSWP</code> is active whenever the fuel feedback loop is closed:
+* <strong>Closed-Loop Active:</strong> Bit 4 of <code>BitFlags_81</code> is set (warm engine, delay expired, sensor valid).
+* <strong>Part-Throttle / Idle Cruise:</strong> Engine is operating within closed-loop MAP limits (not at WOT or under high-boost power enrichment).
+* <strong>Sensor Voltage Evaluation:</strong> Evaluated on every O2 sampling loop. If <code>O2SensorVolts &gt;= O2HSWP</code>, branch to <code>O2Signal_AboveToggle</code>.</p>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>
 <p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 3132â€“3141):</p>

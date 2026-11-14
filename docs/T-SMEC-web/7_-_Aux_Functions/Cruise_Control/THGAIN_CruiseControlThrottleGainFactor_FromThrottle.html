@@ -129,7 +129,19 @@
 <p><code>THGAIN</code> provides a progressive throttle position gain correction factor applied to the cruise servo command based on throttle opening angle above idle.</p>
 <p>Mechanical butterfly throttle bodies possess non-linear airflow characteristics: cracking the throttle blade open by 2 degrees at near-idle conditions yields a large percentage increase in engine airflow, whereas a 2-degree movement at 30 percent throttle yields a much smaller percentage airflow change. <code>THGAIN</code> compensates for this non-linear airflow curve by adjusting servo pulse authority as a function of throttle position sensor voltage, linearizing cruise control authority across all throttle angles.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Aftermarket Throttle Bodies (52mm / 58mm)</strong>:</li>
+<li>Larger throttle bodies flow substantially more air at small opening angles.</li>
+<li>Lowering <code>THGAIN</code> prevents cruise control twitchiness and surging on oversized throttle setups.</li>
+<li><strong>High-Load Hill Climbing</strong>:</li>
+<li>Increasing <code>THGAIN</code> boosts servo pull authority as throttle angle increases, helping maintain speed up steep grades.</li>
+<li><strong>Additive Gain Matrix</strong>:</li>
+<li>The output of <code>THGAIN</code> is stored in scratch RAM <code>Temp4</code> and added directly to <a href="../../7_-_Aux_Functions/Cruise_Control/SPGAIN_CruiseControlSpeedGainFactor_FromSpeed.html"><code>SPGAIN</code></a> (speed gain factor) to generate combined servo gain <code>Temp3</code>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during cruise control operation, applying a progressive servo gain correction based on throttle opening angle.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8896-8902</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -139,17 +151,6 @@
 <li>Subtracts closed-throttle baseline <code>MINTHR_LowestSessionTPS</code> from current <code>TpsVolts</code>.</li>
 <li>Looks up <code>THGAIN</code> via <code>Lookup4ByteTable</code> at line 8901.</li>
 <li>Stores result in <code>Temp4</code>, which is added to <a href="../../7_-_Aux_Functions/Cruise_Control/SPGAIN_CruiseControlSpeedGainFactor_FromSpeed.html"><code>SPGAIN</code></a> at line 8909.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Aftermarket Throttle Bodies (52mm / 58mm)</strong>:</li>
-<li>Larger throttle bodies flow substantially more air at small opening angles.</li>
-<li>Lowering <code>THGAIN</code> prevents cruise control twitchiness and surging on oversized throttle setups.</li>
-<li><strong>High-Load Hill Climbing</strong>:</li>
-<li>Increasing <code>THGAIN</code> boosts servo pull authority as throttle angle increases, helping maintain speed up steep grades.</li>
-<li><strong>Additive Gain Matrix</strong>:</li>
-<li>The output of <code>THGAIN</code> is stored in scratch RAM <code>Temp4</code> and added directly to <a href="../../7_-_Aux_Functions/Cruise_Control/SPGAIN_CruiseControlSpeedGainFactor_FromSpeed.html"><code>SPGAIN</code></a> (speed gain factor) to generate combined servo gain <code>Temp3</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -116,17 +116,7 @@
 <p><code>REVLMT5</code> defines the primary engine speed recovery threshold where fuel injection is restored after reaching the factory engine redline rev limiter under normal, fault-free operating conditions.</p>
 <p>To protect engine reciprocating components and valvetrain from valve float and mechanical over-rev damage, Chrysler engine controllers shut off fuel injection when engine speed reaches <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/B_-_Rev_Limiter/REVLMT6_RPMLimiterNormalOffRPM.html"><code>REVLMT6</code></a> (typically 6200 RPM in stock automatic calibrations). Once fuel is cut, engine speed decelerates rapidly. <code>REVLMT5</code> establishes the lower hysteresis boundary (184 counts, or approximately 5900 RPM in stock automatic calibrations) where fuel injection resumes. This intentional 300 RPM deadband between cutout and restoration ensures smooth engine speed governing without abusive high-frequency chattering.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>THROTTLESENSOR_OKAY2</code> (<code>T-SMEC_v19.asm:5791-5802</code>), called from <code>Cutout_DetermineLimpModeCutoutRPM</code> (<code>T-SMEC_v19.asm:5776-5811</code>).</li>
-<li><strong>Operating State</strong>:</li>
-<li>Evaluated when <code>Turbonator_MainFuelOff</code> is set under normal operating conditions (MAP sensor valid, TPS valid, throttle off-idle).</li>
-<li><strong>Comparison &amp; Restoration</strong>:</li>
-<li>Index register X is loaded with <code>#REVLMT5_RPMLimiterNormalOnRPM</code> at line 5801 (<code>L1492</code>).</li>
-<li>In <code>CHECK_IFOVER_1850_2000_6167RPM</code>, if <code>EngineRpm_HB &lt; REVLMT5</code> (and vehicle speed conditions pass), execution branches to <code>Cutout_TurnFuelBackOn</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Synchronized Adjustment with REVLMT6</strong>:</li>
 <li>Always raise <code>REVLMT5</code> when raising <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/B_-_Rev_Limiter/REVLMT6_RPMLimiterNormalOffRPM.html"><code>REVLMT6</code></a>. Maintain a 200 to 300 RPM delta to ensure clean rev limiter cycling.</li>
@@ -135,6 +125,17 @@
 <li>Widening the gap to 400+ RPM softens the rev limiter action, useful for endurance or wet weather racing.</li>
 <li><strong>Inversion Hazard</strong>:</li>
 <li>Setting <code>REVLMT5 &gt;= REVLMT6</code> causes the engine to shut off fuel indefinitely once redline is touched.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect at elevated engine RPM, establishing a secondary over-rev fuel shutoff threshold.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>THROTTLESENSOR_OKAY2</code> (<code>T-SMEC_v19.asm:5791-5802</code>), called from <code>Cutout_DetermineLimpModeCutoutRPM</code> (<code>T-SMEC_v19.asm:5776-5811</code>).</li>
+<li><strong>Operating State</strong>:</li>
+<li>Evaluated when <code>Turbonator_MainFuelOff</code> is set under normal operating conditions (MAP sensor valid, TPS valid, throttle off-idle).</li>
+<li><strong>Comparison &amp; Restoration</strong>:</li>
+<li>Index register X is loaded with <code>#REVLMT5_RPMLimiterNormalOnRPM</code> at line 5801 (<code>L1492</code>).</li>
+<li>In <code>CHECK_IFOVER_1850_2000_6167RPM</code>, if <code>EngineRpm_HB &lt; REVLMT5</code> (and vehicle speed conditions pass), execution branches to <code>Cutout_TurnFuelBackOn</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

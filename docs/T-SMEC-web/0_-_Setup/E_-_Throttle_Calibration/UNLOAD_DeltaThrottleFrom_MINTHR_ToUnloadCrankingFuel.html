@@ -116,19 +116,7 @@
 <p><code>UNLOAD</code> establishes the throttle position sensor delta threshold that activates clear-flood mode during engine cranking.</p>
 <p>When an engine fails to start due to saturated cylinders or fuel-fouled spark plugs, pressing the accelerator pedal to the floor signals the controller to purge excess fuel. Configured in factory calibrations to one hundred thirty-three counts (approximately two point six one volts above closed throttle), <code>UNLOAD</code> is evaluated by the starting fuel calculation routine. If throttle position sensor voltage exceeds the learned closed-throttle baseline by <code>UNLOAD</code> while cranking, the controller branches to clear-flood mode, cutting fuel injection pulsewidths to zero so fresh air can clear the combustion chambers.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateInjectorPulsewidthForStarting_MM</code> (<code>T-SMEC_v19.asm:5546-5575</code>), instruction line 5558 (<code>cmpa UNLOAD_...</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Active only during engine cranking (<code>b54_FuelEngineNotRunning</code> is set).</li>
-<li><strong>Comparison &amp; Branch</strong>:</li>
-<li>Checks absolute throttle voltage against 0xD0 (<code>cmpa #0xd0; bcc ThrottleFlooredWhileStarting_UnloadFuel</code>).</li>
-<li>Subtracts <code>MINTHR_LowestSessionTPS</code> from <code>TpsVolts</code>.</li>
-<li>Line 5558 compares delta against <code>UNLOAD_DeltaThrottleFrom_MINTHR_ToUnloadCrankingFuel</code>.</li>
-<li>If higher or equal (<code>bcc</code>), branches to <code>ThrottleFlooredWhileStarting_UnloadFuel</code>, setting starting pulsewidth to zero.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Clear-Flood Protection</strong>:</li>
 <li>Flooring the throttle while cranking cuts fuel delivery, allowing flooded engines to purge raw fuel.</li>
@@ -138,6 +126,19 @@
 <li>Setting <code>UNLOAD</code> below eighty counts risks cutting cranking fuel during light-throttle starting attempts.</li>
 <li><strong>Factory Setting</strong>:</li>
 <li>Set to one hundred thirty-three counts (~2.61 Volts delta) in factory calibrations.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when an engine fails to start due to saturated cylinders or fuel-fouled spark plugs, pressing the accelerator pedal to the floor signals the controller to purge excess fuel.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateInjectorPulsewidthForStarting_MM</code> (<code>T-SMEC_v19.asm:5546-5575</code>), instruction line 5558 (<code>cmpa UNLOAD_...</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Active only during engine cranking (<code>b54_FuelEngineNotRunning</code> is set).</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Checks absolute throttle voltage against 0xD0 (<code>cmpa #0xd0; bcc ThrottleFlooredWhileStarting_UnloadFuel</code>).</li>
+<li>Subtracts <code>MINTHR_LowestSessionTPS</code> from <code>TpsVolts</code>.</li>
+<li>Line 5558 compares delta against <code>UNLOAD_DeltaThrottleFrom_MINTHR_ToUnloadCrankingFuel</code>.</li>
+<li>If higher or equal (<code>bcc</code>), branches to <code>ThrottleFlooredWhileStarting_UnloadFuel</code>, setting starting pulsewidth to zero.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

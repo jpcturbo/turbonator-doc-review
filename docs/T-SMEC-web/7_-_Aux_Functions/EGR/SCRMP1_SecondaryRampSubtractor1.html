@@ -117,21 +117,22 @@
 <p>In normal closed-loop operation, the engine controller looks up secondary ramp timing from a 2D table to pace how rapidly the oxygen sensor feedback counter toggles rich and lean. However, during Phase 2 EGR flow verification, the controller needs heightened sensitivity to detect the rapid exhaust gas composition change when the EGR valve shuts off.</p>
 <p>At line 3201 in the secondary ramp handler, if Phase 2 is active, the controller subtracts <code>SCRMP1</code> from the toggle timer instead of the standard table lookup value. The factory setting of 2 counts accelerates the oxygen sensor switching rate, ensuring rapid feedback response during the diagnostic test.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Raising SCRMP1</strong>: Accelerates the closed-loop oxygen sensor toggle rate during Phase 2 testing, improving detection speed on older or slower-responding narrowband sensors.</li>
+<li><strong>Lowering SCRMP1</strong>: Slows down the closed-loop integrator adjustment rate during Phase 2. Useful on modified engines with large fuel injectors to avoid overshooting stoichiometric fueling during the test.</li>
+<li><strong>EGR Diagnostic Cross-Coupling</strong>: Directly linked to <code>EGRVar2</code> bit 7; has no effect during normal driving outside of active Phase 2 flow verification.</li>
+<li><strong>Factory Calibration</strong>: 2 counts provides an optimal balance between fast transient detection and closed-loop fuel stability.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during closed-loop operation, establishing the secondary O2 ramp rate under low-speed conditions.</p>
 <ul>
 <li><strong>Enclosing Routine</strong>: <code>WorkWithSecondaryRamp</code> (lines 3195–3207), specifically at line 3201.</li>
 <li><strong>Called From</strong>: <code>ModifyO2FeedbackCountVarToMaintainStoich_MM</code> (line 3190).</li>
 <li><strong>Precondition Flag</strong>: Bit 7 of <code>EGRVar2</code> set (<code>brclr *EGRVar2, #bit_bit7, L1226</code> falls through to line 3201).</li>
 <li><strong>Calculation</strong>: <code>Timer_O2ToggleDuration - SCRMP1_SecondaryRampSubtractor1</code> evaluated in accumulator A.</li>
 <li><strong>Branch Behavior</strong>: Always executes <code>bra L1227</code> to check for toggle duration expiration (<code>bcc O2_SensorStuckOnOneSideTooLong</code>).</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Raising SCRMP1</strong>: Accelerates the closed-loop oxygen sensor toggle rate during Phase 2 testing, improving detection speed on older or slower-responding narrowband sensors.</li>
-<li><strong>Lowering SCRMP1</strong>: Slows down the closed-loop integrator adjustment rate during Phase 2. Useful on modified engines with large fuel injectors to avoid overshooting stoichiometric fueling during the test.</li>
-<li><strong>EGR Diagnostic Cross-Coupling</strong>: Directly linked to <code>EGRVar2</code> bit 7; has no effect during normal driving outside of active Phase 2 flow verification.</li>
-<li><strong>Factory Calibration</strong>: 2 counts provides an optimal balance between fast transient detection and closed-loop fuel stability.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

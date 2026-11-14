@@ -116,18 +116,7 @@
 <p><code>LOWBST</code> sets the fixed turbocharger gauge boost target ceiling enforced when switchable dual-boost control is enabled and the external boost switch is toggled to the low-boost position.</p>
 <p>When active, the engine controller compares this constant against the running minimum boost target calculated from the tables and enforces whichever value is lower. In factory Turbonator calibrations, this constant is set to 87 counts, corresponding to approximately 10.0 psi of positive boost pressure. This allows the driver to instantly reduce engine output for inclement weather, fuel conservation, valet operation, or pump-gas daily driving while retaining high boost on demand.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>LoadLoBoostAndLookup</code> (<code>T-SMEC_v19.asm:9493-9496</code>), called from <code>CheckBoostSwitch</code> (<code>T-SMEC_v19.asm:9469-9492</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Evaluated only when switchable boost option <code>opt_SwBoost</code> is set in <a href="../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1</code></a> and switch input matches low-boost state.</li>
-<li><strong>Logic Evaluation</strong>:</li>
-<li>Accumulator A loads <code>LOWBST_AllowedBoostLo</code> at line 9494.</li>
-<li>Calls <code>bsr KeepSmallerBoostGoal</code> (line 9495), which compares accumulator A with running minimum <code>Temp4</code> (<code>cmpa Temp4</code>).</li>
-<li>If accumulator A is smaller than <code>Temp4</code>, <code>Temp4</code> is updated with <code>LOWBST</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Low-Boost Target Ceiling</strong>:</li>
 <li>Defines the upper boost limit enforced when the cockpit toggle switch selects low-boost mode.</li>
@@ -138,6 +127,18 @@
 <li>Set <code>LOWBST</code> for safe pump-gas boost (12 to 14 psi) while calibrating <a href="../../3_-_Boost_Control/A_-_Target_Lookup/WSGRPM_AllowedBoost_FromRpm.html"><code>WSGRPM</code></a> for race-gas boost (20 to 25 psi).</li>
 <li><strong>Hierarchical Minimum Interaction</strong>:</li>
 <li><code>LOWBST</code> cannot force boost higher than <a href="../../3_-_Boost_Control/A_-_Target_Lookup/WSGRPM_AllowedBoost_FromRpm.html"><code>WSGRPM</code></a> or cold engine limits; it only restricts boost downward via <code>KeepSmallerBoostGoal</code>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the dashboard switchable boost toggle is switched to low-boost mode, clamping maximum boost to this conservative ceiling.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>LoadLoBoostAndLookup</code> (<code>T-SMEC_v19.asm:9493-9496</code>), called from <code>CheckBoostSwitch</code> (<code>T-SMEC_v19.asm:9469-9492</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Evaluated only when switchable boost option <code>opt_SwBoost</code> is set in <a href="../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1</code></a> and switch input matches low-boost state.</li>
+<li><strong>Logic Evaluation</strong>:</li>
+<li>Accumulator A loads <code>LOWBST_AllowedBoostLo</code> at line 9494.</li>
+<li>Calls <code>bsr KeepSmallerBoostGoal</code> (line 9495), which compares accumulator A with running minimum <code>Temp4</code> (<code>cmpa Temp4</code>).</li>
+<li>If accumulator A is smaller than <code>Temp4</code>, <code>Temp4</code> is updated with <code>LOWBST</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

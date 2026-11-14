@@ -128,12 +128,7 @@
 <p><code>BATOFF_FuelBatteryOffset</code> defines the <strong>injector dead time / battery latency compensation curve</strong> as a function of system electrical voltage.</p>
 <p>An electronic fuel injector is an electromagnetic solenoid with mechanical inertia. When the ECU grounds the injector circuit, electrical magnetic field buildup and pintle opening take a finite duration (typically 0.6 to 1.5 milliseconds) before fuel actually begins spraying. At lower system voltages (such as during starter cranking at 9–10V or when the alternator fails), the coil builds magnetic flux much more slowly, resulting in a longer opening delay. <code>BATOFF</code> adds an additional voltage-dependent pulse width offset to ensure that the actual effective fuel delivery matches the ECU's calculated target regardless of electrical system fluctuations.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<p><code>BATOFF</code> is looked up continuously on <strong>every single injection calculation</strong> (both cranking and running):
-* <strong>Lookup Input:</strong> Current system voltage A/D reading.
-* <strong>Math:</strong> Looked-up latency is shifted left (<code>asld</code>, multiplied by 2) and added directly to the calculated base pulse width immediately before the final hardware timer load.</p>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Aftermarket Injector Tuning:</strong></li>
 <li>When installing modern high-impedance or large aftermarket injectors (e.g., Bosch EV14s, Deka 60s, or RC injectors), setting accurate <code>BATOFF</code> values is <strong>critical</strong>. Different injector coils have vastly different opening latencies.</li>
@@ -143,6 +138,12 @@
 <li><strong>Idle Stability:</strong></li>
 <li>Because idle pulse widths are small (~1.5–2.5 ms), dead time makes up nearly 50% of the total commanded pulse width at idle! Accurate <code>BATOFF</code> data is essential for stable idle AFR.</li>
 </ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect continuously on every fuel injection pulse, adding battery voltage offset (dead time) to compensate for injector mechanical opening delays.</p>
+<p><code>BATOFF</code> is looked up continuously on <strong>every single injection calculation</strong> (both cranking and running):
+* <strong>Lookup Input:</strong> Current system voltage A/D reading.
+* <strong>Math:</strong> Looked-up latency is shifted left (<code>asld</code>, multiplied by 2) and added directly to the calculated base pulse width immediately before the final hardware timer load.</p>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>
 <p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 3859–3862):</p>

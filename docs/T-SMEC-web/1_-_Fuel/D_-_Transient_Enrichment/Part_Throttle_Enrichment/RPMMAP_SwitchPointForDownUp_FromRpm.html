@@ -134,21 +134,22 @@
 <p>During moderate to heavy acceleration before wide-open throttle is reached, the engine controller requires open-loop fuel enrichment to prevent lean misfires and assist turbocharger spool-up. The controller looks up the switchpoint from <code>RPMMAP</code> based on current engine speed and compares it to manifold absolute pressure.</p>
 <p>When manifold pressure exceeds the curve, the controller increments the open-loop enrichment multiplier. When manifold pressure falls below the curve, the controller decrements the enrichment multiplier back toward baseline. The factory curve transitions from positive boost of approximately 3.1 psi at 2900 RPM down to 9.2 psi of vacuum at 5200 RPM.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Enrichment Onset Threshold</strong>: Lowering table pressure values causes the controller to trigger part-throttle enrichment earlier in the manifold pressure sweep, eliminating lean flat spots and hesitation during moderate pedal tip-in.</li>
+<li><strong>Highway Cruise Economy</strong>: Raising table pressure values delays enrichment until higher manifold boost levels are attained, improving fuel economy during light-load highway cruising.</li>
+<li><strong>3-Bar MAP Recalibration</strong>: When tuning vehicles converted to 3-bar MAP sensors, rescale table pressure values so that the intended boost and vacuum trigger boundaries correspond accurately to the new sensor voltage scaling.</li>
+<li><strong>Camshaft and Drivability Matching</strong>: Engines with high-flow cylinder heads or free-flowing exhaust systems spool turbos faster, often benefiting from a flatter threshold curve that enriches fueling as soon as positive manifold pressure builds.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during moderate to heavy acceleration before wide-open throttle is reached, the engine controller requires open-loop fuel enrichment to prevent lean misfires and assist turbocharger spool-up.</p>
 <ul>
 <li>Enclosed in routine <code>CalculatePartThrottleEnrichmentAndSparkScatterFuel_MM</code> at lines 5840-5863 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
 <li>Evaluated periodically during main loop fuel scheduling.</li>
 <li>Looked up via <code>jsr Lookup4ByteTable</code> at line 5843 with pointer <code>ldx #RPMMAP_SwitchPointForDownUp_FromRpm</code> using <code>EngineRpm_HB</code>.</li>
 <li>Comparison against manifold pressure: <code>cmpa MapValue</code> at line 5844.</li>
 <li>Polarity: Line 5845 rotates the carry flag into bit 7 via <code>rora</code>. Instruction <code>anda #0x80</code> leaves bit 7 intact. If <code>MapValue &gt; RPMMAP</code>, <code>bmi MAPAbove_RPMMAP</code> branches to select <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTENR_EppPerAmountForIncreasing.html"><code>PTENR</code></a> (increasing enrichment). If <code>MapValue &lt;= RPMMAP</code>, execution falls through to <code>MAPBelow_RPMMAP</code>, advancing the pointer via <code>inx; inx</code> to select <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTENR2_EppPerAmountForDecreasingMultiplier.html"><code>PTENR2</code></a> and <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTENRD_AmountForDecreasingMultiplier_Negative.html"><code>PTENRD</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Enrichment Onset Threshold</strong>: Lowering table pressure values causes the controller to trigger part-throttle enrichment earlier in the manifold pressure sweep, eliminating lean flat spots and hesitation during moderate pedal tip-in.</li>
-<li><strong>Highway Cruise Economy</strong>: Raising table pressure values delays enrichment until higher manifold boost levels are attained, improving fuel economy during light-load highway cruising.</li>
-<li><strong>3-Bar MAP Recalibration</strong>: When tuning vehicles converted to 3-bar MAP sensors, rescale table pressure values so that the intended boost and vacuum trigger boundaries correspond accurately to the new sensor voltage scaling.</li>
-<li><strong>Camshaft and Drivability Matching</strong>: Engines with high-flow cylinder heads or free-flowing exhaust systems spool turbos faster, often benefiting from a flatter threshold curve that enriches fueling as soon as positive manifold pressure builds.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

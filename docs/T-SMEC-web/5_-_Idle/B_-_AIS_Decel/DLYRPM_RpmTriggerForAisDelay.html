@@ -117,17 +117,7 @@
 <p>When the accelerator pedal is released at a standstill, the severity of the deceleration depends heavily on engine speed. If the engine was merely idling or gently revved below <code>DLYRPM</code>, a brief dashpot delay (<a href="../../5_-_Idle/B_-_AIS_Decel/DLYTM2_AisDelayAfterThrottleClosesWhenStopped.html"><code>DLYTIM2</code></a>) is sufficient to catch the engine smoothly. However, if the engine was revved to high RPM above <code>DLYRPM</code>, the extended dashpot delay (<a href="../../5_-_Idle/B_-_AIS_Decel/DLYTM3_AisDelayAfterThrottleClosesWhenRpmAbove_DLYRPM.html"><code>DLYTM3</code></a>) is required to ensure safe recovery.</p>
 <p>In factory calibrations, <code>DLYRPM</code> is set to 94 counts, corresponding to an engine speed threshold of approximately 1504 RPM (nominally 1500 RPM).</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>CheckThrottle_AtIdle</code> (<code>T-SMEC_v19.asm:7867-7895</code>) within <code>CheckThrottleRoutine_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Closed throttle detected at low vehicle speed (&lt;= <a href="../../5_-_Idle/B_-_AIS_Decel/MPHREF_SwitchPointForDecelIdleAisControl.html"><code>MPHREF</code></a>).</li>
-<li>Loads <code>EngineRpm_HB</code> into accumulator B at line 7882.</li>
-<li>Compares accumulator B against <code>DLYRPM</code> at line 7883 (<code>cmpb DLYRPM_RpmTriggerForAisDelay</code>).</li>
-<li>If RPM &gt;= <code>DLYRPM</code> (<code>bcc</code>), uses <a href="../../5_-_Idle/B_-_AIS_Decel/DLYTM3_AisDelayAfterThrottleClosesWhenRpmAbove_DLYRPM.html"><code>DLYTM3</code></a>; if RPM &lt; <code>DLYRPM</code>, falls through to load <a href="../../5_-_Idle/B_-_AIS_Decel/DLYTM2_AisDelayAfterThrottleClosesWhenStopped.html"><code>DLYTIM2</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Split Point Optimization</strong>:</li>
 <li>Raise <code>DLYRPM</code> to 1800 to 2000 RPM to keep light throttle blips quick and responsive on the shorter <a href="../../5_-_Idle/B_-_AIS_Decel/DLYTM2_AisDelayAfterThrottleClosesWhenStopped.html"><code>DLYTIM2</code></a> timer.</li>
@@ -135,6 +125,17 @@
 <li>If an aggressive camshaft tends to stall when revved past 1400 RPM, keep <code>DLYRPM</code> at or below 1500 RPM so extended dashpot protection engages early.</li>
 <li><strong>Scaling Mechanics</strong>:</li>
 <li>1 count = 16 RPM on the 8-bit scale (94 counts = 1504 RPM).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the throttle snaps shut at low vehicle speed, switching between standard and extended idle dashpot hold timers based on engine RPM.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CheckThrottle_AtIdle</code> (<code>T-SMEC_v19.asm:7867-7895</code>) within <code>CheckThrottleRoutine_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Closed throttle detected at low vehicle speed (&lt;= <a href="../../5_-_Idle/B_-_AIS_Decel/MPHREF_SwitchPointForDecelIdleAisControl.html"><code>MPHREF</code></a>).</li>
+<li>Loads <code>EngineRpm_HB</code> into accumulator B at line 7882.</li>
+<li>Compares accumulator B against <code>DLYRPM</code> at line 7883 (<code>cmpb DLYRPM_RpmTriggerForAisDelay</code>).</li>
+<li>If RPM &gt;= <code>DLYRPM</code> (<code>bcc</code>), uses <a href="../../5_-_Idle/B_-_AIS_Decel/DLYTM3_AisDelayAfterThrottleClosesWhenRpmAbove_DLYRPM.html"><code>DLYTM3</code></a>; if RPM &lt; <code>DLYRPM</code>, falls through to load <a href="../../5_-_Idle/B_-_AIS_Decel/DLYTM2_AisDelayAfterThrottleClosesWhenStopped.html"><code>DLYTIM2</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -133,16 +133,7 @@
 1. <strong>Low RPM Coast / Decel near Idle (Point 1, ~896 RPM):</strong> The table value is <code>0xFA</code> (-6 in two's complement). This negative value subtracts fuel from <code>Temp0</code> to prevent over-fueling and plug fouling as the engine drops down to idle.
 2. <strong>Mid-to-High RPM Closed Throttle Deceleration (Points 2–4, 1440 to 2240+ RPM):</strong> The values transition to positive (<code>0x0A</code> = +10, <code>0x20</code> = +32, <code>0x22</code> = +34), adding fuel back to maintain combustion stability and catalytic converter thermal management during decel coast-down.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine:</strong> Evaluated in <code>DetermineFuelTweaks_MM</code> at lines 3750–3764 of <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>.</li>
-<li><strong>Throttle State:</strong> Checked via bit 7 of <code>BitFlags_81</code>:</li>
-<li>If bit 7 = 0 (closed-throttle / off-throttle), execution selects <a href="../Fuel_-_Modifiers/FuelLeanoutFactorOffThrottle.html"><code>FuelLeanoutFactorOffThrottle</code></a>.</li>
-<li>If bit 7 = 1 (open-throttle / on-throttle), the code branches past this table via <code>bmi LDB39</code> to use <a href="../Fuel_-_Modifiers/FuelLeanoutFactorOnThrottle.html"><code>FuelLeanoutFactorOnThrottle</code></a>.</li>
-<li><strong>Input Index:</strong> Interpolated against engine RPM high byte (<code>EngineRpm_HB</code>), shifted left by 1 (<code>asld</code>).</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <p>Because this table operates in <strong>signed two's complement math</strong>, tuners must understand the binary representation:</p>
 <table>
 <thead>
@@ -177,6 +168,16 @@
 <li>Alternatively, adding slightly more positive fuel on decel combined with ignition timing retard will dump unburned fuel into the turbine housing for aggressive antilag-style pops.</li>
 <li><strong>Decel Stumble / Stall Prevention:</strong></li>
 <li>If the engine dips and stumbles when popping the clutch or lifting off the throttle into neutral, check Point 1 (<code>0x1C</code> = 896 RPM). The factory negative value <code>0xFA</code> (-6) pulls fuel; if large injectors are installed, leaving this too rich or too lean can cause an idle dip. Setting it closer to <code>0x00</code> or a small positive value can stabilize off-throttle idle catch.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during closed-throttle deceleration and coastdown, reducing base fuel delivery to lower tailpipe emissions and prevent exhaust popping.</p>
+<ul>
+<li><strong>Subroutine:</strong> Evaluated in <code>DetermineFuelTweaks_MM</code> at lines 3750–3764 of <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a>.</li>
+<li><strong>Throttle State:</strong> Checked via bit 7 of <code>BitFlags_81</code>:</li>
+<li>If bit 7 = 0 (closed-throttle / off-throttle), execution selects <a href="../Fuel_-_Modifiers/FuelLeanoutFactorOffThrottle.html"><code>FuelLeanoutFactorOffThrottle</code></a>.</li>
+<li>If bit 7 = 1 (open-throttle / on-throttle), the code branches past this table via <code>bmi LDB39</code> to use <a href="../Fuel_-_Modifiers/FuelLeanoutFactorOnThrottle.html"><code>FuelLeanoutFactorOnThrottle</code></a>.</li>
+<li><strong>Input Index:</strong> Interpolated against engine RPM high byte (<code>EngineRpm_HB</code>), shifted left by 1 (<code>asld</code>).</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

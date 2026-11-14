@@ -116,16 +116,7 @@
 <p><code>KNKRPM</code> establishes the minimum engine speed threshold required for the engine controller to activate knock retard detection.</p>
 <p>At idle and low engine speeds below 1024 RPM, normal mechanical valvetrain noise, piston slap in cold forged pistons, accessory drive vibrations, and transmission gear rollover can generate acoustic frequencies that mimic combustion detonation. Furthermore, true destructive detonation under light load at low engine speeds is virtually non-existent on properly configured calibrations. In factory calibrations, <code>KNKRPM</code> is calibrated to 32 counts, corresponding to 1024 RPM, locking out knock retard below this speed to prevent false knock triggers from causing idle instability or off-idle stumbles.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateKnockRetard_MM</code> (<code>T-SMEC_v19.asm:8227-8229</code>).</li>
-<li><strong>Comparison &amp; Branch</strong>:</li>
-<li><code>ldab EngineRpm_HB</code> loads high byte of engine speed.</li>
-<li><code>cmpb KNKRPM_MinRpmforKnockRetard</code> at line 8228.</li>
-<li>If <code>EngineRpm_HB</code> &lt; <code>KNKRPM</code> (carry set / <code>bcs StoreMaxAllowedRetard</code>), branches directly to line 8249 with accumulator A cleared to 0.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Suppressing False Knock from Mechanical Noise</strong>:</li>
 <li>Engines with noisy valvetrains, solid lifters, or forged pistons benefit from raising <code>KNKRPM</code> to 1280 RPM (40 counts) to prevent acoustic chatter from pulling timing.</li>
@@ -133,6 +124,16 @@
 <li>Factory setting of 1024 RPM keeps knock retard safely locked out during idle (800 to 950 RPM), ensuring rock-solid idle timing stability.</li>
 <li><strong>Lowering Cautions</strong>:</li>
 <li>Setting <code>KNKRPM</code> below 900 RPM can cause the controller to mistake alternator or belt squeaks for knock, retarding idle timing and inducing severe idle sags.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect across all engine operating conditions, establishing the minimum engine RPM threshold required to enable piezoelectric knock sensor processing.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateKnockRetard_MM</code> (<code>T-SMEC_v19.asm:8227-8229</code>).</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li><code>ldab EngineRpm_HB</code> loads high byte of engine speed.</li>
+<li><code>cmpb KNKRPM_MinRpmforKnockRetard</code> at line 8228.</li>
+<li>If <code>EngineRpm_HB</code> &lt; <code>KNKRPM</code> (carry set / <code>bcs StoreMaxAllowedRetard</code>), branches directly to line 8249 with accumulator A cleared to 0.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

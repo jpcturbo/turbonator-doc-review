@@ -118,16 +118,7 @@
 <p><code>CALRAT</code> masks the main program loop counter to enforce a deliberate update interval.</p>
 <p>In factory calibrations, <code>CALRAT</code> is configured to 7 counts, which functions as a binary bitmask allowing an adjustment only once every 8 main loop cycles, or approximately every 88 milliseconds.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1977</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Bitwise AND of <code>Counter_MainLoop</code> with <code>CALRAT</code> must equal zero at lines 1951-1953 (<code>bitb CALRAT_AisAdjustRate; bne R1075</code>).</li>
-<li>Engine RPM error magnitude must be less than 10 counts at line 1964.</li>
-<li>Motor desired and current position must match (<code>DesiredNewAisPosition</code> == <code>CurrentAisPosition</code>) at line 1968.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Pacing Centering Action</strong>:</li>
 <li>Keep <code>CALRAT</code> at 7 counts for factory-like convergence pacing toward <a href="../../5_-_Idle/A_-_AIS_Control/CALPOS_PositionAisMotorIsAtIdle.html"><code>CALPOS</code></a>.</li>
@@ -135,6 +126,16 @@
 <li>On engines with aftermarket camshafts where idle airflow requirements drift slightly with engine temperature, raise <code>CALRAT</code> to 15 or 31 counts to slow down background position nudging.</li>
 <li><strong>Surge Hazard</strong>:</li>
 <li>Do not set <code>CALRAT</code> to 0 or 1, as rapid position nudging will conflict directly with the <a href="../../5_-_Idle/A_-_AIS_Control/FWDAIS_ForwardAisSteps_NoSlope.html"><code>FWDAIS</code></a>/<a href="../../5_-_Idle/A_-_AIS_Control/REVAIS_ReverseAisSteps_NoSlope.html"><code>REVAIS</code></a> feedback loops.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the engine is idling at steady state with engine speed within a narrow window around target idle, the ECU gradually converges the stepper motor toward the calibrated baseline step position set in CALPOS.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1977</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Bitwise AND of <code>Counter_MainLoop</code> with <code>CALRAT</code> must equal zero at lines 1951-1953 (<code>bitb CALRAT_AisAdjustRate; bne R1075</code>).</li>
+<li>Engine RPM error magnitude must be less than 10 counts at line 1964.</li>
+<li>Motor desired and current position must match (<code>DesiredNewAisPosition</code> == <code>CurrentAisPosition</code>) at line 1968.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

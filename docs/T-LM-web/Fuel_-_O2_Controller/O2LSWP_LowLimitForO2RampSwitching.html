@@ -116,22 +116,23 @@
 <p><code>O2LSWP_LowLimitForO2RampSwitching</code> is the <strong>lower voltage switching threshold</strong> used by the closed-loop air/fuel controller to detect when the exhaust mixture has transitioned to the <strong>LEAN</strong> side of stoichiometric (lambda &gt; 1.0).</p>
 <p>When combustion leans out, free oxygen content in the exhaust stream rises, causing the zirconia sensor voltage to collapse toward 0.1V. When the sensor voltage drops strictly below <code>O2LSWP</code>, the ECU registers a lean condition and triggers immediate fuel enrichment ramps to reverse the trend and restore stoichiometric balance.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Active Closed-Loop State:</strong> Operates concurrently with <a href="../Fuel_-_O2_Controller/O2HSWP_HighLimitForO2RampSwitching.html"><code>O2HSWP</code></a> during normal closed-loop cruise and idle.</li>
-<li><strong>Evaluation Logic:</strong></li>
-<li>If <code>O2SensorVolts &gt;= O2HSWP</code>: Detected as Rich.</li>
-<li>If <code>O2SensorVolts &lt; O2LSWP</code>: Detected as Lean (<code>O2Signal_BelowToggle</code>).</li>
-<li>If <code>O2LSWP &lt;= O2SensorVolts &lt; O2HSWP</code>: Signal is inside the narrow deadband (0.469V - 0.488V); the ECU maintains the current ramp direction without toggling state.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Hysteresis Band:</strong> The stock calibration sets <code>O2LSWP</code> at <code>0x18</code> (0.469V) and <a href="../Fuel_-_O2_Controller/O2HSWP_HighLimitForO2RampSwitching.html"><code>O2HSWP</code></a> at <code>0x19</code> (0.488V). This single-count separation (19 mV) represents the absolute minimum hysteresis possible in an 8-bit ADC system.</li>
 <li><strong>Lowering <code>O2LSWP</code> (e.g., to <code>0x12</code> / 0.35V):</strong></li>
 <li>Forces the sensor to dip significantly deeper into lean territory before enrichment begins.</li>
 <li><strong>Real-World Effect:</strong> Shifts the mean cruise AFR slightly leaner (14.9:1 â€“ 15.2:1 AFR) for modest fuel economy gains, but increases NOx emissions and risks mild cruise surge.</li>
 <li><strong>Widening Deadband:</strong> If you suffer from erratic O2 toggling caused by electrical grounding offset or ignition noise, widening the gap between <code>O2LSWP</code> and <a href="../Fuel_-_O2_Controller/O2HSWP_HighLimitForO2RampSwitching.html"><code>O2HSWP</code></a> stabilizes the switching cycle.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect in closed-loop cruise, establishing the lean-to-rich switching threshold for air-fuel ratio control.</p>
+<ul>
+<li><strong>Active Closed-Loop State:</strong> Operates concurrently with <a href="../Fuel_-_O2_Controller/O2HSWP_HighLimitForO2RampSwitching.html"><code>O2HSWP</code></a> during normal closed-loop cruise and idle.</li>
+<li><strong>Evaluation Logic:</strong></li>
+<li>If <code>O2SensorVolts &gt;= O2HSWP</code>: Detected as Rich.</li>
+<li>If <code>O2SensorVolts &lt; O2LSWP</code>: Detected as Lean (<code>O2Signal_BelowToggle</code>).</li>
+<li>If <code>O2LSWP &lt;= O2SensorVolts &lt; O2HSWP</code>: Signal is inside the narrow deadband (0.469V - 0.488V); the ECU maintains the current ramp direction without toggling state.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

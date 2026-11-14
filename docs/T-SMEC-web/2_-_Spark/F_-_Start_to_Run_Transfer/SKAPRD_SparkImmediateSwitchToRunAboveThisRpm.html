@@ -116,16 +116,7 @@
 <p><code>SKAPRD</code> defines the instantaneous engine speed distributor pulse period threshold that triggers immediate transfer from cranking Start Mode into running Run Mode, bypassing all pulse countdown timers.</p>
 <p>Under normal cranking, the engine controller requires the engine to cross above <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/STRNTR_SparkStartRunTransferPointRpm.html"><code>STRNTR</code></a> (approximately 612 RPM) for several consecutive cylinder firing events (<a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME_SparkEPPsNeededToBeAboveSR_Hot.html"><code>SRTIME</code></a> or <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME2_SparkEPPsNeededToBeAboveSR_Cold.html"><code>SRTIME2</code></a>) before authorizing dynamic ignition timing. However, if the engine flares vigorously upon firing and revs past <code>SKAPRD</code> (factory setting 36 counts, corresponding to approximately 833 RPM), waiting for multiple consecutive pulses is unnecessary. <code>SKAPRD</code> provides an immediate transfer bypass: once engine speed crosses 833 RPM, the controller switches instantly into Run Mode.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>RpmBelowStartRunTransfer</code> (<code>T-SMEC_v19.asm:6996-6998</code>), called from <code>HandleFuelStartRunStartTransfer</code>.</li>
-<li><strong>Comparison &amp; Branch</strong>:</li>
-<li><code>DistributorFallingEdgePulsewidth_HB</code> is compared against <code>SKAPRD_SparkImmediateSwitchToRunAboveThisRpm</code> at line 6997.</li>
-<li>If period &lt; <code>SKAPRD</code> (<code>bcs ENGINE_IDLING_FASTERTHAN_813RPM</code>), engine speed exceeds ~833 RPM, branching directly to line 7013.</li>
-<li>If period &gt;= <code>SKAPRD</code>, execution falls through to line 6999 to evaluate <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/STRNTR_SparkStartRunTransferPointRpm.html"><code>STRNTR</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Immediate Flare Bypass</strong>:</li>
 <li>If engine speed exceeds 833 RPM on start flare, <code>SKAPRD</code> bypasses <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME_SparkEPPsNeededToBeAboveSR_Hot.html"><code>SRTIME</code></a> consecutive pulse counting and locks in Run Mode immediately.</li>
@@ -133,6 +124,16 @@
 <li>On alcohol or cold weather setups that flare softly, raising <code>SKAPRD</code> to 42 counts (~714 RPM) ensures immediate engagement of dynamic idle ignition timing.</li>
 <li><strong>Period Scaling</strong>:</li>
 <li>Period is inversely related to RPM: RPM ≈ 30,000 / count. Factory setting 36 counts = 833 RPM.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under normal cranking, the engine controller requires the engine to cross above STRNTR (approximately 612 RPM) for several consecutive cylinder firing events (SRTIME or SRTIME2) before authorizing dynamic ignition timing.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>RpmBelowStartRunTransfer</code> (<code>T-SMEC_v19.asm:6996-6998</code>), called from <code>HandleFuelStartRunStartTransfer</code>.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li><code>DistributorFallingEdgePulsewidth_HB</code> is compared against <code>SKAPRD_SparkImmediateSwitchToRunAboveThisRpm</code> at line 6997.</li>
+<li>If period &lt; <code>SKAPRD</code> (<code>bcs ENGINE_IDLING_FASTERTHAN_813RPM</code>), engine speed exceeds ~833 RPM, branching directly to line 7013.</li>
+<li>If period &gt;= <code>SKAPRD</code>, execution falls through to line 6999 to evaluate <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/STRNTR_SparkStartRunTransferPointRpm.html"><code>STRNTR</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

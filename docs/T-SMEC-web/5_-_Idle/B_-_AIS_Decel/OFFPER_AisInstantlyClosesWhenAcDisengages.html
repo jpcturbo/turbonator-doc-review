@@ -119,17 +119,7 @@
 <p><code>OFFPER</code> dictates what percentage of the <a href="../../5_-_Idle/B_-_AIS_Decel/ACCTBL_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a> airflow adder is instantly subtracted from the stepper motor position at the exact moment the clutch disengages.</p>
 <p>In factory calibrations, <code>OFFPER</code> is set to 192 counts, commanding an instantaneous retraction of exactly 75 percent (192/256) of the A/C airflow adder.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2318</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Off-idle driving state confirmed at line 2293.</li>
-<li>Indexes <a href="../../5_-_Idle/B_-_AIS_Decel/ACCTBL_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a> using <code>VehicleSpeed_HB</code> at lines 2306-2311.</li>
-<li>Loads <code>OFFPER</code> into accumulator B at line 2312 and multiplies by <a href="../../5_-_Idle/B_-_AIS_Decel/ACCTBL_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a> output (<code>mul</code>).</li>
-<li>Negates the result (<code>nega</code>) at line 2315 and calls <code>L1162</code> to subtract from <code>DesiredNewAisPosition</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Eliminating Coasting Forward Push</strong>:</li>
 <li>Increase <code>OFFPER</code> to 220 to 255 counts (86% to 100%) to instantly eliminate all A/C dashpot air when the clutch opens, restoring firm engine braking.</li>
@@ -137,6 +127,17 @@
 <li>Lower <code>OFFPER</code> to 128 counts (50%) if the car jerks backward into abrupt engine braking when the compressor disengages.</li>
 <li><strong>Percentage Scalar</strong>:</li>
 <li>255 counts represents 100%; factory setting of 192 counts represents 75%.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect while driving off-idle with the air conditioner on, ACCTBL injects auxiliary bypass airflow to counteract compressor drag during coast-down.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2318</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Off-idle driving state confirmed at line 2293.</li>
+<li>Indexes <a href="../../5_-_Idle/B_-_AIS_Decel/ACCTBL_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a> using <code>VehicleSpeed_HB</code> at lines 2306-2311.</li>
+<li>Loads <code>OFFPER</code> into accumulator B at line 2312 and multiplies by <a href="../../5_-_Idle/B_-_AIS_Decel/ACCTBL_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a> output (<code>mul</code>).</li>
+<li>Negates the result (<code>nega</code>) at line 2315 and calls <code>L1162</code> to subtract from <code>DesiredNewAisPosition</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

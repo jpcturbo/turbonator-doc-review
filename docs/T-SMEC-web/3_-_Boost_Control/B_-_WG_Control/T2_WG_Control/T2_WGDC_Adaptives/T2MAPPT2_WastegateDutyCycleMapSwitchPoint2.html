@@ -116,16 +116,7 @@
 <p><code>T2MAPPT2</code> was designed to define the minimum manifold gauge pressure threshold required to activate wastegate duty cycle calculations in T2 control.</p>
 <p>In factory calibration templates, <code>T2MAPPT2</code> is set to 46 counts (approximately 5.3 psi of boost). However, as documented in firmware reverse engineering analyses, a copy-paste bug in stock T-SMEC v19 firmware causes the T2 routine at line 9764 to compare against the T1 constant (<a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MAPPT2_WastegateDutyCycleMapSwitchPoint2.html"><code>MAPPT2</code></a>) instead of <code>T2MAPPT2</code>. As a result, this calibration constant is unreferenced by the executable assembly code in stock firmware.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Intended Subroutine &amp; Line Numbers</strong>: <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9760-9766</code>).</li>
-<li><strong>Firmware Anomaly</strong>: At line 9764, the CPU executes <code>cmpa MAPPT2_WastegateDutyCycleMapSwitchPoint2</code> instead of <code>T2MAPPT2</code>.</li>
-<li><strong>Gating Logic</strong>:</li>
-<li>Gauge boost is calculated in accumulator A as <code>MapValue - BaroPressure</code> (line 9762).</li>
-<li>Compared against <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MAPPT2_WastegateDutyCycleMapSwitchPoint2.html"><code>MAPPT2</code></a> at line 9764. If below, branches to <code>T2WGDC_ClearWGDutyCycleVars</code> (line 9767), zeroing WGDC.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Firmware Copy-Paste Anomaly</strong>:</li>
 <li>Line 9764 of <code>CalcWGDutyCycleT2</code> compares gauge boost against <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MAPPT2_WastegateDutyCycleMapSwitchPoint2.html"><code>MAPPT2_WastegateDutyCycleMapSwitchPoint2</code></a> rather than <code>T2MAPPT2</code>.</li>
@@ -134,6 +125,16 @@
 <li>To adjust the T2 activation threshold, modify <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MAPPT2_WastegateDutyCycleMapSwitchPoint2.html"><code>MAPPT2</code></a> in the T1 group (<code>T1_WGDC_Adaptives\</code>).</li>
 <li><strong>Source Firmware Patch</strong>:</li>
 <li>If rebuilding firmware from assembly source, update line 9764 to compare against <code>T2MAPPT2_WastegateDutyCycleMapSwitchPoint2</code>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under turbocharger boost operation to control WastegateDutyCycleMapSwitchPoint2.</p>
+<ul>
+<li><strong>Intended Subroutine &amp; Line Numbers</strong>: <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9760-9766</code>).</li>
+<li><strong>Firmware Anomaly</strong>: At line 9764, the CPU executes <code>cmpa MAPPT2_WastegateDutyCycleMapSwitchPoint2</code> instead of <code>T2MAPPT2</code>.</li>
+<li><strong>Gating Logic</strong>:</li>
+<li>Gauge boost is calculated in accumulator A as <code>MapValue - BaroPressure</code> (line 9762).</li>
+<li>Compared against <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MAPPT2_WastegateDutyCycleMapSwitchPoint2.html"><code>MAPPT2</code></a> at line 9764. If below, branches to <code>T2WGDC_ClearWGDutyCycleVars</code> (line 9767), zeroing WGDC.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

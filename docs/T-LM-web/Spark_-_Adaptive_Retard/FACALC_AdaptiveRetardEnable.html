@@ -117,13 +117,7 @@
 <p>When an engine transitions from vacuum to boost under part throttle, the ECU calculates a proportional timing delta (<code>Temp1</code>) based on <a href="../Spark_-_Adaptive_Retard/ARADVR_AdaptiveRetardAdvanceRatioFromMAP.html"><code>ARADVR</code></a>, boost pressure, and Part-Throttle Enrichment. <code>FACALC</code> determines whether this delta is <strong>subtracted from</strong> <a href="../Spark_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a> (reducing timing toward WOT levels) or <strong>added to</strong> [<a href="../Spark_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a>].</p>
 <p>In factory calibrations, <code>FACALC</code> is set to <code>0xFF</code> (signed negative), configuring the system to retard timing under part-throttle boost.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<p><code>FACALC</code> is evaluated on every part-throttle spark advance calculation:
-1. <strong>Engine Warm:</strong> Coolant temperature ≥ <a href="../Spark_-_Normal_Advance/TMPSWP_EngTempSwitchPointForSparkAdvance.html"><code>TMPSWP</code></a>.
-2. <strong>Part-Throttle Boost Transition:</strong> Throttle is off-idle, but not wide-open throttle (WOT).
-3. <strong>PTE / Boost Active:</strong> Part-throttle enrichment is active or MAP is approaching/exceeding <a href="../Fuel_-_Transient_Enrichment/OBCONST_OverboostConstant1.html"><code>OBCONST_OverboostConstant1</code></a>.</p>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <p>The CPU evaluates only the most significant bit (bit 7) of <code>FACALC</code> via the branch-if-minus (<code>bmi</code>) opcode:</p>
 <ul>
 <li><strong>Stock Setting (<code>0xFF</code> / Negative / Bit 7 = 1):</strong></li>
@@ -139,6 +133,13 @@
 <li><strong>Effect on Total Timing:</strong> <strong>Adds</strong> <code>Temp1</code> to <a href="../Spark_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a>, increasing part-throttle advance under load, and clamping from above against <a href="../Spark_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP</code></a>.</li>
 <li><strong>Tuning Recommendation:</strong> <strong>DANGEROUS on turbocharged gasoline engines.</strong> Adding advance under rising manifold boost can trigger instant severe detonation. Do not change this value to a positive number unless testing specialized naturally-aspirated or alternative-fuel strategies.</li>
 </ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when an engine transitions from vacuum to boost under part throttle, the ECU calculates a proportional timing delta (Temp1) based on ARADVR, boost pressure, and Part-Throttle Enrichment.</p>
+<p><code>FACALC</code> is evaluated on every part-throttle spark advance calculation:
+1. <strong>Engine Warm:</strong> Coolant temperature ≥ <a href="../Spark_-_Normal_Advance/TMPSWP_EngTempSwitchPointForSparkAdvance.html"><code>TMPSWP</code></a>.
+2. <strong>Part-Throttle Boost Transition:</strong> Throttle is off-idle, but not wide-open throttle (WOT).
+3. <strong>PTE / Boost Active:</strong> Part-throttle enrichment is active or MAP is approaching/exceeding <a href="../Fuel_-_Transient_Enrichment/OBCONST_OverboostConstant1.html"><code>OBCONST_OverboostConstant1</code></a>.</p>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>
 <p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 6620–6631):</p>

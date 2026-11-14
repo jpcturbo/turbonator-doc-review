@@ -117,21 +117,22 @@
 <p>Positioned immediately following <a href="../../7_-_Aux_Functions/EGR/EGR16_ExhGasRecircConstLoLimit.html"><code>EGR16</code></a> in calibration ROM, this constant caps the maximum intake manifold pressure allowed while the engine controller tests for oxygen sensor response following EGR valve shutoff. If the driver accelerates moderately and intake manifold pressure rises above <code>EGR16A</code>, the boundary checking routine detects the violation, aborts Phase 2, and resets the diagnostic counters.</p>
 <p>The factory calibration sets <code>EGR16A</code> to 255 counts, ensuring that the upper ceiling does not prematurely interrupt diagnostic testing during steady-state cruising.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Lowering EGR16A</strong>: Imposes a ceiling on intake manifold pressure during Phase 2 flow verification. If pressure rises above this limit, Phase 2 terminates immediately.</li>
+<li><strong>Factory Calibration (255 counts)</strong>: Maximizes monitor completion by keeping the upper boundary at full-scale pressure.</li>
+<li><strong>3-Bar MAP Sensor Calibration</strong>: When converting to a 3-bar sensor, multiply custom MAP thresholds by 0.667 (two-thirds) to preserve the intended manifold vacuum operating range.</li>
+<li><strong>Consistency Rule</strong>: Never set <code>EGR16A</code> lower than <a href="../../7_-_Aux_Functions/EGR/EGR16_ExhGasRecircConstLoLimit.html"><code>EGR16</code></a>, which creates an unachievable window that resets the diagnostic state machine continuously.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle cruising, modulating the exhaust gas recirculation (EGR) solenoid duty cycle to control combustion temperatures.</p>
 <ul>
 <li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically via call at line 5491.</li>
 <li><strong>Subroutine Called</strong>: <code>EGR_CheckHiLoLimits</code> (lines 5462–5468), specifically line 5465.</li>
 <li><strong>Input Variable</strong>: <code>MapValue</code> evaluated in accumulator A against offset <code>0x01,x</code> from <code>#EGR16_ExhGasRecircConstLoLimit</code>.</li>
 <li><strong>State Condition</strong>: Phase 2 active (<code>EGRVar2</code> bit 7 set).</li>
 <li><strong>Branch Behavior</strong>: If <code>MapValue &gt; EGR16A</code> (<code>bhi L1464</code>), pulls return address off stack (<code>pulx</code>) and branches to <code>EGR_ResetEGRVars</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Lowering EGR16A</strong>: Imposes a ceiling on intake manifold pressure during Phase 2 flow verification. If pressure rises above this limit, Phase 2 terminates immediately.</li>
-<li><strong>Factory Calibration (255 counts)</strong>: Maximizes monitor completion by keeping the upper boundary at full-scale pressure.</li>
-<li><strong>3-Bar MAP Sensor Calibration</strong>: When converting to a 3-bar sensor, multiply custom MAP thresholds by 0.667 (two-thirds) to preserve the intended manifold vacuum operating range.</li>
-<li><strong>Consistency Rule</strong>: Never set <code>EGR16A</code> lower than <a href="../../7_-_Aux_Functions/EGR/EGR16_ExhGasRecircConstLoLimit.html"><code>EGR16</code></a>, which creates an unachievable window that resets the diagnostic state machine continuously.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

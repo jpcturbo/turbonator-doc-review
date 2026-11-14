@@ -117,17 +117,7 @@
 <p>At high engine speeds, rapid valve timing and high exhaust gas velocity reduce the precision of narrowband oxygen sensor feedback, while engine load demands favor rich, open-loop power enrichment.</p>
 <p>In factory calibrations, <code>RPMLIM</code> is configured to 86 counts in high-byte RPM scaling (where each count represents 32 RPM), setting the threshold at 2752 RPM. Above this speed, the engine controller locks out closed loop and operates in open loop.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> / <code>O2Signal_BelowToggle</code> (<code>T-SMEC_v19.asm:3081-3084</code>), instruction line 3082.</li>
-<li><strong>Gating Conditions</strong>: Manifold pressure within allowable boundaries (<code>MAPDEC &lt; MapValue &lt;= MAPLIM</code>).</li>
-<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
-<li>Line 3081 loads <code>EngineRpm_HB</code> into register B.</li>
-<li>Line 3082 executes <code>cmpb RPMLIM_NoCellUpdateAboveThisRPMInRPMOver32</code>.</li>
-<li>If <code>EngineRpm_HB &gt; RPMLIM</code> (<code>bhi</code>), execution branches to <code>SwitchOrStayOpenLoop</code> (line 3095), forcing open loop.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Highway Cruising Extension</strong>:</li>
 <li>Raising <code>RPMLIM</code> to 100-115 counts (3200-3680 RPM) maintains closed-loop fuel economy on vehicles with short final drive gearing.</li>
@@ -135,6 +125,17 @@
 <li>Lowering <code>RPMLIM</code> to 2200-2400 RPM forces early open loop, protecting exhaust valves with rich mixtures during aggressive driving.</li>
 <li><strong>RPM Scaling</strong>:</li>
 <li>High-byte engine speed scaling (1 count = 32 RPM; 86 counts = 2752 RPM).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during closed-loop operation, setting the maximum engine RPM ceiling above which adaptive fuel updates and O2 feedback are disabled.</p>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> / <code>O2Signal_BelowToggle</code> (<code>T-SMEC_v19.asm:3081-3084</code>), instruction line 3082.</li>
+<li><strong>Gating Conditions</strong>: Manifold pressure within allowable boundaries (<code>MAPDEC &lt; MapValue &lt;= MAPLIM</code>).</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Line 3081 loads <code>EngineRpm_HB</code> into register B.</li>
+<li>Line 3082 executes <code>cmpb RPMLIM_NoCellUpdateAboveThisRPMInRPMOver32</code>.</li>
+<li>If <code>EngineRpm_HB &gt; RPMLIM</code> (<code>bhi</code>), execution branches to <code>SwitchOrStayOpenLoop</code> (line 3095), forcing open loop.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

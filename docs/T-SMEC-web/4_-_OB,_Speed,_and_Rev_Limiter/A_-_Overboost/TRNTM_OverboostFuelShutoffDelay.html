@@ -116,7 +116,18 @@
 <p><code>TRNTIM</code> defines the duration of the countdown timer that delays overboost fuel shutoff when manifold pressure exceeds the primary timed overboost threshold (<a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a>).</p>
 <p>Turbochargers frequently produce transient pressure overshoots when the throttle snaps open or during quick gear shifts before the wastegate actuator can physically react and stabilize boost. In the factory calibration, <code>TRNTIM</code> is set to 45 counts, corresponding to approximately 0.49 seconds on a 0 to 2.8 second scale. As long as manifold boost drops back below <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a> within this half-second window, normal fueling continues uninterrupted. If boost persists above <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a> after the countdown expires, the controller cuts fuel injection to protect the engine.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Extending for Transient Spikes</strong>:</li>
+<li>Increasing <code>TRNTIM</code> to 1.0 to 1.5 seconds (90 to 140 counts) allows brief boost overshoots during fast gear shifts or aggressive spool-up without triggering fuel cut.</li>
+<li><strong>Disabling or Maxing Out</strong>:</li>
+<li>Setting <code>TRNTIM</code> to 255 counts (approx 2.8 seconds) maximizes the delay window before timed fuel cut engages.</li>
+<li><strong>Lowering &amp; Hair-Trigger Cutout</strong>:</li>
+<li>Setting <code>TRNTIM</code> to low values (under 20 counts) produces instant fuel cuts on minor boost flutter, degrading drivability.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if boost persists above MPSHFT after the countdown expires, the controller cuts fuel injection to protect the engine.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>Cutout_ResetOverboostTimer</code> (<code>T-SMEC_v19.asm:5651-5655</code>), called from <code>ControlEngineCutout_MM</code> (<code>T-SMEC_v19.asm:5641, 5658</code>).</li>
 <li><strong>Reload Conditions</strong>:</li>
@@ -125,16 +136,6 @@
 <li><strong>Countdown Operation</strong>:</li>
 <li>Decremented once per main loop pass in <code>Cutout_CheckNormalOB</code> (<code>T-SMEC_v19.asm:5661-5664</code>) while boost exceeds <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a> but remains below <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFA_OverboostFuelShutoffEnablePointFromMap_Absolute.html"><code>MPSHFA</code></a>.</li>
 <li>When <code>Timer_OverboostCountdown</code> reaches zero (<code>beq Cutout_SetOBCodeAndShutdown</code>), fault code 0x0708 is recorded and fuel is shut off.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Extending for Transient Spikes</strong>:</li>
-<li>Increasing <code>TRNTIM</code> to 1.0 to 1.5 seconds (90 to 140 counts) allows brief boost overshoots during fast gear shifts or aggressive spool-up without triggering fuel cut.</li>
-<li><strong>Disabling or Maxing Out</strong>:</li>
-<li>Setting <code>TRNTIM</code> to 255 counts (approx 2.8 seconds) maximizes the delay window before timed fuel cut engages.</li>
-<li><strong>Lowering &amp; Hair-Trigger Cutout</strong>:</li>
-<li>Setting <code>TRNTIM</code> to low values (under 20 counts) produces instant fuel cuts on minor boost flutter, degrading drivability.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

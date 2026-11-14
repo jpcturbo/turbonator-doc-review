@@ -116,7 +116,19 @@
 <p><code>SETIM1</code> defines the upper timer qualification boundary paired with <a href="../../7_-_Aux_Functions/Cruise_Control/SETIME_CruiseControlNoSetupPulseWhenDecelTimerAboveThis.html"><code>SETIME</code></a> to establish a precise deceleration pulse suppression window.</p>
 <p>When the driver presses the coast switch, the deceleration timer increments. If the switch is held long enough to exceed <a href="../../7_-_Aux_Functions/Cruise_Control/SETIME_CruiseControlNoSetupPulseWhenDecelTimerAboveThis.html"><code>SETIME</code></a> but released before exceeding <code>SETIM1</code>, the controller recognizes a deliberate moderate coast event and sets status flags to prevent setup pulse lurching. If the switch is held beyond <code>SETIM1</code>, the timer transitions to extended deceleration mode. In factory calibrations, <code>SETIM1</code> is set to 82 counts, representing approximately 0.91 seconds.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Decel Window Boundary</strong>:</li>
+<li>Works with <a href="../../7_-_Aux_Functions/Cruise_Control/SETIME_CruiseControlNoSetupPulseWhenDecelTimerAboveThis.html"><code>SETIME</code></a> to define the timed window between 0.61 and 0.91 seconds for coast qualification.</li>
+<li>Prevents contact bounce or erratic button presses from corrupting cruise state logic.</li>
+<li><strong>Extended Coast Transition</strong>:</li>
+<li>Once <code>Timer_CruiseDecelerate</code> exceeds <code>SETIM1</code>, bit 2 of <code>CruiseStatus</code> is cleared (<code>anda #~b2f_bit2</code>), returning the state machine to normal switch tracking.</li>
+<li><strong>Factory Value</strong>:</li>
+<li>Calibrated to 82 counts in stock calibrations; keep stock for standard Chrysler cruise stalks.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when using the cruise Coast/Decel button, qualifying the deceleration hold duration before applying a setup pulse.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>ContinueCruise</code> (<code>T-SMEC_v19.asm:8586-8592</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -126,17 +138,6 @@
 <li>Compares <code>Timer_CruiseDecelerate</code> against <code>SETIM1</code> via <code>cmpb SETIM1</code> at line 8586.</li>
 <li>If lower (<code>bcs</code>), sets bit 2 of <code>CruiseStatus</code> (<code>oraa #b2f_bit2</code>) and clears bits 0 and 1.</li>
 <li>If higher or equal (<code>bcc L1728</code>), clears bit 2 (<code>anda #~b2f_bit2</code>).</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Decel Window Boundary</strong>:</li>
-<li>Works with <a href="../../7_-_Aux_Functions/Cruise_Control/SETIME_CruiseControlNoSetupPulseWhenDecelTimerAboveThis.html"><code>SETIME</code></a> to define the timed window between 0.61 and 0.91 seconds for coast qualification.</li>
-<li>Prevents contact bounce or erratic button presses from corrupting cruise state logic.</li>
-<li><strong>Extended Coast Transition</strong>:</li>
-<li>Once <code>Timer_CruiseDecelerate</code> exceeds <code>SETIM1</code>, bit 2 of <code>CruiseStatus</code> is cleared (<code>anda #~b2f_bit2</code>), returning the state machine to normal switch tracking.</li>
-<li><strong>Factory Value</strong>:</li>
-<li>Calibrated to 82 counts in stock calibrations; keep stock for standard Chrysler cruise stalks.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

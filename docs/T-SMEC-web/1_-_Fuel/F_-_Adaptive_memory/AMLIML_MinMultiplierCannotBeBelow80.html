@@ -117,7 +117,18 @@
 <p>When an engine runs rich due to high fuel pressure or vapor recovery purging, the controller removes fuel by decrementing the active cell. In factory calibrations, <code>AMLIML</code> is set to signed -77 counts (stored as 179 unsigned), which corresponds to approximately -15.0 percent maximum fuel reduction.</p>
 <p>This lower boundary ensures that a stuck-rich oxygen sensor or leaky injector cannot cause the controller to pull excessive fuel and cause severe lean engine misfires.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Constraining Negative Authority</strong>:</li>
+<li>Clamping <code>AMLIML</code> to -25 to -30 counts limits maximum leanout to -5% to -6%, protecting modified engines from excessive lean trimming.</li>
+<li><strong>Disabling Long-Term Trims</strong>:</li>
+<li>Setting both <code>AMLIML</code> and <a href="../../1_-_Fuel/F_-_Adaptive_memory/AMLIMH_MaxMultiplierCannotBeAbove7F.html"><code>AMLIMH</code></a> to 0 disables adaptive fuel trims entirely without software modifications.</li>
+<li><strong>Formula &amp; Resolution</strong>:</li>
+<li>Minimum fuel modifier is <code>1 + (AMLIML / 512)</code>. Factory -77 counts represents -15.0% fuel leanout.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect whenever adaptive fuel trims are updated during driving, capping the maximum allowable negative leanout to prevent excessive leaning.</p>
 <ul>
 <li><strong>Enclosing Subroutine</strong>: <code>AdaptiveMemory_UpdateCellIfRequired_MM</code> / <code>UpdateAdaptive_OffIdle</code> (<code>T-SMEC_v19.asm:3314-3335</code>), instruction line 3323.</li>
 <li><strong>Gating Conditions</strong>: Adaptive update triggered; cell decremented by <a href="../../1_-_Fuel/F_-_Adaptive_memory/CELCHG_BitsChangePerUpdateWithinACell.html"><code>CELCHG</code></a>.</li>
@@ -126,16 +137,6 @@
 <li>Line 3329 reloads <code>AMLIML</code> into register B during non-overflow path.</li>
 <li>Line 3330 executes <code>cba</code> (comparing register B = <code>AMLIML</code> with cell in A).</li>
 <li>If <code>AMLIML &gt;= cell</code> (meaning cell is more negative than limit), <code>bge L1242</code> is not taken, and line 3333 clamps cell to <code>AMLIML</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Constraining Negative Authority</strong>:</li>
-<li>Clamping <code>AMLIML</code> to -25 to -30 counts limits maximum leanout to -5% to -6%, protecting modified engines from excessive lean trimming.</li>
-<li><strong>Disabling Long-Term Trims</strong>:</li>
-<li>Setting both <code>AMLIML</code> and <a href="../../1_-_Fuel/F_-_Adaptive_memory/AMLIMH_MaxMultiplierCannotBeAbove7F.html"><code>AMLIMH</code></a> to 0 disables adaptive fuel trims entirely without software modifications.</li>
-<li><strong>Formula &amp; Resolution</strong>:</li>
-<li>Minimum fuel modifier is <code>1 + (AMLIML / 512)</code>. Factory -77 counts represents -15.0% fuel leanout.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

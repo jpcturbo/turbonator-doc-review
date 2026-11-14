@@ -116,18 +116,7 @@
 <p><code>PIBMSK</code> defines the diagnostic output driver circuit mask for Port B of the Peripheral Interface Adapter.</p>
 <p>Port B controls dedicated powertrain inductive solenoids and warning indicators, including the exhaust gas recirculation solenoid, turbocharger wastegate control solenoid, barometric read solenoid, and emissions maintenance reminder lamp. Configured in factory calibrations to two hundred twenty-four counts, <code>PIBMSK</code> dictates which of these output circuits are actively tested for open coils, wiring breaks, or driver circuit failures during vehicle operation.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>UPDATE_PIA1_A_PDR_DDR_REGISTER</code> (<code>T-SMEC_v19.asm:4331-4420</code>), instruction line 4407 (<code>bita PIBMSK_PIA1BDDRMask</code>).</li>
-<li><strong>Driver Verification</strong>:</li>
-<li>Executes sequentially following Port A verification.</li>
-<li>Uses <code>Counter_MainLoop &amp; 0x07</code> to select the active Port B output pin.</li>
-<li><strong>Branch Execution</strong>:</li>
-<li>If <code>bita PIBMSK_PIA1BDDRMask</code> is zero (<code>beq R1318</code>), testing on the pin is skipped.</li>
-<li>If set and an open circuit is detected on the wastegate driver, calls <code>ThrowNonCriticalError</code> and sets <code>b46_WGSolFault</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Wastegate Solenoid Circuit Testing</strong>:</li>
 <li>Clearing the wastegate solenoid bit stops electrical driver line testing on Port B, preventing fault code 36 when the solenoid is removed.</li>
@@ -137,6 +126,18 @@
 <li>Allows disabling diagnostics on the baro read solenoid if non-stock atmospheric sensing is implemented.</li>
 <li><strong>Factory Default</strong>:</li>
 <li>Set to two hundred twenty-four counts, actively monitoring EGR, wastegate, and baro read circuits.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during hardware initialization at key-on, configuring the input and output pin directions for peripheral interface adapter 1 Port B.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>UPDATE_PIA1_A_PDR_DDR_REGISTER</code> (<code>T-SMEC_v19.asm:4331-4420</code>), instruction line 4407 (<code>bita PIBMSK_PIA1BDDRMask</code>).</li>
+<li><strong>Driver Verification</strong>:</li>
+<li>Executes sequentially following Port A verification.</li>
+<li>Uses <code>Counter_MainLoop &amp; 0x07</code> to select the active Port B output pin.</li>
+<li><strong>Branch Execution</strong>:</li>
+<li>If <code>bita PIBMSK_PIA1BDDRMask</code> is zero (<code>beq R1318</code>), testing on the pin is skipped.</li>
+<li>If set and an open circuit is detected on the wastegate driver, calls <code>ThrowNonCriticalError</code> and sets <code>b46_WGSolFault</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

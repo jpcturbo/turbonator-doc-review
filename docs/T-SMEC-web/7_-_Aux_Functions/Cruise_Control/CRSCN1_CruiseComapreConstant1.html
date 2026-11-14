@@ -116,7 +116,19 @@
 <p><code>CRSCN1</code> defines the evaluation interval timer threshold determining how frequently adaptive servo integration and cable slack updates occur.</p>
 <p>In the SMEC cruise control algorithm, background counter <code>Counter_Cruise</code> increments on each execution pass. While <code>Counter_Cruise</code> is below <code>CRSCN1</code>, the controller updates cable adaptive delta calculations. Once <code>Counter_Cruise</code> reaches <code>CRSCN1</code>, the controller enters the adaptive integrator routine to evaluate speed error against <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK2_CruiseMask2.html"><code>CRMSK2</code></a> and <a href="../../7_-_Aux_Functions/Cruise_Control/CRMSK3_CruiseMask3.html"><code>CRMSK3</code></a>, updates <code>BitFlags_27</code>, and resets the counter. In factory calibrations, <code>CRSCN1</code> is configured to 21 counts.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Integrator Update Period</strong>:</li>
+<li>Governs the elapsed time between adaptive trim adjustments in <code>BitFlags_27</code>.</li>
+<li>Factory 21 counts provides stable long-term integration without hunting.</li>
+<li><strong>Fast Hill Adaptation</strong>:</li>
+<li>Lowering <code>CRSCN1</code> to 14 to 16 counts speeds up integrator reaction for steep mountainous terrain.</li>
+<li><strong>Counter Mechanism</strong>:</li>
+<li>In <code>CalculateVehicleSpeed</code>, <code>Counter_Cruise</code> counts up to <code>CRSCN1</code> before triggering integrator evaluations.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect while Counter_Cruise is below CRSCN1, the controller updates cable adaptive delta calculations.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8751-8753</code>), called from <code>ControlCruiseServo0_MM</code> (<code>T-SMEC_v19.asm:8473-8986</code>).</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -126,17 +138,6 @@
 <li>Compares <code>Counter_Cruise</code> against <code>CRSCN1</code> via <code>cmpa CRSCN1</code> at line 8751.</li>
 <li>If lower (<code>bcs L1765</code>), branches to increment counter and update cable adaptive delta <code>CruiseControlVar6</code>.</li>
 <li>If equal or greater, proceeds to evaluate deadband <a href="../../7_-_Aux_Functions/Cruise_Control/CRSCN2_CruiseComapreConstant2.html"><code>CRSCN2</code></a> and integrator thresholds.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Integrator Update Period</strong>:</li>
-<li>Governs the elapsed time between adaptive trim adjustments in <code>BitFlags_27</code>.</li>
-<li>Factory 21 counts provides stable long-term integration without hunting.</li>
-<li><strong>Fast Hill Adaptation</strong>:</li>
-<li>Lowering <code>CRSCN1</code> to 14 to 16 counts speeds up integrator reaction for steep mountainous terrain.</li>
-<li><strong>Counter Mechanism</strong>:</li>
-<li>In <code>CalculateVehicleSpeed</code>, <code>Counter_Cruise</code> counts up to <code>CRSCN1</code> before triggering integrator evaluations.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

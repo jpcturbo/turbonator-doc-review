@@ -118,7 +118,18 @@
 <p>If the difference between actual engine speed and target idle speed exceeds <code>PNDLT</code>, the controller advances its memory pointer to index the <a href="../../5_-_Idle/B_-_AIS_Decel/PNDRK_ParkNeutralToDriveKicks_FromTemp.html"><code>PNDRK</code></a> opening step table.</p>
 <p>In factory calibrations, <code>PNDLT</code> is configured to 400 counts, representing an RPM delta trigger threshold of approximately 200 RPM.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Earlier In-Gear Catch</strong>:</li>
+<li>Lower <code>PNDLT</code> from 200 RPM down to 100 to 140 RPM to trigger the <a href="../../5_-_Idle/B_-_AIS_Decel/PNDRK_ParkNeutralToDriveKicks_FromTemp.html"><code>PNDRK</code></a> kick sooner if the engine dips heavily when shifted into Drive.</li>
+<li><strong>High-Stall Torque Converters</strong>:</li>
+<li>High-stall converters generate less initial drag; <code>PNDLT</code> can be elevated to prevent unnecessary step kicks on gear selection.</li>
+<li><strong>Threshold Minimum</strong>:</li>
+<li>Do not lower <code>PNDLT</code> below 50 RPM to avoid false triggering from natural idle lope.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the driver shifts an automatic transmission from Park or Neutral into Drive or Reverse, the transmission hydraulic clutches engage and the torque converter impeller suddenly loads the crankshaft.</p>
 <ul>
 <li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2365</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -127,16 +138,6 @@
 <li>Loads index X with <code>#PNDLTN_DeltaRpmChangeToUse_DRPNK_or_PNDRK</code> at line 2351.</li>
 <li>Calculates RPM drop: <code>ldd EngineRpm_HB; subd TargetIdleSpeed_HB</code>.</li>
 <li>Compares delta against <code>PNDLT</code> at line 2355: <code>subd 0x00,x</code>. If delta exceeds <code>PNDLT</code> (carry clear), advances via <code>inx; inx</code> to look up <a href="../../5_-_Idle/B_-_AIS_Decel/PNDRK_ParkNeutralToDriveKicks_FromTemp.html"><code>PNDRK</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Earlier In-Gear Catch</strong>:</li>
-<li>Lower <code>PNDLT</code> from 200 RPM down to 100 to 140 RPM to trigger the <a href="../../5_-_Idle/B_-_AIS_Decel/PNDRK_ParkNeutralToDriveKicks_FromTemp.html"><code>PNDRK</code></a> kick sooner if the engine dips heavily when shifted into Drive.</li>
-<li><strong>High-Stall Torque Converters</strong>:</li>
-<li>High-stall converters generate less initial drag; <code>PNDLT</code> can be elevated to prevent unnecessary step kicks on gear selection.</li>
-<li><strong>Threshold Minimum</strong>:</li>
-<li>Do not lower <code>PNDLT</code> below 50 RPM to avoid false triggering from natural idle lope.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

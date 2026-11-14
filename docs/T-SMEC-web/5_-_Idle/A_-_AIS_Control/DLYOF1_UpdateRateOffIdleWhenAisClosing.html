@@ -118,17 +118,7 @@
 <p><code>DLYOF1</code> acts as an off-idle rate limiter, restricting stepper motor closing movement to one step decrement only when the masked loop counter reaches zero.</p>
 <p>In factory calibrations, <code>DLYOF1</code> is set to 7 counts, representing a binary bitmask allowing the motor to close by one step every 8 main loop cycles, or approximately every 88 milliseconds.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2487</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Engine is off-idle (<code>b2e_AtIdle</code> clear at line 2475).</li>
-<li>Stepper motor flags <code>b0c_bit6</code> set and <code>b0c_bit7</code> clear at lines 2476-2477.</li>
-<li>Target position is lower than current desired position (<code>DesiredNewAisPosition</code> needs to decrement) at line 2478.</li>
-<li>Main loop counter masked with <code>DLYOF1</code> at line 2481: <code>bitb DLYOF1_UpdateRateOffIdleWhenAisClosing</code>. If non-zero, exits without decrementing; if zero, decrements <code>DesiredNewAisPosition</code> by one step.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Smoothing Off-Idle Jerk</strong>:</li>
 <li>Increase <code>DLYOF1</code> from 7 to 15 counts to slow off-idle stepper closure, smoothing part-throttle transitions and gentle deceleration.</li>
@@ -136,6 +126,17 @@
 <li>Lower <code>DLYOF1</code> to 3 counts if you desire faster stepper retraction and more direct engine braking when modulating the throttle.</li>
 <li><strong>Mask Formatting</strong>:</li>
 <li>Must be configured as a power-of-two minus one value (3, 7, 15, 31) to ensure proper modulo masking with the main loop counter.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the driver operates the throttle pedal off-idle, the stepper motor is dynamically pre-positioned open based on engine speed and throttle angle.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2487</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Engine is off-idle (<code>b2e_AtIdle</code> clear at line 2475).</li>
+<li>Stepper motor flags <code>b0c_bit6</code> set and <code>b0c_bit7</code> clear at lines 2476-2477.</li>
+<li>Target position is lower than current desired position (<code>DesiredNewAisPosition</code> needs to decrement) at line 2478.</li>
+<li>Main loop counter masked with <code>DLYOF1</code> at line 2481: <code>bitb DLYOF1_UpdateRateOffIdleWhenAisClosing</code>. If non-zero, exits without decrementing; if zero, decrements <code>DesiredNewAisPosition</code> by one step.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

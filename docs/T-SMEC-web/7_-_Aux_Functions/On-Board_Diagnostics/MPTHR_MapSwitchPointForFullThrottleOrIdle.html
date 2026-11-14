@@ -117,7 +117,20 @@
 <p>When the throttle sensor circuit suffers an open circuit or short to ground (<strong>Fault Code 24</strong>), the controller cannot read physical accelerator pedal movement. To maintain vehicle drivability, the controller substitutes synthetic throttle values based entirely on measured intake manifold pressure.</p>
 <p>In factory calibrations, <code>MPTHR</code> is configured to 104 counts, which corresponds to approximately 12.0 psi absolute pressure (equivalent to -2.7 psi gauge pressure or roughly 5.5 inHg of manifold vacuum). When manifold pressure is below <code>MPTHR</code>, the controller simulates closed-throttle idle; when manifold pressure reaches or exceeds <code>MPTHR</code>, the controller immediately forces the wide-open throttle flag.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
+<li>Rescale <code>MPTHR</code> by multiplying by 0.667 when upgrading to a 3-bar MAP sensor (from 104 counts down to 69 counts) to keep the 12.0 psi absolute transition point accurate.</li>
+<li><strong>Limp-In Drivability Tuning</strong>:</li>
+<li>Lowering <code>MPTHR</code> provides richer, safer failsafe fueling earlier in the pedal travel under sensor failure conditions.</li>
+<li>Raising <code>MPTHR</code> preserves part-throttle economy in limp-in mode but delays wide-open throttle enrichment.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Setting <code>MPTHR</code> below base idle manifold pressure permanently locks the engine into simulated wide-open throttle.</li>
+<li>Setting <code>MPTHR</code> above atmospheric pressure prevents simulated wide-open throttle from engaging without positive boost.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the throttle sensor circuit suffers an open circuit or short to ground (Fault Code 24), the controller cannot read physical accelerator pedal movement.</p>
 <ul>
 <li><strong>Routine &amp; Line Numbers</strong>: <code>CheckThrottle_ErrorAlreadyFlagged</code> (<code>T-SMEC_v19.asm:7792-7801</code>), instruction at line 7797.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -129,18 +142,6 @@
 <li><code>cmpb MPTHR_MapSwitchPointForFullThrottleOrIdle</code> compares against 104 counts at line 7797.</li>
 <li>If lower (<code>bcs</code>), branches to <code>CheckThrottle_GotTpsValue</code> keeping idle throttle.</li>
 <li>If higher or equal, adds <a href="../../0_-_Setup/E_-_Throttle_Calibration/WOTDLT_DeltaThrottleFrom_MINTHR_ToDetermineFullThrottle.html"><code>WOTDLT_DeltaThrottleFrom_MINTHR_ToDetermineFullThrottle</code></a> to accumulator A, forcing wide-open throttle.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
-<li>Rescale <code>MPTHR</code> by multiplying by 0.667 when upgrading to a 3-bar MAP sensor (from 104 counts down to 69 counts) to keep the 12.0 psi absolute transition point accurate.</li>
-<li><strong>Limp-In Drivability Tuning</strong>:</li>
-<li>Lowering <code>MPTHR</code> provides richer, safer failsafe fueling earlier in the pedal travel under sensor failure conditions.</li>
-<li>Raising <code>MPTHR</code> preserves part-throttle economy in limp-in mode but delays wide-open throttle enrichment.</li>
-<li><strong>Edge Cases</strong>:</li>
-<li>Setting <code>MPTHR</code> below base idle manifold pressure permanently locks the engine into simulated wide-open throttle.</li>
-<li>Setting <code>MPTHR</code> above atmospheric pressure prevents simulated wide-open throttle from engaging without positive boost.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

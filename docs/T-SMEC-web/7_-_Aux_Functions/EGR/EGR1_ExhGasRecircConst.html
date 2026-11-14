@@ -117,21 +117,22 @@
 <p>During closed-loop cruising, the engine controller requires stable operating conditions before testing whether the EGR valve actually delivers exhaust gas to the intake manifold. The controller tests that manifold pressure, throttle angle, and engine speed remain within prescribed test windows while the EGR solenoid is energized. While these conditions hold, an internal diagnostic counter increments once per background execution loop pass.</p>
 <p>The factory setting of 455 loop counts corresponds to approximately 4.5 to 6.8 seconds of continuous, undisturbed cruising. If the vehicle operates steadily for this entire period, the controller freezes its filtered baseline oxygen sensor fuel trim and advances to Phase 2 of the diagnostic test.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Raising EGR1</strong>: Increases the duration of steady cruising required to satisfy Phase 1 baseline sampling. This reduces diagnostic test frequency during stop-and-go driving, requiring longer highway cruises to complete.</li>
+<li><strong>Lowering EGR1</strong>: Shortens the required Phase 1 sampling window, accelerating the transition to Phase 2 EGR shutoff testing. If lowered excessively below 200 counts (roughly 2 seconds), baseline fuel trim may not stabilize, increasing the risk of false Fault Code 32 triggers.</li>
+<li><strong>EGR Elimination Scenarios</strong>: Setting <code>EGR1</code> to its maximum 16-bit ceiling (65535 counts) ensures the diagnostic timer never elapses during ordinary driving cycles. This cleanly prevents Phase 2 testing and suppresses Fault Code 32 when an EGR block-off plate is installed on modified turbo builds.</li>
+<li><strong>Stock Applications</strong>: Retaining the factory calibration of 455 counts preserves complete OBD-I emissions compliance and provides robust immunity against false diagnostic failures.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle cruising, modulating the exhaust gas recirculation (EGR) solenoid duty cycle to control combustion temperatures.</p>
 <ul>
 <li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5426.</li>
 <li><strong>Preconditions Checked</strong>: Closed-loop fueling active (<code>b50_StayOpenLoop</code> clear), oxygen sensor valid (<code>b4f_O2Valid</code> set), off-idle throttle (<code>b4f_OffIdle</code> set), purge solenoid active (<code>pia1abuf_PurgeSolenoid</code> set), no active limiter/fault masks (<a href="../../0_-_Setup/A_-_Cal_Configuration/IPLMSK_PowerLossLightMask.html"><code>IPLMSK_PowerLossLightMask</code></a>), and intake manifold vacuum (<code>BaroPressure - MapValue &gt;= EGR33</code>).</li>
 <li><strong>State Variable</strong>: <code>EGRVar2</code> bit 7 clear (Phase 1 active).</li>
 <li><strong>Comparison</strong>: Evaluates 16-bit diagnostic loop counter <code>EGRVar3</code> against <code>EGR1_ExhGasRecircConst</code>.</li>
 <li><strong>Branch Behavior</strong>: If <code>EGRVar3 &gt; EGR1</code> (<code>bhi L1466</code>), branches to enter Phase 2 (clears loop index, sets <code>EGRVar2</code> bit 7, copies baseline <code>EGRVar5</code> to <code>EGRVar6</code>). If <code>EGRVar3 &lt;= EGR1</code>, continues Phase 1 window checks.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Raising EGR1</strong>: Increases the duration of steady cruising required to satisfy Phase 1 baseline sampling. This reduces diagnostic test frequency during stop-and-go driving, requiring longer highway cruises to complete.</li>
-<li><strong>Lowering EGR1</strong>: Shortens the required Phase 1 sampling window, accelerating the transition to Phase 2 EGR shutoff testing. If lowered excessively below 200 counts (roughly 2 seconds), baseline fuel trim may not stabilize, increasing the risk of false Fault Code 32 triggers.</li>
-<li><strong>EGR Elimination Scenarios</strong>: Setting <code>EGR1</code> to its maximum 16-bit ceiling (65535 counts) ensures the diagnostic timer never elapses during ordinary driving cycles. This cleanly prevents Phase 2 testing and suppresses Fault Code 32 when an EGR block-off plate is installed on modified turbo builds.</li>
-<li><strong>Stock Applications</strong>: Retaining the factory calibration of 455 counts preserves complete OBD-I emissions compliance and provides robust immunity against false diagnostic failures.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

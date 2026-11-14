@@ -117,7 +117,18 @@
 <p>When closed loop is active, the controller expects the sensor to oscillate continuously across the stoichiometric threshold. If the sensor fails to switch for the duration specified by <code>LTHTIM</code>, the first strike triggers an internal warning and erases all 15 adaptive fuel memory cells.</p>
 <p>If the timeout expires a second consecutive time, fault code 51 (lean) or code 52 (rich) is latched, adaptive memory is cleared again, and closed loop is locked out. In stock calibrations, <code>LTHTIM</code> is set to 43 counts (approximately 480 milliseconds across 43 main loop passes).</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Header &amp; Relocated Sensor Tuning</strong>:</li>
+<li>Moving the O2 sensor downstream increases exhaust transport delay. Raising <code>LTHTIM</code> to 60-80 counts prevents false fault codes 51/52 and stops constant adaptive memory erasing.</li>
+<li><strong>Two-Strike Fault Logic</strong>:</li>
+<li>Strike one sets internal warning bit <code>b2e_BadO2Read</code> and erases adaptive cells. Strike two sets fault code 51 or 52 and locks out closed loop.</li>
+<li><strong>Wideband Simulation</strong>:</li>
+<li>Simulated narrowband outputs from wideband controllers often switch more slowly; raise <code>LTHTIM</code> to accommodate signal delay.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when closed loop is active, the controller expects the sensor to oscillate continuously across the stoichiometric threshold.</p>
 <ul>
 <li><strong>Enclosing Subroutine</strong>: <code>CheckAndSetO2FaultCode</code> (<code>T-SMEC_v19.asm:3150-3160</code>), instruction line 3153.</li>
 <li><strong>Gating Conditions</strong>: Engine in closed loop (<code>BitFlags_50</code> bit <code>b50_StayOpenLoop</code> clear) and sensor has not toggled.</li>
@@ -126,16 +137,6 @@
 <li>Line 3153 executes <code>cmpa LTHTIM_IfNoO2SwitchForThisTimeThrowFault51or52</code>.</li>
 <li>If <code>Counter_AdaptiveMem_Erase &gt;= LTHTIM</code> (<code>bcc</code>), execution branches to <code>EraseAdaptiveMemory_possiblySetErrorBit</code> (line 3161).</li>
 <li>If <code>Counter_AdaptiveMem_Erase &lt; LTHTIM</code>, line 3157 increments register A on loop rollover.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Header &amp; Relocated Sensor Tuning</strong>:</li>
-<li>Moving the O2 sensor downstream increases exhaust transport delay. Raising <code>LTHTIM</code> to 60-80 counts prevents false fault codes 51/52 and stops constant adaptive memory erasing.</li>
-<li><strong>Two-Strike Fault Logic</strong>:</li>
-<li>Strike one sets internal warning bit <code>b2e_BadO2Read</code> and erases adaptive cells. Strike two sets fault code 51 or 52 and locks out closed loop.</li>
-<li><strong>Wideband Simulation</strong>:</li>
-<li>Simulated narrowband outputs from wideband controllers often switch more slowly; raise <code>LTHTIM</code> to accommodate signal delay.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

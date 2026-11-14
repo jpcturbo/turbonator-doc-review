@@ -116,7 +116,18 @@
 <p><code>DFRPM2</code> defines the minimum engine speed required to qualify for deceleration fuel shutoff through the secondary over-rev deceleration pathway.</p>
 <p>While standard closed-throttle deceleration fuel cut is handled earlier in the controller logic based on idle RPM deltas, <code>DFRPM2</code> guards an auxiliary highway and high-RPM deceleration cut routine that checks vehicle speed, engine warmup temperature, and runtime. In the 2.5L stock automatic calibration, <code>DFRPM2</code> is set to 219 counts, which places the threshold at approximately 7000 RPM. This high setting effectively deactivates this auxiliary branch under normal driving, reserving it for severe high-speed trailing-throttle conditions.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Activating Secondary Decel Cut</strong>:</li>
+<li>Lower <code>DFRPM2</code> to 80 counts (2560 RPM) to arm deceleration fuel shutoff during street driving.</li>
+<li><strong>Disabling Auxiliary Decel Cut</strong>:</li>
+<li>Setting <code>DFRPM2</code> to 255 counts disables this pathway, preserving fueling during aggressive trail-braking or gear changes.</li>
+<li><strong>Label vs Factory Setting</strong>:</li>
+<li>Note that while the label specifies 2560 RPM, the factory 2.5L automatic template data contains 219 counts (7008 RPM) to bypass this check.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during closed-throttle deceleration, setting the upper RPM threshold above which deceleration fuel shutoff is armed.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>Cutout_CheckMPHLimitingValues</code> (<code>T-SMEC_v19.asm:5713-5730</code>), called from <code>Cutout_CheckRevLimitingValues</code> (<code>T-SMEC_v19.asm:5709</code>).</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -125,16 +136,6 @@
 <li><code>EngineRpm_HB</code> is compared against <code>DFRPM2</code> (<code>cmpa DFRPM2_2560RPM_DecelFuelShutoffUpperRpmLimit</code>).</li>
 <li>If <code>EngineRpm_HB &lt; DFRPM2</code> (<code>bcs R1487</code>), execution returns without cutting fuel.</li>
 <li>If <code>EngineRpm_HB &gt;= DFRPM2</code>, execution continues to test <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/DFSMPH_20MPHDecelFuelShutoffSpeedLimit.html"><code>DFSMPH</code></a>, <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/DFSTMP_60DegCDecelFuelShutoffTempLimit.html"><code>DFSTMP</code></a>, and <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/DFSTMR_3minuteDecelFuelShutoffTimeLimit.html"><code>DFSTMR</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Activating Secondary Decel Cut</strong>:</li>
-<li>Lower <code>DFRPM2</code> to 80 counts (2560 RPM) to arm deceleration fuel shutoff during street driving.</li>
-<li><strong>Disabling Auxiliary Decel Cut</strong>:</li>
-<li>Setting <code>DFRPM2</code> to 255 counts disables this pathway, preserving fueling during aggressive trail-braking or gear changes.</li>
-<li><strong>Label vs Factory Setting</strong>:</li>
-<li>Note that while the label specifies 2560 RPM, the factory 2.5L automatic template data contains 219 counts (7008 RPM) to bypass this check.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

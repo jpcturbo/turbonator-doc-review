@@ -118,17 +118,7 @@
 <p>In factory calibrations, <code>ACDTHR</code> is set to 255 counts (5.0 Volts delta above idle stop).</p>
 <p>This maximum setting disables part-throttle cutout on factory calibrations, ensuring that the air conditioning remains active until true wide-open throttle is reached.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2205</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Coolant temp must meet <a href="../../5_-_Idle/B_-_AIS_Decel/ACDTMP_PartThrottleAcCutoutDisableTemp.html"><code>ACDTMP</code></a> threshold at line 2178.</li>
-<li>Computes throttle delta: <code>ldaa TpsVolts; suba MINTHR_LowestSessionTPS</code> at lines 2179-2180.</li>
-<li>Compares delta against <code>ACDTHR</code> at line 2182 (<code>cmpa ACDTHR_PartThrottleAcCutoutDisableThrottle</code>).</li>
-<li>If delta is below <code>ACDTHR</code> (<code>bcs L1100</code>), cutout is aborted.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Brisk Passing Boost</strong>:</li>
 <li>Lower <code>ACDTHR</code> to 2.0 to 2.5 Volts to automatically cut the A/C compressor during half-throttle acceleration, improving passing power.</li>
@@ -136,6 +126,17 @@
 <li>Retain factory 255 counts (5.0 Volts) to prevent the air conditioner from cutting out during part-throttle driving.</li>
 <li><strong>Delta TPS Input</strong>:</li>
 <li>Evaluated relative to <code>MINTHR</code>, meaning physical TPS mounting variations are automatically zeroed out.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during part-throttle acceleration with the A/C on, requiring throttle position increase to exceed this threshold before disengaging the compressor clutch.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2205</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Coolant temp must meet <a href="../../5_-_Idle/B_-_AIS_Decel/ACDTMP_PartThrottleAcCutoutDisableTemp.html"><code>ACDTMP</code></a> threshold at line 2178.</li>
+<li>Computes throttle delta: <code>ldaa TpsVolts; suba MINTHR_LowestSessionTPS</code> at lines 2179-2180.</li>
+<li>Compares delta against <code>ACDTHR</code> at line 2182 (<code>cmpa ACDTHR_PartThrottleAcCutoutDisableThrottle</code>).</li>
+<li>If delta is below <code>ACDTHR</code> (<code>bcs L1100</code>), cutout is aborted.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

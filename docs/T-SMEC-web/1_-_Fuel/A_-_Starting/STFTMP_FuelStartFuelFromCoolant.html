@@ -129,18 +129,7 @@
 <p>While <a href="../../1_-_Fuel/A_-_Starting/STRTFL_FuelStartFromCoolantTemp.html"><code>STRTFL</code></a> sets the cold base starting fuel, warm and hot engines require significantly less fuel to start because hot metal surfaces promote immediate fuel vaporization.</p>
 <p>Working in direct multiplication with the barometric reduction factor (<a href="../../1_-_Fuel/A_-_Starting/STFBAR_FuelStartReductionFromBaro.html"><code>STFBAR</code></a>), <code>STFTMP</code> calculates a combined reduction percentage. This percentage subtracts fuel from the cranking pulsewidth, ensuring hot restarts are clean and rapid without flooding or black smoke.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateInjectorPulsewidthForStarting_MM</code> (<code>T-SMEC_v19.asm:5579-5590</code>), instruction line 5580.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Active during cranking (<code>b54_FuelEngineNotRunning</code> set).</li>
-<li>Executed after <a href="../../1_-_Fuel/A_-_Starting/STFBAR_FuelStartReductionFromBaro.html"><code>STFBAR</code></a> has looked up barometric reduction into <code>Temp4</code>.</li>
-<li><strong>Math &amp; Multiplier</strong>:</li>
-<li>Multiplied against <code>Temp4</code> via <code>mul; adca #0x00</code>.</li>
-<li>If result is non-zero, negated (<code>nega</code>) and used to scale <code>Temp0</code> via <code>ScaleYbyA</code>, implementing <code>Temp0 * (1 - STFBAR * STFTMP)</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Warm Restart Flooding</strong>:</li>
 <li>Increasing <code>STFTMP</code> values at warm temperatures (above 140 degF) removes excess cranking fuel, curing hot restart flooding.</li>
@@ -150,6 +139,18 @@
 <li>Because <code>STFTMP</code> is multiplied by <a href="../../1_-_Fuel/A_-_Starting/STFBAR_FuelStartReductionFromBaro.html"><code>STFBAR</code></a>, changes here interact directly with high-elevation starting behavior.</li>
 <li><strong>Injector Upgrades</strong>:</li>
 <li>When running large aftermarket injectors, higher <code>STFTMP</code> reduction factors prevent rich hot-cranking stumbles.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect while STRTFL sets the cold base starting fuel, warm and hot engines require significantly less fuel to start because hot metal surfaces promote immediate fuel vaporization.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateInjectorPulsewidthForStarting_MM</code> (<code>T-SMEC_v19.asm:5579-5590</code>), instruction line 5580.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Active during cranking (<code>b54_FuelEngineNotRunning</code> set).</li>
+<li>Executed after <a href="../../1_-_Fuel/A_-_Starting/STFBAR_FuelStartReductionFromBaro.html"><code>STFBAR</code></a> has looked up barometric reduction into <code>Temp4</code>.</li>
+<li><strong>Math &amp; Multiplier</strong>:</li>
+<li>Multiplied against <code>Temp4</code> via <code>mul; adca #0x00</code>.</li>
+<li>If result is non-zero, negated (<code>nega</code>) and used to scale <code>Temp0</code> via <code>ScaleYbyA</code>, implementing <code>Temp0 * (1 - STFBAR * STFTMP)</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

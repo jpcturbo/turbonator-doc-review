@@ -117,7 +117,20 @@
 <p>To ensure that the thermostat diagnostic only measures active engine operation under road load, the timer increments only when the vehicle is moving at or above approximately 3.5 mph. Idling at traffic lights does not advance the timer, preventing extended idle periods from prematurely expiring the warm-up budget.</p>
 <p>In factory calibrations, <code>HOTIME</code> is configured to 174 counts, representing approximately 11.6 minutes of active vehicle travel. If the vehicle is driven for this duration without coolant temperature reaching <a href="../../../7_-_Aux_Functions/On-Board_Diagnostics/T-Stat_Diagnostics/TDAGTP_TstatDiagnosticsTemperatureGoalWithin_HOTIME.html"><code>TDAGTP</code></a>, the engine controller flags <strong>Fault Code 17</strong>, turns on the check engine lamp, and records a stuck-open thermostat code.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Extended Warm-Up Accommodation</strong>:</li>
+<li>If cold weather commutes or large aluminum radiators cause premature Fault Code 17 triggers, raise <code>HOTIME</code> from 174 counts (11.6 min) to 210-230 counts (14-16 min).</li>
+<li><strong>Disabling Fault Code 17</strong>:</li>
+<li>Setting <code>HOTIME</code> to 255 counts (maximum byte) effectively disables the thermostat diagnostic test.</li>
+<li><strong>Speed Gating Mechanism</strong>:</li>
+<li>The timer advances only when vehicle speed is at or above 3.5 mph; extended warm-up idling does not advance <code>HOTIME</code>.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Setting <code>HOTIME</code> to 1 or 2 counts sets Fault Code 17 within seconds of pulling away from the curb.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if the vehicle is driven for this duration without coolant temperature reaching TDAGTP, the engine controller flags Fault Code 17, turns on the check engine lamp, and records a stuck-open thermostat code.</p>
 <ul>
 <li><strong>Routine &amp; Line Numbers</strong>: <code>VerifyOperationOfThermostat_MM</code> (<code>T-SMEC_v19.asm:5028-5053</code>), instruction at line 5046.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -128,18 +141,6 @@
 <li><code>cmpa HOTIME_TstatDiagnosticsTimeToAchieveTemperatureGoal</code> compares against 174 counts at line 5046.</li>
 <li>If lower (<code>bcs</code>), branches to <code>L1402</code> at line 5047, saving timer without error.</li>
 <li>If equal or exceeded, executes <code>ThrowNonCriticalError</code> with code <code>0x2101</code> (Fault Code 17) at line 5049.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Extended Warm-Up Accommodation</strong>:</li>
-<li>If cold weather commutes or large aluminum radiators cause premature Fault Code 17 triggers, raise <code>HOTIME</code> from 174 counts (11.6 min) to 210-230 counts (14-16 min).</li>
-<li><strong>Disabling Fault Code 17</strong>:</li>
-<li>Setting <code>HOTIME</code> to 255 counts (maximum byte) effectively disables the thermostat diagnostic test.</li>
-<li><strong>Speed Gating Mechanism</strong>:</li>
-<li>The timer advances only when vehicle speed is at or above 3.5 mph; extended warm-up idling does not advance <code>HOTIME</code>.</li>
-<li><strong>Edge Cases</strong>:</li>
-<li>Setting <code>HOTIME</code> to 1 or 2 counts sets Fault Code 17 within seconds of pulling away from the curb.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

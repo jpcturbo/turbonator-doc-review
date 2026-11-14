@@ -134,18 +134,7 @@
 <p><code>HOTMAP</code> defines the primary warm part-throttle manifold pressure spark advance curve used when the engine is fully warmed up and operating at partial throttle.</p>
 <p>In Chrysler speed-density engine management, ignition timing is decomposed into an engine speed component and a manifold load component. Under light-load cruising with deep manifold vacuum, the cylinder air-fuel charge is lean and low in density, burning substantially slower than a dense wide-open throttle mixture. To achieve optimal combustion efficiency and fuel economy, <code>HOTMAP</code> commands high advance (up to 15 degrees BTDC) under deep vacuum, progressively reducing timing toward atmospheric pressure and transitioning into retard (down to -8 degrees BTDC at 14.7 psi boost) as manifold pressure builds.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>DetermineHotAdvanceFromMap</code> (<code>T-SMEC_v19.asm:7987-8005</code>), called from <code>CalculateSparkAdvance_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Engine coolant temperature must be at or above <a href="../../2_-_Spark/A_-_Normal_Advance/TMPSWP_EngTempSwitchPointForSparkAdvance.html"><code>TMPSWP_EngTempSwitchPointForSparkAdvance</code></a>.</li>
-<li>Throttle must be off-idle (<code>b4f_OffIdle</code> set in <code>BitFlags_4f</code>) and not full throttle (<code>b4f_FullThrottle</code> clear).</li>
-<li><strong>Execution Flow</strong>:</li>
-<li><a href="../../2_-_Spark/A_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP</code></a> advance is calculated first and saved in <code>Temp0</code> as a lower boundary floor.</li>
-<li><code>HOTMAP</code> is looked up via <code>MapValue</code>, added to <a href="../../2_-_Spark/A_-_Normal_Advance/ADVCLS_AdvanceAddedForClosedLoopFromTimer.html"><code>ADVCLS</code></a>, processed through adaptive retard, and clamped against <code>Temp0</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Cruising Efficiency &amp; Throttle Snap</strong>:</li>
 <li>Increasing timing in <code>HOTMAP</code> throughout the light-load vacuum range improves fuel mileage and sharpens engine response during light pedal tip-in.</li>
@@ -155,6 +144,18 @@
 <li>The firmware clamps part-throttle timing so that it cannot drop below the full-throttle curve (<a href="../../2_-_Spark/A_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP</code></a>), ensuring a smooth and predictable timing transition as the driver floors the accelerator.</li>
 <li><strong>3D Surface Synthesis (<code>PTTIME</code>)</strong>:</li>
 <li>In MPTune, <code>HOTMAP</code> is visually synthesized with <a href="../../2_-_Spark/A_-_Normal_Advance/GOVNER_AdvanceFromRPM.html"><code>GOVNER</code></a> to produce the full 3D part-throttle spark table (<code>PTTIME</code>).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle driving (engine coolant above operating temperature), establishing the primary manifold vacuum ignition advance curve.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>DetermineHotAdvanceFromMap</code> (<code>T-SMEC_v19.asm:7987-8005</code>), called from <code>CalculateSparkAdvance_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Engine coolant temperature must be at or above <a href="../../2_-_Spark/A_-_Normal_Advance/TMPSWP_EngTempSwitchPointForSparkAdvance.html"><code>TMPSWP_EngTempSwitchPointForSparkAdvance</code></a>.</li>
+<li>Throttle must be off-idle (<code>b4f_OffIdle</code> set in <code>BitFlags_4f</code>) and not full throttle (<code>b4f_FullThrottle</code> clear).</li>
+<li><strong>Execution Flow</strong>:</li>
+<li><a href="../../2_-_Spark/A_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP</code></a> advance is calculated first and saved in <code>Temp0</code> as a lower boundary floor.</li>
+<li><code>HOTMAP</code> is looked up via <code>MapValue</code>, added to <a href="../../2_-_Spark/A_-_Normal_Advance/ADVCLS_AdvanceAddedForClosedLoopFromTimer.html"><code>ADVCLS</code></a>, processed through adaptive retard, and clamped against <code>Temp0</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -117,17 +117,7 @@
 <p>Below this coolant temperature, the engine is considered completely cold, and fuel condensation on runner walls necessitates dedicated open-loop cold enrichment.</p>
 <p>In factory calibrations, <code>CLTEMP</code> is set to 146 counts, which corresponds to approximately 70 degF. If coolant temperature is lower than <code>CLTEMP</code>, closed-loop feedback is strictly locked out and fuel pulse width is governed entirely by open-loop base and warmup tables.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> / <code>O2_FullThrottle</code> (<code>T-SMEC_v19.asm:2991-3007</code>), instruction line 2997.</li>
-<li><strong>Gating Conditions</strong>: Engine running, initial sensor check passed or sensor not yet declared valid (<code>b4f_O2Valid</code> clear).</li>
-<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
-<li><code>CoolantTemp</code> is loaded into register B and compared against <code>CLTEMP_TempToStartCLTIMETimer</code> via <code>cmpb</code>.</li>
-<li>If <code>CoolantTemp &lt; CLTEMP</code> (<code>bcs</code>), execution branches directly to <code>O2_StopUsingFeedback</code> (line 3033), clearing ramp counters and setting <code>b50_StayOpenLoop</code>.</li>
-<li>If <code>CoolantTemp &gt;= CLTEMP</code>, execution proceeds to evaluate <code>Timer_CLTIME_ClosedLoopTimer</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Cold Climate Optimization</strong>:</li>
 <li>In freezing conditions, raising <code>CLTEMP</code> to 85 or 90 degF ensures thorough engine warmup before closed-loop trimming engages.</li>
@@ -135,6 +125,17 @@
 <li>Lowering <code>CLTEMP</code> toward 55 or 60 degF allows faster closed-loop engagement, improving fuel economy.</li>
 <li><strong>Open-Loop Racing Setup</strong>:</li>
 <li>Setting <code>CLTEMP</code> to 255 counts locks the ECU permanently in open loop across all operating temperatures, which is useful for drag racing on race gas or methanol.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if coolant temperature is lower than CLTEMP, closed-loop feedback is strictly locked out and fuel pulse width is governed entirely by open-loop base and warmup tables.</p>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> / <code>O2_FullThrottle</code> (<code>T-SMEC_v19.asm:2991-3007</code>), instruction line 2997.</li>
+<li><strong>Gating Conditions</strong>: Engine running, initial sensor check passed or sensor not yet declared valid (<code>b4f_O2Valid</code> clear).</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li><code>CoolantTemp</code> is loaded into register B and compared against <code>CLTEMP_TempToStartCLTIMETimer</code> via <code>cmpb</code>.</li>
+<li>If <code>CoolantTemp &lt; CLTEMP</code> (<code>bcs</code>), execution branches directly to <code>O2_StopUsingFeedback</code> (line 3033), clearing ramp counters and setting <code>b50_StayOpenLoop</code>.</li>
+<li>If <code>CoolantTemp &gt;= CLTEMP</code>, execution proceeds to evaluate <code>Timer_CLTIME_ClosedLoopTimer</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

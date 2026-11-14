@@ -116,7 +116,20 @@
 <p><code>MPSHFT</code> defines the primary manifold gauge pressure threshold that activates the timed overboost protection logic.</p>
 <p>Turbocharged Chrysler engines monitor manifold pressure relative to barometric pressure to detect dangerous overboost conditions, such as a disconnected wastegate actuator line, torn wastegate diaphragm, or frozen flapper valve. In factory calibrations, <code>MPSHFT</code> is configured to 118 counts, corresponding to approximately 13.6 psi of positive boost pressure above atmospheric barometric pressure. When manifold pressure exceeds barometric pressure by this amount, the engine controller initiates a countdown timer instead of cutting fuel immediately. This brief countdown permits temporary turbocharger boost spikes during rapid throttle transitions without interrupting engine power delivery, but cuts fuel injection to all cylinders if boost remains above the threshold once the timer elapses.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Raising for Higher Boost Targets</strong>:</li>
+<li>Raising <code>MPSHFT</code> allows the engine to sustain higher turbocharger boost levels without triggering fuel cutout.</li>
+<li>For 15 to 18 psi boost setups, elevate <code>MPSHFT</code> above target boost (typically 17 to 18 psi) or set it to 255 counts to disable timed fuel cut.</li>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
+<li>Converting to a 3-bar MAP sensor requires rescaling <code>MPSHFT</code> because the sensor span expands from 0 to 29.4 psi up to 0 to 44.1 psi absolute.</li>
+<li><strong>Lowering &amp; Edge Cases</strong>:</li>
+<li>Lowering <code>MPSHFT</code> tightens the safety envelope for fresh engine break-in or conservative testing.</li>
+<li>Setting <code>MPSHFT</code> below mechanical wastegate actuator spring pressure produces persistent fuel cuts under wide-open throttle.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when manifold pressure exceeds barometric pressure by this amount, the engine controller initiates a countdown timer instead of cutting fuel immediately.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>Cutout_CheckNormalOB</code> (<code>T-SMEC_v19.asm:5656-5666</code>), called from <code>ControlEngineCutout_MM</code> (<code>T-SMEC_v19.asm:5607-5671</code>).</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -130,18 +143,6 @@
 <li><code>MPSHFT</code> is subtracted from gauge boost (<code>suba MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer</code>).</li>
 <li>If negative (<code>bcs</code>), execution branches to <code>Cutout_ResetOverboostTimer</code> (<code>T-SMEC_v19.asm:5658</code>) to reload <code>TRNTM</code>.</li>
 <li>If positive, execution continues to compare against <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFA_OverboostFuelShutoffEnablePointFromMap_Absolute.html"><code>MPSHFA</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Raising for Higher Boost Targets</strong>:</li>
-<li>Raising <code>MPSHFT</code> allows the engine to sustain higher turbocharger boost levels without triggering fuel cutout.</li>
-<li>For 15 to 18 psi boost setups, elevate <code>MPSHFT</code> above target boost (typically 17 to 18 psi) or set it to 255 counts to disable timed fuel cut.</li>
-<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
-<li>Converting to a 3-bar MAP sensor requires rescaling <code>MPSHFT</code> because the sensor span expands from 0 to 29.4 psi up to 0 to 44.1 psi absolute.</li>
-<li><strong>Lowering &amp; Edge Cases</strong>:</li>
-<li>Lowering <code>MPSHFT</code> tightens the safety envelope for fresh engine break-in or conservative testing.</li>
-<li>Setting <code>MPSHFT</code> below mechanical wastegate actuator spring pressure produces persistent fuel cuts under wide-open throttle.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

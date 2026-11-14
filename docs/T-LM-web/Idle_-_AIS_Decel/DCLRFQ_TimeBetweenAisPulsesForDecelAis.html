@@ -116,18 +116,19 @@
 <p><code>DCLRFQ</code> (TimeBetweenAisPulsesForDecelAis) establishes the pulse frequency / damping interval between consecutive stepper motor movements while in deceleration control mode.</p>
 <p>During deceleration, the ECU continually calculates required step corrections via <a href="../Idle_-_AIS_Decel/DAISOP_DecelAisOpenStepsFromNeg_FromDeltaMap.html"><code>DAISOP</code></a> and <a href="../Idle_-_AIS_Decel/DAISCL_DecelAisOpenStepsFromPos_FromDeltaMap.html"><code>DAISCL</code></a>. However, physical stepper motors require finite settling time to move their pintles, and manifold pressure requires time to equilibrate. If the ECU pulsed the motor on every program pass, the pintle would rapidly buzz, skip steps, and cause erratic pressure fluctuations. <code>DCLRFQ</code> enforces a calibrated delay timer (<code>Timer_AisChanges</code>) before the next step pulse can be dispatched.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li>Evaluated inside <code>CalculateAisPosition_MM</code> at line 3655.</li>
-<li>Compares <code>Timer_AisChanges</code> against <code>DCLRFQ</code>.</li>
-<li>If <code>Timer_AisChanges &lt; DCLRFQ</code>, the routine branches to <code>LDAB4</code> and exits without moving the motor.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Stock Value</strong>: <code>0x3F</code> (63 timer ticks / ~0.7 seconds).</li>
 <li><strong>Faster Anti-Stall Response</strong>: Lowering <code>DCLRFQ</code> (e.g. to <code>0x20</code> or <code>0x18</code>) allows the ECU to step the AIS motor open more rapidly during rapid deceleration, which is beneficial for lightweight flywheels or quick-revving road race cars.</li>
 <li><strong>Motor Buzzing / Hunting</strong>: Setting <code>DCLRFQ</code> too low can cause the stepper motor to chatter or overshoot its intended step target.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during deceleration, the ECU continually calculates required step corrections via DAISOP and DAISCL.</p>
+<ul>
+<li>Evaluated inside <code>CalculateAisPosition_MM</code> at line 3655.</li>
+<li>Compares <code>Timer_AisChanges</code> against <code>DCLRFQ</code>.</li>
+<li>If <code>Timer_AisChanges &lt; DCLRFQ</code>, the routine branches to <code>LDAB4</code> and exits without moving the motor.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

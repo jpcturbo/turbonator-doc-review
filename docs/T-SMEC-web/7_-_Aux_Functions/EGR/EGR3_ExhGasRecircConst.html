@@ -117,21 +117,22 @@
 <p>When evaluating EGR operation, the engine controller requires a stable baseline fuel mixture. If closed-loop oxygen sensor feedback is driving the fuel mixture excessively rich, the baseline calculation becomes unreliable because the feedback integrator is operating near its upper authority limit.</p>
 <p>At line 5440, the controller compares its primary and secondary closed-loop ramp counter against <code>EGR3</code>. The factory calibration of 128 counts represents neutral closed-loop authority. If the fuel trim integrator reaches or exceeds 128 counts, the controller aborts Phase 1 and resets the diagnostic timer, preventing an invalid baseline.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Raising EGR3</strong>: Permits Phase 1 baseline sampling under richer closed-loop integrator states. Helpful if aftermarket injectors or fuel pressure variations cause the closed-loop ramp counter to ride higher than stock during part-throttle cruise.</li>
+<li><strong>Lowering EGR3</strong>: Restricts Phase 1 testing to leaner or closer-to-neutral fueling conditions. If lowered too far (below 100 counts), normal transient fueling shifts may frequently abort Phase 1, preventing the EGR monitor from ever finishing.</li>
+<li><strong>Zeroing Edge Case</strong>: Setting <code>EGR3</code> to 0 causes line 5441 to branch to <code>EGR_ResetEGRVars</code> whenever the ramp counter is positive, effectively locking the diagnostic monitor out of Phase 2 and preventing Fault Code 32 from setting on decat or modified vehicles.</li>
+<li><strong>Factory Setting</strong>: 128 counts represents half-scale of the signed 8-bit closed-loop ramp integrator, providing a balanced threshold for stock calibrations.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle cruising, modulating the exhaust gas recirculation (EGR) solenoid duty cycle to control combustion temperatures.</p>
 <ul>
 <li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5440.</li>
 <li><strong>Preconditions Checked</strong>: Vehicle operating in Phase 1 (<code>EGRVar2</code> bit 7 clear), and all three Phase 1 window checks (<a href="../../7_-_Aux_Functions/EGR/EGR18_ExhGasRecircConstLoLimit.html"><code>EGR18</code></a> MAP, <a href="../../7_-_Aux_Functions/EGR/EGR14_ExhGasRecircConstFromTPSVoltsLoLimit.html"><code>EGR14</code></a> TPS, <a href="../../7_-_Aux_Functions/EGR/EGR15_ExhGasRecircConstFromRPMLoLimit.html"><code>EGR15</code></a> RPM) passed successfully.</li>
 <li><strong>Input Variable</strong>: <code>Counter_PrimaryAndSecondaryRamp</code> (RAM address 0x002B), the closed-loop O2 integrator.</li>
 <li><strong>Comparison</strong>: <code>cmpa EGR3_ExhGasRecircConst</code>.</li>
 <li><strong>Branch Behavior</strong>: If <code>Counter_PrimaryAndSecondaryRamp &gt;= EGR3</code> (<code>bge EGR_ResetEGRVars</code>), aborts Phase 1, resets <code>EGRVar3</code> to zero, and clears diagnostic test flags. If below <code>EGR3</code>, increments <code>EGRVar3</code> and proceeds with baseline filtering.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Raising EGR3</strong>: Permits Phase 1 baseline sampling under richer closed-loop integrator states. Helpful if aftermarket injectors or fuel pressure variations cause the closed-loop ramp counter to ride higher than stock during part-throttle cruise.</li>
-<li><strong>Lowering EGR3</strong>: Restricts Phase 1 testing to leaner or closer-to-neutral fueling conditions. If lowered too far (below 100 counts), normal transient fueling shifts may frequently abort Phase 1, preventing the EGR monitor from ever finishing.</li>
-<li><strong>Zeroing Edge Case</strong>: Setting <code>EGR3</code> to 0 causes line 5441 to branch to <code>EGR_ResetEGRVars</code> whenever the ramp counter is positive, effectively locking the diagnostic monitor out of Phase 2 and preventing Fault Code 32 from setting on decat or modified vehicles.</li>
-<li><strong>Factory Setting</strong>: 128 counts represents half-scale of the signed 8-bit closed-loop ramp integrator, providing a balanced threshold for stock calibrations.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

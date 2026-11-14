@@ -117,20 +117,7 @@
 <p>If a vacuum line falls off, splits, or the sensor port clogs, the sensor will read atmospheric barometric pressure rather than intake vacuum while the engine is running. Stored as a two-byte word constant, the high byte establishes the minimum vacuum required at sea level, while the low byte establishes the relaxed vacuum required at high altitudes above the <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/BAROSW_CheckMapAtZeroSpeedAndThisBaroSwitch.html"><code>BAROSW</code></a> threshold.</p>
 <p>In factory calibrations, <code>MPVACD</code> is configured with two thresholds, representing 17 counts (approximately 4.0 inHg or 2.0 psi vacuum) for the high byte and 8 counts (approximately 1.9 inHg or 0.9 psi vacuum) for the low byte. If measured idle vacuum below atmospheric pressure is less than the active <code>MPVACD</code> threshold, the engine controller flags <strong>Fault Code 13</strong> and latches a stuck MAP failure.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Routine &amp; Line Numbers</strong>: <code>VerifyOperationOfMapSensor_MM</code> (<code>T-SMEC_v19.asm:4893-4946</code>), instruction at line 4914.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Checked every 8th main loop when stationary at closed-throttle idle within <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPRMPD_CheckMapAtZeroSpeedAndThisDeltaRpm.html"><code>MPRMPD</code></a> of target idle speed.</li>
-<li><strong>Math &amp; Comparison</strong>:</li>
-<li>Delta vacuum computed as <code>BaroPressure - MapValue</code> in accumulator A at line 4912.</li>
-<li>Index register X loaded with <code>#MPVACD_AllowMapToTestGoodThisNearBaro</code> at line 4914.</li>
-<li>If barometric pressure is below <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/BAROSW_CheckMapAtZeroSpeedAndThisBaroSwitch.html"><code>BAROSW</code></a>, line 4917 increments X (<code>inx</code>), selecting the second threshold byte.</li>
-<li><code>cmpa 0x00,x</code> at line 4918 compares manifold vacuum against the selected byte.</li>
-<li>If vacuum is lower or if <code>suba</code> produced underflow, branches to <code>L1383</code> at line 4920, throwing error <code>0x2794</code> (Fault Code 13) and setting <code>b45_MapStuck</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Camshaft Idle Vacuum Accommodation</strong>:</li>
 <li>Performance camshafts produce low idle vacuum that frequently trips false Fault Code 13 codes.</li>
@@ -142,6 +129,20 @@
 <li><strong>Edge Cases</strong>:</li>
 <li>Setting both bytes of <code>MPVACD</code> to zero disables pneumatic vacuum monitoring entirely.</li>
 <li>Setting <code>MPVACD</code> higher than the engine's physical idle vacuum permanently locks the vehicle into Fault Code 13.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if a vacuum line falls off, splits, or the sensor port clogs, the sensor will read atmospheric barometric pressure rather than intake vacuum while the engine is running.</p>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>VerifyOperationOfMapSensor_MM</code> (<code>T-SMEC_v19.asm:4893-4946</code>), instruction at line 4914.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Checked every 8th main loop when stationary at closed-throttle idle within <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPRMPD_CheckMapAtZeroSpeedAndThisDeltaRpm.html"><code>MPRMPD</code></a> of target idle speed.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li>Delta vacuum computed as <code>BaroPressure - MapValue</code> in accumulator A at line 4912.</li>
+<li>Index register X loaded with <code>#MPVACD_AllowMapToTestGoodThisNearBaro</code> at line 4914.</li>
+<li>If barometric pressure is below <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/BAROSW_CheckMapAtZeroSpeedAndThisBaroSwitch.html"><code>BAROSW</code></a>, line 4917 increments X (<code>inx</code>), selecting the second threshold byte.</li>
+<li><code>cmpa 0x00,x</code> at line 4918 compares manifold vacuum against the selected byte.</li>
+<li>If vacuum is lower or if <code>suba</code> produced underflow, branches to <code>L1383</code> at line 4920, throwing error <code>0x2794</code> (Fault Code 13) and setting <code>b45_MapStuck</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

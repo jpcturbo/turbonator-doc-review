@@ -117,21 +117,22 @@
 <p>In vehicles equipped with a manual transmission, the engine controller checks whether engine speed is high enough to support EGR dilution without causing engine bucking or hesitation in gear.</p>
 <p>At line 5390, the controller tests the automatic transmission configuration bit. If the vehicle is an automatic, this logic is bypassed entirely. On manual transmission configurations, the controller loads <code>EGR13</code> and compares it against the high byte of engine speed (<code>EngineRpm_HB</code>). The factory calibration setting of 0 counts enables EGR operation across all off-idle engine speeds on manual vehicles.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Transmission Specificity</strong>: Active only when <code>cfg_ATX</code> is clear (manual transmission vehicles). Bypassed completely on automatic transmission calibrations.</li>
+<li><strong>Raising EGR13 (MTX)</strong>: Sets a minimum engine speed floor for EGR activation (32 RPM per count). Setting 50 counts (1600 RPM) eliminates low-RPM surge with aggressive camshafts.</li>
+<li><strong>EGR Elimination (255 counts on MTX)</strong>: Permanently disables EGR on manual transmission calibrations by creating an unachievable 8160 RPM turn-on threshold.</li>
+<li><strong>Factory Calibration</strong>: 0 counts allows EGR operation at any engine speed once the throttle opens off idle.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle cruising, modulating the exhaust gas recirculation (EGR) solenoid duty cycle to control combustion temperatures.</p>
 <ul>
 <li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5393.</li>
 <li><strong>Precondition</strong>: <a href="../../0_-_Setup/A_-_Cal_Configuration/CONFIG_ConfigurationFlags.html"><code>CONFIG_ConfigurationFlags</code></a> bit <code>cfg_ATX</code> clear (manual transmission).</li>
 <li><strong>Throttle Check</strong>: Line 5392 tests <code>b4f_OffIdle</code>; if clear (at idle), branches to turn EGR off.</li>
 <li><strong>Input Variable</strong>: <code>EngineRpm_HB</code> evaluated against <code>EGR13</code> (or <code>EGR13 + EGR10</code> if EGR currently off).</li>
 <li><strong>Branch Behavior</strong>: If <code>EngineRpm_HB &gt;= threshold</code> (<code>bls L1456</code>), permits EGR to proceed to runtime check.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Transmission Specificity</strong>: Active only when <code>cfg_ATX</code> is clear (manual transmission vehicles). Bypassed completely on automatic transmission calibrations.</li>
-<li><strong>Raising EGR13 (MTX)</strong>: Sets a minimum engine speed floor for EGR activation (32 RPM per count). Setting 50 counts (1600 RPM) eliminates low-RPM surge with aggressive camshafts.</li>
-<li><strong>EGR Elimination (255 counts on MTX)</strong>: Permanently disables EGR on manual transmission calibrations by creating an unachievable 8160 RPM turn-on threshold.</li>
-<li><strong>Factory Calibration</strong>: 0 counts allows EGR operation at any engine speed once the throttle opens off idle.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

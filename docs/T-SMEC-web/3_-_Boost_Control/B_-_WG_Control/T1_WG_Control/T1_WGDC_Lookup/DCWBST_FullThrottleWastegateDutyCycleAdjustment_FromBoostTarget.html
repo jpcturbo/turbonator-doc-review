@@ -134,18 +134,7 @@
 <p><code>DCWBST</code> provides a proportional duty cycle boost offset based on the error delta between target boost and actual manifold pressure in T1 control.</p>
 <p>When the driver snaps the throttle open and actual manifold pressure is far below the target ceiling, this table adds significant duty cycle to clamp the wastegate tightly closed and spool the turbocharger as rapidly as possible. As manifold pressure climbs and approaches the target boost, the error delta diminishes toward zero, progressively reducing the duty cycle addition and transitioning smoothly onto base open-loop and adaptive regulation.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_LookupWGDutyCycleBase</code> (<code>T-SMEC_v19.asm:9614-9620</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
-<li><strong>Error Delta Calculation</strong>:</li>
-<li>Accumulator A loads <code>Temp3</code> (target boost) and subtracts <code>MapValue</code> at line 9615.</li>
-<li>If actual MAP exceeds target boost (negative delta, carry clear), accumulator A is zeroed at line 9617.</li>
-<li><strong>Adjustment Application</strong>:</li>
-<li>Index register loaded with <code>#DCWBST_FullThrottleWastegateDutyCycleAdjustment_FromBoostTarget</code> at line 9618.</li>
-<li>Output from <code>Lookup4ByteTable</code> is added to <code>Temp4</code> via <code>bsr WGDC_AdjustWGDutyCycle</code> (line 9620).</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Spool-Up Proportional Gain</strong>:</li>
 <li>Adds wastegate duty cycle based on how far manifold pressure lags below target boost (<code>Target - Actual</code>).</li>
@@ -156,6 +145,18 @@
 <li>In T1 control, lookup results are added directly to duty cycle; in T2 control, the lookup result is negated before application.</li>
 <li><strong>Negative Error Clamping</strong>:</li>
 <li>If actual boost exceeds target, the error delta is clamped to zero, ensuring <code>DCWBST</code> never adds duty cycle during overboost.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the driver snaps the throttle open and actual manifold pressure is far below the target ceiling, this table adds significant duty cycle to clamp the wastegate tightly closed and spool the turbocharger as rapidly as possible.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_LookupWGDutyCycleBase</code> (<code>T-SMEC_v19.asm:9614-9620</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
+<li><strong>Error Delta Calculation</strong>:</li>
+<li>Accumulator A loads <code>Temp3</code> (target boost) and subtracts <code>MapValue</code> at line 9615.</li>
+<li>If actual MAP exceeds target boost (negative delta, carry clear), accumulator A is zeroed at line 9617.</li>
+<li><strong>Adjustment Application</strong>:</li>
+<li>Index register loaded with <code>#DCWBST_FullThrottleWastegateDutyCycleAdjustment_FromBoostTarget</code> at line 9618.</li>
+<li>Output from <code>Lookup4ByteTable</code> is added to <code>Temp4</code> via <code>bsr WGDC_AdjustWGDutyCycle</code> (line 9620).</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

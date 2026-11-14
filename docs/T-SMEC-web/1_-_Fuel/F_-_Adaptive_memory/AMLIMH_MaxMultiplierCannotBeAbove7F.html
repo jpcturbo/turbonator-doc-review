@@ -117,7 +117,18 @@
 <p>The SMEC firmware applies adaptive fuel trims as a signed modifier where each bit equals approximately 0.1953 percent of base fuel delivery.</p>
 <p>In stock calibrations, <code>AMLIMH</code> is set to 127 counts (positive 127), which limits maximum learned enrichment to approximately +24.8 percent above the base calibration. This cap prevents vacuum leaks, failing fuel pumps, or dirty injectors from causing the engine controller to excessively enrich base fuel calculations into runaway conditions.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Constraining Adaptive Authority</strong>:</li>
+<li>Clamping <code>AMLIMH</code> to 25-50 counts limits positive fuel trim learning to +5% to +10%, preventing runaway enrichment.</li>
+<li><strong>Zeroing for Wideband Tuning</strong>:</li>
+<li>Setting <code>AMLIMH</code> to 0 disables positive long-term fuel trim learning, essential when mapping base fuel tables.</li>
+<li><strong>Formula &amp; Resolution</strong>:</li>
+<li>Maximum fuel modifier is <code>1 + (AMLIMH / 512)</code>. 127 counts represents +24.8% enrichment.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect whenever adaptive fuel trims are updated during driving, capping the maximum allowable positive enrichment to prevent runaway rich conditions.</p>
 <ul>
 <li><strong>Enclosing Subroutine</strong>: <code>AdaptiveMemory_UpdateCellIfRequired_MM</code> / <code>UpdateAdaptive_OffIdle</code> (<code>T-SMEC_v19.asm:3314-3335</code>), instruction line 3318.</li>
 <li><strong>Gating Conditions</strong>: Adaptive update triggered; signed addition to <code>AutoCalCell</code> completed.</li>
@@ -126,16 +137,6 @@
 <li>If 2's complement overflow occurs (<code>bvc Adaptive_Overflowed</code> not taken), cell is clamped to <code>AMLIMH</code>.</li>
 <li>Line 3327 compares updated cell against <code>AMLIMH</code> via <code>cba</code>.</li>
 <li>If <code>cell &gt;= AMLIMH</code> (<code>bge</code>), execution branches to <code>Adaptive_SetCellToMaxOrMinValue</code> (line 3332), clamping cell to <code>AMLIMH</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Constraining Adaptive Authority</strong>:</li>
-<li>Clamping <code>AMLIMH</code> to 25-50 counts limits positive fuel trim learning to +5% to +10%, preventing runaway enrichment.</li>
-<li><strong>Zeroing for Wideband Tuning</strong>:</li>
-<li>Setting <code>AMLIMH</code> to 0 disables positive long-term fuel trim learning, essential when mapping base fuel tables.</li>
-<li><strong>Formula &amp; Resolution</strong>:</li>
-<li>Maximum fuel modifier is <code>1 + (AMLIMH / 512)</code>. 127 counts represents +24.8% enrichment.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

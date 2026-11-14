@@ -116,17 +116,7 @@
 <p><code>RPMBST</code> defines the minimum engine speed threshold required to advance the boost ramp countdown timer (<code>Timer_BoostTimer</code>) in T1 wastegate control.</p>
 <p>The boost ramp timer indexes the time-based allowed boost table (<a href="../../../../3_-_Boost_Control/A_-_Target_Lookup/WSGTIM_AllowedBoost_FromTime.html"><code>WSGTIM</code></a>), allowing boost to ramp upward from base spring pressure to full target boost over a calibrated duration. To ensure that the boost timer does not prematurely advance while the engine is lugging at low RPM where the turbo cannot generate full boost, the controller requires engine speed to exceed <code>RPMBST</code> before incrementing the timer.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_CalculateWGDutyCycleVars</code> (<code>T-SMEC_v19.asm:9585-9599</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
-<li><strong>Prescaler Frequency</strong>: Evaluated every 32 main program loops when <code>Counter_MainLoop</code> bitmask 31 is zero (line 9587).</li>
-<li><strong>Comparison Logic</strong>:</li>
-<li>Accumulator B loads <code>EngineRpm_HB</code> (32 RPM per count) at line 9589.</li>
-<li>Compares against <code>RPMBST_MinimumRpmToTrackBoostCreep</code> at line 9590 (<code>cmpb RPMBST</code>).</li>
-<li>If engine speed is below <code>RPMBST</code> (<code>bcs</code>), execution skips incrementing <code>Timer_BoostTimer</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Spool Tracking RPM Threshold</strong>:</li>
 <li>Prevents <code>Timer_BoostTimer</code> from counting up when engine RPM is too low to produce boost.</li>
@@ -136,6 +126,17 @@
 <li>For large aftermarket turbos (e.g. Garrett GT30R, Holset HX35), raise <code>RPMBST</code> to 3600 to 4000 RPM.</li>
 <li><strong>T1 vs. T2 Separation</strong>:</li>
 <li><code>RPMBST</code> controls timer advancement in T1 mode; T2 mode uses its dedicated companion <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T2_WG_Control/T2_WGDC_BoostCreep/T2RPMBST_MinimumRpmToTrackBoostCreep.html"><code>T2RPMBST</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under turbocharger boost operation to control MinimumRpmToTrackBoostCreep.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_CalculateWGDutyCycleVars</code> (<code>T-SMEC_v19.asm:9585-9599</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
+<li><strong>Prescaler Frequency</strong>: Evaluated every 32 main program loops when <code>Counter_MainLoop</code> bitmask 31 is zero (line 9587).</li>
+<li><strong>Comparison Logic</strong>:</li>
+<li>Accumulator B loads <code>EngineRpm_HB</code> (32 RPM per count) at line 9589.</li>
+<li>Compares against <code>RPMBST_MinimumRpmToTrackBoostCreep</code> at line 9590 (<code>cmpb RPMBST</code>).</li>
+<li>If engine speed is below <code>RPMBST</code> (<code>bcs</code>), execution skips incrementing <code>Timer_BoostTimer</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

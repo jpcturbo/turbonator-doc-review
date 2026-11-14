@@ -118,17 +118,7 @@
 <p>Whenever closed throttle is detected at speeds below <a href="../../5_-_Idle/B_-_AIS_Decel/MPHREF_SwitchPointForDecelIdleAisControl.html"><code>MPHREF</code></a> and engine speed is below <a href="../../5_-_Idle/B_-_AIS_Decel/DLYRPM_RpmTriggerForAisDelay.html"><code>DLYRPM</code></a>, the controller loads <code>DLYTIM2</code> into the feedback lockout countdown timer.</p>
 <p>In factory calibrations, <code>DLYTIM2</code> is set to 18 counts, providing approximately 1.1 seconds of dashpot hold time.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>CheckThrottle_AtIdle</code> (<code>T-SMEC_v19.asm:7867-7895</code>) within <code>CheckThrottleRoutine_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Throttle must be closed (<code>b4f_OffIdle</code> clear at line 7868).</li>
-<li>Vehicle speed must be less than or equal to <a href="../../5_-_Idle/B_-_AIS_Decel/MPHREF_SwitchPointForDecelIdleAisControl.html"><code>MPHREF</code></a> at line 7878.</li>
-<li>Engine RPM must be lower than <a href="../../5_-_Idle/B_-_AIS_Decel/DLYRPM_RpmTriggerForAisDelay.html"><code>DLYRPM</code></a> at line 7883 (<code>cmpb DLYRPM; bcc L1652</code> fails).</li>
-<li>When RPM is below <a href="../../5_-_Idle/B_-_AIS_Decel/DLYRPM_RpmTriggerForAisDelay.html"><code>DLYRPM</code></a>, execution falls through to line 7885 with index X pointing to <code>DLYTIM + 1</code> (accessed via <code>inx</code> at line 7880), loading <code>DLYTIM2</code> into accumulator A via <code>ldaa 0x00,x</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Stationary Blip Stall Fix</strong>:</li>
 <li>Increase <code>DLYTIM2</code> from 1.1 to 1.8 to 2.2 seconds to eliminate stalling when blipping the throttle in neutral or rolling to a stop.</li>
@@ -136,6 +126,17 @@
 <li>Engines with lightened rotating mass lose speed rapidly; extending <code>DLYTIM2</code> provides a softer landing into idle.</li>
 <li><strong>Reducing Neutral Hang</strong>:</li>
 <li>If idle lingers above target for several seconds after free-revving in neutral, lower <code>DLYTIM2</code> to 12 to 14 counts (~0.8 seconds).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the throttle snaps shut, holding the idle air motor in a dashpot position for a calibrated delay before closed-loop idle speed control resumes.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CheckThrottle_AtIdle</code> (<code>T-SMEC_v19.asm:7867-7895</code>) within <code>CheckThrottleRoutine_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Throttle must be closed (<code>b4f_OffIdle</code> clear at line 7868).</li>
+<li>Vehicle speed must be less than or equal to <a href="../../5_-_Idle/B_-_AIS_Decel/MPHREF_SwitchPointForDecelIdleAisControl.html"><code>MPHREF</code></a> at line 7878.</li>
+<li>Engine RPM must be lower than <a href="../../5_-_Idle/B_-_AIS_Decel/DLYRPM_RpmTriggerForAisDelay.html"><code>DLYRPM</code></a> at line 7883 (<code>cmpb DLYRPM; bcc L1652</code> fails).</li>
+<li>When RPM is below <a href="../../5_-_Idle/B_-_AIS_Decel/DLYRPM_RpmTriggerForAisDelay.html"><code>DLYRPM</code></a>, execution falls through to line 7885 with index X pointing to <code>DLYTIM + 1</code> (accessed via <code>inx</code> at line 7880), loading <code>DLYTIM2</code> into accumulator A via <code>ldaa 0x00,x</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

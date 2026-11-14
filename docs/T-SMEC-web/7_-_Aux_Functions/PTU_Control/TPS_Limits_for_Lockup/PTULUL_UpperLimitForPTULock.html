@@ -132,7 +132,18 @@
 <p><code>PTULUL</code> defines the upper throttle position sensor delta threshold curve as a function of vehicle speed when the torque converter is currently in the locked state.</p>
 <p>To prevent rapid torque converter clutch cycling, the controller evaluates separate threshold tables depending on current clutch state. When the torque converter is already locked, <code>PTULUL</code> dictates the upper throttle limit required to initiate the unlock sequence. In factory calibrations, <code>PTULUL</code> is configured as a 4-point curve spanning 0 to 127.5 MPH. If throttle delta rises above this curve while locked, the controller initiates the unlock debounce timer to allow the converter to unlock for acceleration.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Highway Boost Pulling</strong>:</li>
+<li>Raise curve points to keep converter locked under moderate boost climb, preventing annoying RPM flare.</li>
+<li><strong>Quick Passing Kickdown</strong>:</li>
+<li>Lower curve points to allow earlier converter unlocking when stepping on the gas.</li>
+<li><strong>Hysteresis Stagger</strong>:</li>
+<li>Ensure <code>PTULUL</code> is positioned above <a href="../../../7_-_Aux_Functions/PTU_Control/TPS_Limits_for_Lockup/PTUUUL_UpperLimitForPTUUnlock.html"><code>PTUUUL</code></a> to create an effective hysteresis gap between locked and unlocked modes.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the torque converter is already locked, PTULUL dictates the upper throttle limit required to initiate the unlock sequence.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>ControlPTU_MM</code> / <code>PTU_CheckThresholdsForUnlock</code> (<code>T-SMEC_v19.asm:10464-10467</code>), instruction line 10465.</li>
 <li><strong>Active Lock State</strong>: Evaluated when PTU is currently locked (<code>pia1abuf_PartThrotUnlock</code> set in <code>PIA1_A_Buffer</code>).</li>
@@ -141,16 +152,6 @@
 <li>Calls <code>PTU_LookupPTUParam</code> at line 10466 using vehicle speed.</li>
 <li>Compares throttle delta in <code>Temp4</code> against table value.</li>
 <li>If <code>Temp4 &lt; table_value</code> (<code>bcc PTU_SetPTUBits</code>), maintains locked state.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Highway Boost Pulling</strong>:</li>
-<li>Raise curve points to keep converter locked under moderate boost climb, preventing annoying RPM flare.</li>
-<li><strong>Quick Passing Kickdown</strong>:</li>
-<li>Lower curve points to allow earlier converter unlocking when stepping on the gas.</li>
-<li><strong>Hysteresis Stagger</strong>:</li>
-<li>Ensure <code>PTULUL</code> is positioned above <a href="../../../7_-_Aux_Functions/PTU_Control/TPS_Limits_for_Lockup/PTUUUL_UpperLimitForPTUUnlock.html"><code>PTUUUL</code></a> to create an effective hysteresis gap between locked and unlocked modes.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

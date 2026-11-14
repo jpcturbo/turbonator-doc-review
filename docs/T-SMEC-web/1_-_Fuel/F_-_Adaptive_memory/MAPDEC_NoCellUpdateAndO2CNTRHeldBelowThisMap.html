@@ -117,17 +117,7 @@
 <p>During deep deceleration overrun, manifold pressure drops to high vacuum levels where combustion is unstable and deceleration fuel cutoff or extreme leanout may occur. The narrowband oxygen sensor reads false lean during overrun, which would corrupt adaptive trims if feedback remained active.</p>
 <p>In factory calibrations, <code>MAPDEC</code> is set to 20 counts, corresponding to approximately 2.3 psia or 25.3 inHg of vacuum.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> (<code>T-SMEC_v19.asm:2970-2980</code> and <code>3076-3080</code>), instruction lines 2973 and 3079.</li>
-<li><strong>Gating Conditions</strong>: Evaluated at the very entrance of O2 feedback processing on every main loop pass.</li>
-<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
-<li><code>MapValue</code> is loaded into register B and compared against <code>MAPDEC_NoCellUpdateAndO2CNTRHeldBelowThisMap</code> via <code>cmpb</code>.</li>
-<li>If <code>MapValue &lt;= MAPDEC</code> (<code>bls</code>), execution branches to <code>O2_SetStayOpenLoopFlag</code> (line 2985), setting bit <code>b50_StayOpenLoop</code>.</li>
-<li>In <code>O2Signal_BelowToggle</code> (line 3079), if <code>MapValue &lt;= MAPDEC</code> (<code>bls</code>), execution branches to <code>SwitchOrStayOpenLoop</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>High-Vacuum Deceleration Overrun</strong>:</li>
 <li>When lifting off the throttle at speed, manifold pressure plunges below <code>MAPDEC</code>, forcing open loop and freezing the O2 feedback counter to prevent false lean trims.</li>
@@ -137,6 +127,17 @@
 <li>On a 3-bar sensor, 2.3 psia sits at approximately 13 counts; failing to rescale causes the decel threshold to shift upward into light cruise vacuum.</li>
 <li><strong>Camshaft Upgrades</strong>:</li>
 <li>If a high-overlap cam reduces overrun vacuum, raise <code>MAPDEC</code> slightly to ensure deceleration fuel cut and open-loop lockout engage cleanly.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during deep deceleration overrun, manifold pressure drops to high vacuum levels where combustion is unstable and deceleration fuel cutoff or extreme leanout may occur.</p>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> (<code>T-SMEC_v19.asm:2970-2980</code> and <code>3076-3080</code>), instruction lines 2973 and 3079.</li>
+<li><strong>Gating Conditions</strong>: Evaluated at the very entrance of O2 feedback processing on every main loop pass.</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li><code>MapValue</code> is loaded into register B and compared against <code>MAPDEC_NoCellUpdateAndO2CNTRHeldBelowThisMap</code> via <code>cmpb</code>.</li>
+<li>If <code>MapValue &lt;= MAPDEC</code> (<code>bls</code>), execution branches to <code>O2_SetStayOpenLoopFlag</code> (line 2985), setting bit <code>b50_StayOpenLoop</code>.</li>
+<li>In <code>O2Signal_BelowToggle</code> (line 3079), if <code>MapValue &lt;= MAPDEC</code> (<code>bls</code>), execution branches to <code>SwitchOrStayOpenLoop</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

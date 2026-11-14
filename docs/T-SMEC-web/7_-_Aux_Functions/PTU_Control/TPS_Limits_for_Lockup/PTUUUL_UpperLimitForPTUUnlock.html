@@ -132,7 +132,18 @@
 <p><code>PTUUUL</code> defines the upper throttle position sensor delta threshold curve as a function of vehicle speed when the torque converter is currently in the unlocked state.</p>
 <p>Automatic transmission torque converter clutch management uses a dual-curve hysteresis structure: one pair of curves governs transitions when currently unlocked, while a second pair governs transitions when currently locked. When the transmission is currently unlocked, the controller looks up <code>PTUUUL</code> using vehicle speed. If throttle position delta exceeds this upper threshold curve at a given road speed, the controller commands the torque converter to lock. In factory calibrations, <code>PTUUUL</code> is configured as a 4-point curve spanning 0 to 127.5 MPH.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Acceleration Responsiveness</strong>:</li>
+<li>Raise curve points to allow more throttle angle before lockup engages, extending torque converter stall multiplication.</li>
+<li><strong>Fuel Economy Optimization</strong>:</li>
+<li>Lower curve points to lock the torque converter earlier at light cruise throttle, reducing fluid coupling slip losses.</li>
+<li><strong>Hysteresis Deadband Spacing</strong>:</li>
+<li>Maintain separation above <a href="../../../7_-_Aux_Functions/PTU_Control/TPS_Limits_for_Lockup/PTUULL_LowerLimitForPTUUnlock.html"><code>PTUULL</code></a> across all vehicle speeds to prevent rapid cycling between lock and unlock states.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the transmission is currently unlocked, the controller looks up PTUUUL using vehicle speed.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>ControlPTU_MM</code> / <code>PTU_CheckThresholdsForUnlock</code> (<code>T-SMEC_v19.asm:10462-10467</code>), instruction line 10463.</li>
 <li><strong>Current State</strong>: Evaluated when PTU is currently unlocked (<code>pia1abuf_PartThrotUnlock</code> clear in <code>PIA1_A_Buffer</code>).</li>
@@ -141,16 +152,6 @@
 <li>Calls <code>PTU_LookupPTUParam</code> at line 10466 using scaled vehicle speed.</li>
 <li>Compares throttle delta in <code>Temp4</code> against table value.</li>
 <li>If <code>Temp4 &lt; table_value</code> (<code>bcc PTU_SetPTUBits</code>), branches to lock converter.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Acceleration Responsiveness</strong>:</li>
-<li>Raise curve points to allow more throttle angle before lockup engages, extending torque converter stall multiplication.</li>
-<li><strong>Fuel Economy Optimization</strong>:</li>
-<li>Lower curve points to lock the torque converter earlier at light cruise throttle, reducing fluid coupling slip losses.</li>
-<li><strong>Hysteresis Deadband Spacing</strong>:</li>
-<li>Maintain separation above <a href="../../../7_-_Aux_Functions/PTU_Control/TPS_Limits_for_Lockup/PTUULL_LowerLimitForPTUUnlock.html"><code>PTUULL</code></a> across all vehicle speeds to prevent rapid cycling between lock and unlock states.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -134,17 +134,7 @@
 <p><code>GOVNER</code> defines the primary engine speed (RPM) ignition advance curve in the Chrysler engine controller, functioning as the electronic equivalent of centrifugal mechanical advance weights in a conventional distributor.</p>
 <p>As engine speed increases, each combustion stroke occurs in fewer milliseconds, requiring the spark plug to fire earlier before top dead center so that peak cylinder pressure aligns with optimal mechanical leverage on the connecting rod (typically 14 to 17 degrees after top dead center). <code>GOVNER</code> forms the foundational base advance curve across the entire operating spectrum, scaling from 9 degrees BTDC at 600 RPM up to 30 degrees BTDC at 5000+ RPM. The manifold pressure advance (<a href="../../2_-_Spark/A_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a> or <a href="../../2_-_Spark/A_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP</code></a>) is mathematically added to <code>GOVNER</code> to calculate total timing.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>DetermineMechanicalAdvanceFromRpm</code> (<code>T-SMEC_v19.asm:8015-8018</code>), called from <code>CalculateSparkAdvance_MM</code>.</li>
-<li><strong>Execution Flow</strong>:</li>
-<li>Index register X is loaded with <code>#GOVNER_AdvanceFromRPM</code>.</li>
-<li><code>EngineRpm_HB</code> looks up the table via <code>Lookup4ByteTable</code>.</li>
-<li>Adaptive retard (<a href="../../2_-_Spark/D_-_Adaptive_Retard/ARRPM_AdaptiveRetardFromRPM.html"><code>ARRPM</code></a>) is evaluated and subtracted from accumulator A if manifold pressure exceeds <a href="../../2_-_Spark/D_-_Adaptive_Retard/ARMPIC_AdaptiveRetard_MinMAPForAdjustment.html"><code>ARMPIC</code></a>.</li>
-<li>Resulting advance is checked against <a href="../../2_-_Spark/A_-_Normal_Advance/ADVDFT_DefaultSparkAdvance1.html"><code>ADVDFT</code></a> floor at closed throttle and added to <code>Temp0</code> (MAP advance).</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Global Baseline Effect</strong>:</li>
 <li>Raising <code>GOVNER</code> shifts the entire ignition timing map upward across both cruising and full-throttle boost.</li>
@@ -155,6 +145,17 @@
 <li>In MPTune, <code>GOVNER</code> provides the RPM dimension combined with <a href="../../2_-_Spark/A_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a> (to create <code>PTTIME</code>) and <a href="../../2_-_Spark/A_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP</code></a> (to create <code>FTTIME</code>).</li>
 <li><strong>Idle Timing Baseline</strong>:</li>
 <li>At idle speeds (800 to 1000 RPM), <code>GOVNER</code> sets the base mechanical spark advance, which is then fine-tuned by spark scatter.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect across engine operating conditions to establish ignition advance for AdvanceFromRPM.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>DetermineMechanicalAdvanceFromRpm</code> (<code>T-SMEC_v19.asm:8015-8018</code>), called from <code>CalculateSparkAdvance_MM</code>.</li>
+<li><strong>Execution Flow</strong>:</li>
+<li>Index register X is loaded with <code>#GOVNER_AdvanceFromRPM</code>.</li>
+<li><code>EngineRpm_HB</code> looks up the table via <code>Lookup4ByteTable</code>.</li>
+<li>Adaptive retard (<a href="../../2_-_Spark/D_-_Adaptive_Retard/ARRPM_AdaptiveRetardFromRPM.html"><code>ARRPM</code></a>) is evaluated and subtracted from accumulator A if manifold pressure exceeds <a href="../../2_-_Spark/D_-_Adaptive_Retard/ARMPIC_AdaptiveRetard_MinMAPForAdjustment.html"><code>ARMPIC</code></a>.</li>
+<li>Resulting advance is checked against <a href="../../2_-_Spark/A_-_Normal_Advance/ADVDFT_DefaultSparkAdvance1.html"><code>ADVDFT</code></a> floor at closed throttle and added to <code>Temp0</code> (MAP advance).</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

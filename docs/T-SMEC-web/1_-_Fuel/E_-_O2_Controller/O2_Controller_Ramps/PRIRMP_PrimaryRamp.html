@@ -129,7 +129,18 @@
 <p>When closed-loop operation is active, the engine controller continuously toggles the air-fuel ratio above and below stoichiometric 14.7:1 by applying rich and lean fuel pulsewidth steps (kicks). <code>PRIRMP</code> defines the RPM and MAP grid boundaries, the individual kick magnitudes for rich and lean corrections, and the accumulation limits for each cell.</p>
 <p>This table prevents the short-term fuel trim counter from slamming to extremes while ensuring fast, responsive closed-loop tracking.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Curing Rich Closed-Loop Bias</strong>:</li>
+<li>Factory Mopar Performance calibrations frequently exhibited a rich closed-loop bias due to asymmetrical kick steps. Equalizing rich and lean kick values across cells 0-8 centers feedback precisely at 14.7:1.</li>
+<li><strong>Relocated O2 Sensor &amp; Header Tuning</strong>:</li>
+<li>Long-tube headers increase exhaust transit delay. Slightly raising ramp steps prevents sluggish response, while adjusting limits maintains oscillation stability.</li>
+<li><strong>Table Structure (Type 11)</strong>:</li>
+<li>22 words total: 1 word RPM boundaries, 1 word MAP boundaries, 10 words ramp kick steps (9 cruise + 1 idle), 10 words accumulation limits.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during closed-loop operation, controlling the primary fuel trim ramp rate as the oxygen sensor switches.</p>
 <ul>
 <li><strong>Enclosing Subroutine</strong>: <code>WorkWithPrimaryRamp</code> (<code>T-SMEC_v19.asm:3117-3149</code>), instruction line 3119.</li>
 <li><strong>Gating Conditions</strong>: Engine in closed loop (<code>b50_StayOpenLoop</code> clear), O2 sensor toggled (<code>b4f_O2Rich</code> state changed), and ramp counter reset.</li>
@@ -138,16 +149,6 @@
 <li><code>DetermineRampCellFromRPMandMAP</code> calculates cell pointer based on RPM and MAP.</li>
 <li>Line 3122 adds ramp kick step to <code>Counter_PrimaryRamp</code>.</li>
 <li>Accumulation limit evaluated; if within limit (<code>bhi PrimaryRampWithinLimit</code>), execution adds kick step to feedback counter.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Curing Rich Closed-Loop Bias</strong>:</li>
-<li>Factory Mopar Performance calibrations frequently exhibited a rich closed-loop bias due to asymmetrical kick steps. Equalizing rich and lean kick values across cells 0-8 centers feedback precisely at 14.7:1.</li>
-<li><strong>Relocated O2 Sensor &amp; Header Tuning</strong>:</li>
-<li>Long-tube headers increase exhaust transit delay. Slightly raising ramp steps prevents sluggish response, while adjusting limits maintains oscillation stability.</li>
-<li><strong>Table Structure (Type 11)</strong>:</li>
-<li>22 words total: 1 word RPM boundaries, 1 word MAP boundaries, 10 words ramp kick steps (9 cruise + 1 idle), 10 words accumulation limits.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -117,21 +117,22 @@
 <p>During engine warmup and the initial period following key-on, the engine controller skips closed-throttle EGR shutoff checks while core engine timers and sensor readings stabilize.</p>
 <p>At line 5403, the controller compares total engine running time against <code>EGR9</code>. The factory calibration setting of 128 counts corresponds to approximately 128 seconds (roughly 2 minutes) of engine operation. Once the engine has been running for at least 128 seconds, the controller actively monitors the off-idle throttle switch bit. If the throttle closes to idle after this delay, the controller immediately commands the EGR solenoid off, preventing exhaust gas recirculation from causing rough idle or engine stalling.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Lowering EGR9</strong>: Engages closed-throttle EGR shutoff sooner after engine start. Setting to 0 enforces idle EGR shutoff immediately from key-on.</li>
+<li><strong>Raising EGR9</strong>: Extends the post-start window before idle EGR shutoff checks begin. Rarely needed unless diagnosing cold-start emissions cycles.</li>
+<li><strong>Idle Protection Mechanics</strong>: Once <code>RunningTime &gt;= EGR9</code>, any transition to closed throttle (<code>b4f_OffIdle</code> clear) sets bit 4 of <code>EGRVar2</code> and jumps directly to <code>EGR_SetEGRtoOff</code>.</li>
+<li><strong>Factory Setting</strong>: 128 counts (approx 128 seconds / ~2 minutes) aligns with primary coolant warmup transitions.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle cruising, modulating the exhaust gas recirculation (EGR) solenoid duty cycle to control combustion temperatures.</p>
 <ul>
 <li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5403.</li>
 <li><strong>Input Variable</strong>: <code>KeyOnOrEngineRunningTime</code> (RAM address 0x0041) evaluated in accumulator A.</li>
 <li><strong>Comparison</strong>: <code>cmpa EGR9_ExhGasRecircConstFromTimeEngRunning</code> at line 5403.</li>
 <li><strong>Warmup Branch</strong>: If <code>RunningTime &lt; EGR9</code> (<code>bcs L1459</code>), skips idle check and branches ahead.</li>
 <li><strong>Idle Action</strong>: If <code>RunningTime &gt;= EGR9</code> and <code>b4f_OffIdle</code> is clear, lines 5406–5407 set bit 4 in <code>EGRVar2</code> and jump to <code>EGR_SetEGRtoOff</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Lowering EGR9</strong>: Engages closed-throttle EGR shutoff sooner after engine start. Setting to 0 enforces idle EGR shutoff immediately from key-on.</li>
-<li><strong>Raising EGR9</strong>: Extends the post-start window before idle EGR shutoff checks begin. Rarely needed unless diagnosing cold-start emissions cycles.</li>
-<li><strong>Idle Protection Mechanics</strong>: Once <code>RunningTime &gt;= EGR9</code>, any transition to closed throttle (<code>b4f_OffIdle</code> clear) sets bit 4 of <code>EGRVar2</code> and jumps directly to <code>EGR_SetEGRtoOff</code>.</li>
-<li><strong>Factory Setting</strong>: 128 counts (approx 128 seconds / ~2 minutes) aligns with primary coolant warmup transitions.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

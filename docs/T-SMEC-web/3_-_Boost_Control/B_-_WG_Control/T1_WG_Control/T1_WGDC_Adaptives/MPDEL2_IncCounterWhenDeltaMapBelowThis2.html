@@ -116,17 +116,7 @@
 <p><code>MPDEL2</code> defines the manifold pressure stability threshold required to permit adaptive wastegate duty cycle incrementing when boost is below target.</p>
 <p>Similar to <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MPDEL1_IncCounterWhenDeltaMapBelowThis.html"><code>MPDEL1</code></a> on the overboost side, <code>MPDEL2</code> verifies that manifold pressure is steady and not undergoing violent fluctuations or throttle transients before allowing the error timer to advance toward an adaptive duty cycle increase. If the difference between instantaneous manifold pressure and rolling average manifold pressure exceeds <code>MPDEL2</code>, adaptive learning is inhibited. Shared between T1 and T2 control routines.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_IncrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9706-9711</code>) in T1, and <code>T2WGDC_DecrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9992-9994</code>) in T2.</li>
-<li><strong>Gating Conditions</strong>: Reached after passing <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MPROOF_StopAdaptiveWGWhenMapIsThisCloseToBoostTarget.html"><code>MPROOF</code></a>, <code>MINTHR</code>, and <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/TPSLIM_UpdateAdaptiveWGTPSUpperLimit.html"><code>TPSLIM</code></a> checks.</li>
-<li><strong>Stability Comparison</strong>:</li>
-<li>Absolute variance <code>|MapValue - AverageMAPValue|</code> computed in accumulator A at lines 9706-9709.</li>
-<li>Line 9710 executes <code>cmpa MPDEL2_IncCounterWhenDeltaMapBelowThis2</code>.</li>
-<li>If variance exceeds <code>MPDEL2</code> (<code>bhi</code>), branches to <code>WGDC_ClearBoostErrTimer</code>, resetting the timer.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Underboost Manifold Stability Gate</strong>:</li>
 <li>Requires <code>|MapValue - AverageMAPValue|</code> to be within <code>MPDEL2</code> to permit adaptive incrementing.</li>
@@ -135,6 +125,17 @@
 <li>Prevents rapid throttle tip-in or spool-up transients from triggering upward adaptive duty cycle learning.</li>
 <li><strong>Shared Code Usage</strong>:</li>
 <li>Evaluated in both <code>CalcWGDutyCycleT1</code> (line 9710) and <code>CalcWGDutyCycleT2</code> (line 9992).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during boost control, setting the second manifold pressure delta threshold for incrementing the boost control counter.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_IncrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9706-9711</code>) in T1, and <code>T2WGDC_DecrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9992-9994</code>) in T2.</li>
+<li><strong>Gating Conditions</strong>: Reached after passing <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/MPROOF_StopAdaptiveWGWhenMapIsThisCloseToBoostTarget.html"><code>MPROOF</code></a>, <code>MINTHR</code>, and <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/TPSLIM_UpdateAdaptiveWGTPSUpperLimit.html"><code>TPSLIM</code></a> checks.</li>
+<li><strong>Stability Comparison</strong>:</li>
+<li>Absolute variance <code>|MapValue - AverageMAPValue|</code> computed in accumulator A at lines 9706-9709.</li>
+<li>Line 9710 executes <code>cmpa MPDEL2_IncCounterWhenDeltaMapBelowThis2</code>.</li>
+<li>If variance exceeds <code>MPDEL2</code> (<code>bhi</code>), branches to <code>WGDC_ClearBoostErrTimer</code>, resetting the timer.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

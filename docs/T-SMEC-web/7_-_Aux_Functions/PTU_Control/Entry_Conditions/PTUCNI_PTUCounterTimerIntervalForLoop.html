@@ -116,17 +116,7 @@
 <p><code>PTUCNI</code> defines the loop execution decimation bitmask for the Part Throttle Unlock control routine.</p>
 <p>To measure meaningful rates of manifold pressure change without being distorted by high-frequency cylinder intake pulsations, the controller samples baseline manifold pressure into RAM variable <code>PTU_MapTemp</code> at a decimated rate. In factory calibrations, <code>PTUCNI</code> is configured to 7 counts (binary 00000111). In each pass through the main program loop, <code>Counter_MainLoop</code> is bitwise AND-ed with <code>PTUCNI</code>. When the result is zero, the controller saves current <code>MapValue</code> into <code>PTU_MapTemp</code>, creating an evaluation timebase that executes every 8th main loop pass (approximately every 80 to 100 milliseconds).</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ControlPTU_MM</code> / <code>PTU_Main</code> (<code>T-SMEC_v19.asm:10393-10401</code>), instruction line 10397.</li>
-<li><strong>Masking Operation</strong>:</li>
-<li>Loads <code>Counter_MainLoop</code> into accumulator A at line 10396.</li>
-<li>Bitwise ANDs accumulator A with <code>PTUCNI_PTUCounterTimerIntervalForLoop</code> at line 10397.</li>
-<li>If non-zero (<code>bne PTU_CheckThrottleForLock</code>), bypasses baseline update.</li>
-<li>If zero, stores current <code>MapValue</code> into <code>PTU_MapTemp</code> at line 10400.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Execution Bitmask</strong>:</li>
 <li>7 counts represents binary mask <code>%00000111</code>, causing baseline MAP update on every 8th main loop pass.</li>
@@ -134,6 +124,17 @@
 <li>Retain factory setting of 7 counts to ensure all pressure delta thresholds (<a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP1_PTUMAPThresholdForLock1.html"><code>PTUMP1</code></a>–<a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP3_PTUMAPThresholdForLock3.html"><code>PTUMP3</code></a>) operate on the intended timebase.</li>
 <li><strong>Distortion Warning</strong>:</li>
 <li>Altering <code>PTUCNI</code> scales apparent pressure change rate, requiring recalibration of all PTU threshold constants.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the result is zero, the controller saves current MapValue into PTU_MapTemp, creating an evaluation timebase that executes every 8th main loop pass (approximately every 80 to 100 milliseconds).</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ControlPTU_MM</code> / <code>PTU_Main</code> (<code>T-SMEC_v19.asm:10393-10401</code>), instruction line 10397.</li>
+<li><strong>Masking Operation</strong>:</li>
+<li>Loads <code>Counter_MainLoop</code> into accumulator A at line 10396.</li>
+<li>Bitwise ANDs accumulator A with <code>PTUCNI_PTUCounterTimerIntervalForLoop</code> at line 10397.</li>
+<li>If non-zero (<code>bne PTU_CheckThrottleForLock</code>), bypasses baseline update.</li>
+<li>If zero, stores current <code>MapValue</code> into <code>PTU_MapTemp</code> at line 10400.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

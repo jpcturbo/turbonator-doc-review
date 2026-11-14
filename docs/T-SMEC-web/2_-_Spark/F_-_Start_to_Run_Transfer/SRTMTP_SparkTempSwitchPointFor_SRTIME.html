@@ -116,17 +116,7 @@
 <p><code>SRTMTP</code> defines the engine coolant temperature switch point that selects between the warm start pulse counter (<a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME_SparkEPPsNeededToBeAboveSR_Hot.html"><code>SRTIME</code></a>) and the cold start pulse counter (<a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME2_SparkEPPsNeededToBeAboveSR_Cold.html"><code>SRTIME2</code></a>).</p>
 <p>It establishes the controller's definition of a warm restart versus a cold start specifically for the start-to-run spark transfer routine. In factory calibrations, <code>SRTMTP</code> is calibrated to 176 counts, corresponding to approximately 198 degF. If coolant temperature exceeds <code>SRTMTP</code>, the controller executes the warm start-to-run logic (<a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME_SparkEPPsNeededToBeAboveSR_Hot.html"><code>SRTIME</code></a>); if coolant temperature is at or below <code>SRTMTP</code>, it steps index register X to select the cold start pulse counter (<a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME2_SparkEPPsNeededToBeAboveSR_Cold.html"><code>SRTIME2</code></a>).</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ENGINE_IDLING_FASTERTHAN_813RPM</code> (<code>T-SMEC_v19.asm:7016-7019</code>), called from <code>RpmBelowStartRunTransfer</code>.</li>
-<li><strong>Comparison &amp; Branch</strong>:</li>
-<li><code>ldab SRTMTP_SparkTempSwitchPointFor_SRTIME</code> loads temperature threshold into accumulator B.</li>
-<li><code>cmpb CoolantTemp</code> at line 7017.</li>
-<li>If <code>CoolantTemp</code> &gt; <code>SRTMTP</code> (<code>bcs SETTOLOOKFOR_RISINGEDGE_AND_CALCULATE_DWELL</code>), branches to use <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME_SparkEPPsNeededToBeAboveSR_Hot.html"><code>SRTIME</code></a>.</li>
-<li>If <code>CoolantTemp</code> &lt;= <code>SRTMTP</code>, falls through to line 7019 (<code>inx</code>) to select <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME2_SparkEPPsNeededToBeAboveSR_Cold.html"><code>SRTIME2</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Warm Restart Definition</strong>:</li>
 <li>Factory setting of 198 degF (176 counts) reserves <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME_SparkEPPsNeededToBeAboveSR_Hot.html"><code>SRTIME</code></a> strictly for fully heat-soaked restarts, applying <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME2_SparkEPPsNeededToBeAboveSR_Cold.html"><code>SRTIME2</code></a> to all lukewarm and cold starts.</li>
@@ -134,6 +124,17 @@
 <li>Lowering <code>SRTMTP</code> to ~160 degF (150 counts) allows warm restart logic to engage after short stops at the gas station or staging lanes.</li>
 <li><strong>Pointer Selection Mechanism</strong>:</li>
 <li>Directly controls whether index register X is incremented to point to <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME2_SparkEPPsNeededToBeAboveSR_Cold.html"><code>SRTIME2</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if coolant temperature exceeds SRTMTP, the controller executes the warm start-to-run logic (SRTIME); if coolant temperature is at or below SRTMTP, it steps index register X to select the cold start pulse counter (SRTIME2).</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>ENGINE_IDLING_FASTERTHAN_813RPM</code> (<code>T-SMEC_v19.asm:7016-7019</code>), called from <code>RpmBelowStartRunTransfer</code>.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li><code>ldab SRTMTP_SparkTempSwitchPointFor_SRTIME</code> loads temperature threshold into accumulator B.</li>
+<li><code>cmpb CoolantTemp</code> at line 7017.</li>
+<li>If <code>CoolantTemp</code> &gt; <code>SRTMTP</code> (<code>bcs SETTOLOOKFOR_RISINGEDGE_AND_CALCULATE_DWELL</code>), branches to use <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME_SparkEPPsNeededToBeAboveSR_Hot.html"><code>SRTIME</code></a>.</li>
+<li>If <code>CoolantTemp</code> &lt;= <code>SRTMTP</code>, falls through to line 7019 (<code>inx</code>) to select <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME2_SparkEPPsNeededToBeAboveSR_Cold.html"><code>SRTIME2</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

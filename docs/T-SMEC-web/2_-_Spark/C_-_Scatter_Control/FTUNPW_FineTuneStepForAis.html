@@ -116,7 +116,18 @@
 <p><code>FTUNPW</code> defines the Automatic Idle Speed (AIS) stepper motor fine-tuning step size driven by spark scatter tracking register overflow.</p>
 <p>While spark scatter provides instantaneous cycle-by-cycle ignition timing adjustments to counter rapid idle speed fluctuations, the engine controller tracks long-term idle bias through the <code>SparkScatter</code> tracking variable. If ignition timing corrections persistently saturate in one direction (indicating that timing alone cannot bring idle speed back to the target), the tracking variable overflows. When overflow occurs, the controller steps the mechanical AIS motor by <code>FTUNPW</code> steps to alter baseline bypass airflow, bringing the engine back into the active spark scatter timing authority window. In factory calibrations, <code>FTUNPW</code> is set to 1 step.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Fast Airflow Convergence</strong>:</li>
+<li>Raising <code>FTUNPW</code> to 2 or 3 steps allows the AIS motor to adjust more rapidly when high electrical or air conditioning loads push idle speed off target.</li>
+<li><strong>Surge Prevention</strong>:</li>
+<li>If the engine develops a slow, rhythmic 1 to 2 Hz idle surge, ensure <code>FTUNPW</code> is set to the factory 1 step.</li>
+<li><strong>Disabling AIS Integration</strong>:</li>
+<li>Setting <code>FTUNPW</code> to 0 prevents spark scatter from commanding stepper motor movement, leaving idle airflow purely to nominal proportional-integral AIS routines.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if ignition timing corrections persistently saturate in one direction (indicating that timing alone cannot bring idle speed back to the target), the tracking variable overflows.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>HandleSparkScatter</code> (<code>T-SMEC_v19.asm:8154-8174</code>).</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -126,16 +137,6 @@
 <li><strong>Directional Stepping</strong>:</li>
 <li>If accumulator A is positive (engine fast), <code>DesiredNewAisPosition</code> is decremented by <code>FTUNPW</code>.</li>
 <li>If accumulator A is negative (engine slow), <code>DesiredNewAisPosition</code> is incremented by <code>FTUNPW</code>, clamped to <a href="../../5_-_Idle/B_-_AIS_Decel/AISHLM_AisHighLimitMaxOpenSteps.html"><code>AISHLM</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Fast Airflow Convergence</strong>:</li>
-<li>Raising <code>FTUNPW</code> to 2 or 3 steps allows the AIS motor to adjust more rapidly when high electrical or air conditioning loads push idle speed off target.</li>
-<li><strong>Surge Prevention</strong>:</li>
-<li>If the engine develops a slow, rhythmic 1 to 2 Hz idle surge, ensure <code>FTUNPW</code> is set to the factory 1 step.</li>
-<li><strong>Disabling AIS Integration</strong>:</li>
-<li>Setting <code>FTUNPW</code> to 0 prevents spark scatter from commanding stepper motor movement, leaving idle airflow purely to nominal proportional-integral AIS routines.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

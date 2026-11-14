@@ -135,17 +135,7 @@
 <p><code>REVAIS</code> indexes this overspeed delta to determine how many closing steps (negative values) to apply to bring engine speed back down to target.</p>
 <p>In factory calibrations, <code>REVAIS</code> includes a 30 RPM deadband where 0 steps are taken, followed by -1 step at 40 RPM error, -2 steps at 70 RPM error, -3 steps at 100 RPM error, and -4 steps at 160 RPM error.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2401</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Startup feedback lockout timer <code>Timer_CountdownFromStartRunForAisFeedback</code> must be zero at line 2368.</li>
-<li>Stepper movement interval timer <code>Timer_AisChanges</code> must exceed <a href="../../5_-_Idle/B_-_AIS_Decel/AISFRQ_AisPeriodForRpmFeedback11ms.html"><code>AISFRQ</code></a> at line 2371.</li>
-<li>Actual engine speed must be higher than target idle speed: <code>subd EngineRpm_HB</code> from <code>TargetIdleSpeed_HB</code> yields a negative result (carry set), branching to line 2377 where index X is loaded with <code>#REVAIS_ReverseAisSteps_NoSlope</code>.</li>
-<li>The negative error is complemented (<code>coma; comb</code>) to obtain a positive magnitude for table lookup.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Curing High Idle Hanging</strong>:</li>
 <li>If engine speed hangs above 1200 RPM after releasing the accelerator, increase the closing step magnitude in <code>REVAIS</code> at 70 to 100 RPM error.</li>
@@ -153,6 +143,17 @@
 <li>If the engine plunges past target idle and nearly stalls when returning to idle, reduce the closing steps in <code>REVAIS</code> to create a gentler landing.</li>
 <li><strong>Symmetry with FWDAIS</strong>:</li>
 <li>Maintain balanced proportional authority between <a href="../../5_-_Idle/A_-_AIS_Control/FWDAIS_ForwardAisSteps_NoSlope.html"><code>FWDAIS</code></a> (opening) and <code>REVAIS</code> (closing) to prevent cyclic idle hunting.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during idle operation, sudden reductions in engine load (such as the cooling fan turning off or shifting from Drive into Neutral) can cause engine speed to flare above the desired setpoint.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2401</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Startup feedback lockout timer <code>Timer_CountdownFromStartRunForAisFeedback</code> must be zero at line 2368.</li>
+<li>Stepper movement interval timer <code>Timer_AisChanges</code> must exceed <a href="../../5_-_Idle/B_-_AIS_Decel/AISFRQ_AisPeriodForRpmFeedback11ms.html"><code>AISFRQ</code></a> at line 2371.</li>
+<li>Actual engine speed must be higher than target idle speed: <code>subd EngineRpm_HB</code> from <code>TargetIdleSpeed_HB</code> yields a negative result (carry set), branching to line 2377 where index X is loaded with <code>#REVAIS_ReverseAisSteps_NoSlope</code>.</li>
+<li>The negative error is complemented (<code>coma; comb</code>) to obtain a positive magnitude for table lookup.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

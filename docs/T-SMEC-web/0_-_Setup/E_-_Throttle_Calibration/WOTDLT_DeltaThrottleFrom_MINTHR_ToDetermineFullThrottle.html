@@ -116,18 +116,7 @@
 <p><code>WOTDLT</code> defines the throttle position sensor voltage delta required to command wide-open throttle mode.</p>
 <p>Rather than relying on a fixed absolute voltage that could be skewed by sensor wear, thermal drift, or bracket flex, the engine controller measures throttle position relative to the dynamically learned closed-throttle baseline. Factory calibrations set <code>WOTDLT</code> to one hundred thirty-three counts, which corresponds to approximately two point six one volts above closed throttle. When throttle position sensor voltage exceeds the learned closed-throttle baseline by this delta, the controller declares wide-open throttle, disabling closed-loop oxygen sensor feedback and engaging maximum target boost and rich power enrichment fueling.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CheckThrottle_ErrorAlreadyFlagged</code> (<code>T-SMEC_v19.asm:7792-7817</code>), instruction line 7799 and line 7806.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Staging limiter check: if <code>Turbonator_Staging</code> is active, forces immediate branch to <code>CheckThrottle_AtFullThrottle</code>.</li>
-<li><strong>Comparison &amp; Hysteresis</strong>:</li>
-<li>Sums <code>MINTHR_LowestSessionTPS + WOTDLT</code> in register B, clamped to maximum 0xD0 (~4.07V).</li>
-<li>If already at full throttle (<code>b4f_FullThrottle</code> set), subtracts 3 counts from threshold for hysteresis.</li>
-<li>Compares throttle volts in accumulator A against B (<code>cba</code>). If higher (<code>bhi</code>), branches to <code>CheckThrottle_AtFullThrottle</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Earlier Power Enrichment</strong>:</li>
 <li>Lowering <code>WOTDLT</code> to one hundred ten or one hundred twenty counts (~2.1 to 2.3 Volts) triggers wide-open throttle fueling and max boost earlier in pedal travel for heightened throttle response.</li>
@@ -137,6 +126,18 @@
 <li>The firmware incorporates a three-count (~0.059V) hysteresis window below <code>WOTDLT</code> to prevent rapid flickering at the wide-open throttle boundary.</li>
 <li><strong>Factory Setting</strong>:</li>
 <li>Set to one hundred thirty-three counts (~2.61 Volts delta) in factory calibrations.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during throttle opening, defining the throttle sensor voltage delta above minimum throttle required to trigger wide-open throttle mode.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CheckThrottle_ErrorAlreadyFlagged</code> (<code>T-SMEC_v19.asm:7792-7817</code>), instruction line 7799 and line 7806.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Staging limiter check: if <code>Turbonator_Staging</code> is active, forces immediate branch to <code>CheckThrottle_AtFullThrottle</code>.</li>
+<li><strong>Comparison &amp; Hysteresis</strong>:</li>
+<li>Sums <code>MINTHR_LowestSessionTPS + WOTDLT</code> in register B, clamped to maximum 0xD0 (~4.07V).</li>
+<li>If already at full throttle (<code>b4f_FullThrottle</code> set), subtracts 3 counts from threshold for hysteresis.</li>
+<li>Compares throttle volts in accumulator A against B (<code>cba</code>). If higher (<code>bhi</code>), branches to <code>CheckThrottle_AtFullThrottle</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

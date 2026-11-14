@@ -116,17 +116,18 @@
 <p><code>MPHREF</code> (SwitchPointForDecelIdleAisControl) is the critical speed threshold (stock calibration = 6 MPH / <code>0x06</code>) defining the operational boundary between stationary curb idle regulation and moving deceleration control.</p>
 <p>When the vehicle is moving above <code>MPHREF</code>, the ECU treats closed-throttle events as trailing-throttle vehicle deceleration, engaging dashpot anti-stall airflow curves (<a href="../Idle_-_AIS_Decel/DLYTIM_AisDelayAfterThrottleClosesWhenMoving.html"><code>DLYTIM</code></a>, <a href="../Idle_-_AIS_Decel/TIMEDC_DecelAisBaseAirflowCurveOffset_FromTime.html"><code>TIMEDC</code></a>, <a href="../Idle_-_AIS_Decel/MAPFLR_AdditionToControlMap_FromRpm.html"><code>MAPFLR</code></a>). When vehicle speed drops below <code>MPHREF</code> (with a built-in 1.5 MPH hysteresis deadband), the ECU transitions to stationary curb idle control (<a href="../Idle_-_AIS_Decel/DLYTIM2_AisDelayAfterThrottleClosesWhenStopped.html"><code>DLYTIM2</code></a>, <a href="../Idle_-_AIS_Control/FWDAIS_ForwardAisSteps_NoSlope.html"><code>FWDAIS</code></a>, <a href="../Idle_-_AIS_Control/REVAIS_ReverseAisSteps_NoSlope.html"><code>REVAIS</code></a>). This clean separation prevents rolling vehicles from surging at stop signs or dragging their idle motors while coasting in gear.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Rolling Idle Surge / Stall</strong>: If pushing the clutch in while rolling up to a red light at 10-15 MPH causes the engine to dip and stall, or conversely if the engine hangs at 1,500 RPM until the vehicle comes to a dead stop, <code>MPHREF</code> defines the boundary.</li>
+<li><strong>Tuning Recommendations</strong>: Lowering <code>MPHREF</code> to 3-4 MPH forces the ECU into stationary idle control earlier. Raising <code>MPHREF</code> to 8-10 MPH extends deceleration dashpot protection longer during low-speed rolling traffic.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the vehicle is moving above MPHREF, the ECU treats closed-throttle events as trailing-throttle vehicle deceleration, engaging dashpot anti-stall airflow curves (DLYTIM, TIMEDC, MAPFLR).</p>
 <ul>
 <li>Evaluated in <code>SetTPSFlags_MM</code> (line 3490), <code>StoreDwell</code> (line 4802), and <code>CheckThrottle_AtFullThrottle</code> (line 6814).</li>
 <li>Compares scaled <code>VehicleSpeed_HB</code> against <code>MPHREF</code>.</li>
 <li>Governs the selection between <a href="../Idle_-_AIS_Decel/DLYTIM_AisDelayAfterThrottleClosesWhenMoving.html"><code>DLYTIM</code></a> (moving) and <a href="../Idle_-_AIS_Decel/DLYTIM2_AisDelayAfterThrottleClosesWhenStopped.html"><code>DLYTIM2</code></a> (stopped).</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Rolling Idle Surge / Stall</strong>: If pushing the clutch in while rolling up to a red light at 10-15 MPH causes the engine to dip and stall, or conversely if the engine hangs at 1,500 RPM until the vehicle comes to a dead stop, <code>MPHREF</code> defines the boundary.</li>
-<li><strong>Tuning Recommendations</strong>: Lowering <code>MPHREF</code> to 3-4 MPH forces the ECU into stationary idle control earlier. Raising <code>MPHREF</code> to 8-10 MPH extends deceleration dashpot protection longer during low-speed rolling traffic.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

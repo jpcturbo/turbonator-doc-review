@@ -116,17 +116,18 @@
 <p><code>DCLRF2</code> (TimeBetweenAisPulsesForDecelAis2) establishes the settling time interval between successive stepper motor corrections while operating in closed-loop idle speed control.</p>
 <p>Once the ECU enters closed-loop idle feedback, it evaluates whether actual engine RPM matches target idle speed. If an error exists, the ECU commands forward (<a href="../Idle_-_AIS_Control/FWDAIS_ForwardAisSteps_NoSlope.html"><code>FWDAIS</code></a>) or reverse (<a href="../Idle_-_AIS_Control/REVAIS_ReverseAisSteps_NoSlope.html"><code>REVAIS</code></a>) steps. However, engine speed takes several engine revolutions to respond to a change in bypass air mass. <code>DCLRF2</code> ensures that <code>Timer_AisChanges</code> must exceed this threshold (stock calibration = 63 ticks / ~0.7 seconds) before another step pulse can be issued, preventing severe closed-loop hunting, surging, or overshoot.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Idle Hunting / Cyclic Surging</strong>: If the engine surges up and down rhythmically at idle (750 RPM -&gt; 1,100 RPM -&gt; 750 RPM every 1-2 seconds), the idle control loop is reacting too fast. Increasing <code>DCLRF2</code> dampens the closed-loop response.</li>
+<li><strong>Sluggish Idle Catching</strong>: If the idle takes too long to respond to electrical loads (headlights, blower motor), slightly reducing <code>DCLRF2</code> (e.g. to <code>0x28</code> / ~0.45 sec) makes closed-loop idle recovery more agile.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect once the ECU enters closed-loop idle feedback, it evaluates whether actual engine RPM matches target idle speed.</p>
 <ul>
 <li>Evaluated inside subroutine <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at line 5166.</li>
 <li>Compares <code>Timer_AisChanges</code> against <code>DCLRF2</code>.</li>
 <li>If <code>Timer_AisChanges &lt;= DCLRF2</code> (<code>bcc LE5A7</code>), closed-loop step corrections are bypassed for that loop cycle.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Idle Hunting / Cyclic Surging</strong>: If the engine surges up and down rhythmically at idle (750 RPM -&gt; 1,100 RPM -&gt; 750 RPM every 1-2 seconds), the idle control loop is reacting too fast. Increasing <code>DCLRF2</code> dampens the closed-loop response.</li>
-<li><strong>Sluggish Idle Catching</strong>: If the idle takes too long to respond to electrical loads (headlights, blower motor), slightly reducing <code>DCLRF2</code> (e.g. to <code>0x28</code> / ~0.45 sec) makes closed-loop idle recovery more agile.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

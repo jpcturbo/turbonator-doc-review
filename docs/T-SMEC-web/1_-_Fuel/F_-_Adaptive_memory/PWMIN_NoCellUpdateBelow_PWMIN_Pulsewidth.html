@@ -117,17 +117,7 @@
 <p>At very short pulse widths, such as during deceleration or light coastdown, fuel injector opening and closing dead times represent a large percentage of total injection duration, causing non-linear fuel flow delivery that does not represent accurate engine volumetric efficiency.</p>
 <p>In factory calibrations, <code>PWMIN</code> is set to a 16-bit value of 275 counts, which corresponds to 1100 microseconds (1.10 milliseconds) of total effective injection time. If calculated pulse width falls below <code>PWMIN</code>, adaptive cell updating is blocked.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Subroutine</strong>: <code>AdaptiveMemory_UpdateCellIfRequired_MM</code> / <code>UpdateAdaptive_OffIdle</code> (<code>T-SMEC_v19.asm:3300-3313</code>), instruction line 3305.</li>
-<li><strong>Gating Conditions</strong>: Closed-loop flag confirmed (<code>b50_OpenLoop</code> clear).</li>
-<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
-<li>Lines 3303-3304 calculate total pulse width as <code>InjectorPulsewidth_HB + Pulsewidth_PartThrottleEnrichment_HB</code> in double accumulator D.</li>
-<li>Line 3305 executes <code>subd PWMIN_NoCellUpdateBelow_PWMIN_Pulsewidth</code>.</li>
-<li>If result is negative (<code>bcs</code>), execution branches to <code>DontUpdateCell_MaybeUpdateTimer</code> (line 3341), blocking adaptive cell update.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Large Injector Scaling</strong>:</li>
 <li>When upgrading from stock 27 lb/hr injectors to 42 lb/hr or larger injectors, base idle pulse width drops below 1.10 ms. <code>PWMIN</code> must be reduced to 0.70-0.85 ms (175-212 counts) to allow adaptive learning at idle.</li>
@@ -135,6 +125,17 @@
 <li>Stored as a 16-bit word where each count represents 4 microseconds (275 counts = 1100 us = 1.10 ms).</li>
 <li><strong>Non-Linear Injector Guard</strong>:</li>
 <li>Blocks adaptive updates when injectors operate in their non-linear opening/closing dead-time regime.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if calculated pulse width falls below PWMIN, adaptive cell updating is blocked.</p>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>AdaptiveMemory_UpdateCellIfRequired_MM</code> / <code>UpdateAdaptive_OffIdle</code> (<code>T-SMEC_v19.asm:3300-3313</code>), instruction line 3305.</li>
+<li><strong>Gating Conditions</strong>: Closed-loop flag confirmed (<code>b50_OpenLoop</code> clear).</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li>Lines 3303-3304 calculate total pulse width as <code>InjectorPulsewidth_HB + Pulsewidth_PartThrottleEnrichment_HB</code> in double accumulator D.</li>
+<li>Line 3305 executes <code>subd PWMIN_NoCellUpdateBelow_PWMIN_Pulsewidth</code>.</li>
+<li>If result is negative (<code>bcs</code>), execution branches to <code>DontUpdateCell_MaybeUpdateTimer</code> (line 3341), blocking adaptive cell update.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

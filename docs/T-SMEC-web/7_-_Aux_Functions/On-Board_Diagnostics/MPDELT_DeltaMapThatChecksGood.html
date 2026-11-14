@@ -117,7 +117,19 @@
 <p>A functioning pressure sensor on an operating engine exhibits minor continuous pressure pulsations caused by intake valve opening events. If a sensor output becomes frozen due to an internal electronic failure or disconnected vacuum line, its reading remains completely static.</p>
 <p>In factory calibrations, <code>MPDELT</code> is configured to 1 count, corresponding to approximately 0.12 psi of pressure change. When the measured change between consecutive samples equals or exceeds <code>MPDELT</code>, the engine controller sets an internal flag indicating dynamic pressure activity, which is required both to clear previous fault codes and to validate sensor health.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Sensor Activity Verification</strong>:</li>
+<li>1 count (0.12 psi) reliably detects the normal pressure ripple of an idling multi-cylinder engine.</li>
+<li><strong>3-Bar Sensor Compatibility</strong>:</li>
+<li>1 count on a 3-bar sensor represents 0.17 psi, which is still easily satisfied by normal intake stroke pressure ripples.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Setting <code>MPDELT</code> to zero marks the sensor as dynamically active even when disconnected or frozen.</li>
+<li>Setting <code>MPDELT</code> too high prevents the engine controller from clearing Fault Code 13 after a repaired vacuum line.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during MAP sensor diagnostics, establishing the manifold pressure delta required to verify sensor health.</p>
 <ul>
 <li><strong>Routine &amp; Line Numbers</strong>: <code>CheckIfMapSensorHasStartedWorkingAgain</code> (<code>T-SMEC_v19.asm:4863-4873</code>), instruction at line 4867, and <code>StoreAntiDwell</code> (line 7047).</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -127,17 +139,6 @@
 <li><code>ldab MPDELT_DeltaMapThatChecksGood</code> loads 1 count at line 4867.</li>
 <li>If <code>b45_IPL1</code> bit <code>b45_MapStuck</code> is clear, compares delta against <code>MPDELT</code> (<code>cba</code> at line 4870).</li>
 <li>If delta &gt;= <code>MPDELT</code>, sets <code>b54_BigMapChange</code> at line 4872.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Sensor Activity Verification</strong>:</li>
-<li>1 count (0.12 psi) reliably detects the normal pressure ripple of an idling multi-cylinder engine.</li>
-<li><strong>3-Bar Sensor Compatibility</strong>:</li>
-<li>1 count on a 3-bar sensor represents 0.17 psi, which is still easily satisfied by normal intake stroke pressure ripples.</li>
-<li><strong>Edge Cases</strong>:</li>
-<li>Setting <code>MPDELT</code> to zero marks the sensor as dynamically active even when disconnected or frozen.</li>
-<li>Setting <code>MPDELT</code> too high prevents the engine controller from clearing Fault Code 13 after a repaired vacuum line.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

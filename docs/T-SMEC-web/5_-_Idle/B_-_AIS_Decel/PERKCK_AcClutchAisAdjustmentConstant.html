@@ -117,17 +117,7 @@
 <p>Depending on whether the air conditioning system is transitioning between active states or operating in steady-state off-idle cruising, the full airflow step offset looked up from <a href="../../5_-_Idle/B_-_AIS_Decel/ACCTBL_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a> may need to be scaled down. PERKCK acts as a global proportioning scalar applied to the raw speed-dependent steps retrieved from <a href="../../5_-_Idle/B_-_AIS_Decel/ACCTBL_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a>.</p>
 <p>In factory calibrations, <code>PERKCK</code> is set to 192 counts, representing an airflow scaling factor of exactly 75 percent (192/256).</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2465</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Runs immediately after <a href="../../5_-_Idle/B_-_AIS_Decel/ACCTBL_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a> lookup at line 2459.</li>
-<li>Flag <code>b2e_bit2</code> tested at line 2460.</li>
-<li>Loads <code>PERKCK</code> into accumulator A at line 2461 and executes <code>mul</code> against accumulator B.</li>
-<li>The high product byte in accumulator B becomes the final scaled A/C airflow adder.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Global Scaling of ACCTBL</strong>:</li>
 <li>Adjust <code>PERKCK</code> to scale overall off-idle A/C airflow up or down without reshaping the individual speed breakpoints in <a href="../../5_-_Idle/B_-_AIS_Decel/ACCTBL_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a>.</li>
@@ -135,6 +125,17 @@
 <li>Raise <code>PERKCK</code> to 220 to 255 counts (86% to 100%) to provide stronger overall anti-stall dashpot air with the A/C on.</li>
 <li><strong>Linear Percentage Multiplier</strong>:</li>
 <li>255 counts represents 100% full scale; factory setting of 192 counts represents 75%.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect at closed throttle idle to regulate AcClutchAisAdjustmentConstant.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2465</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Runs immediately after <a href="../../5_-_Idle/B_-_AIS_Decel/ACCTBL_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a> lookup at line 2459.</li>
+<li>Flag <code>b2e_bit2</code> tested at line 2460.</li>
+<li>Loads <code>PERKCK</code> into accumulator A at line 2461 and executes <code>mul</code> against accumulator B.</li>
+<li>The high product byte in accumulator B becomes the final scaled A/C airflow adder.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -117,21 +117,22 @@
 <p>The engine controller must verify that the engine is running within an appropriate speed range before recording baseline closed-loop oxygen sensor behavior with the EGR valve operating.</p>
 <p>At line 5437, the high byte of engine speed is evaluated against <code>EGR15</code>. Each high-byte RPM count represents 32 RPM. In the factory calibration, <code>EGR15</code> is set to 255 counts (corresponding to 8160 RPM). Because its companion upper limit is also set to 255, the factory calibration effectively disables engine speed window gating during Phase 1, allowing baseline sampling across the operating range.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Lowering EGR15</strong>: Establishes a real minimum RPM floor for Phase 1 baseline sampling. For example, 50 counts corresponds to 1600 RPM (50 x 32 RPM), preventing testing during slow low-gear residential driving.</li>
+<li><strong>Factory Bypass (255 counts)</strong>: Acts as an open gate in stock firmware because both <code>EGR15</code> and <a href="../../7_-_Aux_Functions/EGR/EGR15b_ExhGasRecircConstFromRPMLoLimit.html"><code>EGR15B</code></a> are set to 255, relying on off-idle and vacuum checks to validate cruising state.</li>
+<li><strong>Scaling Mechanics</strong>: 1 count equals 32 RPM based on the high byte of the 16-bit engine speed calculation.</li>
+<li><strong>Window Pairing</strong>: Ensure <a href="../../7_-_Aux_Functions/EGR/EGR15b_ExhGasRecircConstFromRPMLoLimit.html"><code>EGR15B</code></a> is configured higher than <code>EGR15</code> whenever custom RPM windows are implemented.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle cruising, modulating the exhaust gas recirculation (EGR) solenoid duty cycle to control combustion temperatures.</p>
 <ul>
 <li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5437.</li>
 <li><strong>Subroutine Called</strong>: <code>EGR_CheckHiLoLimits</code> (line 5462).</li>
 <li><strong>Input Variable</strong>: <code>EngineRpm_HB</code> (RAM address 0x001B), representing engine speed divided by 32.</li>
 <li><strong>Register Pointer</strong>: Index register X loaded with <code>#EGR15_ExhGasRecircConstFromRPMLoLimit</code>.</li>
 <li><strong>Boundary Logic</strong>: If <code>EngineRpm_HB &lt; EGR15</code> (<code>bcs L1464</code>), subroutine pulls stack and branches to <code>EGR_ResetEGRVars</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Lowering EGR15</strong>: Establishes a real minimum RPM floor for Phase 1 baseline sampling. For example, 50 counts corresponds to 1600 RPM (50 x 32 RPM), preventing testing during slow low-gear residential driving.</li>
-<li><strong>Factory Bypass (255 counts)</strong>: Acts as an open gate in stock firmware because both <code>EGR15</code> and <a href="../../7_-_Aux_Functions/EGR/EGR15b_ExhGasRecircConstFromRPMLoLimit.html"><code>EGR15B</code></a> are set to 255, relying on off-idle and vacuum checks to validate cruising state.</li>
-<li><strong>Scaling Mechanics</strong>: 1 count equals 32 RPM based on the high byte of the 16-bit engine speed calculation.</li>
-<li><strong>Window Pairing</strong>: Ensure <a href="../../7_-_Aux_Functions/EGR/EGR15b_ExhGasRecircConstFromRPMLoLimit.html"><code>EGR15B</code></a> is configured higher than <code>EGR15</code> whenever custom RPM windows are implemented.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

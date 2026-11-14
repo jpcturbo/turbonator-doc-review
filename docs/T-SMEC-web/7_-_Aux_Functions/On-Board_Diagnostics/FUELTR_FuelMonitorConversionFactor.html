@@ -118,19 +118,7 @@
 <p>Every time the accumulated injector pulse width reaches the threshold defined by <code>FUELTR</code>, the controller subtracts <code>FUELTR</code> and toggles a dedicated hardware output pin.</p>
 <p>In factory calibrations, <code>FUELTR</code> is configured to 670 counts (equivalent to 0.670 milliseconds of injector on-time per output toggle). This conversion factor links physical fuel mass injected to dashboard fuel economy calculations.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Routine &amp; Line Numbers</strong>: <code>Interrupt_TimerOutputCapture1</code> (<code>T-SMEC_v19.asm:1260-1284</code>), instruction at line 1273.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Executed during the Timer Output Compare 1 interrupt service routine.</li>
-<li><strong>Math &amp; Comparison</strong>:</li>
-<li>Accumulated pulse width loaded from <code>Timer_FuelMonitorOutputTimer_HB</code> into register D at line 1272.</li>
-<li><code>subd FUELTR_FuelMonitorConversionFactor</code> at line 1273 subtracts the conversion factor (670 counts).</li>
-<li>If lower (<code>bcs</code>), branches to <code>L1001</code> at line 1274 without toggling pin.</li>
-<li>If greater or equal, stores remaining delta back to <code>Timer_FuelMonitorOutputTimer_HB</code> and toggles output bit 0x08 on <code>PIA2_PortA_DataDirection</code> at line 1277.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Injector Upgrade Scaling Formula</strong>:</li>
 <li><code>New FUELTR = Stock FUELTR * (Stock Injector Flow / New Injector Flow)</code></li>
@@ -140,6 +128,19 @@
 <li><strong>Edge Cases</strong>:</li>
 <li>Setting <code>FUELTR</code> to zero causes continuous pin toggling on every timer tick, freezing or crashing the dashboard trip computer.</li>
 <li>Setting <code>FUELTR</code> to maximum causes the trip computer to calculate near-zero fuel consumption.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during diagnostic monitoring to evaluate FuelMonitorConversionFactor.</p>
+<ul>
+<li><strong>Routine &amp; Line Numbers</strong>: <code>Interrupt_TimerOutputCapture1</code> (<code>T-SMEC_v19.asm:1260-1284</code>), instruction at line 1273.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Executed during the Timer Output Compare 1 interrupt service routine.</li>
+<li><strong>Math &amp; Comparison</strong>:</li>
+<li>Accumulated pulse width loaded from <code>Timer_FuelMonitorOutputTimer_HB</code> into register D at line 1272.</li>
+<li><code>subd FUELTR_FuelMonitorConversionFactor</code> at line 1273 subtracts the conversion factor (670 counts).</li>
+<li>If lower (<code>bcs</code>), branches to <code>L1001</code> at line 1274 without toggling pin.</li>
+<li>If greater or equal, stores remaining delta back to <code>Timer_FuelMonitorOutputTimer_HB</code> and toggles output bit 0x08 on <code>PIA2_PortA_DataDirection</code> at line 1277.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

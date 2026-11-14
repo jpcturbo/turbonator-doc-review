@@ -116,7 +116,19 @@
 <p><code>T2MAPPT</code> sets the manifold gauge boost pressure threshold that divides low-load adaptive wastegate learning from high-load RPM-split adaptive learning in T2 control.</p>
 <p>In T2 wastegate control, Cell 1 regulates boost below <code>T2MAPPT</code>, while higher boost targets switch into the RPM-partitioned cells (Cells 2 through 5). In factory Stage II calibrations, <code>T2MAPPT</code> is configured to 83 counts (approximately 9.5 psi of boost), ensuring that lower boost levels and spool-up are governed by Cell 1 while sustained full-boost pulls are managed across the RPM cells.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Adaptive Boundary Positioning</strong>:</li>
+<li>Set 1 to 2 psi above mechanical wastegate spring pressure so initial spool-up stays isolated in Cell 1.</li>
+<li>Factory setting is 83 counts (approximately 9.5 psi boost above atmospheric pressure in template, 105 counts in ASM).</li>
+<li><strong>3-Bar MAP Sensor Scaling</strong>:</li>
+<li>Converting to a 3-bar sensor requires rescaling <code>T2MAPPT</code> to half its count value to preserve the same physical psi switch point.</li>
+<li><strong>Transition to RPM Cells</strong>:</li>
+<li>When target boost exceeds <code>BaroPressure + T2MAPPT</code>, the controller advances to evaluate <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/DCRPM1_WastegateDutyCycleRpmBoundary1.html"><code>DCRPM1</code></a>, <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/DCRPM2_WastegateDutyCycleRpmBoundary2.html"><code>DCRPM2</code></a>, and <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/DCRPM3_WastegateDutyCycleRpmBoundary3.html"><code>DCRPM3</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under turbocharger boost operation to control WastegateDutyCycleMapSwitchPoint.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>T2WGDC_StoreWGDutyCycleFromKnock</code> (<code>T-SMEC_v19.asm:9924-9929</code>), called from <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9755-10040</code>).</li>
 <li><strong>Switch Point Calculation</strong>:</li>
@@ -127,17 +139,6 @@
 <li>In <code>T2WGDC_SelectAdaptiveWGCell</code> at line 9931, index X loads <code>#DCCOR1_AdaptiveWastegateCellBelowMAPPT</code>.</li>
 <li>Line 9932 compares target boost in accumulator A against accumulator B (<code>cba</code>).</li>
 <li>If target boost is below <code>BaroPressure + T2MAPPT</code> (<code>bcs</code>), Cell 1 is selected (line 9933); otherwise, execution advances to check RPM boundaries.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Adaptive Boundary Positioning</strong>:</li>
-<li>Set 1 to 2 psi above mechanical wastegate spring pressure so initial spool-up stays isolated in Cell 1.</li>
-<li>Factory setting is 83 counts (approximately 9.5 psi boost above atmospheric pressure in template, 105 counts in ASM).</li>
-<li><strong>3-Bar MAP Sensor Scaling</strong>:</li>
-<li>Converting to a 3-bar sensor requires rescaling <code>T2MAPPT</code> to half its count value to preserve the same physical psi switch point.</li>
-<li><strong>Transition to RPM Cells</strong>:</li>
-<li>When target boost exceeds <code>BaroPressure + T2MAPPT</code>, the controller advances to evaluate <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/DCRPM1_WastegateDutyCycleRpmBoundary1.html"><code>DCRPM1</code></a>, <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/DCRPM2_WastegateDutyCycleRpmBoundary2.html"><code>DCRPM2</code></a>, and <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Adaptives/DCRPM3_WastegateDutyCycleRpmBoundary3.html"><code>DCRPM3</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

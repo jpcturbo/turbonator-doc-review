@@ -129,17 +129,7 @@
 <p>Freshly cranked engines require rich open-loop fuel delivery to maintain steady combustion until cylinders warm and intake manifold air velocity stabilizes.</p>
 <p>In stock calibrations, <code>CLTIME</code> specifies approximately 8.4 seconds at 84 degF and approximately 14 seconds at 132 degF, where each count represents approximately 2.8 seconds. This programmed delay ensures the engine runs smoothly during post-start idle before closed-loop feedback takes authority.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Subroutine</strong>: <code>HandleAmTimer_MM</code> (<code>T-SMEC_v19.asm:3395-3405</code>), instruction line 3402.</li>
-<li><strong>Gating Conditions</strong>: Evaluated at engine key-on and during engine cranking (<code>BitFlags_54</code> bit <code>b54_FuelEngineNotRunning</code> set).</li>
-<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
-<li><code>CoolantTemp</code> is loaded into register A and table pointer set to <code>CLTIME_ClosedLoopTimeFromEngTempAtStartup_FromTemp</code>.</li>
-<li><code>Lookup4ByteTable</code> interpolates the delay value and stores it into <code>Timer_CLTIME_ClosedLoopTimer</code> (line 3404).</li>
-<li>In <code>O2_FullThrottle</code> (line 3002), if <code>Timer_CLTIME_ClosedLoopTimer</code> is nonzero, execution decrements it and branches to <code>O2_StopUsingFeedback</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Cold Start Driveability</strong>:</li>
 <li>Increasing table points extends open-loop enrichment after starting, curing lean stumbles and idle surging during cold drive-away.</li>
@@ -149,6 +139,17 @@
 <li>Lowering points at warm temperatures reduces fuel smell and stabilizes hot restart idle more quickly.</li>
 <li><strong>Minimum Value</strong>:</li>
 <li>Setting to zero allows instantaneous closed-loop entry if <a href="../../../1_-_Fuel/F_-_Adaptive_memory/Adaptive_Memory_Timer/CLTEMP_TempToStartCLTIMETimer.html"><code>CLTEMP</code></a> is satisfied.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect after engine startup, defining the delay timer across coolant temperature before closed-loop oxygen sensor feedback is enabled.</p>
+<ul>
+<li><strong>Enclosing Subroutine</strong>: <code>HandleAmTimer_MM</code> (<code>T-SMEC_v19.asm:3395-3405</code>), instruction line 3402.</li>
+<li><strong>Gating Conditions</strong>: Evaluated at engine key-on and during engine cranking (<code>BitFlags_54</code> bit <code>b54_FuelEngineNotRunning</code> set).</li>
+<li><strong>Comparison &amp; Branch Polarity</strong>:</li>
+<li><code>CoolantTemp</code> is loaded into register A and table pointer set to <code>CLTIME_ClosedLoopTimeFromEngTempAtStartup_FromTemp</code>.</li>
+<li><code>Lookup4ByteTable</code> interpolates the delay value and stores it into <code>Timer_CLTIME_ClosedLoopTimer</code> (line 3404).</li>
+<li>In <code>O2_FullThrottle</code> (line 3002), if <code>Timer_CLTIME_ClosedLoopTimer</code> is nonzero, execution decrements it and branches to <code>O2_StopUsingFeedback</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

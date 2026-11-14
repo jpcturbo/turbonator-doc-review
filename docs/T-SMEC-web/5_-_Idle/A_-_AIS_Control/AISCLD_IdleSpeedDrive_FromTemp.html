@@ -132,17 +132,7 @@
 <p><code>AISCLD</code> is looked up by coolant temperature whenever the in-gear flag is active.</p>
 <p>In factory calibrations, <code>AISCLD</code> commands approximately 1200 RPM during cold warm-up, tapering down to a hot in-gear target of 800 to 850 RPM once fully warmed up.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>LoadDiagIdleSpeed</code> (<code>T-SMEC_v19.asm:2080-2115</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Automatic transmission vehicle detected (<code>cfg_ATX</code> set in <a href="../../0_-_Setup/A_-_Cal_Configuration/CONFIG_ConfigurationFlags.html"><code>CONFIG_ConfigurationFlags</code></a>).</li>
-<li>In-gear flag <code>b0c_ATXInGear</code> in <code>BitFlags_AIS</code> must be set at line 2086.</li>
-<li>Gear change flag <code>b0c_ATXChngGear</code> must be clear at line 2084.</li>
-<li>Indexes <code>AISCLD</code> table at line 2085 via <code>ldx #AISCLD_IdleSpeedDrive_FromTemp</code>, then branches to <code>L1086</code> to perform <code>jsr Lookup4ByteTable</code> using <code>CoolantTemp</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>In-Gear Camshaft Stall Prevention</strong>:</li>
 <li>Raise warm in-gear targets from 800 RPM to 875 to 950 RPM if an aggressive camshaft pulls down vacuum and threatens to stall against the torque converter.</li>
@@ -150,6 +140,17 @@
 <li>High-stall aftermarket converters create less idle drag; in-gear target can be adjusted closer to Park/Neutral target without causing harsh transmission engagement.</li>
 <li><strong>Relative Offset Rule</strong>:</li>
 <li>Keep <code>AISCLD</code> 50 to 100 RPM lower than <a href="../../5_-_Idle/A_-_AIS_Control/AISPN_IdleSpeedParkNeutral_FromTemp.html"><code>AISPN</code></a> across all temperature points to prevent engine flare when shifting out of gear.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when an automatic transmission is shifted into gear, the torque converter impeller creates substantial viscous drag against the engine crankshaft.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>LoadDiagIdleSpeed</code> (<code>T-SMEC_v19.asm:2080-2115</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Automatic transmission vehicle detected (<code>cfg_ATX</code> set in <a href="../../0_-_Setup/A_-_Cal_Configuration/CONFIG_ConfigurationFlags.html"><code>CONFIG_ConfigurationFlags</code></a>).</li>
+<li>In-gear flag <code>b0c_ATXInGear</code> in <code>BitFlags_AIS</code> must be set at line 2086.</li>
+<li>Gear change flag <code>b0c_ATXChngGear</code> must be clear at line 2084.</li>
+<li>Indexes <code>AISCLD</code> table at line 2085 via <code>ldx #AISCLD_IdleSpeedDrive_FromTemp</code>, then branches to <code>L1086</code> to perform <code>jsr Lookup4ByteTable</code> using <code>CoolantTemp</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

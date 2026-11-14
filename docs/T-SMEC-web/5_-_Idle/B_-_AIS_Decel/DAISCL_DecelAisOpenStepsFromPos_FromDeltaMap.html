@@ -132,7 +132,18 @@
 <p>When actual manifold pressure rises above the calculated decel control manifold pressure, <code>DAISCL</code> looks up closing steps (negative values) to retract the stepper motor back toward its calibrated idle position.</p>
 <p>In factory calibrations, <code>DAISCL</code> commands 0 closing steps at small pressure deltas, ramping up to -5 steps as positive delta manifold pressure reaches 2.0 psi (4.1 inHg).</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Curing Deceleration Idle Hang</strong>:</li>
+<li>Increase negative closing step magnitude in <code>DAISCL</code> (from -5 up to -8 or -10 steps) if engine speed lingers above 1300 RPM after releasing the accelerator.</li>
+<li><strong>Preventing Landing Undershoot</strong>:</li>
+<li>If the engine catches on decel but then dives below idle as it settles, reduce <code>DAISCL</code> closing steps to create a smoother, slower air retraction.</li>
+<li><strong>Dashpot Equilibrium</strong>:</li>
+<li>Balance <code>DAISCL</code> against <a href="../../5_-_Idle/B_-_AIS_Decel/DAISOP_DecelAisOpenStepsFromNeg_FromDeltaMap.html"><code>DAISOP</code></a> to ensure a smooth transition from deceleration dashpot into steady closed-throttle idle.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if the idle air motor remained in its wide-open dashpot position once engine speed approached idle, the engine would hang at elevated RPM or race uncontrollably.</p>
 <ul>
 <li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1996</code>).</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -141,16 +152,6 @@
 <li>If <code>MapValue</code> exceeds control MAP (negative delta MAP, carry set), the branch at line 1992 is not taken.</li>
 <li>Line 1993 negates accumulator A (<code>nega</code>) to obtain positive magnitude, and line 1994 loads index X with <code>#DAISCL_DecelAisOpenStepsFromPos_FromDeltaMap</code>.</li>
 <li>Calls <code>Lookup4ByteTable</code> at line 1995 and <code>StoreAndLimitDesiredAisPosition</code> at line 1996.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Curing Deceleration Idle Hang</strong>:</li>
-<li>Increase negative closing step magnitude in <code>DAISCL</code> (from -5 up to -8 or -10 steps) if engine speed lingers above 1300 RPM after releasing the accelerator.</li>
-<li><strong>Preventing Landing Undershoot</strong>:</li>
-<li>If the engine catches on decel but then dives below idle as it settles, reduce <code>DAISCL</code> closing steps to create a smoother, slower air retraction.</li>
-<li><strong>Dashpot Equilibrium</strong>:</li>
-<li>Balance <code>DAISCL</code> against <a href="../../5_-_Idle/B_-_AIS_Decel/DAISOP_DecelAisOpenStepsFromNeg_FromDeltaMap.html"><code>DAISOP</code></a> to ensure a smooth transition from deceleration dashpot into steady closed-throttle idle.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

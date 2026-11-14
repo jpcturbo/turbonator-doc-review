@@ -117,21 +117,22 @@
 <p>Stored as an 8-bit two's complement negative integer, the factory setting of 255 counts represents minus one count, subtracting one fractional increment from the enrichment multiplier every <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTENR2_EppPerAmountForDecreasingMultiplier.html"><code>PTENR2</code></a> pulse interval.</p>
 <p>Furthermore, <code>PTENRD</code> is used in the hysteresis math that clears the maximum part-throttle enrichment status flag, ensuring that spark timing returns smoothly to normal advance schedules after boost enrichment ends.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Decay Step Magnitude</strong>: Setting <code>PTENRD</code> to more negative values such as minus two or minus three counts accelerates enrichment decay, rapidly leaning out the mixture to save fuel.</li>
+<li><strong>Factory Smoothness</strong>: The factory setting of minus one provides the smoothest and most imperceptible transition back to baseline fueling.</li>
+<li><strong>Spark Hysteresis Interaction</strong>: Because <code>PTENRD</code> is also multiplied by <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTENUM_NumberToReturnToHOTMAP.html"><code>PTENUM</code></a> in the spark advance hysteresis check, changing this value alters the decay window required to clear the maximum enrichment spark status flag.</li>
+<li><strong>Decay Verification</strong>: Verify that wideband air-fuel ratio traces taper cleanly without abrupt lean steps when lifting out of boost.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when manifold pressure falls below the RPMMAP boundary curve.</p>
 <ul>
 <li>Enclosed in routine <code>Bit7_IsSet</code> at lines 5865-5925 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
 <li>Applied during decay loop via <code>addb 0x01,x</code> at line 5877 when index register X points to <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTENR2_EppPerAmountForDecreasingMultiplier.html"><code>PTENR2</code></a>.</li>
 <li>Hysteresis evaluation at line 5904: <code>ldaa PTENRD_AmountForDecreasingMultiplier_Negative</code>.</li>
 <li>Line 5906 executes <code>nega</code> to invert the negative count into a positive magnitude before multiplying by <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTENUM_NumberToReturnToHOTMAP.html"><code>PTENUM</code></a>.</li>
 <li>If the decay delta from maximum enrichment exceeds <code>PTENRD * PTENUM</code>, <code>bclr *BitFlags_4f, #b4f_PTEisMaxed</code> clears the flag at line 5914.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Decay Step Magnitude</strong>: Setting <code>PTENRD</code> to more negative values such as minus two or minus three counts accelerates enrichment decay, rapidly leaning out the mixture to save fuel.</li>
-<li><strong>Factory Smoothness</strong>: The factory setting of minus one provides the smoothest and most imperceptible transition back to baseline fueling.</li>
-<li><strong>Spark Hysteresis Interaction</strong>: Because <code>PTENRD</code> is also multiplied by <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTENUM_NumberToReturnToHOTMAP.html"><code>PTENUM</code></a> in the spark advance hysteresis check, changing this value alters the decay window required to clear the maximum enrichment spark status flag.</li>
-<li><strong>Decay Verification</strong>: Verify that wideband air-fuel ratio traces taper cleanly without abrupt lean steps when lifting out of boost.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

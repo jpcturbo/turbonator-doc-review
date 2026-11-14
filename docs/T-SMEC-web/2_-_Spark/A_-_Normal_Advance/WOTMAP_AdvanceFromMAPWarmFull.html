@@ -133,19 +133,7 @@
 <p><code>WOTMAP</code> defines the full-throttle manifold pressure spark advance curve used whenever the engine is operated at wide-open throttle under warm conditions.</p>
 <p>At wide-open throttle, airflow restriction is minimal, volumetric efficiency reaches its peak, and turbocharger boost pressure forces dense air-fuel mixtures into the cylinders. Because high cylinder pressures and elevated combustion temperatures drastically accelerate flame front speeds, ignition timing must be retarded under boost to keep peak cylinder pressure safely positioned after top dead center and protect the engine from detonation. <code>WOTMAP</code> commands positive advance under high vacuum (up to 15 degrees BTDC) and transitions into substantial retard (-6.5 degrees BTDC at 14.7 psi boost) under boost. It also serves as the absolute minimum timing floor for the warm part-throttle curve (<a href="../../2_-_Spark/A_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a>).</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>SparkAdvance_TempAboveTMPSWP</code> and <code>DetermineHotAdvanceFromMap</code> (<code>T-SMEC_v19.asm:7980-7986</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Coolant temperature must be at or above <a href="../../2_-_Spark/A_-_Normal_Advance/TMPSWP_EngTempSwitchPointForSparkAdvance.html"><code>TMPSWP_EngTempSwitchPointForSparkAdvance</code></a>.</li>
-<li>Throttle must be off-idle (<code>b4f_OffIdle</code> set in <code>BitFlags_4f</code>).</li>
-<li><strong>Execution Flow</strong>:</li>
-<li><code>WOTMAP</code> is looked up via <code>SparkAdvance_GetAdvanceFromTableUsingMap</code> at line 7984.</li>
-<li>If full throttle (<code>b4f_FullThrottle</code> set), branches to line 8006 (<code>L1664</code>) to apply nitrous retard and use <code>WOTMAP</code> directly.</li>
-<li>If partial throttle, <code>WOTMAP</code> advance is stored in <code>Temp0</code> as a lower boundary clamp for <a href="../../2_-_Spark/A_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>High-Boost Power Tuning</strong>:</li>
 <li>Advancing <code>WOTMAP</code> increases wide-open throttle torque and top-end power, but must be monitored closely for knock retard activity.</li>
@@ -155,6 +143,19 @@
 <li><code>WOTMAP</code> serves as the load axis combined with <a href="../../2_-_Spark/A_-_Normal_Advance/GOVNER_AdvanceFromRPM.html"><code>GOVNER</code></a> to generate the complete 3D full-throttle spark table (<code>FTTIME</code>) in MPTune.</li>
 <li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
 <li>Upgrading from a 2-bar to a 3-bar MAP sensor requires recalculating table pressure points to match the expanded 0 to 44.1 psi scale.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect whenever the engine is operated at wide-open throttle under warm conditions.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>SparkAdvance_TempAboveTMPSWP</code> and <code>DetermineHotAdvanceFromMap</code> (<code>T-SMEC_v19.asm:7980-7986</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Coolant temperature must be at or above <a href="../../2_-_Spark/A_-_Normal_Advance/TMPSWP_EngTempSwitchPointForSparkAdvance.html"><code>TMPSWP_EngTempSwitchPointForSparkAdvance</code></a>.</li>
+<li>Throttle must be off-idle (<code>b4f_OffIdle</code> set in <code>BitFlags_4f</code>).</li>
+<li><strong>Execution Flow</strong>:</li>
+<li><code>WOTMAP</code> is looked up via <code>SparkAdvance_GetAdvanceFromTableUsingMap</code> at line 7984.</li>
+<li>If full throttle (<code>b4f_FullThrottle</code> set), branches to line 8006 (<code>L1664</code>) to apply nitrous retard and use <code>WOTMAP</code> directly.</li>
+<li>If partial throttle, <code>WOTMAP</code> advance is stored in <code>Temp0</code> as a lower boundary clamp for <a href="../../2_-_Spark/A_-_Normal_Advance/HOTMAP_AdvanceFromMAPWarmPart.html"><code>HOTMAP</code></a>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

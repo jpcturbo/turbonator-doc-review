@@ -118,16 +118,7 @@
 <p><code>DADRPM</code> enforces an RPM stability window: only when actual engine speed is within <code>DADRPM</code> of target idle speed will the controller adjust the adaptive trim integrator.</p>
 <p>In factory calibrations, <code>DADRPM</code> is set to 4 counts, representing an RPM deadband window of 32 RPM.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1977</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Pacing mask <a href="../../5_-_Idle/B_-_AIS_Decel/DCALRT_DacalUpdateRate01_03_07_0f_1f_3f_7f_ff.html"><code>DCALRT</code></a> must clear at line 1935.</li>
-<li>Computes absolute RPM error delta at lines 1936-1939: <code>TargetIdleSpeed_HB - EngineRpm_HB</code>.</li>
-<li>Compares absolute error against <code>DADRPM</code> at line 1940. If error is greater than <code>DADRPM</code> (<code>bhi L1072</code>), learning is bypassed.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Lumpy Camshaft Idle Accommodation</strong>:</li>
 <li>Increase <code>DADRPM</code> to 8 to 12 counts (64 to 96 RPM) on engines with significant valve overlap to allow adaptive learning to tolerate normal lope dither.</li>
@@ -135,6 +126,16 @@
 <li>Retain factory 4 counts (32 RPM) on smooth-idling stock or mild street camshafts.</li>
 <li><strong>Excessive Window Warning</strong>:</li>
 <li>Do not widen <code>DADRPM</code> beyond 16 counts (128 RPM), as the ECU may mistake an active idle flare or sag for a stable idle condition.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if engine speed is significantly above or below target idle, the engine is experiencing a transient disturbance (such as an accessory load engaging or disengaging) rather than reflecting true steady-state mechanical airflow needs.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1977</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Pacing mask <a href="../../5_-_Idle/B_-_AIS_Decel/DCALRT_DacalUpdateRate01_03_07_0f_1f_3f_7f_ff.html"><code>DCALRT</code></a> must clear at line 1935.</li>
+<li>Computes absolute RPM error delta at lines 1936-1939: <code>TargetIdleSpeed_HB - EngineRpm_HB</code>.</li>
+<li>Compares absolute error against <code>DADRPM</code> at line 1940. If error is greater than <code>DADRPM</code> (<code>bhi L1072</code>), learning is bypassed.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

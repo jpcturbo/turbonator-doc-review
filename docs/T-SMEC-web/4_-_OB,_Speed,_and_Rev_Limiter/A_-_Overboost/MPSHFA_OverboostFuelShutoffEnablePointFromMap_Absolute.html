@@ -116,18 +116,7 @@
 <p><code>MPSHFA</code> defines the instantaneous or absolute overboost fuel cutout threshold in the Chrysler engine controller.</p>
 <p>While <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a> allows a temporary boost spike by decrementing a countdown timer, <code>MPSHFA</code> serves as an emergency upper boundary where fuel injection is cut immediately without waiting for any timer to expire. In factory 2.5L calibrations, <code>MPSHFA</code> is calibrated to 153 counts, representing approximately 17.6 psi of boost above atmospheric pressure. If severe turbocharger runaway occurs and boost shoots past this absolute ceiling, the controller bypasses all timer delays, stores non-critical diagnostic fault code 45, and shuts off fuel injection for the current engine rotation to protect pistons, head gasket, and valvetrain.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>Cutout_CheckNormalOB</code> (<code>T-SMEC_v19.asm:5656-5666</code>), called from <code>ControlEngineCutout_MM</code> (<code>T-SMEC_v19.asm:5607-5671</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Reached only after <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a> has been subtracted from gauge boost and carry is clear (<code>MapValue - BaroPressure &gt;= MPSHFT</code>).</li>
-<li>Wastegate solenoid fault flag <code>b46_WGSolFault</code> in <code>b46_IPL2</code> must be clear.</li>
-<li><strong>Comparison &amp; Branch</strong>:</li>
-<li>Compares remaining gauge boost delta against <code>MPSHFA</code> (<code>cmpa MPSHFA_OverboostFuelShutoffEnablePointFromMap_Absolute</code>).</li>
-<li>If higher (<code>bhi Cutout_SetOBCodeAndShutdown</code>), branches immediately to store fault code 0x0708 via <code>ThrowNonCriticalError</code> and cuts fuel for this rotation via <code>Cutout_ShutOffEngineForThisRotation</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Raising for High-Boost Tuning</strong>:</li>
 <li>When targeting 18+ psi boost, <code>MPSHFA</code> must be elevated above planned boost overshoot levels, or set to 255 counts to prevent instant fuel shutoff.</li>
@@ -136,6 +125,18 @@
 <li>Rescale <code>MPSHFA</code> to reflect the 44.1 psi total sensor span when upgrading from the factory 2-bar MAP sensor.</li>
 <li><strong>Lowering &amp; Protection</strong>:</li>
 <li>Lowering <code>MPSHFA</code> provides an immediate cutoff ceiling for engine dyno testing or conservative safety configurations.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect while MPSHFT allows a temporary boost spike by decrementing a countdown timer, MPSHFA serves as an emergency upper boundary where fuel injection is cut immediately without waiting for any timer to expire.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>Cutout_CheckNormalOB</code> (<code>T-SMEC_v19.asm:5656-5666</code>), called from <code>ControlEngineCutout_MM</code> (<code>T-SMEC_v19.asm:5607-5671</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Reached only after <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/A_-_Overboost/MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer.html"><code>MPSHFT</code></a> has been subtracted from gauge boost and carry is clear (<code>MapValue - BaroPressure &gt;= MPSHFT</code>).</li>
+<li>Wastegate solenoid fault flag <code>b46_WGSolFault</code> in <code>b46_IPL2</code> must be clear.</li>
+<li><strong>Comparison &amp; Branch</strong>:</li>
+<li>Compares remaining gauge boost delta against <code>MPSHFA</code> (<code>cmpa MPSHFA_OverboostFuelShutoffEnablePointFromMap_Absolute</code>).</li>
+<li>If higher (<code>bhi Cutout_SetOBCodeAndShutdown</code>), branches immediately to store fault code 0x0708 via <code>ThrowNonCriticalError</code> and cuts fuel for this rotation via <code>Cutout_ShutOffEngineForThisRotation</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

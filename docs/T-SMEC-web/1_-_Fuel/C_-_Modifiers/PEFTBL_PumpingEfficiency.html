@@ -129,17 +129,7 @@
 <p>Speed-density fuel calculation estimates mass airflow based on intake manifold pressure, displacement, charge air temperature, and the mechanical breathing ability of the engine across the RPM range. <code>PEFTBL</code> scales base fuel pulsewidth across the entire operating range from idle to 8160 RPM to match cylinder head port airflow, camshaft lift and duration, and intake manifold runner resonance.</p>
 <p>In Turbonator SMEC v19, the firmware utilizes the proven stock 0 to 99.6 percent volumetric efficiency scaling routine.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>IncludePumpEff</code> (<code>T-SMEC_v19.asm:6187-6204</code>), instruction line 6192.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Executed in <code>CalculateSumOfAllFuelModifiers_MM</code> for every running engine calculation pass.</li>
-<li>Evaluates <code>EngineRpm_HB</code> (engine speed high byte).</li>
-<li><strong>Scaling Math</strong>:</li>
-<li>Looked up via <code>Lookup4ByteTable</code>, then scales <code>Temp0</code> via <code>ScaleYbyA</code>, storing the resulting modifier in <code>SumOfFuelModifiers_HB</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Performance Camshaft Profiling</strong>:</li>
 <li>Reshape <code>PEFTBL</code> to match the engine's new volumetric efficiency curve when installing aftermarket camshafts (e.g. Taft, FWD-P, or custom grinds).</li>
@@ -149,6 +139,17 @@
 <li>Modifies part-throttle, wide-open throttle, and idle fueling equally at each RPM point because volumetric efficiency is an engine airflow physical property.</li>
 <li><strong>SMEC v19 Scaling Architecture</strong>:</li>
 <li>Turbonator SMEC v19 re-adopted the stock 0 to 99.6 percent volumetric efficiency routine (experimental 150% scaling code is commented out in assembly).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect continuously across all engine operating conditions once running, scaling base fuel delivery across engine RPM to match the engine's volumetric efficiency.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>IncludePumpEff</code> (<code>T-SMEC_v19.asm:6187-6204</code>), instruction line 6192.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Executed in <code>CalculateSumOfAllFuelModifiers_MM</code> for every running engine calculation pass.</li>
+<li>Evaluates <code>EngineRpm_HB</code> (engine speed high byte).</li>
+<li><strong>Scaling Math</strong>:</li>
+<li>Looked up via <code>Lookup4ByteTable</code>, then scales <code>Temp0</code> via <code>ScaleYbyA</code>, storing the resulting modifier in <code>SumOfFuelModifiers_HB</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

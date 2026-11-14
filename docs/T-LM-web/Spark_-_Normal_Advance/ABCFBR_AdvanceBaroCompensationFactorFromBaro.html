@@ -128,15 +128,7 @@
 <p><code>ABCFBR_AdvanceBaroCompensationFactorFromBaro</code> provides the barometric pressure weighting factor for the ECU's altitude ignition timing limiter.</p>
 <p>As ambient atmospheric pressure drops with increasing elevation, the turbocharger must work at higher pressure ratios to achieve target boost, resulting in significantly higher compressor outlet temperatures. To prevent detonation under these conditions, <code>ABCFBR</code> generates a scaling multiplier that grows as ambient barometric pressure decreases. This multiplier scales the RPM factor (<a href="../Spark_-_Normal_Advance/ABCFRP_AdvanceBaroCompensationFactorFromRPM.html"><code>ABCFRP</code></a>), and the product is subtracted from the baseline ceiling (<a href="../Spark_-_Normal_Advance/ABCBAS_AdvanceBaroCompensationBaseFromRPM.html"><code>ABCBAS</code></a>) to reduce allowable MAP spark advance at high altitudes.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ol>
-<li><strong>Ambient Pressure Dependent:</strong> Evaluates the <code>BaroPressure</code> RAM variable (latched during key-on and updated periodically during driving).</li>
-<li><strong>Altitude Operation:</strong> In the factory calibration:
-   - At sea level (~14.7 psi / <code>0x78</code> Baro): <code>ABCFBR</code> outputs <code>0x00</code> (zero compensation).
-   - At high altitude (e.g., Denver, CO / ~12.2 psi / <code>0x6D</code> Baro): <code>ABCFBR</code> outputs a positive multiplier (<code>0x04</code>), activating the altitude timing reduction.</li>
-</ol>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Increasing Table Values (Higher Baro Factor):</strong></li>
 <li><strong>Effect on Total Timing:</strong> <strong>Retards total ignition timing</strong> more aggressively as elevation increases by pulling more timing away from <a href="../Spark_-_Normal_Advance/ABCBAS_AdvanceBaroCompensationBaseFromRPM.html"><code>ABCBAS</code></a>.</li>
@@ -147,6 +139,15 @@
 <li><strong>Setting to Zero (<code>0x00</code> across table):</strong></li>
 <li>Disables barometric timing reduction completely; the ECU will enforce only the raw <a href="../Spark_-_Normal_Advance/ABCBAS_AdvanceBaroCompensationBaseFromRPM.html"><code>ABCBAS</code></a> curve regardless of altitude.</li>
 </ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect across ambient atmospheric pressure, scaling barometric ignition advance compensation based on altitude.</p>
+<ol>
+<li><strong>Ambient Pressure Dependent:</strong> Evaluates the <code>BaroPressure</code> RAM variable (latched during key-on and updated periodically during driving).</li>
+<li><strong>Altitude Operation:</strong> In the factory calibration:
+   - At sea level (~14.7 psi / <code>0x78</code> Baro): <code>ABCFBR</code> outputs <code>0x00</code> (zero compensation).
+   - At high altitude (e.g., Denver, CO / ~12.2 psi / <code>0x6D</code> Baro): <code>ABCFBR</code> outputs a positive multiplier (<code>0x04</code>), activating the altitude timing reduction.</li>
+</ol>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>
 <p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 6637–6649):</p>

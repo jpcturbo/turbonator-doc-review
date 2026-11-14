@@ -117,16 +117,7 @@
 <p>To properly synchronize distributor orientation with true engine top dead center using a timing light, the technician disconnects the coolant temperature sensor, forcing a coolant sensor diagnostic fault. In response, the engine controller locks ignition advance to a fixed reference angle, commands a steady idle airflow, and loads <code>RICHSA</code> as a rich open-loop fueling multiplier.</p>
 <p>In factory calibrations, <code>RICHSA</code> is set to 26 counts. This provides extra fuel dampening to stabilize combustion, prevent lean misfiring, and suppress engine speed oscillations while closed-loop oxygen sensor feedback and adaptive fuel memory updates are temporarily suspended.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>DealWithSpecialIdle_SetBasicTiming_MM</code> (<code>T-SMEC_v19.asm:5813-5835</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Throttle state must be closed; tested via <code>BitFlags_4f</code> bit <code>b4f_OffIdle</code> at line 5814. If set (off-idle), branches to <code>THROTTLE_PRESSED1</code> and clears enrichment.</li>
-<li>Coolant temperature sensor fault flag <code>b45_BadCoolantTemp</code> in <code>b45_IPL1</code> must be set at line 5816 (triggered when the coolant sensor connector is unplugged or shorted to ground for timing setup).</li>
-<li>Diagnostic enrichment timer <code>Timer_OffThrottleFuelEnrich</code> is loaded with <code>RICHSA</code> at line 5833, which in turn suspends oxygen sensor switching and adaptive trim updates.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Factory Baseline &amp; Retention</strong>:</li>
 <li>Retain <code>RICHSA</code> at its factory value of 26 counts for standard street engines to maintain predictable open-loop fueling during distributor synchronization.</li>
@@ -136,6 +127,16 @@
 <li>When installing large aftermarket fuel injectors, ensure overall fuel scaling is trimmed so that the uncorrected multiplier in <code>RICHSA</code> does not saturate cylinders or foul spark plugs during timing light alignment.</li>
 <li><strong>Lowering &amp; Lean Stumbles</strong>:</li>
 <li>Lowering <code>RICHSA</code> below 20 counts can produce lean idle instability, causing the engine to surge or die when entering diagnostic basic timing mode.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect whenever the engine controller enters mechanical basic ignition timing service mode.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>DealWithSpecialIdle_SetBasicTiming_MM</code> (<code>T-SMEC_v19.asm:5813-5835</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Throttle state must be closed; tested via <code>BitFlags_4f</code> bit <code>b4f_OffIdle</code> at line 5814. If set (off-idle), branches to <code>THROTTLE_PRESSED1</code> and clears enrichment.</li>
+<li>Coolant temperature sensor fault flag <code>b45_BadCoolantTemp</code> in <code>b45_IPL1</code> must be set at line 5816 (triggered when the coolant sensor connector is unplugged or shorted to ground for timing setup).</li>
+<li>Diagnostic enrichment timer <code>Timer_OffThrottleFuelEnrich</code> is loaded with <code>RICHSA</code> at line 5833, which in turn suspends oxygen sensor switching and adaptive trim updates.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

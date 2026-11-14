@@ -135,21 +135,22 @@
 <p>During sustained part-throttle acceleration, the controller continually increments the enrichment multiplier; however, an uncontrolled fuel multiplier would eventually over-fuel the engine and wash cylinder walls. <code>PTELMT</code> defines the maximum percentage multiplier allowed as engine speed climbs.</p>
 <p>The factory calibration sets an allowable enrichment ceiling of approximately 12 percent at 2300 RPM, scaling up progressively to 33 percent at 5300 RPM. This ceiling is subsequently modulated by <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTEADJ_EnrichAdjust_FromMap.html"><code>PTEADJ</code></a> to account for manifold boost pressure.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Preventing Lean Boost Pulls</strong>: Raise <code>PTELMT</code> values if wideband data logging shows that the engine runs leaner than desired during long part-throttle pulls in boost.</li>
+<li><strong>High-Performance Detonation Margin</strong>: Raising the limit allows the open-loop enrichment multiplier to ramp to higher fuel percentages, providing extra detonation margin on high-performance turbocharged builds.</li>
+<li><strong>Curing Rich Part-Throttle Bog</strong>: Lower <code>PTELMT</code> values if the engine feels sluggish, bogs rich, or emits black smoke when holding moderate throttle under boost, which commonly occurs after installing high-flow aftermarket injectors.</li>
+<li><strong>RPM Profile Shaping</strong>: Shape the curve to provide lower limits at low RPM where airflow is low, tapering up to maximum enrichment at high RPM where volumetric efficiency peaks.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during sustained part-throttle acceleration, the controller continually increments the enrichment multiplier; however, an uncontrolled fuel multiplier would eventually over-fuel the engine and wash cylinder walls.</p>
 <ul>
 <li>Enclosed in routine <code>Bit7_IsSet</code> at lines 5865-5925 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
 <li>Looked up via <code>jsr Lookup4ByteTable</code> at line 5886 using <code>EngineRpm_HB</code> with pointer <code>ldx #PTELMT_MultiplierMaxLimitFromRpm</code>.</li>
 <li>Output stored into <code>Temp4</code> at line 5887.</li>
 <li>Compared against proposed enrichment multiplier <code>Temp0</code> via <code>cmpb Temp0</code> at line 5897.</li>
 <li>If proposed enrichment reaches or exceeds the calculated limit, <code>bls SetPTEMaxFlag</code> branches to line 5920, setting <code>b4f_PTEisMaxed</code> in <code>BitFlags_4f</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Preventing Lean Boost Pulls</strong>: Raise <code>PTELMT</code> values if wideband data logging shows that the engine runs leaner than desired during long part-throttle pulls in boost.</li>
-<li><strong>High-Performance Detonation Margin</strong>: Raising the limit allows the open-loop enrichment multiplier to ramp to higher fuel percentages, providing extra detonation margin on high-performance turbocharged builds.</li>
-<li><strong>Curing Rich Part-Throttle Bog</strong>: Lower <code>PTELMT</code> values if the engine feels sluggish, bogs rich, or emits black smoke when holding moderate throttle under boost, which commonly occurs after installing high-flow aftermarket injectors.</li>
-<li><strong>RPM Profile Shaping</strong>: Shape the curve to provide lower limits at low RPM where airflow is low, tapering up to maximum enrichment at high RPM where volumetric efficiency peaks.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -116,18 +116,7 @@
 <p><code>T2MPDEL1</code> sets the rate-of-change stability threshold for manifold pressure required before the error timer can advance when boost is above target in T2 control.</p>
 <p>T2 control actively tracks the signed rate of boost change (<code>BoostDelta_Signed</code>). If boost is changing too rapidly, the rate delta will be large, indicating an active transient. <code>T2MPDEL1</code> requires the rate of boost change to fall below this threshold, verifying that manifold pressure has stabilized before allowing the error timer to count toward an adaptive duty cycle update.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>T2WGDC_IncrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9961-9964</code>), called from <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9755-10040</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Reached when <code>MapValue &gt;= BoostTarget</code> and <code>b52_WGDC_BumpAdapt</code> is set (line 9957).</li>
-<li><strong>Rate Comparison</strong>:</li>
-<li>Line 9962 loads <code>T2MPDEL1_IncCounterWhenDeltaMapBelowThis</code> into accumulator A.</li>
-<li>Line 9963 executes <code>cmpa Temp0</code> (where <code>Temp0</code> holds absolute boost rate <code>|BoostDelta_Signed|</code>).</li>
-<li>If <code>T2MPDEL1 &lt; Temp0</code> (<code>bcs</code>), execution branches to <code>T2WGDC_ClearBoostErrTimer</code>, resetting the timer.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>T2 Rate-of-Change Stability Gate</strong>:</li>
 <li>Requires absolute boost rate delta (<code>Temp0 = |BoostDelta_Signed|</code>) to be below <code>T2MPDEL1</code> to advance error timer.</li>
@@ -136,6 +125,18 @@
 <li>Blocks adaptive cell increments while boost is rapidly rising or spiking.</li>
 <li><strong>Plenum Harmonic Tuning</strong>:</li>
 <li>If large intake plenums or aggressive cams create pressure fluctuations, increase <code>T2MPDEL1</code> to 3 or 4 counts to permit steady-state learning.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if boost is changing too rapidly, the rate delta will be large, indicating an active transient.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>T2WGDC_IncrementWGAdaptive</code> (<code>T-SMEC_v19.asm:9961-9964</code>), called from <code>CalcWGDutyCycleT2</code> (<code>T-SMEC_v19.asm:9755-10040</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Reached when <code>MapValue &gt;= BoostTarget</code> and <code>b52_WGDC_BumpAdapt</code> is set (line 9957).</li>
+<li><strong>Rate Comparison</strong>:</li>
+<li>Line 9962 loads <code>T2MPDEL1_IncCounterWhenDeltaMapBelowThis</code> into accumulator A.</li>
+<li>Line 9963 executes <code>cmpa Temp0</code> (where <code>Temp0</code> holds absolute boost rate <code>|BoostDelta_Signed|</code>).</li>
+<li>If <code>T2MPDEL1 &lt; Temp0</code> (<code>bcs</code>), execution branches to <code>T2WGDC_ClearBoostErrTimer</code>, resetting the timer.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

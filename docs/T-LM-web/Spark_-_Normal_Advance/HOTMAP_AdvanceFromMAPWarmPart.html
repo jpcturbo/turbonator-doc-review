@@ -128,13 +128,7 @@
 <p><code>HOTMAP_AdvanceFromMAPWarmPart</code> is the primary warm <strong>part-throttle load advance table</strong>. In Chrysler's 2D speed-density architecture, ignition timing is decomposed into an engine speed component (<a href="../Spark_-_Normal_Advance/GOVNER_AdvanceFromRPM.html"><code>GOVNER</code></a>) and an engine load / manifold pressure component. <code>HOTMAP</code> provides the load component across vacuum and part-throttle boost when the engine is fully warmed up.</p>
 <p>During part-throttle cruising under light engine load (high manifold vacuum), the cylinder charge is lean and less dense, burning significantly slower than a dense WOT mixture. To achieve maximum thermal efficiency and fuel economy, <code>HOTMAP</code> introduces high advance figures (up to +12° or more of additional MAP advance) in high-vacuum regions, progressively decreasing the timing as manifold pressure approaches atmospheric and transitions into boost.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<p><code>HOTMAP</code> is looked up when all of the following conditions exist:
-1. <strong>Engine is Warm:</strong> Coolant temperature is at or above <a href="../Spark_-_Normal_Advance/TMPSWP_EngTempSwitchPointForSparkAdvance.html"><code>TMPSWP</code></a> (typically ≥ 166°F / 74°C).
-2. <strong>Part-Throttle Operation:</strong> The throttle is open (off-idle), but has <strong>not</strong> reached Wide-Open Throttle (WOT).
-3. <strong>PTE &amp; Boost Blending Active:</strong> When accelerating at part throttle into boost, the raw output of <code>HOTMAP</code> is dynamically reduced by the <a href="../Spark_-_Adaptive_Retard/ARADVR_AdaptiveRetardAdvanceRatioFromMAP.html"><code>ARADVR</code></a> retard factor toward the <a href="../Spark_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP</code></a> curve.</p>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <p>Total part-throttle ignition timing is the sum of RPM advance (<a href="../Spark_-_Normal_Advance/GOVNER_AdvanceFromRPM.html"><code>GOVNER</code></a>), the effective part-throttle MAP advance derived from <code>HOTMAP</code>, and barometric/temperature trims:</p>
 <p><code>Total Timing ≈ GOVNER(RPM) + \max(WOTMAP, HOTMAP - Retard) ± Trims</code></p>
 <ul>
@@ -148,6 +142,13 @@
 <li><strong>Relation to <a href="../Spark_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP</code></a>:</strong></li>
 <li>In the ECU assembly code, <a href="../Spark_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP</code></a> serves as a hard lower floor. <code>HOTMAP</code> values under boost should blend logically into <a href="../Spark_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP</code></a> to ensure smooth transition behavior.</li>
 </ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle driving (engine coolant above operating temperature), establishing the primary manifold vacuum ignition advance curve.</p>
+<p><code>HOTMAP</code> is looked up when all of the following conditions exist:
+1. <strong>Engine is Warm:</strong> Coolant temperature is at or above <a href="../Spark_-_Normal_Advance/TMPSWP_EngTempSwitchPointForSparkAdvance.html"><code>TMPSWP</code></a> (typically ≥ 166°F / 74°C).
+2. <strong>Part-Throttle Operation:</strong> The throttle is open (off-idle), but has <strong>not</strong> reached Wide-Open Throttle (WOT).
+3. <strong>PTE &amp; Boost Blending Active:</strong> When accelerating at part throttle into boost, the raw output of <code>HOTMAP</code> is dynamically reduced by the <a href="../Spark_-_Adaptive_Retard/ARADVR_AdaptiveRetardAdvanceRatioFromMAP.html"><code>ARADVR</code></a> retard factor toward the <a href="../Spark_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP</code></a> curve.</p>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>
 <p>Inside <a href="../T-LMv13.asm.html"><code>T-LMv13.asm</code></a> (lines 6618–6631):</p>

@@ -117,7 +117,15 @@
 <p>Turbonator firmware includes a real-time knock alert feature: whenever the knock sensor registers detonation and the controller retards ignition timing on any individual cylinder, the Check Engine light flashes to alert the driver. However, cold engines naturally produce mechanical valvetrain clatter and piston slap that can register as false knock.</p>
 <p><code>KNKMIN</code> suppresses knock light flashing until the engine warms up to normal operating temperature, with the factory setting corresponding to approximately 160 degF.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stock Cast Pistons</strong>: Factory setting of approximately 160 degF effectively filters cold start clatter while providing prompt alerts as soon as the thermostat opens.</li>
+<li><strong>Forged Racing Pistons</strong>: Forged 2618 or 4032 pistons with loose clearances produce mechanical slap when cold. Raise <code>KNKMIN</code> to 175 degF to suppress false alerts until the engine reaches operating temperature.</li>
+<li><strong>Diagnostic Value</strong>: Provides immediate real-time driver feedback during road or dyno tuning without needing a laptop connected.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during knock detection, ensuring the check engine light only flashes for knock events once engine coolant temperature is above this minimum operating threshold.</p>
 <ul>
 <li>Enclosed in subroutine <code>UseCELForKnockIndication_MM</code> at lines 10100-10121 of <code>cals/SMEC/T-SMEC_v19.asm</code> (invoked via main loop at line 7545).</li>
 <li>Requires custom option flag <code>opt_FlashCE</code> (bit 4) to be enabled in <a href="../../../0_-_Setup/A_-_Cal_Configuration/OPTN1_CalCustomOptionConfigFlags1.html"><code>OPTN1_CalCustomOptionConfigFlags1</code></a> (line 10102).</li>
@@ -125,13 +133,6 @@
 <li>Temperature comparison: <code>cmpa KNKMIN_FlashCEMinTemp</code> against <code>CoolantTemp</code> (line 10105).</li>
 <li>If <code>CoolantTemp &lt; KNKMIN</code> (<code>bcs FlashCEL_OnKnock_return</code>), knock light flashing is suppressed.</li>
 <li>If <code>CoolantTemp &gt;= KNKMIN</code>, lines 10107-10114 check individual cylinder knock retard variables (<code>Cylinder1Retard</code> through <code>Cylinder4Retard</code>). If any cylinder has active retard, bit <code>pia1abuf_CELight</code> in <code>PIA1_A_Buffer</code> is cleared to illuminate the lamp.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Stock Cast Pistons</strong>: Factory setting of approximately 160 degF effectively filters cold start clatter while providing prompt alerts as soon as the thermostat opens.</li>
-<li><strong>Forged Racing Pistons</strong>: Forged 2618 or 4032 pistons with loose clearances produce mechanical slap when cold. Raise <code>KNKMIN</code> to 175 degF to suppress false alerts until the engine reaches operating temperature.</li>
-<li><strong>Diagnostic Value</strong>: Provides immediate real-time driver feedback during road or dyno tuning without needing a laptop connected.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

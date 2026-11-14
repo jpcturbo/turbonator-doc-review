@@ -132,17 +132,7 @@
 <p><code>MPTEMP</code> acts as a progressive blend multiplier: it attenuates the RPM-based decel MAP term when the engine is cold and gradually blends it in to full strength as the engine warms up.</p>
 <p>In factory calibrations, <code>MPTEMP</code> scales from 0.0 (zero contribution) at 36 °F up to 1.0 (100% full contribution) at 170 °F and above.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1996</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Runs immediately after <a href="../../5_-_Idle/B_-_AIS_Decel/MAPFLR_AISAdditionToControlMap_FromRpm.html"><code>MAPFLR</code></a> is looked up and saved into <code>Temp1</code> at line 1906.</li>
-<li>Loads <code>CoolantTemp</code> into accumulator A at line 1908.</li>
-<li>Indexes <code>MPTEMP</code> table via <code>Lookup4ByteTable</code> at line 1909.</li>
-<li>Multiplies returned multiplier by <code>Temp1</code> (<code>mul</code>) at line 1911 and adds into <code>Temp0</code> at line 1912.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Warm-Up High Idle Hang</strong>:</li>
 <li>If engine speed hangs on decel while the car is warming up, reduce the intermediate multiplier points in <code>MPTEMP</code>.</li>
@@ -150,6 +140,17 @@
 <li>Elevate cold points in <code>MPTEMP</code> if high-RPM clutch disengagements during warm-up cause the engine to plunge past idle and die.</li>
 <li><strong>Full Operating Range</strong>:</li>
 <li>Always maintain a full 1.0 multiplier (255 counts) above 170 °F.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during cold engine operation, separate warm-up tables (such as TEMPDC) already provide substantial auxiliary bypass airflow.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1996</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Runs immediately after <a href="../../5_-_Idle/B_-_AIS_Decel/MAPFLR_AISAdditionToControlMap_FromRpm.html"><code>MAPFLR</code></a> is looked up and saved into <code>Temp1</code> at line 1906.</li>
+<li>Loads <code>CoolantTemp</code> into accumulator A at line 1908.</li>
+<li>Indexes <code>MPTEMP</code> table via <code>Lookup4ByteTable</code> at line 1909.</li>
+<li>Multiplies returned multiplier by <code>Temp1</code> (<code>mul</code>) at line 1911 and adds into <code>Temp0</code> at line 1912.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

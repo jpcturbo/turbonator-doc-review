@@ -116,17 +116,7 @@
 <p><code>DECTIM</code> sets the timing prescaler bitmask that governs how frequently the knock duty cycle recovery decrement (<a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Knock_Adj/DCDECK_WastegateDutyCycleDecrementWhenSparkStillDerated.html"><code>DCDECK</code></a>) is executed in T1 control.</p>
 <p>The engine controller tests this bitmask against its main program loop counter; only when the masked bits equal zero does the controller subtract <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Knock_Adj/DCDECK_WastegateDutyCycleDecrementWhenSparkStillDerated.html"><code>DCDECK</code></a> from the knock reduction penalty. By pacing the execution rate, <code>DECTIM</code> prevents boost from recovering too abruptly after a detonation event, ensuring stable and gradual recovery.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_LookupWGDutyCycleBase</code> (<code>T-SMEC_v19.asm:9636-9638</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
-<li><strong>Gating Conditions</strong>: Active only when knock flag <code>b55_BoostOver5psi</code> is clear.</li>
-<li><strong>Bitwise Masking</strong>:</li>
-<li>Accumulator B loads <code>Counter_MainLoop</code> at line 9636.</li>
-<li>Line 9637 executes <code>bitb DECTIM_TimeScaleFor_DCDECK</code>.</li>
-<li>If non-zero (<code>bne L1869</code>), the decrement routine is bypassed for this loop pass.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Recovery Interval Prescaler</strong>:</li>
 <li>Bitmask applied against <code>Counter_MainLoop</code> to control how often <a href="../../../../3_-_Boost_Control/B_-_WG_Control/T1_WG_Control/T1_WGDC_Knock_Adj/DCDECK_WastegateDutyCycleDecrementWhenSparkStillDerated.html"><code>DCDECK</code></a> is subtracted.</li>
@@ -135,6 +125,17 @@
 <li>Increasing bitmask to 3 (every 4th pass) or 7 (every 8th pass) extends the time boost remains reduced after knock.</li>
 <li><strong>Pacing Synchronization</strong>:</li>
 <li>Coordinate with ignition retard decay rates to ensure boost and spark advance recover harmoniously.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when wastegate duty cycle is decremented due to knock, setting the time scale for duty cycle step reductions.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_LookupWGDutyCycleBase</code> (<code>T-SMEC_v19.asm:9636-9638</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
+<li><strong>Gating Conditions</strong>: Active only when knock flag <code>b55_BoostOver5psi</code> is clear.</li>
+<li><strong>Bitwise Masking</strong>:</li>
+<li>Accumulator B loads <code>Counter_MainLoop</code> at line 9636.</li>
+<li>Line 9637 executes <code>bitb DECTIM_TimeScaleFor_DCDECK</code>.</li>
+<li>If non-zero (<code>bne L1869</code>), the decrement routine is bypassed for this loop pass.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

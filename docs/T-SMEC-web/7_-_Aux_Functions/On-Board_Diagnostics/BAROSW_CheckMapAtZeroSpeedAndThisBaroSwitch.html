@@ -117,7 +117,20 @@
 <p>Because ambient atmospheric pressure decreases significantly with increasing altitude, an engine idling at high elevation naturally produces less absolute manifold vacuum than the same engine idling at sea level. To prevent vehicles operating in mountain regions from falsely setting Fault Code 13, the engine controller evaluates atmospheric barometric pressure at key-on and chooses an appropriate vacuum test threshold.</p>
 <p>In factory calibrations, <code>BAROSW</code> is set to 98 counts, corresponding to approximately 11.3 psi barometric pressure (equivalent to an altitude of roughly 7500 feet above sea level). When atmospheric pressure is below <code>BAROSW</code>, the controller switches to a relaxed high-altitude vacuum check threshold.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
+<li>Multiply <code>BAROSW</code> by 0.667 (from 98 counts down to 65 counts) when converting from a 2-bar to a 3-bar MAP sensor.</li>
+<li>This maintains the physical 11.3 psi (7500 ft elevation) transition point under the 3-bar sensor transfer function.</li>
+<li><strong>High Altitude Tuning</strong>:</li>
+<li>For vehicles operating primarily in high-altitude mountain environments, raising <code>BAROSW</code> slightly ensures early engagement of relaxed vacuum thresholds.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Setting <code>BAROSW</code> to 255 counts forces high-altitude vacuum criteria at all elevations.</li>
+<li>Setting <code>BAROSW</code> to zero forces sea-level criteria even at the highest mountain passes.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when atmospheric pressure is below BAROSW, the controller switches to a relaxed high-altitude vacuum check threshold.</p>
 <ul>
 <li><strong>Routine &amp; Line Numbers</strong>: <code>VerifyOperationOfMapSensor_MM</code> (<code>T-SMEC_v19.asm:4893-4946</code>), instruction at line 4915.</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -128,18 +141,6 @@
 <li>Pointer to <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPVACD_AllowMapToTestGoodThisNearBaro.html"><code>MPVACD_AllowMapToTestGoodThisNearBaro</code></a> loaded into register X at line 4914.</li>
 <li><code>cmpb BAROSW_CheckMapAtZeroSpeedAndThisBaroSwitch</code> at line 4915 compares barometric pressure against 98 counts.</li>
 <li>If lower (<code>bcs</code>), register X is incremented (<code>inx</code> at line 4917) to select the high-altitude threshold byte.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>3-Bar MAP Sensor Rescaling</strong>:</li>
-<li>Multiply <code>BAROSW</code> by 0.667 (from 98 counts down to 65 counts) when converting from a 2-bar to a 3-bar MAP sensor.</li>
-<li>This maintains the physical 11.3 psi (7500 ft elevation) transition point under the 3-bar sensor transfer function.</li>
-<li><strong>High Altitude Tuning</strong>:</li>
-<li>For vehicles operating primarily in high-altitude mountain environments, raising <code>BAROSW</code> slightly ensures early engagement of relaxed vacuum thresholds.</li>
-<li><strong>Edge Cases</strong>:</li>
-<li>Setting <code>BAROSW</code> to 255 counts forces high-altitude vacuum criteria at all elevations.</li>
-<li>Setting <code>BAROSW</code> to zero forces sea-level criteria even at the highest mountain passes.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -129,15 +129,7 @@
 <p><code>DCWADJ</code> supplies an engine-speed-dependent signed duty cycle adjustment to the base wastegate duty cycle in T1 control.</p>
 <p>Turbocharger volumetric flow characteristics and exhaust backpressure shift considerably between low engine speeds and redline; smaller turbine housings often create rising exhaust backpressure that blows the wastegate valve open at high RPM, while larger turbines may build boost progressively. The engine controller uses <code>DCWADJ</code> to add or subtract solenoid duty cycle across the rev range, keeping boost steady and flat from initial spool through redline.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_LookupWGDutyCycleBase</code> (<code>T-SMEC_v19.asm:9604-9608</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
-<li><strong>Execution Frequency</strong>: Evaluated every 32 main program loops during duty cycle updates.</li>
-<li><strong>Input Variable</strong>: Indexed by <code>EngineRpm_HB</code> (scaled at 32 RPM per count) at line 9604.</li>
-<li><strong>Math &amp; Clamping</strong>: Interpolated signed adjustment is passed to <code>WGDC_AdjustWGDutyCycle</code> (line 9607), clamping <code>Temp4</code> between 0 and 200 counts.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>High-RPM Boost Sag Correction</strong>:</li>
 <li>If boost drops off above 5000 RPM due to exhaust backpressure opening the flapper, add positive duty cycle in the high-RPM bins.</li>
@@ -147,6 +139,15 @@
 <li>Signed Type 2 curve spans -64.0 percent to +63.5 percent duty cycle adjustment.</li>
 <li><strong>Shared Clamping Helper</strong>:</li>
 <li>Resulting sum in <code>Temp4</code> is clamped to 0 to 200 counts (0 to 100 percent) via <code>WGDC_AdjustWGDutyCycle</code>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during full-throttle boost control, adjusting baseline wastegate duty cycle across engine RPM to compensate for turbine flow changes.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>WGDC_LookupWGDutyCycleBase</code> (<code>T-SMEC_v19.asm:9604-9608</code>), called from <code>CalcWGDutyCycleT1</code> (<code>T-SMEC_v19.asm:9512-9753</code>).</li>
+<li><strong>Execution Frequency</strong>: Evaluated every 32 main program loops during duty cycle updates.</li>
+<li><strong>Input Variable</strong>: Indexed by <code>EngineRpm_HB</code> (scaled at 32 RPM per count) at line 9604.</li>
+<li><strong>Math &amp; Clamping</strong>: Interpolated signed adjustment is passed to <code>WGDC_AdjustWGDutyCycle</code> (line 9607), clamping <code>Temp4</code> between 0 and 200 counts.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

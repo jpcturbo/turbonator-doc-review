@@ -117,7 +117,18 @@
 <p>When the oxygen sensor detects a rich mixture, the controller decrements the feedback counter to remove fuel. <code>O2LIML</code> provides a hard lower clamp, preventing the controller from subtracting more fuel than calibrated.</p>
 <p>In stock calibrations, <code>O2LIML</code> is set to signed -77 counts (stored as 179 unsigned), which corresponds to approximately -15.0 percent maximum fuel reduction. This prevents a failing sensor from dangerously leaning out the engine.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Capping Negative STFT</strong>:</li>
+<li>Clamping <code>O2LIML</code> to -25 to -30 counts limits short-term leanout to -5% to -6%, preventing lean misfires on cammed engines.</li>
+<li><strong>Preventing False Leanout</strong>:</li>
+<li>Large cams with unburned oxygen at idle cause false rich readings; restricting <code>O2LIML</code> prevents the ECU from pulling needed fuel.</li>
+<li><strong>Mathematical Authority</strong>:</li>
+<li>Factory signed -77 counts represents -15.0% maximum fuel reduction (-77 / 512).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the oxygen sensor detects a rich mixture, the controller decrements the feedback counter to remove fuel.</p>
 <ul>
 <li><strong>Enclosing Subroutine</strong>: <code>PriAndSecRamp_IncrementO2SensorFeedbackCount</code> (<code>T-SMEC_v19.asm:3213-3237</code>), instruction line 3218.</li>
 <li><strong>Gating Conditions</strong>: Short-term ramp step subtracted from <code>Counter_PrimaryAndSecondaryRamp</code>.</li>
@@ -126,16 +137,6 @@
 <li>Line 3224 loads <code>O2LIML</code> into register B during standard check.</li>
 <li>Line 3225 executes <code>cba</code> (comparing register B = <code>O2LIML</code> to sum in A).</li>
 <li>If <code>sum &lt; O2LIML</code> (<code>bge</code> not taken), execution falls through to <code>SetCounterToMaxMinValue</code> (line 3227), clamping accumulator A to <code>O2LIML</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Capping Negative STFT</strong>:</li>
-<li>Clamping <code>O2LIML</code> to -25 to -30 counts limits short-term leanout to -5% to -6%, preventing lean misfires on cammed engines.</li>
-<li><strong>Preventing False Leanout</strong>:</li>
-<li>Large cams with unburned oxygen at idle cause false rich readings; restricting <code>O2LIML</code> prevents the ECU from pulling needed fuel.</li>
-<li><strong>Mathematical Authority</strong>:</li>
-<li>Factory signed -77 counts represents -15.0% maximum fuel reduction (-77 / 512).</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

@@ -130,20 +130,21 @@
 <p><code>THRTCN</code> defines the digital filter time constant governing the duration of throttle-based acceleration enrichment pump shots across engine coolant temperatures.</p>
 <p>Following a rapid throttle opening, the controller injects transient fuel and then decays it back toward steady-state delivery as the rolling average throttle voltage catches up with actual throttle voltage. <code>THRTCN</code> sets this tracking rate, providing a longer enrichment tail when the engine is cold to compensate for poor fuel vaporization, and a shorter, snappier duration once the engine reaches normal operating temperature.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li>Enclosed in routine <code>TransFuel_IncludeTPSTransients</code> at lines 6484-6510 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
-<li>Evaluated when <code>TpsVolts &gt;= AverageTPSVolts</code> (line 6489).</li>
-<li>Looked up via <code>jsr Lookup4ByteTable</code> at line 6491 using <code>CoolantTemp</code> with pointer <code>ldx #THRTCN_EnrichmentTime_FromTemp</code>.</li>
-<li>Result stored in <code>Factor_LeanoutOrEnrichTime_TPS</code> at line 6492, which is processed by <code>ProcessMapOrTpsBlockData</code> to update <code>AverageTPSVolts</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Sharpening Throttle Response</strong>: Increasing table values accelerates the rolling average filter, causing the TPS transient fuel pulse to decay away more rapidly, producing a sharper, crisper pedal feel.</li>
 <li><strong>Curing Post-Tip-in Lean Sag</strong>: Decreasing table values slows down the decay rate, extending the duration of the throttle pump shot to support intake manifold filling.</li>
 <li><strong>Intake Manifold Runner Length</strong>: Engines with large intake plenums or long runners benefit from lower values that sustain transient fueling longer.</li>
 <li><strong>Companion Parameter Interaction</strong>: Works closely with <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/POSSLP_DeltaTPSEnrichment_FromTemp.html"><code>POSSLP</code></a> and <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_TPS_LO/LOTIME_DecelLeanoutTimeConstant_FromTemp.html"><code>LOTIME</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during engine running fuel calculation to calibrate FromTemp.</p>
+<ul>
+<li>Enclosed in routine <code>TransFuel_IncludeTPSTransients</code> at lines 6484-6510 of <code>cals/SMEC/T-SMEC_v19.asm</code>.</li>
+<li>Evaluated when <code>TpsVolts &gt;= AverageTPSVolts</code> (line 6489).</li>
+<li>Looked up via <code>jsr Lookup4ByteTable</code> at line 6491 using <code>CoolantTemp</code> with pointer <code>ldx #THRTCN_EnrichmentTime_FromTemp</code>.</li>
+<li>Result stored in <code>Factor_LeanoutOrEnrichTime_TPS</code> at line 6492, which is processed by <code>ProcessMapOrTpsBlockData</code> to update <code>AverageTPSVolts</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

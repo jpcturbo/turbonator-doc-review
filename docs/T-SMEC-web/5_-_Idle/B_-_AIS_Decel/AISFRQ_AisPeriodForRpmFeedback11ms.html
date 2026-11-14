@@ -117,16 +117,7 @@
 <p>Because an internal combustion engine has physical intake manifold volume and delayed torque response to airflow changes, making stepper motor adjustments too rapidly causes control loop instability, where the controller constantly overshoots and hunts around target idle. AISFRQ acts as a rate-limiting filter, requiring a minimum elapsed timer duration between successive closed-loop step corrections from <a href="../../5_-_Idle/A_-_AIS_Control/FWDAIS_ForwardAisSteps_NoSlope.html"><code>FWDAIS</code></a> or <a href="../../5_-_Idle/A_-_AIS_Control/REVAIS_ReverseAisSteps_NoSlope.html"><code>REVAIS</code></a>.</p>
 <p>In factory calibrations, <code>AISFRQ</code> is set to 63 counts (or 127 counts in some variants), which enforces a settling delay of approximately 0.7 to 1.4 seconds between motor adjustments. This deliberate pacing allows the engine to respond and manifold vacuum to stabilize before the controller evaluates whether another step correction is needed.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2401</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Startup feedback lockout timer <code>Timer_CountdownFromStartRunForAisFeedback</code> must be zero at line 2368.</li>
-<li>Compares <code>AISFRQ</code> against <code>Timer_AisChanges</code> at line 2371.</li>
-<li>If <code>Timer_AisChanges</code> is less than <code>AISFRQ</code> (<code>bcc L1136</code>), the closed-loop RPM error calculation is skipped, holding the stepper motor stationary.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Curing Rhythmic Idle Surging</strong>:</li>
 <li>If idle speed oscillates up and down in an endless cycle, increase <code>AISFRQ</code> from 63 up to 90 to 127 counts to slow down the feedback response and allow manifold pressure to settle.</li>
@@ -134,6 +125,16 @@
 <li>If the idle air controller takes too long to recover from an accessory load drop, reduce <code>AISFRQ</code> to 45 to 50 counts to allow more frequent stepper nudges.</li>
 <li><strong>Minimum Stability Boundary</strong>:</li>
 <li>Do not set <code>AISFRQ</code> below 30 counts, as rapid corrections outpace engine mechanical response time, triggering severe hunting.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during closed-loop idle speed regulation, setting the execution frequency and update rate for idle RPM feedback.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2401</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Startup feedback lockout timer <code>Timer_CountdownFromStartRunForAisFeedback</code> must be zero at line 2368.</li>
+<li>Compares <code>AISFRQ</code> against <code>Timer_AisChanges</code> at line 2371.</li>
+<li>If <code>Timer_AisChanges</code> is less than <code>AISFRQ</code> (<code>bcc L1136</code>), the closed-loop RPM error calculation is skipped, holding the stepper motor stationary.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

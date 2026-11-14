@@ -138,19 +138,7 @@
 <p><code>DWELL</code> defines the primary ignition coil dwell time curve indexed by battery voltage.</p>
 <p>Ignition coil dwell represents the duration in microseconds that the ignition driver transistor grounds the coil primary winding, allowing electrical current and magnetic flux to saturate the coil core before opening the circuit to fire the spark plug. Battery voltage is the primary physical factor governing coil saturation: at low battery voltages (such as during cold cranking or charging system faults, between 8 and 10 Volts), current builds slowly through the coil windings, requiring extended dwell times (up to 8.2 milliseconds). At normal vehicle operating voltages (13.5 to 14.5 Volts), the coil charges much faster, requiring only 2.2 to 2.5 milliseconds. The calibration table stores the mathematical one's complement of the dwell period because the controller's 16-bit table interpolation routine requires an upward-sloping curve.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateSparkAdvance_MM</code> (<code>T-SMEC_v19.asm:7950-7956</code>).</li>
-<li><strong>Input Variable</strong>: <code>BatteryVolts</code> (RAM address 0x0060).</li>
-<li><strong>Execution Flow</strong>:</li>
-<li><code>ldaa BatteryVolts</code> loads battery voltage.</li>
-<li><code>ldx #DWELL_DwellTimeFromBatteryVoltsComp</code> loads table pointer.</li>
-<li><code>jsr Lookup5ByteTable</code> interpolates 16-bit complement.</li>
-<li><code>coma; comb</code> inverts both bytes to produce true dwell period.</li>
-<li><code>std DwellTime_HB</code> stores 16-bit dwell time in RAM (address 0x00A8-0x00A9).</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Aftermarket Coil Matching</strong>:</li>
 <li>High-performance aftermarket coils (such as MSD Blaster or Accel coils) typically have lower primary resistance; consult coil manufacturer specifications to avoid over-saturating the primary winding.</li>
@@ -160,6 +148,19 @@
 <li>Never set dwell beyond coil saturation; excessive dwell dissipates purely as heat inside the coil casing and power transistor.</li>
 <li><strong>One's Complement Encoding</strong>:</li>
 <li>Stored in ROM as the one's complement; MPTune handles the inversion automatically so the tuner views true microseconds.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect across engine operating conditions to establish ignition advance for DwellTimeFromBatteryVoltsComp.</p>
+<ul>
+<li><strong>Subroutine &amp; Line Numbers</strong>: <code>CalculateSparkAdvance_MM</code> (<code>T-SMEC_v19.asm:7950-7956</code>).</li>
+<li><strong>Input Variable</strong>: <code>BatteryVolts</code> (RAM address 0x0060).</li>
+<li><strong>Execution Flow</strong>:</li>
+<li><code>ldaa BatteryVolts</code> loads battery voltage.</li>
+<li><code>ldx #DWELL_DwellTimeFromBatteryVoltsComp</code> loads table pointer.</li>
+<li><code>jsr Lookup5ByteTable</code> interpolates 16-bit complement.</li>
+<li><code>coma; comb</code> inverts both bytes to produce true dwell period.</li>
+<li><code>std DwellTime_HB</code> stores 16-bit dwell time in RAM (address 0x00A8-0x00A9).</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

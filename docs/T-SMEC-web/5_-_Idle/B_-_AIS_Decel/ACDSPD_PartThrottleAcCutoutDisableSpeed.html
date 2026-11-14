@@ -118,17 +118,7 @@
 <p><code>ACDSPD</code> establishes the vehicle speed boundary: part-throttle A/C cutout can only engage if vehicle speed is below <code>ACDSPD</code>.</p>
 <p>In factory calibrations, <code>ACDSPD</code> is set to 0 counts (0 mph), keeping part-throttle cutout disabled stock.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2205</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Coolant temp meets <a href="../../5_-_Idle/B_-_AIS_Decel/ACDTMP_PartThrottleAcCutoutDisableTemp.html"><code>ACDTMP</code></a> and throttle delta meets <a href="../../5_-_Idle/B_-_AIS_Decel/ACDTHR_PartThrottleAcCutoutDisableThrottle.html"><code>ACDTHR</code></a>.</li>
-<li>Loads <code>VehicleSpeed_HB</code> into index X at line 2184.</li>
-<li>Compares index X against 16-bit word <code>ACDSPD</code> at line 2185 (<code>cpx ACDSPD_PartThrottleAcCutoutDisableSpeed</code>).</li>
-<li>If vehicle speed is greater than or equal to <code>ACDSPD</code> (<code>bcc L1100</code>), cutout is aborted; if lower, line 2187 increments <code>Timer_AcCutout</code> to engage cutout.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>City Take-Off Boost Ceiling</strong>:</li>
 <li>Set <code>ACDSPD</code> to 35 to 45 mph when enabling part-throttle cutout to limit compressor disengagement to low-speed city driving.</li>
@@ -136,6 +126,17 @@
 <li>Keeping <code>ACDSPD</code> below 50 mph ensures highway part-throttle cruising maintains steady cabin cooling.</li>
 <li><strong>16-Bit Word Resolution</strong>:</li>
 <li>Type 4 constant evaluated against 16-bit register <code>VehicleSpeed_HB</code>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during part-throttle acceleration with the A/C on, ensuring the compressor is only cut out to assist vehicle acceleration below this road speed ceiling.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2205</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Coolant temp meets <a href="../../5_-_Idle/B_-_AIS_Decel/ACDTMP_PartThrottleAcCutoutDisableTemp.html"><code>ACDTMP</code></a> and throttle delta meets <a href="../../5_-_Idle/B_-_AIS_Decel/ACDTHR_PartThrottleAcCutoutDisableThrottle.html"><code>ACDTHR</code></a>.</li>
+<li>Loads <code>VehicleSpeed_HB</code> into index X at line 2184.</li>
+<li>Compares index X against 16-bit word <code>ACDSPD</code> at line 2185 (<code>cpx ACDSPD_PartThrottleAcCutoutDisableSpeed</code>).</li>
+<li>If vehicle speed is greater than or equal to <code>ACDSPD</code> (<code>bcc L1100</code>), cutout is aborted; if lower, line 2187 increments <code>Timer_AcCutout</code> to engage cutout.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

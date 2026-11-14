@@ -116,7 +116,18 @@
 <p><code>CHKFIX</code> is the single-byte calibration checksum fixup constant located in the engine controller ROM header.</p>
 <p>To safeguard against memory corruption, defective memory chips, or unauthorized modifications, the engine controller executes an internal checksum routine during startup initialization. This routine computes an arithmetic eight-bit sum across all calibration memory locations and compares the final sum against the expected checksum target stored in the calibration identifier. <code>CHKFIX</code> is specifically calculated and placed in the calibration so that the cumulative sum of all bytes across the entire calibration space matches the expected target byte exactly.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Automatic Tool Maintenance</strong>:</li>
+<li>Calibration software like MPTune automatically calculates and saves <code>CHKFIX</code> whenever calibration changes are written.</li>
+<li><strong>Diagnostic Fault Code 53 Prevention</strong>:</li>
+<li>If <code>CHKFIX</code> does not balance the cumulative memory sum, the computer sets error code 53 upon startup.</li>
+<li><strong>Manual Binary Calculation</strong>:</li>
+<li>When modifying raw binary files without an automated checksum tool, <code>CHKFIX</code> must be adjusted by the exact difference of all edited bytes.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during ROM verification and EEPROM flashing, providing the checksum balance value that ensures valid ROM integrity.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>CaculateChecksum</code> (<code>T-SMEC_v19.asm:4141-4178</code>), evaluated at instruction line 4172 (<code>cmpa ENDITM_ECUID+1</code>).</li>
 <li><strong>Checksum Algorithm</strong>:</li>
@@ -125,16 +136,6 @@
 <li><strong>Comparison &amp; Fault</strong>:</li>
 <li>Compares total sum against <code>ENDITM_ECUID+1</code>.</li>
 <li>If not equal (<code>bne L1291</code>), executes <code>ldd #0x0201</code> and jumps to <code>ThrowNonCriticalError</code> (Error 53).</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Automatic Tool Maintenance</strong>:</li>
-<li>Calibration software like MPTune automatically calculates and saves <code>CHKFIX</code> whenever calibration changes are written.</li>
-<li><strong>Diagnostic Fault Code 53 Prevention</strong>:</li>
-<li>If <code>CHKFIX</code> does not balance the cumulative memory sum, the computer sets error code 53 upon startup.</li>
-<li><strong>Manual Binary Calculation</strong>:</li>
-<li>When modifying raw binary files without an automated checksum tool, <code>CHKFIX</code> must be adjusted by the exact difference of all edited bytes.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

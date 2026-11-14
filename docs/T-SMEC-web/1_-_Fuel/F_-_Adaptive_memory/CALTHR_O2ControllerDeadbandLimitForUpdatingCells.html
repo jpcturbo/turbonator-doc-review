@@ -117,7 +117,18 @@
 <p>When closed loop is active, the feedback counter accumulates rich and lean kicks. In factory calibrations, <code>CALTHR</code> is set to 9 counts, corresponding to approximately 1.76 percent of fuel trim authority.</p>
 <p>If the short-term feedback counter moves beyond this calibrated limit relative to the toggle direction, the controller detects an out-of-range condition that can trigger an open-loop transition.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Header &amp; Relocated Sensor Tuning</strong>:</li>
+<li>Exhaust headers increase sensor transit delay, causing larger short-term trim swings. Raising <code>CALTHR</code> to 12-16 counts prevents unwarranted open-loop dropouts.</li>
+<li><strong>Deadband Authority</strong>:</li>
+<li>Represents approximately 0.195% fuel trim per count (9 counts ≈ 1.76% deadband).</li>
+<li><strong>Tightening the Window</strong>:</li>
+<li>Lowering <code>CALTHR</code> enforces tighter closed-loop tolerance, but setting too low causes erratic open-loop cycling.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when closed loop is active, the feedback counter accumulates rich and lean kicks.</p>
 <ul>
 <li><strong>Enclosing Subroutine</strong>: <code>HandleO2Processing_MM</code> / <code>O2Signal_BelowToggle</code> (<code>T-SMEC_v19.asm:3060-3075</code>), instruction line 3063.</li>
 <li><strong>Gating Conditions</strong>: Evaluated during closed-loop feedback processing after O2 toggle direction check.</li>
@@ -126,16 +137,6 @@
 <li>Line 3066 negates register B if accumulator A was positive.</li>
 <li>Line 3067 adds <code>Counter_PrimaryAndSecondaryRamp</code> to register B (<code>addb</code>).</li>
 <li>If overflow occurs (<code>bvs</code>) or sign mismatch occurs (<code>bmi</code>), execution branches to <code>SwitchOrStayOpenLoop</code> (line 3095).</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Header &amp; Relocated Sensor Tuning</strong>:</li>
-<li>Exhaust headers increase sensor transit delay, causing larger short-term trim swings. Raising <code>CALTHR</code> to 12-16 counts prevents unwarranted open-loop dropouts.</li>
-<li><strong>Deadband Authority</strong>:</li>
-<li>Represents approximately 0.195% fuel trim per count (9 counts ≈ 1.76% deadband).</li>
-<li><strong>Tightening the Window</strong>:</li>
-<li>Lowering <code>CALTHR</code> enforces tighter closed-loop tolerance, but setting too low causes erratic open-loop cycling.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

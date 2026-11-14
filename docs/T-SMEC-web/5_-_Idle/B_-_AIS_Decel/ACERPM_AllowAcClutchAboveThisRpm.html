@@ -118,17 +118,7 @@
 <p>If engine speed rises above <code>ACERPM</code> while part-throttle cutout is active, the controller immediately clears the cutout timer and re-engages the compressor.</p>
 <p>In factory calibrations, <code>ACERPM</code> is set to 68 counts, corresponding to an engine speed threshold of 2176 RPM (nominally 2200 RPM).</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2207</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Part-throttle cutout is actively running (<code>Timer_AcCutout</code> &gt; 0).</li>
-<li>Loads <code>EngineRpm_HB</code> into accumulator B at line 2196.</li>
-<li>Compares accumulator B against <code>ACERPM</code> at line 2197 (<code>cmpb ACERPM_AllowAcClutchAboveThisRpm</code>).</li>
-<li>If engine speed &gt;= <code>ACERPM</code> (<code>bcc L1099</code>), branches to line 2206 to clear <code>Timer_AcCutout</code> and re-engage the compressor.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Extending Mid-Range Boost</strong>:</li>
 <li>Raise <code>ACERPM</code> to 3000 to 3500 RPM to sustain compressor cutout through the entire mid-range acceleration pull.</li>
@@ -136,6 +126,17 @@
 <li>Keep <code>ACERPM</code> below 4500 RPM to avoid harsh high-speed clutch engagement that can glaze or squeal the accessory drive belt.</li>
 <li><strong>Factory Baseline</strong>:</li>
 <li>68 counts corresponds to 2176 RPM (32 RPM per count on the 8-bit scale).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during part-throttle driving with the A/C on, allowing compressor re-engagement once engine RPM climbs above this threshold.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2207</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Part-throttle cutout is actively running (<code>Timer_AcCutout</code> &gt; 0).</li>
+<li>Loads <code>EngineRpm_HB</code> into accumulator B at line 2196.</li>
+<li>Compares accumulator B against <code>ACERPM</code> at line 2197 (<code>cmpb ACERPM_AllowAcClutchAboveThisRpm</code>).</li>
+<li>If engine speed &gt;= <code>ACERPM</code> (<code>bcc L1099</code>), branches to line 2206 to clear <code>Timer_AcCutout</code> and re-engage the compressor.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

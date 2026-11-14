@@ -134,17 +134,7 @@
 <p>A higher decel control MAP commands additional opening steps from the stepper motor via <a href="../../5_-_Idle/B_-_AIS_Decel/DAISOP_DecelAisOpenStepsFromNeg_FromDeltaMap.html"><code>DAISOP</code></a> during throttle lift-off.</p>
 <p>In factory calibrations, <code>TEMPDC</code> adds approximately 68 counts of offset at sub-zero temperatures, decreasing to 36 counts near freezing, 16 counts at mild warm-up, and tapering to zero once the coolant reaches 180 °F.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1996</code>).</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Fall-to-idle deceleration flag <code>b50_FallToIdle</code> must be set in <code>BitFlags_50</code> at line 1877.</li>
-<li>Loads <code>CoolantTemp</code> into accumulator A at line 1886.</li>
-<li>Indexes <code>TEMPDC</code> table at line 1885 via <code>jsr Lookup4ByteTable</code>.</li>
-<li>Adds returned offset to <code>Temp0</code> at line 1888, clamping at 255 counts if overflow occurs.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Cold Decel Stumble Prevention</strong>:</li>
 <li>Elevate intermediate temperature points (50 °F to 120 °F) by 5 to 10 counts if the car stumbles during deceleration while warming up.</li>
@@ -152,6 +142,17 @@
 <li>Maintain zero offset at full operating temperature (180 °F and above) to avoid hanging idle when hot.</li>
 <li><strong>Viscous Drag Compensation</strong>:</li>
 <li>Particularly beneficial when using heavier-weight engine oils (e.g., 20W-50) that create significant cold rotational drag.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during closed-throttle deceleration on a cold engine, high viscous oil drag and lower cylinder wall temperatures produce rapid deceleration rates that can easily overwhelm the idle air controller.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>CalculateAisPosition_MM</code> (<code>T-SMEC_v19.asm:1859-1996</code>).</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Fall-to-idle deceleration flag <code>b50_FallToIdle</code> must be set in <code>BitFlags_50</code> at line 1877.</li>
+<li>Loads <code>CoolantTemp</code> into accumulator A at line 1886.</li>
+<li>Indexes <code>TEMPDC</code> table at line 1885 via <code>jsr Lookup4ByteTable</code>.</li>
+<li>Adds returned offset to <code>Temp0</code> at line 1888, clamping at 255 counts if overflow occurs.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

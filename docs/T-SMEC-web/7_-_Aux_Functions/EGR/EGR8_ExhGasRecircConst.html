@@ -117,21 +117,22 @@
 <p>While operating steadily within the Phase 1 diagnostic window with the EGR valve open, the engine controller continuously samples the closed-loop fuel trim integrator (<code>Counter_PrimaryAndSecondaryRamp</code>). Because individual oxygen sensor switching transitions cause instantaneous fuel trim oscillations, the controller applies a first-order digital lag filter to establish a steady, reliable baseline (<code>EGRVar5</code>).</p>
 <p>At line 5445, <code>EGR8</code> is loaded as the multiplier for the filter delta. The factory calibration setting of 13 counts applies approximately 5.1 percent weighting per background loop iteration, providing smooth and stable baseline tracking.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Raising EGR8</strong>: Increases filter responsiveness, allowing <code>EGRVar5</code> to track the closed-loop integrator more rapidly during Phase 1. Helpful if <a href="../../7_-_Aux_Functions/EGR/EGR1_ExhGasRecircConst.html"><code>EGR1</code></a> has been reduced to shorten test duration.</li>
+<li><strong>Lowering EGR8</strong>: Increases baseline smoothing, heavily filtering out transient closed-loop oscillations. Requires longer cruising periods to reach a true steady-state baseline.</li>
+<li><strong>Filter Formula</strong>: <code>EGRVar5_new = EGRVar5_old + ((Ramp - EGRVar5_old) * EGR8) / 256</code>.</li>
+<li><strong>Factory Calibration</strong>: 13 counts (approx 5.1 percent weighting per loop pass) delivers excellent noise rejection.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle cruising, modulating the exhaust gas recirculation (EGR) solenoid duty cycle to control combustion temperatures.</p>
 <ul>
 <li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5445.</li>
 <li><strong>Execution Path</strong>: Phase 1 active (<code>EGRVar2</code> bit 7 clear) and all window checks (<a href="../../7_-_Aux_Functions/EGR/EGR18_ExhGasRecircConstLoLimit.html"><code>EGR18</code></a>, <a href="../../7_-_Aux_Functions/EGR/EGR14_ExhGasRecircConstFromTPSVoltsLoLimit.html"><code>EGR14</code></a>, <a href="../../7_-_Aux_Functions/EGR/EGR15_ExhGasRecircConstFromRPMLoLimit.html"><code>EGR15</code></a>, <a href="../../7_-_Aux_Functions/EGR/EGR3_ExhGasRecircConst.html"><code>EGR3</code></a>) satisfied.</li>
 <li><strong>Filter Input</strong>: <code>Counter_PrimaryAndSecondaryRamp</code> evaluated against baseline accumulator <code>EGRVar5</code> (RAM address 0x009F).</li>
 <li><strong>Filter Output</strong>: Updated <code>EGRVar5</code> stored at line 5454.</li>
 <li><strong>Return Target</strong>: Branches via <code>bra L1465</code> to jump to <code>EGR_SetEGRtoOn</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Raising EGR8</strong>: Increases filter responsiveness, allowing <code>EGRVar5</code> to track the closed-loop integrator more rapidly during Phase 1. Helpful if <a href="../../7_-_Aux_Functions/EGR/EGR1_ExhGasRecircConst.html"><code>EGR1</code></a> has been reduced to shorten test duration.</li>
-<li><strong>Lowering EGR8</strong>: Increases baseline smoothing, heavily filtering out transient closed-loop oscillations. Requires longer cruising periods to reach a true steady-state baseline.</li>
-<li><strong>Filter Formula</strong>: <code>EGRVar5_new = EGRVar5_old + ((Ramp - EGRVar5_old) * EGR8) / 256</code>.</li>
-<li><strong>Factory Calibration</strong>: 13 counts (approx 5.1 percent weighting per loop pass) delivers excellent noise rejection.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

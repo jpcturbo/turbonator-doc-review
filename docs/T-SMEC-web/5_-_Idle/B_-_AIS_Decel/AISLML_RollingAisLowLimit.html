@@ -118,17 +118,7 @@
 <p><code>AISLML</code> establishes a protective lower floor: the desired motor position during rolling idle is never permitted to drop below baseline steps minus <code>AISLML</code>.</p>
 <p>In factory calibrations, <code>AISLML</code> is set to 4 counts, ensuring the stepper motor cannot close more than 4 steps below the calibrated baseline during rolling idle.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2426</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
-<li><strong>Gating Conditions</strong>:</li>
-<li>Rolling idle mode active (<code>b50_IdleSpeedMode</code> set at line 2401).</li>
-<li>Baseline position saved in <code>Temp0</code> at line 2414.</li>
-<li>Subtracts <code>AISLML</code> from <code>Temp0</code> at line 2420: <code>suba AISLML_RollingAisLowLimit</code>.</li>
-<li>Compares lower limit against <code>DesiredNewAisPosition</code> at line 2422; if <code>DesiredNewAisPosition</code> is lower, clamps position to the limit at line 2425.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Coasting Undershoot Protection</strong>:</li>
 <li>Keep <code>AISLML</code> between 2 and 4 steps to guarantee that the idle stepper motor cannot choke off bypass air while rolling to a stop.</li>
@@ -136,6 +126,17 @@
 <li>Lower <code>AISLML</code> to 1 or 2 steps on high-overlap camshafts to ensure rolling idle never drops below the baseline airflow floor.</li>
 <li><strong>Excessive Travel Warning</strong>:</li>
 <li>Avoid setting <code>AISLML</code> higher than 8 steps, as the controller can pull the motor shut on rolling overspeeds, inducing stalls.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect while the vehicle is rolling in neutral with closed throttle, the engine relies on auxiliary bypass airflow to avoid sudden stalling when the brakes are applied or when clutching back into gear.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>HandleAcCutout</code> (<code>T-SMEC_v19.asm:2170-2426</code>) within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Gating Conditions</strong>:</li>
+<li>Rolling idle mode active (<code>b50_IdleSpeedMode</code> set at line 2401).</li>
+<li>Baseline position saved in <code>Temp0</code> at line 2414.</li>
+<li>Subtracts <code>AISLML</code> from <code>Temp0</code> at line 2420: <code>suba AISLML_RollingAisLowLimit</code>.</li>
+<li>Compares lower limit against <code>DesiredNewAisPosition</code> at line 2422; if <code>DesiredNewAisPosition</code> is lower, clamps position to the limit at line 2425.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

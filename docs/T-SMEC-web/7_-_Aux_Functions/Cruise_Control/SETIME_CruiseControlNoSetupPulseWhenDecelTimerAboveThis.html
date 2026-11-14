@@ -116,7 +116,19 @@
 <p><code>SETIME</code> defines the deceleration elapsed timer threshold for suppressing or modifying the vacuum setup pre-charge pulse when the driver releases the coast button.</p>
 <p>When holding down the coast or decelerate switch, the cruise servo vents and the vehicle slows down. Upon releasing the button, the driver intends to set a new, lower cruising speed. If the controller applied an aggressive vacuum pre-charge pulse immediately upon switch release, the vehicle would abruptly surge forward, causing an uncomfortable jerk. <code>SETIME</code> monitors the deceleration timer; if the button was held longer than <code>SETIME</code>, aggressive pre-charging is suppressed to ensure smooth engagement at the new lower speed.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Coast-to-Set Behavior</strong>:</li>
+<li>Suppresses aggressive vacuum pre-charge when driver holds the coast button to decelerate.</li>
+<li>Factory 55 counts (approx 0.61 seconds) ensures smooth handoff to the new lower speed setting.</li>
+<li><strong>Preventing Decel Surge</strong>:</li>
+<li>If releasing coast causes an immediate forward lurch, lower <code>SETIME</code> to suppress setup pulsing earlier.</li>
+<li><strong>Secondary Use in Speed Calculation</strong>:</li>
+<li>In <code>CalculateVehicleSpeed</code> (line 8842), if <code>Timer_CruiseDecelerate</code> exceeds <code>SETIME</code>, the servo commands continuous vent to maintain deceleration.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when using the cruise Coast/Decel button, qualifying the deceleration hold duration before applying a setup pulse.</p>
 <ul>
 <li><strong>Subroutine &amp; Line Numbers</strong>: <code>ContinueCruise</code> (<code>T-SMEC_v19.asm:8584-8588</code>) and <code>CalculateVehicleSpeed</code> (<code>T-SMEC_v19.asm:8841-8846</code>).</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -126,17 +138,6 @@
 <li>In <code>ContinueCruise</code>, compares <code>Timer_CruiseDecelerate</code> against <code>SETIME</code> via <code>cmpb SETIME</code> at line 8584.</li>
 <li>If lower (<code>bcs L1730</code>), leaves state unchanged; if higher, evaluates <a href="../../7_-_Aux_Functions/Cruise_Control/SETIM1_CruiseControlNoSetupPulseWhenDecelTimerBelowThis.html"><code>SETIM1</code></a> and asserts bit 2 of <code>CruiseStatus</code>.</li>
 <li>In <code>CalculateVehicleSpeed</code>, if timer exceeds <code>SETIME</code>, branches to force vent command 0x8F.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Coast-to-Set Behavior</strong>:</li>
-<li>Suppresses aggressive vacuum pre-charge when driver holds the coast button to decelerate.</li>
-<li>Factory 55 counts (approx 0.61 seconds) ensures smooth handoff to the new lower speed setting.</li>
-<li><strong>Preventing Decel Surge</strong>:</li>
-<li>If releasing coast causes an immediate forward lurch, lower <code>SETIME</code> to suppress setup pulsing earlier.</li>
-<li><strong>Secondary Use in Speed Calculation</strong>:</li>
-<li>In <code>CalculateVehicleSpeed</code> (line 8842), if <code>Timer_CruiseDecelerate</code> exceeds <code>SETIME</code>, the servo commands continuous vent to maintain deceleration.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

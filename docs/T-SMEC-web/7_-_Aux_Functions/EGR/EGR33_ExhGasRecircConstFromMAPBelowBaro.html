@@ -117,22 +117,23 @@
 <p>The onboard diagnostic routine can only evaluate EGR flow when the engine is drawing sufficient manifold vacuum to pull exhaust gas into the cylinders. At line 5419, the controller subtracts manifold absolute pressure from barometric pressure. If the difference is less than <code>EGR33</code>, the engine is operating either in positive boost or under heavy load near atmospheric pressure.</p>
 <p>Under these conditions, the diagnostic sequence aborts and resets. The factory calibration of 13 counts corresponds to approximately 1.5 psi (roughly 3.1 inHg) of intake manifold vacuum below baro.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
-<ul>
-<li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5422.</li>
-<li><strong>Vacuum Math</strong>: Evaluates <code>BaroPressure - MapValue</code> in accumulator A at lines 5419–5420.</li>
-<li><strong>Boost Inhibit</strong>: Line 5421 branches via <code>bcs EGR_ResetEGRVars</code> if <code>MapValue &gt; BaroPressure</code> (positive turbo boost).</li>
-<li><strong>Comparison</strong>: <code>cmpa EGR33_ExhGasRecircConstFromMAPBelowBaro</code> at line 5422.</li>
-<li><strong>Branch Behavior</strong>: If manifold vacuum &lt; <code>EGR33</code> (<code>bcs EGR_ResetEGRVars</code>), aborts Phase 1/Phase 2 and jumps to <code>EGR_ResetEGRVars</code>.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
 <ul>
 <li><strong>Raising EGR33</strong>: Demands deeper intake manifold vacuum (e.g. 20 counts = ~2.3 psi / 4.7 inHg vacuum) before EGR diagnostic flow testing can proceed.</li>
 <li><strong>Lowering EGR33</strong>: Allows diagnostic testing under lighter vacuum closer to atmospheric baro.</li>
 <li><strong>3-Bar MAP Sensor Conversions</strong>: Multiply <code>EGR33</code> by 0.667 (two-thirds). Because 3-bar sensors compress the vacuum voltage range, a stock value of 13 counts would require 2.2 psi (4.6 inHg) of vacuum on a 3-bar sensor; scaling to 9 counts restores the stock 1.5 psi (3.1 inHg) threshold.</li>
 <li><strong>EGR Elimination (255 counts)</strong>: Setting <code>EGR33</code> to 255 requires 29.4 psi of vacuum below baro, which is physically impossible. This halts the diagnostic state machine forever, permanently preventing Fault Code 32.</li>
 <li><strong>Factory Calibration</strong>: 13 counts (approx 1.5 psi / 3.1 inHg vacuum) guarantees valid cruising vacuum.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle cruising, modulating the exhaust gas recirculation (EGR) solenoid duty cycle to control combustion temperatures.</p>
+<ul>
+<li><strong>Enclosing Routine</strong>: <code>ExhGasRecirc_MM</code> (lines 5383–5545), specifically at line 5422.</li>
+<li><strong>Vacuum Math</strong>: Evaluates <code>BaroPressure - MapValue</code> in accumulator A at lines 5419–5420.</li>
+<li><strong>Boost Inhibit</strong>: Line 5421 branches via <code>bcs EGR_ResetEGRVars</code> if <code>MapValue &gt; BaroPressure</code> (positive turbo boost).</li>
+<li><strong>Comparison</strong>: <code>cmpa EGR33_ExhGasRecircConstFromMAPBelowBaro</code> at line 5422.</li>
+<li><strong>Branch Behavior</strong>: If manifold vacuum &lt; <code>EGR33</code> (<code>bcs EGR_ResetEGRVars</code>), aborts Phase 1/Phase 2 and jumps to <code>EGR_ResetEGRVars</code>.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>

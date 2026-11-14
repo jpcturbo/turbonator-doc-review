@@ -117,7 +117,20 @@
 <p>To verify that the manifold pressure sensor is physically connected and sensing intake manifold vacuum rather than atmospheric air, the engine controller performs a pneumatic vacuum check when the vehicle is stationary at idle. However, if engine speed is surging or flaring away from target idle, manifold vacuum changes unpredictably, making the pneumatic check inaccurate.</p>
 <p>In factory calibrations, <code>MPRMPD</code> is configured to 512 counts, representing an engine speed delta of approximately 64 RPM. If the absolute difference between actual engine speed and target idle speed exceeds <code>MPRMPD</code>, the engine controller suspends the idle vacuum rationality check.</p>
 <hr />
-<h2>2. Operating Conditions (When Does This Take Effect?)</h2>
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Camshaft Idle Hunting Tuning</strong>:</li>
+<li>Performance camshafts produce rhythmic idle speed hunting that often exceeds 64 RPM.</li>
+<li>Raising <code>MPRMPD</code> to 800 to 1200 counts (100 to 150 RPM delta) accommodates natural camshaft lope and prevents false Fault Code 13 errors.</li>
+<li><strong>Code Recovery Tuning</strong>:</li>
+<li><code>MPRMPD</code> is also used when clearing Fault Code 13; an engine unable to settle within 64 RPM of target idle will never clear a latched stuck MAP code.</li>
+<li><strong>Edge Cases</strong>:</li>
+<li>Setting <code>MPRMPD</code> to zero prevents the idle vacuum test from ever running.</li>
+<li>Setting <code>MPRMPD</code> excessively high (e.g., 500 RPM) allows the test to evaluate MAP during throttle blips, falsely setting vacuum error codes.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if the absolute difference between actual engine speed and target idle speed exceeds MPRMPD, the engine controller suspends the idle vacuum rationality check.</p>
 <ul>
 <li><strong>Routine &amp; Line Numbers</strong>: <code>CheckIfMapSensorHasStartedWorkingAgain</code> (<code>T-SMEC_v19.asm:4877-4890</code>), instruction at line 4886, and <code>VerifyOperationOfMapSensor_MM</code> (line 4907).</li>
 <li><strong>Gating Conditions</strong>:</li>
@@ -128,18 +141,6 @@
 <li><code>cmpD MPRMPD_CheckMapAtZeroSpeedAndThisDeltaRpm</code> compares delta against 512 counts (64 RPM).</li>
 <li>In <code>VerifyOperationOfMapSensor_MM</code> at line 4907, if delta <code>&gt;= MPRMPD</code>, branches to bypass pneumatic test.</li>
 <li>In <code>CheckIfMapSensorHasStartedWorkingAgain</code> at line 4887, if delta <code>&lt; MPRMPD</code>, proceeds to clear stuck fault.</li>
-</ul>
-<hr />
-<h2>3. Tuner's Guide &amp; Real-World Calibration</h2>
-<ul>
-<li><strong>Camshaft Idle Hunting Tuning</strong>:</li>
-<li>Performance camshafts produce rhythmic idle speed hunting that often exceeds 64 RPM.</li>
-<li>Raising <code>MPRMPD</code> to 800 to 1200 counts (100 to 150 RPM delta) accommodates natural camshaft lope and prevents false Fault Code 13 errors.</li>
-<li><strong>Code Recovery Tuning</strong>:</li>
-<li><code>MPRMPD</code> is also used when clearing Fault Code 13; an engine unable to settle within 64 RPM of target idle will never clear a latched stuck MAP code.</li>
-<li><strong>Edge Cases</strong>:</li>
-<li>Setting <code>MPRMPD</code> to zero prevents the idle vacuum test from ever running.</li>
-<li>Setting <code>MPRMPD</code> excessively high (e.g., 500 RPM) allows the test to evaluate MAP during throttle blips, falsely setting vacuum error codes.</li>
 </ul>
 <hr />
 <h2>4. Technical / Assembly Mechanics (Reference)</h2>
