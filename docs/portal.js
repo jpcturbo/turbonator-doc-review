@@ -96,10 +96,33 @@
         fileHandle: null
     };
 
-    const DELIMITER = '____';
-    const OVERVIEW_PREFIX = 'OVERVIEW:';
-    const DELIMITED_OVERVIEW = `${DELIMITER}${OVERVIEW_PREFIX}`;
-    const PLACEHOLDER_REGEX = /^(desc|descr|description|detailed[_\s]description\d*)$/i;
+    const MAX_COMMENT_LINE_LEN = 512;
+
+    /**
+     * Builds an assembler-safe ;mptbldesc line guaranteed not to exceed 512 characters
+     * (including leading indentation and the ';mptbldesc ' directive prefix).
+     */
+    function formatMptbldescLine(indent, descText) {
+        const prefix = `${indent};mptbldesc `;
+        const maxDescLen = MAX_COMMENT_LINE_LEN - prefix.length;
+        let cleaned = String(descText || '')
+            .replace(/^_+/, '')
+            .replace(/^OVERVIEW:_*/i, '')
+            .replace(/_*\|\s*_*TUNER'?S_GUIDE:_*/gi, '_');
+
+        if (cleaned.length > maxDescLen) {
+            let truncated = cleaned.substring(0, maxDescLen);
+            const lastUnderscore = truncated.lastIndexOf('_');
+            if (lastUnderscore > Math.floor(maxDescLen * 0.7)) {
+                truncated = truncated.substring(0, lastUnderscore);
+            }
+            cleaned = truncated.replace(/[,;:\-_]+$/, '') + '.';
+            if (cleaned.length > maxDescLen) {
+                cleaned = cleaned.substring(0, maxDescLen);
+            }
+        }
+        return `${prefix}${cleaned}`;
+    }
 
     // DOM Elements
     const elements = {
@@ -434,41 +457,24 @@
                 }
 
                 if (descTarget && descTarget.mptune_desc) {
-                    const targetMptune = descTarget.mptune_desc;
+                    const formattedLine = formatMptbldescLine(descIndent, descTarget.mptune_desc);
 
                     if (hasDesc) {
-                        const isPlaceholder = !descVal || PLACEHOLDER_REGEX.test(descVal);
-                        const delimitedIdx = descVal.indexOf(DELIMITED_OVERVIEW);
-                        let newDescVal;
-
-                        if (isPlaceholder || descVal.startsWith(OVERVIEW_PREFIX)) {
-                            newDescVal = targetMptune;
-                        } else if (delimitedIdx !== -1) {
-                            const existingPrefix = descVal.substring(0, delimitedIdx);
-                            if (!existingPrefix || PLACEHOLDER_REGEX.test(existingPrefix)) {
-                                newDescVal = targetMptune;
-                            } else {
-                                newDescVal = `${existingPrefix}${DELIMITER}${targetMptune}`;
-                            }
-                        } else if (descVal.endsWith(DELIMITER)) {
-                            newDescVal = `${descVal}${targetMptune}`;
-                        } else {
-                            newDescVal = `${descVal}${DELIMITER}${targetMptune}`;
-                        }
-
-                        if (newDescVal !== descVal) {
-                            blockLines[descLineIdx] = `${descIndent};mptbldesc ${newDescVal}`;
+                        if (blockLines[descLineIdx] !== formattedLine) {
+                            blockLines[descLineIdx] = formattedLine;
                             totalUpdated++;
                         }
                     } else {
-                        const insertLine = `${descIndent};mptbldesc ${targetMptune}`;
                         if (firstDataIdx !== -1) {
-                            blockLines.splice(firstDataIdx, 0, insertLine);
+                            blockLines.splice(firstDataIdx, 0, formattedLine);
                         } else {
-                            blockLines.push(insertLine);
+                            blockLines.push(formattedLine);
                         }
                         totalUpdated++;
                     }
+                } else if (hasDesc && blockLines[descLineIdx].length > MAX_COMMENT_LINE_LEN) {
+                    blockLines[descLineIdx] = formatMptbldescLine(descIndent, descVal);
+                    totalUpdated++;
                 }
 
                 for (let b = 0; b < blockLines.length; b++) {

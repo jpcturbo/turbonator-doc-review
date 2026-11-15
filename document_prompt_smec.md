@@ -31,7 +31,7 @@ After `manifest.json` is approved, fan out parallel subagents by subsystem. **Do
 
 #### Phase 3: Deterministic Assembly, Indexing & Schema Validation
 Once all subsystem batches are authored, write and run a Python builder script to merge `batches/*.json` with `manifest.json` into `output/t_smec_descriptors.json`:
-1. Deterministically generate `raw_text` (`"OVERVIEW: <overview> | TUNER'S GUIDE: <tuners_guide>"`) and `mptune_desc` (exact same string with spaces replaced by underscores `_`) from each descriptor's authored `overview` and `tuners_guide`.
+1. Deterministically generate `raw_text` (a concise `<overview_summary> <tuners_guide_summary>` without `OVERVIEW:` or `| TUNER'S GUIDE:` headers, strictly `<= 490` characters so that `    ;mptbldesc <mptune_desc>` never exceeds the ASxxxx assembler's 512-character line limit) and `mptune_desc` (exact same string with spaces replaced by underscores `_`, using `tools/update_mptune_desc.py`).
 2. Deterministically build the `aliases` object (`by_full_label`, `by_long_name`, `by_address`, and lowercase `lookup_index` including any `alternate_names`).
 3. Run an automated validation audit verifying:
    - Every key and nested object matches the exact structure and data types of `output/t_lm_descriptors.json`.
@@ -166,8 +166,8 @@ Every identifier in `descriptors` MUST contain these exact keys and structure:
     },
     "table_properties": null
   },
-  "mptune_desc": "OVERVIEW:_<overview_with_spaces_replaced_by_underscores>_|_TUNER'S_GUIDE:_<tuners_guide_with_spaces_replaced_by_underscores>",
-  "raw_text": "OVERVIEW: <overview> | TUNER'S GUIDE: <tuners_guide>"
+  "mptune_desc": "<concise_overview_and_tuners_guide_with_spaces_replaced_by_underscores_max_490_chars>",
+  "raw_text": "<concise_overview_and_tuners_guide_max_490_chars>"
 }
 ```
 *Note on `metadata.table_properties`*:
