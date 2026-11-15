@@ -315,7 +315,7 @@ UnknownCodeBits:
     ;mptblcname UNKWN
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc UNKWN_is_a_16-bit_word_located_at_$C002_(offset_$009F)_in_the_calibration_header._Originally_implemented_by_Chrysler_Powertrain_Electronics_engineering,_this_word_contains_configuration_bits_utilized_by_factory_automated_end-of-line_test_fixtures_and_automated_burn-in_benches._Tuning_Recommendations:_Leave_unchanged_at_0x0041._Modifying_this_value_has_no_effect_on_engine_performance_or_road_drivability,_but_preserving_it_ensures_alignment_with_factory_binary_templates.
+    ;mptbldesc UNKWN_is_a_16-bit_word_located_at_$C002_(offset_$009F)_in_the_calibration_header._Tuning_Recommendations:_Leave_unchanged_at_0x0041._Modifying_this_value_has_no_effect_on_engine_performance_or_road_drivability,_but_preserving_it_ensures_alignment_with_factory_binary_templates.
     .word 0x00EA                     ;Point 1
 
 	;.org	0xc004
@@ -355,7 +355,7 @@ IPLMSK2_PowerLossLightMask2:
     ;mptblcname IPLMSK2
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc IPLMSK2_provides_the_second_tier_of_fault-masking_for_dashboard_warning_light_activation._Wastegate_Solenoid_Elimination:_If_you_remove_the_factory_electronic_wastegate_solenoid_to_install_a_standalone_manual_boost_controller_(MBC)_or_electronic_boost_controller,_the_ECU_will_detect_an_open_circuit_and_set_Fault_Code_32._Clearing_Bit_3_in_IPLMSK2_prevents_this_code_from_illuminating_the_dashboard_Power_Loss_light_while_keeping_other_diagnostic_protections_active.
+    ;mptbldesc IPLMSK2_provides_the_second_tier_of_fault-masking_for_dashboard_warning_light_activation._Wastegate_Solenoid_Elimination:_If_you_remove_the_factory_electronic_wastegate_solenoid_to_install_a_standalone_manual_boost_controller_(MBC)_or_electronic_boost_controller,_the_ECU_will_detect_an_open_circuit_and_set_Fault_Code_32.
     ;mpchoices bit0  bit1  bit2  Wastegate  InjectorFault  bit5  MajorFault  bit7
     .byte 0x3F                       ;Point 1
 
@@ -544,7 +544,7 @@ CLDMAP_AdvanceFromMAPCold:
     ;mptblcname CLDMAP
     ;mpxaxis MAP -14.7 29.4 psi
     ;mpyaxis Spark_Advance -64 64 Degrees
-    ;mptbldesc CLDMAP_defines_the_base_MAP-dependent_ignition_advance_curve_used_exclusively_when_the_engine_coolant_temperature_is_below_normal_operating_temperature_(TMPSWP)._The_value_looked_up_from_CLDMAP_is_placed_into_Temp0_and_later_combined_with_RPM_advance_(GOVNER)_to_calculate_total_ignition_timing._Increasing_Table_Values_(Adding_Timing_in_CLDMAP):_Effect_on_Total_Timing:_Advances_cold-engine_ignition_timing_across_the_corresponding_manifold_pressure_range.
+    ;mptbldesc CLDMAP_defines_the_base_MAP-dependent_ignition_advance_curve_used_exclusively_when_the_engine_coolant_temperature_is_below_normal_operating_temperature_(TMPSWP)._During_cold_operation,_fuel_atomization_is_poor_and_combustion_chamber_wall_quenching_slows_down_the_initial_flame_front_speed._The_value_looked_up_from_CLDMAP_is_placed_into_Temp0_and_later_combined_with_RPM_advance_(GOVNER)_to_calculate_total_ignition_timing.
     ;mpmapaxis x
     .byte 0x04                       ;Number of points in table
     .byte 0x2B, 0x0A, 0x01, 0x80     ;Point 1
@@ -562,7 +562,7 @@ CLDLMT_LimitForColdMapAtClosedThrottle:
     ;mptblcname CLDLMT
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis Y -200 260 out
-    ;mptbldesc CLDLMT_is_a_safety_clamp_constant_that_limits_the_maximum_advance_that_the_cold_MAP_table_(CLDMAP)_can_produce_while_the_engine_is_at_closed_throttle_(idling_or_trailing_throttle_on_overrun)._Increasing_the_Value_(Higher_Clamp):_Effect_on_Total_Timing:_Allows_more_cold_MAP_advance_during_closed-throttle_idle_and_decel._Real-World_Driving_Feel:_Can_raise_cold_idle_RPM_and_stabilize_an_engine_with_an_aggressive_camshaft_that_struggles_to_maintain_cold_idle_without_extra_timing.
+    ;mptbldesc CLDLMT_is_a_safety_clamp_constant_that_limits_the_maximum_advance_that_the_cold_MAP_table_(CLDMAP)_can_produce_while_the_engine_is_at_closed_throttle_(idling_or_trailing_throttle_on_overrun)._During_cold_warm-up,_manifold_vacuum_can_be_erratic_due_to_cold_friction,_high_idle_AIS_air_bypass,_and_hunting_engine_speeds._Increasing_the_Value_(Higher_Clamp):_Effect_on_Total_Timing:_Allows_more_cold_MAP_advance_during_closed-throttle_idle_and_decel.
     .byte 0x14                       ;Point 1
 
 PartThrottleTiming:
@@ -681,7 +681,7 @@ TMPSWP_EngTempSwitchPointForSparkAdvance:
     ;mptblcname TMPSWP
     ;mpxaxis IN 0 255 X
     ;mpyaxis Coolant_Temperature -200 260 F
-    ;mptbldesc TMPSWP_is_the_primary_coolant_temperature_threshold_that_divides_the_ECU's_ignition_timing_logic_into_two_distinct_modes:_Cold_Engine_Operation_and_Warm_(Normal)_Engine_Operation._Increasing_the_Value_(Higher_Temp_Threshold):_What_it_does:_Forces_the_engine_to_stay_in_cold-engine_ignition_mode_longer_into_its_warmup_cycle._Effect_on_Total_Timing:_Extends_the_use_of_CLDMAP._Total_timing_will_follow_cold_advance_tables_until_the_engine_reaches_a_higher_coolant_temperature.
+    ;mptbldesc TMPSWP_is_the_primary_coolant_temperature_threshold_that_divides_the_ECU's_ignition_timing_logic_into_two_distinct_modes:_Cold_Engine_Operation_and_Warm_(Normal)_Engine_Operation._Increasing_the_Value_(Higher_Temp_Threshold):_What_it_does:_Forces_the_engine_to_stay_in_cold-engine_ignition_mode_longer_into_its_warmup_cycle._Effect_on_Total_Timing:_Extends_the_use_of_CLDMAP.
     .byte 0xA6                       ;Point 1
 
 	;.org	0xc04c
@@ -694,7 +694,7 @@ ABCBAS_AdvanceBaroCompensationBaseFromRPM:
     ;mptblcname ABCBAS
     ;mpxaxis RPM 0 8192 rpm
     ;mpyaxis Factor 0 1 out
-    ;mptbldesc ABCBAS_provides_the_RPM-dependent_baseline_ceiling_for_the_ECU's_barometric_pressure_spark_compensation_calculation._At_higher_elevations_(lower_barometric_ambient_pressure),_air_is_less_dense_and_cylinder_filling_is_reduced_at_any_given_throttle_position._The_barometric_calculation_determines_a_maximum_allowable_MAP_advance_ceiling_(_A_):_A_=_ABCBAS(RPM)_-_[(ABCFRP(RPM)_*_ABCFBR(BaroPressure)_/_256)]_If_A_<_Temp0_,_the_ECU_clamps_base_MAP_advance_to_A_(provided_A_>=_MINADV_).
+    ;mptbldesc ABCBAS_provides_the_RPM-dependent_baseline_ceiling_for_the_ECU's_barometric_pressure_spark_compensation_calculation._The_barometric_calculation_determines_a_maximum_allowable_MAP_advance_ceiling_(_A_):_A_=_ABCBAS(RPM)_-_[(ABCFRP(RPM)_*_ABCFBR(BaroPressure)_/_256)]_If_A_<_Temp0_,_the_ECU_clamps_base_MAP_advance_to_A_(provided_A_>=_MINADV_).
     .byte 0x02                       ;Number of points in table
     .byte 0x3F, 0x08, 0x02, 0x00     ;Point 1
     .byte 0x4B, 0x20                 ;Point 2
@@ -725,7 +725,7 @@ ABCFRP_AdvanceBaroCompensationFactorFromRPM:
     ;mptblcname ABCFRP
     ;mpxaxis RPM 0 8192 rpm
     ;mpyaxis Spark_Advance_Scale 0 4 out
-    ;mptbldesc ABCFRP_is_the_engine_speed_modifier_for_the_barometric_spark_compensation_system._Increasing_Table_Values_(Higher_RPM_Factor):_Effect_on_Total_Timing:_Pulls_more_timing_at_the_specified_RPMs_when_operating_at_altitude._Real-World_Driving_Feel:_Calms_mid-range_detonation_tendencies_when_driving_under_load_in_mountain_passes._Decreasing_Table_Values_(Lower_RPM_Factor):_Effect_on_Total_Timing:_Reduces_altitude-induced_timing_retard_across_the_specified_RPM_range.
+    ;mptbldesc ABCFRP_is_the_engine_speed_modifier_for_the_barometric_spark_compensation_system._Increasing_Table_Values_(Higher_RPM_Factor):_Effect_on_Total_Timing:_Pulls_more_timing_at_the_specified_RPMs_when_operating_at_altitude._Real-World_Driving_Feel:_Calms_mid-range_detonation_tendencies_when_driving_under_load_in_mountain_passes.
     .byte 0x02                       ;Number of points in table
     .byte 0x38, 0xFF, 0xEC, 0x62     ;Point 1
     .byte 0x45, 0x00                 ;Point 2
@@ -809,7 +809,7 @@ GOVNER_AdvanceFromRPM:
     ;mptblcname GOVNER
     ;mpxaxis RPM 0 8192 rpm
     ;mpyaxis Spark_Advance 0 128 Degrees
-    ;mptbldesc GOVNER_is_the_primary_engine_speed_advance_curve_(analogous_to_the_mechanical_/_centrifugal_advance_weights_in_a_traditional_distributor)._Because_GOVNER_is_an_additive_baseline_across_all_load_zones,_changes_to_GOVNER_shift_ignition_timing_across_both_part_throttle_and_wide-open_throttle:_Increasing_Table_Values_(Adding_RPM_Advance):_Effect_on_Total_Timing:_Advances_timing_across_the_specified_RPM_range_for_all_throttle_positions_and_boost_levels.
+    ;mptbldesc GOVNER_is_the_primary_engine_speed_advance_curve_(analogous_to_the_mechanical_/_centrifugal_advance_weights_in_a_traditional_distributor)._In_internal_combustion_engines,_the_time_available_for_the_air/fuel_charge_to_burn_decreases_proportionally_as_engine_RPM_increases.
     .byte 0x04                       ;Number of points in table
     .byte 0x20, 0x1C, 0x00, 0xE4     ;Point 1
     .byte 0x32, 0x2C, 0x00, 0x41     ;Point 2
@@ -826,7 +826,7 @@ SKAPRD_SparkImmediateSwitchToRunAboveThisRpm:
     ;mptblcname SKAPRD
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis EPPs 0 65535 epps
-    ;mptbldesc SKAPRD_is_the_instantaneous_engine_start-to-run_transfer_threshold._Increasing_the_Value_(Lower_RPM_Threshold):_What_it_does:_Allows_a_lower_RPM_flare_to_trigger_immediate_Run_Mode._Real-World_Driving_Feel:_The_ECU_starts_controlling_dynamic_spark_advance_sooner_after_cranking._However,_if_set_too_low_(e.g.,_near_starter_cranking_speeds_of_300-400_RPM),_the_ECU_could_prematurely_switch_into_Run_Mode_during_a_slow,_struggling_crank,_causing_kickback_or_stalling.
+    ;mptbldesc SKAPRD_is_the_instantaneous_engine_start-to-run_transfer_threshold._Increasing_the_Value_(Lower_RPM_Threshold):_What_it_does:_Allows_a_lower_RPM_flare_to_trigger_immediate_Run_Mode._Real-World_Driving_Feel:_The_ECU_starts_controlling_dynamic_spark_advance_sooner_after_cranking.
     .word 0x0092                     ;Point 1
 
 	;.org	0xc08d
@@ -852,7 +852,7 @@ SRTIME2_SparkEPPsNeededToBeAboveSR_Cold:
     ;mptblcname SRTIME2
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc SRTIME2_defines_the_number_of_consecutive_Engine_Position_Pulses_(EPPs)_above_STRNTR_required_to_transfer_spark_control_into_Run_Mode_when_the_engine_is_cold._Increasing_the_Value_(More_Pulses):_What_it_does:_Demands_more_consecutive_pulses_above_600_RPM_before_allowing_cold_running_spark_tables_(CLDMAP)_to_engage._Real-World_Driving_Feel:_Prevents_cold_stall_on_start-up_in_freezing_weather_where_engines_tend_to_catch,_stumble,_and_die_if_transferred_to_run_spark_too_abruptly.
+    ;mptbldesc SRTIME2_defines_the_number_of_consecutive_Engine_Position_Pulses_(EPPs)_above_STRNTR_required_to_transfer_spark_control_into_Run_Mode_when_the_engine_is_cold._Cold_engines_suffer_from_thick_engine_oil_drag,_incomplete_fuel_vaporization,_and_uneven_cylinder-to-cylinder_combustion._Increasing_the_Value_(More_Pulses):_What_it_does:_Demands_more_consecutive_pulses_above_600_RPM_before_allowing_cold_running_spark_tables_(CLDMAP)_to_engage.
     .byte 0x04                       ;Point 1
 
 	;.org	0xc08f
@@ -923,7 +923,7 @@ PNIDLE_AdvanceRemovedIdleParkNeutral:
     ;mptblcname PNIDLE
     ;mpxaxis Coolant_Temperature -200 260 F
     ;mpyaxis Spark_Advance -64 64 Degrees
-    ;mptbldesc PNIDLE_provides_a_coolant_temperature-dependent_spark_advance_trim_applied_specifically_when_an_automatic_transmission_vehicle_is_in_Park_or_Neutral_at_idle_speeds._Increasing_Table_Values_(Adding_Timing_in_Park/Neutral):_Effect_on_Total_Timing:_Advances_idle_timing_when_in_Park_or_Neutral._Real-World_Driving_Feel:_Raises_idle_RPM_and_increases_vacuum_in_Park/Neutral._If_set_too_high,_will_cause_a_noticeable_idle_"thump"_or_flare_when_shifting_into_Park_or_Neutral_from_Drive.
+    ;mptbldesc PNIDLE_provides_a_coolant_temperature-dependent_spark_advance_trim_applied_specifically_when_an_automatic_transmission_vehicle_is_in_Park_or_Neutral_at_idle_speeds._Increasing_Table_Values_(Adding_Timing_in_Park/Neutral):_Effect_on_Total_Timing:_Advances_idle_timing_when_in_Park_or_Neutral._Real-World_Driving_Feel:_Raises_idle_RPM_and_increases_vacuum_in_Park/Neutral.
     .byte 0x01                       ;Number of points in table
     .byte 0xFF, 0x00                 ;Point 1
 
@@ -963,7 +963,7 @@ KNKOFS_DeltaAboveBaroFor_RTRDRT_and_KNKCNT_and_KNKCOR_incremented:
     ;mptblcname KNKOFS
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis MAP 0 44.1 psi
-    ;mptbldesc KNKOFS_is_the_manifold_pressure_boost_threshold_dividing_knock_retard_response_into_Vacuum_/_Low_Boost_Mode_versus_High_Boost_Mode._Increasing_the_Value_(Higher_Boost_Threshold):_What_it_does:_Extends_the_low-boost_retard_rate_(RTRDRT)_to_higher_boost_levels._Real-World_Driving_Feel:_Pulls_larger_chunks_of_timing_if_knock_occurs_in_the_5-8_psi_transition_zone._Decreasing_the_Value_(Lower_Boost_Threshold):_What_it_does:_Engages_the_boost_knock_retard_rate_(RTRDRT2)_earlier.
+    ;mptbldesc KNKOFS_is_the_manifold_pressure_boost_threshold_dividing_knock_retard_response_into_Vacuum_/_Low_Boost_Mode_versus_High_Boost_Mode._Increasing_the_Value_(Higher_Boost_Threshold):_What_it_does:_Extends_the_low-boost_retard_rate_(RTRDRT)_to_higher_boost_levels._Real-World_Driving_Feel:_Pulls_larger_chunks_of_timing_if_knock_occurs_in_the_5-8_psi_transition_zone.
     ;mpmapaxis y
     .byte 0x1F                       ;Point 1
 
@@ -1003,7 +1003,7 @@ INCSRT_KnockRetardIncreaseRate:
     ;mptblcname INCSRT
     ;mpxaxis in_desc 0 255 retard
     ;mpyaxis Y 0 128 deg
-    ;mptbldesc INCSRT_controls_the_decay_rate_/_recovery_rate_of_ignition_timing_after_a_knock_event_has_ended._>_[!WARNING]_>_Bitmask_Rule:_INCSRT_is_a_binary_bitmask._It_MUST_ONLY_be_set_to_binary_power-of-two_minus_one_values:_0x00,_0x01,_0x03,_0x07,_0x0F,_0x1F,_0x3F,_0x7F,_or_0xFF._Using_intermediate_values_(e.g.,_0x10)_will_cause_erratic,_non-uniform_timing_recovery_rates._Increasing_the_Value_(Larger_Mask_/_Slower_Recovery):_Effect:_Timing_decays_more_slowly_(recovers_fewer_degrees_per_second).
+    ;mptbldesc INCSRT_controls_the_decay_rate_/_recovery_rate_of_ignition_timing_after_a_knock_event_has_ended._When_the_ECU_detects_knock,_it_retards_ignition_timing_immediately._>_[!WARNING]_>_Bitmask_Rule:_INCSRT_is_a_binary_bitmask._It_MUST_ONLY_be_set_to_binary_power-of-two_minus_one_values:_0x00,_0x01,_0x03,_0x07,_0x0F,_0x1F,_0x3F,_0x7F,_or_0xFF._Using_intermediate_values_(e.g.,_0x10)_will_cause_erratic,_non-uniform_timing_recovery_rates.
     .byte 0x1F                       ;Point 1
 
 	;.org	0xc0b5
@@ -1167,7 +1167,7 @@ FTUNPW_FineTuneStepForAis:
     ;mptblcname FTUNPW
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc FTUNPW_is_the_enable_switch_and_step-size_multiplier_for_spark_scatter_idle_stabilization._Setting_to_0x00_(Disable_Spark_Scatter):_Disables_spark_scatter_completely._Real-world_feel:_The_ECU_will_rely_100%_on_the_mechanical_AIS_stepper_motor_for_idle_speed_control._Highly_recommended_by_tuners_when_running_aggressive_high-overlap_camshafts_or_lightweight_flywheels,_where_spark_scatter_dithering_can_cause_the_engine_to_"hunt"_or_rhythmically_surge.
+    ;mptbldesc FTUNPW_is_the_enable_switch_and_step-size_multiplier_for_spark_scatter_idle_stabilization._During_closed-throttle_idle,_when_engine_RPM_deviates_outside_the_neutral_deadband_(FWDARP_and_REVARP),_the_ECU_applies_high-speed_ignition_timing_dithering_to_stabilize_engine_speed._Setting_to_0x00_(Disable_Spark_Scatter):_Disables_spark_scatter_completely._Real-world_feel:_The_ECU_will_rely_100%_on_the_mechanical_AIS_stepper_motor_for_idle_speed_control.
     .byte 0x00                       ;Point 1
 
 	;.org	0xc0dc
@@ -1216,7 +1216,7 @@ STRLMT_ColdestTempAllowedAtClosedThrottle:
     ;mptblcname STRLMT
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis Coolant_Temp -200 260 Degrees
-    ;mptbldesc STRLMT_is_a_minimum_temperature_floor_clamped_onto_the_cranking_fuel_lookup_when_starting_at_closed_throttle._Increasing_the_Value_(Warmer_Clamp):_Caps_cold_cranking_fuel_at_a_warmer_temperature._Prevents_cold_flooding_in_winter_climates._Decreasing_the_Value_(Colder_Clamp):_Allows_the_ECU_to_deliver_richer_cranking_pulse_widths_at_extreme_sub-freezing_temperatures._Useful_in_extreme_northern_climates_(e.g.,_-20_degF_to_-40_degF)_if_an_engine_struggles_with_dry-cranking_lean-out.
+    ;mptbldesc STRLMT_is_a_minimum_temperature_floor_clamped_onto_the_cranking_fuel_lookup_when_starting_at_closed_throttle._Increasing_the_Value_(Warmer_Clamp):_Caps_cold_cranking_fuel_at_a_warmer_temperature._Prevents_cold_flooding_in_winter_climates._Decreasing_the_Value_(Colder_Clamp):_Allows_the_ECU_to_deliver_richer_cranking_pulse_widths_at_extreme_sub-freezing_temperatures.
     .byte 0x63                       ;Point 1
 
 	;.org	0xc102
@@ -1360,7 +1360,7 @@ O2TLMH_HighLimitForDelayedSwitchToClosedLoop:
     ;mptblcname O2TLMH
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc O2TLMH_defines_the_upper_voltage_threshold_required_to_qualify_O2_sensor_readiness_before_the_ECU_officially_activates_closed-loop_feedback_operation._Stock_Value:_0x1F_(31_counts_~_0.605V_)._Sensor_Health_Diagnostic:_If_an_engine_has_reached_full_operating_temperature_(180_degF+)_but_steadfastly_refuses_to_enter_closed-loop_(scantool_shows_open-loop_status_indefinitely),_the_O2_sensor_may_have_lost_its_heater_or_deteriorated_to_where_it_cannot_swing_above_0x1F_(0.605V).
+    ;mptbldesc O2TLMH_defines_the_upper_voltage_threshold_required_to_qualify_O2_sensor_readiness_before_the_ECU_officially_activates_closed-loop_feedback_operation._When_an_oxygen_sensor_is_cold_and_inactive,_its_internal_electrochemical_cell_cannot_pass_current_and_rests_at_an_indeterminate_floating_voltage_(typically_0.40V_to_0.50V)._Stock_Value:_0x1F_(31_counts_~_0.605V_).
     .byte 0x1C                       ;Point 1
 
 	;.org	0xc13a
@@ -1487,7 +1487,7 @@ PRIRMP_PrimaryRamp:
     ;mptblcname PRIRMP
     ;mpxaxis RPM 0 16384 rpm
     ;mpyaxis MAP -14.7 29.4 psi
-    ;mptbldesc PRIRMP_is_the_Proportional_Step_table_of_the_ECU's_Proportional-Integral_(PI)_closed-loop_fuel_controller._Proportional_Jump_Dynamics:_Larger_Step_Sizes:_Creates_wider,_faster_swings_across_stoichiometry._This_helps_old_catalytic_converters_light_off_and_perform_redox_reactions,_but_if_too_large,_causes_noticeable_exhaust_hunting,_audible_RPM_surging_at_cruise,_and_choppy_idle._Smaller_Step_Sizes:_Narrows_the_closed-loop_swing_limit,_smoothing_out_engine_idle_and_cruise_stability.
+    ;mptbldesc PRIRMP_is_the_Proportional_Step_table_of_the_ECU's_Proportional-Integral_(PI)_closed-loop_fuel_controller._Proportional_Jump_Dynamics:_Larger_Step_Sizes:_Creates_wider,_faster_swings_across_stoichiometry._This_helps_old_catalytic_converters_light_off_and_perform_redox_reactions,_but_if_too_large,_causes_noticeable_exhaust_hunting,_audible_RPM_surging_at_cruise,_and_choppy_idle.
     ;mpmapaxis y
     .word 0x1C25                  ;Rpm Low / High Boundary
     .word 0x223F                  ;Map Low / High Boundary
@@ -1683,7 +1683,7 @@ R1_RPMCellBoundaryInRPMover32:
     ;mptblcname R1
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis RPM 0 16384 rpm
-    ;mptbldesc R1_is_the_engine_speed_boundary_that_bifurcates_each_of_the_6_MAP_load_regions_into_a_Low-RPM_Cell_(even_numbers:_0,_2,_4,_6,_8,_10)_and_a_High-RPM_Cell_(odd_numbers:_1,_3,_5,_7,_9,_11)._Stock_Value:_0x1D_(_29_32_=_928_RPM_)._Raising_R1_(e.g.,_to_0x32_/_1600_RPM):_Real-World_Impact:_In_stock_form,_R1_is_set_very_low_(928_RPM),_meaning_that_almost_all_driving_above_1000_RPM_falls_into_the_High-RPM_cells_(odd_cells),_while_the_even_cells_only_capture_off-idle_crawl.
+    ;mptbldesc R1_is_the_engine_speed_boundary_that_bifurcates_each_of_the_6_MAP_load_regions_into_a_Low-RPM_Cell_(even_numbers:_0,_2,_4,_6,_8,_10)_and_a_High-RPM_Cell_(odd_numbers:_1,_3,_5,_7,_9,_11)._Engines_experience_significantly_different_volumetric_efficiencies_and_exhaust_scavenging_dynamics_at_low_RPM_(near_idle_/_off-idle_lugging)_compared_to_higher_cruising_RPMs._Stock_Value:_0x1D_(_29_32_=_928_RPM_).
     .byte 0x1D                       ;Point 1
 
 	;.org	0xc19e
@@ -1696,7 +1696,7 @@ DLTRPM_DeltaRPMAtRPMBoundariesInRPMOver32:
     ;mptblcname DLTRPM
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc DLTRPM_provides_engine_speed_hysteresis_around_the_RPM_cell_boundary_(R1)._When_vehicle_engine_speed_hovers_right_at_the_R1_threshold_(e.g._928_RPM),_small_tachometer_fluctuations_would_cause_the_ECU_to_flip_between_even_and_odd_adaptive_memory_cells_constantly._DLTRPM_creates_a_deadband_to_prevent_cell_hunting._Stock_Value:_0x01_(32_RPM)._Tuning_Advice:_Generally_leave_at_stock_unless_you_raise_R1_substantially,_in_which_case_a_2-count_(_64_RPM_)_hysteresis_band_can_improve_stability.
+    ;mptbldesc DLTRPM_provides_engine_speed_hysteresis_around_the_RPM_cell_boundary_(R1)._When_vehicle_engine_speed_hovers_right_at_the_R1_threshold_(e.g._928_RPM),_small_tachometer_fluctuations_would_cause_the_ECU_to_flip_between_even_and_odd_adaptive_memory_cells_constantly._Stock_Value:_0x01_(32_RPM)._Tuning_Advice:_Generally_leave_at_stock_unless_you_raise_R1_substantially,_in_which_case_a_2-count_(_64_RPM_)_hysteresis_band_can_improve_stability.
     .byte 0x01                       ;Point 1
 
 	;.org	0xc19f
@@ -1709,7 +1709,7 @@ IDLOFS_DeltaForIdleRPMForClosedThrottleCell:
     ;mptblcname IDLOFS
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc IDLOFS_specifies_an_upper_RPM_offset_window_above_target_idle_speed_within_which_the_ECU_is_permitted_to_select_and_update_the_dedicated_Closed-Throttle_Idle_Adaptive_Cell_(Cell_12_/_AutoCalCell12idle)._When_the_throttle_is_closed,_the_engine_should_only_adapt_its_idle_fuel_cell_if_it_is_actually_operating_at_or_near_normal_idle_speed._Stock_Value:_0x01_(32_RPM_above_target_idle)._Target_Idle_Relationship:_Target_idle_speed_is_dynamically_set_by_the_AIS_idle_speed_curve_(e.g._850_RPM).
+    ;mptbldesc IDLOFS_specifies_an_upper_RPM_offset_window_above_target_idle_speed_within_which_the_ECU_is_permitted_to_select_and_update_the_dedicated_Closed-Throttle_Idle_Adaptive_Cell_(Cell_12_/_AutoCalCell12idle)._Stock_Value:_0x01_(32_RPM_above_target_idle)._Target_Idle_Relationship:_Target_idle_speed_is_dynamically_set_by_the_AIS_idle_speed_curve_(e.g._850_RPM).
     .byte 0x01                       ;Point 1
 
 	;.org	0xc1a0
@@ -1748,7 +1748,7 @@ RPMLIM_NoCellUpdateAboveThisRPMInRPMOver32:
     ;mptblcname RPMLIM
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis RPM 0 16384 rpm
-    ;mptbldesc RPMLIM_defines_the_maximum_engine_speed_above_which_adaptive_memory_updates_are_locked_out._Stock_Value:_0x2B_(_43_32_=_1376_RPM_)._Why_is_Stock_so_Low?_In_the_stock_T-LM_cal,_Chrysler_restricted_long-term_learning_primarily_to_low-speed_and_off-idle_urban_driving._Raising_RPMLIM_(e.g.,_to_0x60_/_3072_RPM_or_0x80_/_4096_RPM):_Real-World_Tuning_Benefit:_Raising_RPMLIM_allows_the_ECU_to_actively_adapt_fuel_trims_during_steady_65-75_mph_highway_cruising_(typically_2400-3000_RPM).
+    ;mptbldesc RPMLIM_defines_the_maximum_engine_speed_above_which_adaptive_memory_updates_are_locked_out._At_higher_engine_speeds,_rapid_throttle_transients,_high_exhaust_flow_rates,_and_potential_knock_events_make_steady-state_fuel_trim_adaptation_unreliable._Stock_Value:_0x2B_(_43_32_=_1376_RPM_)._Why_is_Stock_so_Low?_In_the_stock_T-LM_cal,_Chrysler_restricted_long-term_learning_primarily_to_low-speed_and_off-idle_urban_driving.
     .byte 0x2B                       ;Point 1
 
 	;.org	0xc1a3
@@ -1761,7 +1761,7 @@ MAPLIM_NoCellUpdateAboveThisMAP:
     ;mptblcname MAPLIM
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis MAP -14.7 29.4 psi
-    ;mptbldesc MAPLIM_sets_the_maximum_manifold_absolute_pressure_threshold_above_which_adaptive_fuel_learning_is_completely_inhibited._Closed-loop_stoichiometric_feedback_and_long-term_adaptive_trimming_are_strictly_vacuum/light-load_functions._Stock_Setting:_0x8A_(_~_1.2_psig_/_just_entering_positive_boost)._Tuning_Rule:_Never_set_MAPLIM_substantially_into_boost._It_must_always_stay_at_or_just_below_atmospheric_pressure_(typically_0_to_1_psig)_to_safeguard_boosted_open-loop_fueling.
+    ;mptbldesc MAPLIM_sets_the_maximum_manifold_absolute_pressure_threshold_above_which_adaptive_fuel_learning_is_completely_inhibited._Stock_Setting:_0x8A_(_~_1.2_psig_/_just_entering_positive_boost)._Tuning_Rule:_Never_set_MAPLIM_substantially_into_boost._It_must_always_stay_at_or_just_below_atmospheric_pressure_(typically_0_to_1_psig)_to_safeguard_boosted_open-loop_fueling.
     ;mpmapaxis y
     .byte 0x5C                       ;Point 1
 
@@ -1841,7 +1841,7 @@ AMTMH_SelectedAMTimerInitHi:
     ;mptblcname AMTMH
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis Y 0 255 out
-    ;mptbldesc AMTMH_is_the_coolant_temperature_threshold_that_distinguishes_a_fully_hot_restart_from_a_warm_restart_for_adaptive_timer_selection._If_the_engine_is_started_with_coolant_temperature_at_or_above_AMTMH,_the_ECU_selects_the_longer_delay_(AMTML,_~3_minutes)_to_account_for_severe_engine_bay_heat_soak._If_below_AMTMH,_the_shorter_delay_(AMTPSW,_~34_seconds)_is_selected._Stock_Setting:_0xCD_(_~_196_degF_)._Tuning_Note:_Should_match_the_operating_temperature_threshold_set_in_AMTEMP.
+    ;mptbldesc AMTMH_is_the_coolant_temperature_threshold_that_distinguishes_a_fully_hot_restart_from_a_warm_restart_for_adaptive_timer_selection._If_the_engine_is_started_with_coolant_temperature_at_or_above_AMTMH,_the_ECU_selects_the_longer_delay_(AMTML,_~3_minutes)_to_account_for_severe_engine_bay_heat_soak._Stock_Setting:_0xCD_(_~_196_degF_)._Tuning_Note:_Should_match_the_operating_temperature_threshold_set_in_AMTEMP.
     .byte 0xCD                       ;Point 1
 
 	;.org	0xc1ab
@@ -1906,7 +1906,7 @@ MAPTBL_FuelPartThrottle:
     ;mptblcname MAPTBL
     ;mpxaxis MAP -14.7 29.4 psi
     ;mpyaxis Pulsewidth 0 65535 uSec
-    ;mptbldesc MAPTBL_is_the_core_part-throttle_speed-density_fuel_pulse_width_table._Increasing_Table_Values_(Richer_Part-Throttle_Fuel):_Effect:_Delivers_longer_injector_pulse_widths_across_the_specified_MAP_range._Real-World_Feel:_Enriches_cruising_air/fuel_ratios,_eliminates_light-throttle_lean_stumbles,_and_cools_down_cruising_exhaust_gas_temperatures_(EGTs)._Decreasing_Table_Values_(Leaner_Part-Throttle_Fuel):_Effect:_Shortens_injector_pulse_widths_across_the_specified_MAP_range.
+    ;mptbldesc MAPTBL_is_the_core_part-throttle_speed-density_fuel_pulse_width_table._Increasing_Table_Values_(Richer_Part-Throttle_Fuel):_Effect:_Delivers_longer_injector_pulse_widths_across_the_specified_MAP_range._Real-World_Feel:_Enriches_cruising_air/fuel_ratios,_eliminates_light-throttle_lean_stumbles,_and_cools_down_cruising_exhaust_gas_temperatures_(EGTs).
     ;mpmapaxis x
     ;mpinjscale scale
     .byte 0x00                   ;Point 1
@@ -1942,7 +1942,7 @@ OBCONST_OverboostConstant1:
     ;mptblcname OBCONST
     ;mpxaxis X 0 255 in
     ;mpyaxis MAP -14.7 29.4 psi
-    ;mptbldesc OBCONST_defines_the_baseline_manifold_pressure_transition_threshold_used_during_running_fuel_pulse_width_and_spark_advance_calculation_to_bifurcate_moderate_part-throttle_fuel_scheduling_from_higher-load_boost_fuel_enrichment._Stock_Value:_0xAA_(_~_4.9_psig_boost_)._Transition_Point:_Below_4.9_psig_boost,_base_running_fuel_pulse_width_scales_according_to_the_primary_part-throttle_equations._Above_4.9_psig_boost,_additional_slope_multipliers_engage.
+    ;mptbldesc OBCONST_defines_the_baseline_manifold_pressure_transition_threshold_used_during_running_fuel_pulse_width_and_spark_advance_calculation_to_bifurcate_moderate_part-throttle_fuel_scheduling_from_higher-load_boost_fuel_enrichment._Stock_Value:_0xAA_(_~_4.9_psig_boost_)._Transition_Point:_Below_4.9_psig_boost,_base_running_fuel_pulse_width_scales_according_to_the_primary_part-throttle_equations.
     ;mpmapaxis y
     .byte 0x71                       ;Point 1
 
@@ -2053,7 +2053,7 @@ WOTTBL_FuelFullThrottle:
     ;mptblcname WOTTBL
     ;mpxaxis MAP -14.7 29.4 psi
     ;mpyaxis Pulsewidth 0 65535 uSec
-    ;mptbldesc WOTTBL_is_the_core_wide-open_throttle_(WOT)_fuel_delivery_table_and_the_maximum_allowable_fuel_ceiling_for_part-throttle_boost_enrichment._Increasing_Table_Values_(Richer_WOT_Fuel):_Effect:_Injects_longer_fuel_pulses_under_boost_and_full_throttle._Real-World_Feel:_Lowers_wide-open_throttle_air/fuel_ratios_(richer),_cools_combustion_chambers,_and_suppresses_detonation_under_boost._Decreasing_Table_Values_(Leaner_WOT_Fuel):_Effect:_Shortens_fuel_pulses_under_boost.
+    ;mptbldesc WOTTBL_is_the_core_wide-open_throttle_(WOT)_fuel_delivery_table_and_the_maximum_allowable_fuel_ceiling_for_part-throttle_boost_enrichment._Increasing_Table_Values_(Richer_WOT_Fuel):_Effect:_Injects_longer_fuel_pulses_under_boost_and_full_throttle._Real-World_Feel:_Lowers_wide-open_throttle_air/fuel_ratios_(richer),_cools_combustion_chambers,_and_suppresses_detonation_under_boost.
     ;mpmapaxis x
     ;mpinjscale scale
     .byte 0x00                   ;Point 1
@@ -2076,7 +2076,7 @@ MAPDEC_NoCellUpdateAndO2CNTRHeldBelowThisMap:
     ;mptblcname MAPDEC
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis MAP -14.7 29.4 psi
-    ;mptbldesc MAPDEC_is_the_master_manifold_pressure_boundary_above_which_the_closed-loop_O2_controller_is_forced_open-loop_and_adaptive_memory_updates_are_frozen._Stock_Value:_0xAA_(170_counts_~_19.6_psia_~_4.9_psig_boost_)._Disabling_Closed-Loop_Control_Entirely:_Master_Open-Loop_Trick:_Setting_MAPDEC_=_0x00_(or_0x01)_causes_MapValue_>=_MAPDEC_to_evaluate_TRUE_100%_of_the_time,_permanently_disabling_closed-loop_feedback_and_adaptive_memory_updates_under_all_driving_conditions.
+    ;mptbldesc MAPDEC_is_the_master_manifold_pressure_boundary_above_which_the_closed-loop_O2_controller_is_forced_open-loop_and_adaptive_memory_updates_are_frozen._This_calibration_constant_serves_as_the_definitive_WOT_/_Boost_Open-Loop_switch._Stock_Value:_0xAA_(170_counts_~_19.6_psia_~_4.9_psig_boost_).
     ;mpmapaxis y
     .byte 0x71                       ;Point 1
 
@@ -2184,7 +2184,7 @@ FMODDV1_StandardFuelModifierDivisor_1:
     ;mptblcname FMODDV1
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis Y 0 255 out
-    ;mptbldesc FMODDV1_serves_as_the_internal_arithmetic_scaling_divisor_used_when_aggregating_composite_fuel_modifiers_into_the_final_running_fuel_multiplier._In_CalculateSumOfAllFuelModifiers_MM,_various_fractional_fuel_compensations_(warmup_decay,_charge_temp,_transient_enrichment)_are_summed._Stock_Setting:_0x1A_(26_decimal)._Do_Not_Touch:_Altering_FMODDV1_warps_the_internal_math_of_all_fuel_modifiers_simultaneously,_causing_gross_fueling_calibration_corruption.
+    ;mptbldesc FMODDV1_serves_as_the_internal_arithmetic_scaling_divisor_used_when_aggregating_composite_fuel_modifiers_into_the_final_running_fuel_multiplier._Stock_Setting:_0x1A_(26_decimal)._Do_Not_Touch:_Altering_FMODDV1_warps_the_internal_math_of_all_fuel_modifiers_simultaneously,_causing_gross_fueling_calibration_corruption.
     .byte 0x1A                       ;Point 1
 
 	;.org	0xc27c
@@ -2226,7 +2226,7 @@ BATOFF_FuelBatteryOffset:
     ;mptblcname BATOFF
     ;mpxaxis Battery 0 16.2 Volts
     ;mpyaxis Pulsewidth 0 2040 uSec
-    ;mptbldesc BATOFF_defines_the_injector_dead_time_/_battery_latency_compensation_curve_as_a_function_of_system_electrical_voltage._An_electronic_fuel_injector_is_an_electromagnetic_solenoid_with_mechanical_inertia._Aftermarket_Injector_Tuning:_When_installing_modern_high-impedance_or_large_aftermarket_injectors_(e.g.,_Bosch_EV14s,_Deka_60s,_or_RC_injectors),_setting_accurate_BATOFF_values_is_critical._Different_injector_coils_have_vastly_different_opening_latencies.
+    ;mptbldesc BATOFF_defines_the_injector_dead_time_/_battery_latency_compensation_curve_as_a_function_of_system_electrical_voltage._Aftermarket_Injector_Tuning:_When_installing_modern_high-impedance_or_large_aftermarket_injectors_(e.g.,_Bosch_EV14s,_Deka_60s,_or_RC_injectors),_setting_accurate_BATOFF_values_is_critical._Different_injector_coils_have_vastly_different_opening_latencies.
     .byte 0x04                       ;Number of points in table
     .byte 0x59, 0x8A, 0xFE, 0x1A     ;Point 1
     .byte 0x80, 0x40, 0xFF, 0x3E     ;Point 2
@@ -2243,7 +2243,7 @@ RNFPRD_FuelStartRunTransferPointRpm:
     ;mptblcname RNFPRD
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis EPPs 0 65535 epps
-    ;mptbldesc RNFPRD_is_the_fuel_injection_start-to-run_transfer_RPM_threshold._Increasing_the_Value_(Lower_RPM_Threshold):_Effect:_Cuts_off_cranking_enrichment_at_a_lower_RPM_(e.g.,_550_RPM)._Real-World_Driving_Feel:_Prevents_engine_flooding_on_warm_restarts_or_when_running_oversized_fuel_injectors._However,_setting_it_too_low_on_freezing_cold_starts_can_cut_cranking_enrichment_before_the_engine_is_warm_enough_to_run_on_speed-density_fuel,_causing_it_to_die_immediately_after_catching.
+    ;mptbldesc RNFPRD_is_the_fuel_injection_start-to-run_transfer_RPM_threshold._During_cranking,_injectors_deliver_rich,_fixed-duration_priming_pulses_designed_to_wet_the_intake_ports_and_cylinders_so_the_engine_can_catch_fire._Increasing_the_Value_(Lower_RPM_Threshold):_Effect:_Cuts_off_cranking_enrichment_at_a_lower_RPM_(e.g.,_550_RPM)._Real-World_Driving_Feel:_Prevents_engine_flooding_on_warm_restarts_or_when_running_oversized_fuel_injectors.
     .word 0x00A7                     ;Point 1
 
 	;.org	0xc2a0
@@ -2331,7 +2331,7 @@ CURVEB_FuelColdEnrichmentCurveB:
     ;mptblcname CURVEB
     ;mpxaxis Temp -200 260 degrees
     ;mpyaxis Factor 0 2 factor
-    ;mptbldesc CURVEB_is_the_long-term_/_steady-state_warm-up_enrichment_curve_applied_as_the_engine_warms_from_cold_start_up_to_normal_operating_temperature._Increasing_Table_Values_(Richer_Warm-Up):_Injects_additional_fuel_during_the_extended_warm-up_period._Real-world_feel:_Eliminates_cold_bucking,_stumbling,_or_surging_during_light_acceleration_in_the_first_few_minutes_of_driving_after_a_cold_start._Decreasing_Table_Values_(Leaner_Warm-Up):_Leans_out_fuel_delivery_during_warm-up.
+    ;mptbldesc CURVEB_is_the_long-term_/_steady-state_warm-up_enrichment_curve_applied_as_the_engine_warms_from_cold_start_up_to_normal_operating_temperature._Increasing_Table_Values_(Richer_Warm-Up):_Injects_additional_fuel_during_the_extended_warm-up_period._Real-world_feel:_Eliminates_cold_bucking,_stumbling,_or_surging_during_light_acceleration_in_the_first_few_minutes_of_driving_after_a_cold_start.
     .byte 0x07                       ;Number of points in table
     .byte 0x58, 0x70, 0xFE, 0x37     ;Point 1
     .byte 0x74, 0x3E, 0xFE, 0x77     ;Point 2
@@ -2370,7 +2370,7 @@ CURVEC_FuelColdEnrichmentCurveC:
     ;mptblcname CURVEC
     ;mpxaxis Temp -200 260 degrees
     ;mpyaxis Factor 1 3 factor
-    ;mptbldesc CURVEC_is_the_intermediate_warm-up_enrichment_curve_in_Chrysler's_tripartite_cold_enrichment_architecture._Increasing_Table_Values_(Richer_Intermediate_Warmup):_Delivers_extra_fuel_during_the_intermediate_warm-up_phase_(1-3_minutes_into_driving)._Real-world_feel:_Fixes_lean_hesitations_or_stumbling_that_occur_just_as_the_vehicle_drives_out_of_the_driveway_on_cold_mornings._Decreasing_Table_Values_(Leaner_Intermediate_Warmup):_Leans_out_intermediate_warmup_fuel_delivery.
+    ;mptbldesc CURVEC_is_the_intermediate_warm-up_enrichment_curve_in_Chrysler's_tripartite_cold_enrichment_architecture._Increasing_Table_Values_(Richer_Intermediate_Warmup):_Delivers_extra_fuel_during_the_intermediate_warm-up_phase_(1-3_minutes_into_driving)._Real-world_feel:_Fixes_lean_hesitations_or_stumbling_that_occur_just_as_the_vehicle_drives_out_of_the_driveway_on_cold_mornings.
     .byte 0x05                       ;Number of points in table
     .byte 0x79, 0x40, 0xFF, 0xA3     ;Point 1
     .byte 0x84, 0x3C, 0xFF, 0x55     ;Point 2
@@ -2524,7 +2524,7 @@ MAPTRG_DeltaMapTriggerLevel:
     ;mptblcname MAPTRG
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis MAP 0 44.1 psi
-    ;mptbldesc MAPTRG_establishes_the_minimum_rate_of_manifold_pressure_increase_(_DeltaMAP_)_required_to_fire_a_MAP_Acceleration_Enrichment_Pump_Shot._Stock_Value:_0x05_(_~_0.58_psi_jump)._Lowering_MAPTRG_(e.g.,_to_2_or_3_counts):_Makes_the_ECU_highly_sensitive_to_throttle_movements,_firing_acceleration_enrichment_on_smaller_throttle_nudges._Eliminates_tip-in_hesitation,_but_if_set_too_low,_minor_manifold_pressure_pulsations_from_aggressive_camshafts_will_cause_false_pump_shots_and_wasted_fuel.
+    ;mptbldesc MAPTRG_establishes_the_minimum_rate_of_manifold_pressure_increase_(_DeltaMAP_)_required_to_fire_a_MAP_Acceleration_Enrichment_Pump_Shot._When_the_throttle_is_snapped_open,_manifold_absolute_pressure_spikes_upward_almost_instantly._Stock_Value:_0x05_(_~_0.58_psi_jump)._Lowering_MAPTRG_(e.g.,_to_2_or_3_counts):_Makes_the_ECU_highly_sensitive_to_throttle_movements,_firing_acceleration_enrichment_on_smaller_throttle_nudges.
     ;mpmapaxis y
     .byte 0x03                       ;Point 1
 
@@ -2538,7 +2538,7 @@ MAPMAX_MaxDeltaMapAllowed:
     ;mptblcname MAPMAX
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis MAP 0 44.1 psi
-    ;mptbldesc MAPMAX_defines_the_maximum_allowable_DeltaMAP_value_permitted_when_calculating_the_size_of_a_MAP_acceleration_enrichment_pump_shot._Stock_Value:_0xFF_(255_counts_-_completely_uncapped)._Tuning_Guidance:_In_stock_form,_Chrysler_left_this_ceiling_at_255_to_allow_full_maximum_pump_shot_delivery_on_violent_throttle_stabs._If_upgrading_to_massive_injectors_(+52_lb/hr)_and_rapid_throttle_snapping_causes_a_momentary_rich_stumble/bog,_lowering_MAPMAX_caps_the_maximum_pump_shot_volume.
+    ;mptbldesc MAPMAX_defines_the_maximum_allowable_DeltaMAP_value_permitted_when_calculating_the_size_of_a_MAP_acceleration_enrichment_pump_shot._Stock_Value:_0xFF_(255_counts_-_completely_uncapped)._Tuning_Guidance:_In_stock_form,_Chrysler_left_this_ceiling_at_255_to_allow_full_maximum_pump_shot_delivery_on_violent_throttle_stabs.
     ;mpmapaxis y
     .byte 0xAA                       ;Point 1
 
@@ -2552,7 +2552,7 @@ AESLOP_DeltaMAPEnrichment_FromTemp2:
     ;mptblcname AESLOP
     ;mpxaxis Temp -200 260 degrees
     ;mpyaxis pwEnrich 0 255 uS/torr
-    ;mptbldesc AESLOP_defines_the_temperature-dependent_gain_curve_for_MAP-based_acceleration_enrichment_pump_shots._Increasing_AESLOP_Values:_Injects_more_fuel_on_quick_throttle_movements._Cures_lean_tip-in_stumbles,_backfiring_through_the_intake_manifold,_or_hesitations_upon_sudden_acceleration._Decreasing_AESLOP_Values:_Necessary_when_installing_larger_injectors._If_not_scaled_down,_large_injectors_will_cause_rich_bogging_and_black_puff_smoke_upon_every_throttle_punch.
+    ;mptbldesc AESLOP_defines_the_temperature-dependent_gain_curve_for_MAP-based_acceleration_enrichment_pump_shots._Increasing_AESLOP_Values:_Injects_more_fuel_on_quick_throttle_movements._Cures_lean_tip-in_stumbles,_backfiring_through_the_intake_manifold,_or_hesitations_upon_sudden_acceleration._Decreasing_AESLOP_Values:_Necessary_when_installing_larger_injectors.
     ;mpinjscale scale
     .byte 0x03                       ;Number of points in table
     .byte 0x58, 0x17, 0xFF, 0xD2     ;Point 1
@@ -2584,7 +2584,7 @@ POSTRG_PositiveTransientTriggerLevel:
     ;mptblcname POSTRG
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc POSTRG_sets_the_throttle_position_sensor_delta_trigger_threshold_(_DeltaTPS_)_required_to_fire_a_TPS_Acceleration_Enrichment_Pump_Shot._Stock_Value:_0x04_(_0.08_V_throttle_opening)._Lowering_POSTRG:_Increases_throttle_hair-trigger_response._If_set_too_sensitive_(e.g._1_count_/_0.02V),_foot_vibration_over_bumps_will_trigger_unintended_pump_shots._Raising_POSTRG:_Dulls_throttle_sensitivity,_requiring_a_deliberate_press_before_TPS_pump_shot_activates.
+    ;mptbldesc POSTRG_sets_the_throttle_position_sensor_delta_trigger_threshold_(_DeltaTPS_)_required_to_fire_a_TPS_Acceleration_Enrichment_Pump_Shot._Stock_Value:_0x04_(_0.08_V_throttle_opening)._Lowering_POSTRG:_Increases_throttle_hair-trigger_response._If_set_too_sensitive_(e.g._1_count_/_0.02V),_foot_vibration_over_bumps_will_trigger_unintended_pump_shots.
     .byte 0x04                       ;Point 1
 
 	;.org	0xc338
@@ -2627,7 +2627,7 @@ THRTCN_EnrichmentTime_FromTemp:
     ;mptblcname THRTCN
     ;mpxaxis Temp -200 260 degrees
     ;mpyaxis time_const 0 100 percent
-    ;mptbldesc THRTCN_defines_the_decay_time_constant_for_TPS-based_acceleration_enrichment._Following_a_throttle_opening_transient,_this_curve_dictates_how_long_the_TPS_fuel_shot_is_sustained_before_decaying_back_to_steady-state_fuel_delivery._It_ensures_smooth_transition_between_the_initial_throttle_stomp_and_steady-state_manifold_filling._Increasing_Table_Values:_Lengthens_the_duration_of_the_TPS_enrichment_pulse._Decreasing_Table_Values:_Shortens_duration,_making_throttle_response_snappier.
+    ;mptbldesc THRTCN_defines_the_decay_time_constant_for_TPS-based_acceleration_enrichment._Following_a_throttle_opening_transient,_this_curve_dictates_how_long_the_TPS_fuel_shot_is_sustained_before_decaying_back_to_steady-state_fuel_delivery._Increasing_Table_Values:_Lengthens_the_duration_of_the_TPS_enrichment_pulse._Decreasing_Table_Values:_Shortens_duration,_making_throttle_response_snappier.
     .byte 0x02                       ;Number of points in table
     .byte 0x74, 0x18, 0x00, 0x17     ;Point 1
     .byte 0xCD, 0x20                 ;Point 2
@@ -2655,7 +2655,7 @@ MINCTS_MinCoolantTempForPTE:
     ;mptblcname MINCTS
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis Y 0 255 out
-    ;mptbldesc MINCTS_sets_the_minimum_coolant_temperature_required_to_allow_Part_Throttle_Enrichment_(PTE)_flag_activation._On_cold_engines_(below_138_degF),_cold_warmup_enrichment_curves_(CURVEA/CURVEB)_already_deliver_substantial_supplemental_fuel._Stacking_PTE_on_top_of_full_cold_enrichment_would_cause_plug-fouling_richness._Stock_Setting:_0xB1_(_~_138_degF_)._Tuning_Guidance:_If_using_a_160_degF_thermostat,_ensure_MINCTS_is_not_set_above_operating_temperatures.
+    ;mptbldesc MINCTS_sets_the_minimum_coolant_temperature_required_to_allow_Part_Throttle_Enrichment_(PTE)_flag_activation._On_cold_engines_(below_138_degF),_cold_warmup_enrichment_curves_(CURVEA/CURVEB)_already_deliver_substantial_supplemental_fuel._Stock_Setting:_0xB1_(_~_138_degF_)._Tuning_Guidance:_If_using_a_160_degF_thermostat,_ensure_MINCTS_is_not_set_above_operating_temperatures.
     .byte 0xFF                       ;Point 1
 
 	;.org	0xc351
@@ -2681,7 +2681,7 @@ MINRPM_MinRPMforPTE:
     ;mptblcname MINRPM
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis Y 0 255 out
-    ;mptbldesc MINRPM_sets_the_minimum_engine_speed_required_to_activate_Part_Throttle_Enrichment._At_low_idle_speeds_(under_1120_RPM),_tip-in_fuel_delivery_is_managed_entirely_by_the_discrete_MAP_and_TPS_pump_shots_(AESLOP_/_POSSLP)._Stock_Value:_0x23_(_1120_RPM_)._Tuning_Guidance:_If_your_car_has_a_high-stall_torque_converter_or_aggressive_camshaft_that_idles_around_1100_RPM,_raise_MINRPM_slightly_(e.g.,_to_1250_RPM)_so_off-idle_blips_don't_trip_PTE_prematurely.
+    ;mptbldesc MINRPM_sets_the_minimum_engine_speed_required_to_activate_Part_Throttle_Enrichment._Stock_Value:_0x23_(_1120_RPM_)._Tuning_Guidance:_If_your_car_has_a_high-stall_torque_converter_or_aggressive_camshaft_that_idles_around_1100_RPM,_raise_MINRPM_slightly_(e.g.,_to_1250_RPM)_so_off-idle_blips_don't_trip_PTE_prematurely.
     .byte 0x23                       ;Point 1
 
 	;.org	0xc353
@@ -2789,7 +2789,7 @@ TestedAgainstMAPPressureDuringTransientCalc:
     ;mptblcname TESTEDAGAINSTMAPPRESSUREDURINGTRANSIENTCALC
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis psi 0 44.1 psi
-    ;mptbldesc TESTEDAGAINSTMAPPRESSUREDURINGTRANSIENTCALC_defines_the_manifold_pressure_transient_verification_threshold_used_during_full-throttle_(WOT)_transition_checks._When_the_driver_hits_full_throttle,_this_constant_ensures_that_manifold_absolute_pressure_is_genuinely_rising_in_unison_with_throttle_position_before_locking_in_WOT_power_enrichment_mode._Stock_Value:_0x0A_(_~_1.15_psi_)._Tuning_Guidance:_Protects_against_false_WOT_triggers_on_noisy_throttle_signals.
+    ;mptbldesc TESTEDAGAINSTMAPPRESSUREDURINGTRANSIENTCALC_defines_the_manifold_pressure_transient_verification_threshold_used_during_full-throttle_(WOT)_transition_checks._Stock_Value:_0x0A_(_~_1.15_psi_)._Tuning_Guidance:_Protects_against_false_WOT_triggers_on_noisy_throttle_signals.
     ;mpmapaxis y
     .byte 0x07                       ;Point 1
 
@@ -2803,7 +2803,7 @@ AISTRT_AisStartupPosition_FromTemp:
     ;mptblcname AISTRT
     ;mpxaxis Temp -200 260 degrees
     ;mpyaxis AIS_Open 0 255 steps
-    ;mptbldesc AISTRT_is_a_2D_lookup_table_that_establishes_the_open-loop_baseline_step_position_for_the_Automatic_Idle_Speed_(AIS)_stepper_motor_actuator_during_engine_cranking_and_initial_startup._Increasing_Table_Values:_Forces_the_AIS_motor_to_open_wider_during_startup._Use_this_if_the_engine_stumbles,_catches_sluggishly,_or_fails_to_catch_cleanly_when_cold,_especially_with_large_camshafts,_heavy_valve_springs,_or_E85_fuels_requiring_additional_cranking_airflow.
+    ;mptbldesc AISTRT_is_a_2D_lookup_table_that_establishes_the_open-loop_baseline_step_position_for_the_Automatic_Idle_Speed_(AIS)_stepper_motor_actuator_during_engine_cranking_and_initial_startup._Increasing_Table_Values:_Forces_the_AIS_motor_to_open_wider_during_startup.
     .byte 0x05                       ;Number of points in table
     .byte 0x6E, 0x9B, 0xFB, 0xAF     ;Point 1
     .byte 0x87, 0x2F, 0xFF, 0x76     ;Point 2
@@ -2834,7 +2834,7 @@ STTIME_AdditionalStartupIdleTime:
     ;mptblcname STTIME
     ;mpxaxis X 0 255 in
     ;mpyaxis Y 0 255 out
-    ;mptbldesc STTIME_sets_the_time_duration_during_which_the_startup_idle_flare_adder_(DRIDHT)_is_added_to_the_base_target_idle_speed._Increasing_STTIME:_Extends_the_post-start_elevated_idle_period._Useful_for_cold-start_stability_in_freezing_climates_or_with_large_injectors_where_fuel_puddling_requires_extra_time_to_establish_a_steady_wall_film._Decreasing_STTIME:_Shortens_the_flare_period,_allowing_the_engine_to_return_to_normal_base_idle_faster._Stock_Value:_0x0B_(~1.1_seconds).
+    ;mptbldesc STTIME_sets_the_time_duration_during_which_the_startup_idle_flare_adder_(DRIDHT)_is_added_to_the_base_target_idle_speed._Increasing_STTIME:_Extends_the_post-start_elevated_idle_period._Useful_for_cold-start_stability_in_freezing_climates_or_with_large_injectors_where_fuel_puddling_requires_extra_time_to_establish_a_steady_wall_film._Decreasing_STTIME:_Shortens_the_flare_period,_allowing_the_engine_to_return_to_normal_base_idle_faster.
     .byte 0x0B                       ;Point 1
 
 	;.org	0xc370
@@ -2862,7 +2862,7 @@ AISCLD_IdleSpeedDrive_FromTemp:
     ;mptblcname AISCLD
     ;mpxaxis Temp -200 260 degrees
     ;mpyaxis RPM 0 2048 rpm
-    ;mptbldesc AISCLD_defines_the_target_idle_speed_curve_across_engine_coolant_temperatures_when_an_automatic_transmission_is_engaged_in_gear_(Drive,_Reverse,_1st,_or_2nd)._Automatic_Trans_Conversions_/_Retuned_ATX:_If_running_an_automatic_calibration,_match_or_stagger_AISCLD_against_AISPN._If_shifting_into_Drive_causes_harsh_engagement_or_vehicle_lunging,_lower_AISCLD._If_shifting_into_Drive_stalls_the_engine_due_to_torque_converter_load,_raise_AISCLD_by_50-80_RPM.
+    ;mptbldesc AISCLD_defines_the_target_idle_speed_curve_across_engine_coolant_temperatures_when_an_automatic_transmission_is_engaged_in_gear_(Drive,_Reverse,_1st,_or_2nd)._Automatic_Trans_Conversions_/_Retuned_ATX:_If_running_an_automatic_calibration,_match_or_stagger_AISCLD_against_AISPN._If_shifting_into_Drive_causes_harsh_engagement_or_vehicle_lunging,_lower_AISCLD.
     .byte 0x02                       ;Number of points in table
     .byte 0x82, 0x93, 0xFF, 0x5D     ;Point 1
     .byte 0xCC, 0x64                 ;Point 2
@@ -2877,7 +2877,7 @@ CLDPOS_AisColdPosition_FromTemp:
     ;mptblcname CLDPOS
     ;mpxaxis Temp -200 260 degrees
     ;mpyaxis AIS_Open 0 2048 steps
-    ;mptbldesc CLDPOS_establishes_an_extra_off-idle_bypass_airflow_opening_based_on_engine_coolant_temperature._Cold_Stall_on_Decel_/_Clutch_In:_If_a_modified_engine_stalls_when_coming_to_a_stop_during_the_first_3-5_minutes_of_driving_before_full_warmup,_increase_the_values_in_CLDPOS_in_the_70_degF_-_140_degF_region._Cold_High_Idle_/_Hanging_RPM:_If_cold_off-idle_cruising_causes_engine_RPM_to_'hang'_or_refuse_to_drop_below_1,500_RPM_when_you_lift_off_the_accelerator,_reduce_the_step_values_in_CLDPOS.
+    ;mptbldesc CLDPOS_establishes_an_extra_off-idle_bypass_airflow_opening_based_on_engine_coolant_temperature._Cold_Stall_on_Decel_/_Clutch_In:_If_a_modified_engine_stalls_when_coming_to_a_stop_during_the_first_3-5_minutes_of_driving_before_full_warmup,_increase_the_values_in_CLDPOS_in_the_70_degF_-_140_degF_region.
     .byte 0x04                       ;Number of points in table
     .byte 0x6E, 0x78, 0xFC, 0x79     ;Point 1
     .byte 0x7F, 0x3C, 0xFF, 0x00     ;Point 2
@@ -2910,7 +2910,7 @@ THRPOS_AisPosition_FromThrottle:
     ;mptblcname THRPOS
     ;mpxaxis TPS 0 5 Volts
     ;mpyaxis out_desc 0 255 scale
-    ;mptbldesc THRPOS_acts_as_an_electronic_dashpot._Throttle_Snap_Stalling:_If_dropping_the_throttle_quickly_causes_the_engine_to_dip_below_idle_speed_and_die,_increase_THRPOS_values,_particularly_in_the_lower_throttle_angle_range_(0%_to_15%_throttle)._Hanging_Throttle_/_Slow_Decel:_If_the_vehicle_feels_like_cruise_control_is_stuck_on_when_lifting_off_the_gas,_or_if_the_RPM_takes_several_seconds_to_return_to_idle,_THRPOS_is_set_too_high_or_the_physical_throttle_body_has_excess_mechanical_leakage.
+    ;mptbldesc THRPOS_acts_as_an_electronic_dashpot._It_maps_throttle_position_above_closed-throttle_idle_(TpsVolts_-_MINTHR_LowestSessionTPS)_directly_to_a_target_AIS_stepper_motor_step_opening._Throttle_Snap_Stalling:_If_dropping_the_throttle_quickly_causes_the_engine_to_dip_below_idle_speed_and_die,_increase_THRPOS_values,_particularly_in_the_lower_throttle_angle_range_(0%_to_15%_throttle).
     .byte 0x04                       ;Number of points in table
     .byte 0x0F, 0x00, 0x00, 0x4C     ;Point 1
     .byte 0x19, 0x03, 0x00, 0x0E     ;Point 2
@@ -3124,7 +3124,7 @@ MAPFLR_AISAdditionToControlMap_FromRpm:
     ;mptblcname MAPFLR
     ;mpxaxis RPM 0 8192 rpm
     ;mpyaxis ScaledMAP 0 44.1 psi
-    ;mptbldesc MAPFLR_defines_a_target_manifold_absolute_pressure_floor_as_a_function_of_engine_RPM_(EngineRpm_HB)._During_closed-throttle_deceleration,_the_engine_acts_as_a_powerful_vacuum_pump._High_RPM_Decel_Backfire_/_Burble:_If_the_car_bangs_or_backfires_loudly_in_the_exhaust_when_letting_off_the_gas_at_high_RPM_(3,500_-_5,000_RPM),_raising_MAPFLR_forces_the_AIS_to_admit_more_bypass_air,_raising_manifold_pressure_and_preventing_extreme_vacuum_fuel_vaporization.
+    ;mptbldesc MAPFLR_defines_a_target_manifold_absolute_pressure_floor_as_a_function_of_engine_RPM_(EngineRpm_HB)._High_RPM_Decel_Backfire_/_Burble:_If_the_car_bangs_or_backfires_loudly_in_the_exhaust_when_letting_off_the_gas_at_high_RPM_(3,500_-_5,000_RPM),_raising_MAPFLR_forces_the_AIS_to_admit_more_bypass_air,_raising_manifold_pressure_and_preventing_extreme_vacuum_fuel_vaporization.
     ;mpmapaxis y
     .byte 0x03                       ;Number of points in table
     .byte 0x5E, 0x00, 0x00, 0x19     ;Point 1
@@ -3184,7 +3184,7 @@ DATHOT_EngineTempToStartCalibratingDacal:
     ;mptblcname DATHOT
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis Coolant_Temp -200 260 Deg
-    ;mptbldesc DATHOT_defines_the_minimum_engine_coolant_temperature_required_to_activate_DACAL_adaptive_learning._180_degF_/_160_degF_Thermostats:_This_is_a_major_calibration_trap!_Factory_stock_DATHOT_is_set_to_0xCD_(~195_degF)._If_a_tuner_installs_a_180_degF_or_160_degF_thermostat,_engine_coolant_temperature_will_hover_around_175_degF_-_185_degF,_meaning_CoolantTemp_NEVER_exceeds_DATHOT!_As_a_result,_the_ECU_will_NEVER_run_DACAL_adaptive_idle_learning,_causing_decel_hanging_or_dipping_over_time.
+    ;mptbldesc DATHOT_defines_the_minimum_engine_coolant_temperature_required_to_activate_DACAL_adaptive_learning._180_degF_/_160_degF_Thermostats:_This_is_a_major_calibration_trap!_Factory_stock_DATHOT_is_set_to_0xCD_(~195_degF)._If_a_tuner_installs_a_180_degF_or_160_degF_thermostat,_engine_coolant_temperature_will_hover_around_175_degF_-_185_degF,_meaning_CoolantTemp_NEVER_exceeds_DATHOT!
     .byte 0xCD                       ;Point 1
 
 	;.org	0xc453
@@ -3210,7 +3210,7 @@ DAACF_ACFactorDeltaFromBase:
     ;mptblcname DAACF
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc DAACF_is_a_calibrated_step_adder_that_is_combined_with_the_deceleration_airflow_base_calculation_whenever_the_A/C_clutch_is_engaged._Decel_Stall_with_A/C_On:_If_the_engine_idles_fine_with_A/C_on,_but_stalls_every_time_you_push_the_clutch_in_or_brake_to_a_stop_with_the_A/C_running,_increase_DAACF_(e.g._from_9_steps_to_14-18_steps)._Hanging_RPM_with_A/C_On:_If_deceleration_RPM_hangs_up_around_1,500_RPM_when_the_A/C_is_running_and_won't_drop,_reduce_DAACF.
+    ;mptbldesc DAACF_is_a_calibrated_step_adder_that_is_combined_with_the_deceleration_airflow_base_calculation_whenever_the_A/C_clutch_is_engaged._Decel_Stall_with_A/C_On:_If_the_engine_idles_fine_with_A/C_on,_but_stalls_every_time_you_push_the_clutch_in_or_brake_to_a_stop_with_the_A/C_running,_increase_DAACF_(e.g._from_9_steps_to_14-18_steps).
     .byte 0x09                       ;Point 1
 
 	;.org	0xc455
@@ -3249,7 +3249,7 @@ DCALRT_DacalUpdateRate01_03_07_0f_1f_3f_7f_ff:
     ;mptblcname DCALRT
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc DCALRT_is_a_timing_filter_bitmask_applied_against_Counter_MainLoop1_that_controls_how_frequently_the_DACAL_adaptive_countdown_timer_can_increment_or_decrement._Adaptive_airflow_learning_must_be_gradual._Valid_Bitmask_Patterns:_Permissible_values_correspond_to_power-of-two_bit_patterns_(0x01,_0x03,_0x07,_0x0F,_0x1F,_0x3F,_0x7E,_0x7F,_0xFF)._Faster_Learning:_Decreasing_bitmask_density_causes_the_adaptive_decel_timer_to_adapt_more_rapidly_to_mechanical_throttle_stop_changes.
+    ;mptbldesc DCALRT_is_a_timing_filter_bitmask_applied_against_Counter_MainLoop1_that_controls_how_frequently_the_DACAL_adaptive_countdown_timer_can_increment_or_decrement._Valid_Bitmask_Patterns:_Permissible_values_correspond_to_power-of-two_bit_patterns_(0x01,_0x03,_0x07,_0x0F,_0x1F,_0x3F,_0x7E,_0x7F,_0xFF)._Faster_Learning:_Decreasing_bitmask_density_causes_the_adaptive_decel_timer_to_adapt_more_rapidly_to_mechanical_throttle_stop_changes.
     .byte 0x7E                       ;Point 1
 
 	;.org	0xc458
@@ -3301,7 +3301,7 @@ DLYTIM_AisDelayAfterThrottleClosesWhenMoving:
     ;mptblcname DLYTIM
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis Time 0 2.8 sec
-    ;mptbldesc DLYTIM_defines_a_settling_time_delay_loaded_into_Timer_CountdownFromStartRunForAisFeedback_whenever_the_throttle_snaps_shut_while_the_vehicle_is_in_motion_(_>_MPHREF_,_approx_6_MPH)._When_decelerating_while_moving,_the_engine_needs_time_to_coast_down_smoothly_under_dashpot_control._Driveline_Jerk_on_Decel:_If_letting_off_the_gas_while_cruising_causes_an_immediate_jerk_or_'thud'_as_the_engine_braking_kicks_in,_increasing_DLYTIM_extends_the_smooth_dashpot_transition.
+    ;mptbldesc DLYTIM_defines_a_settling_time_delay_loaded_into_Timer_CountdownFromStartRunForAisFeedback_whenever_the_throttle_snaps_shut_while_the_vehicle_is_in_motion_(_>_MPHREF_,_approx_6_MPH)._Driveline_Jerk_on_Decel:_If_letting_off_the_gas_while_cruising_causes_an_immediate_jerk_or_'thud'_as_the_engine_braking_kicks_in,_increasing_DLYTIM_extends_the_smooth_dashpot_transition.
     .byte 0x17                       ;Point 1
 
 	;.org	0xc45c
@@ -3467,7 +3467,7 @@ BTVAIS_MinVoltageForAis:
     ;mptblcname BTVAIS
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc BTVAIS_is_a_critical_electrical_protection_threshold_that_guards_the_AIS_stepper_motor_and_ECU_hardware_against_low_system_voltage._Stock_Value:_0x71_(113_decimal_=_approximately_10.5_Volts)._Low-Voltage_Tuning_/_Relocated_Batteries:_Do_not_lower_BTVAIS_below_10.0V._If_an_aftermarket_trunk-mounted_battery_or_undersized_racing_battery_causes_voltage_sag_during_cranking,_keeping_BTVAIS_at_stock_ensures_the_ECU_does_not_lose_stepper_step_count_synchronization.
+    ;mptbldesc BTVAIS_is_a_critical_electrical_protection_threshold_that_guards_the_AIS_stepper_motor_and_ECU_hardware_against_low_system_voltage._The_Chrysler_AIS_unit_is_a_4-wire_bipolar_stepper_motor_that_draws_substantial_coil_current_through_the_ECU's_internal_quad-driver_circuitry._Stock_Value:_0x71_(113_decimal_=_approximately_10.5_Volts)._Low-Voltage_Tuning_/_Relocated_Batteries:_Do_not_lower_BTVAIS_below_10.0V.
     .byte 0x71                       ;Point 1
 
 L2529:
@@ -3514,7 +3514,7 @@ DCLRF2_TimeBetweenAisPulsesForDecelAis2:
     ;mptblcname DCLRF2
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis Time 0 2.8 Sec
-    ;mptbldesc DCLRF2_establishes_the_settling_time_interval_between_successive_stepper_motor_corrections_while_operating_in_closed-loop_idle_speed_control._Once_the_ECU_enters_closed-loop_idle_feedback,_it_evaluates_whether_actual_engine_RPM_matches_target_idle_speed._Idle_Hunting_/_Cyclic_Surging:_If_the_engine_surges_up_and_down_rhythmically_at_idle_(750_RPM_->_1,100_RPM_->_750_RPM_every_1-2_seconds),_the_idle_control_loop_is_reacting_too_fast._Increasing_DCLRF2_dampens_the_closed-loop_response.
+    ;mptbldesc DCLRF2_establishes_the_settling_time_interval_between_successive_stepper_motor_corrections_while_operating_in_closed-loop_idle_speed_control._Idle_Hunting_/_Cyclic_Surging:_If_the_engine_surges_up_and_down_rhythmically_at_idle_(750_RPM_->_1,100_RPM_->_750_RPM_every_1-2_seconds),_the_idle_control_loop_is_reacting_too_fast._Increasing_DCLRF2_dampens_the_closed-loop_response.
     .byte 0x3F                       ;Point 1
 
 	;.org	0xc48f
@@ -3527,7 +3527,7 @@ AISHLM_AisHighLimitMaxOpenSteps:
     ;mptblcname AISHLM
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc AISHLM_enforces_an_absolute_mechanical_protection_ceiling_on_the_AIS_stepper_motor_position._The_physical_Chrysler_AIS_stepper_motor_has_a_finite_linear_stroke_(approximately_230_to_240_steps_of_total_travel)._Safety_Critical:_NEVER_increase_AISHLM_above_225_steps._Exceeding_mechanical_travel_will_jam_the_stepper_motor_pintle,_requiring_throttle_body_disassembly_or_motor_replacement._Aftermarket_Throttle_Bodies:_Some_aftermarket_throttle_bodies_have_shallower_bypass_cavities.
+    ;mptbldesc AISHLM_enforces_an_absolute_mechanical_protection_ceiling_on_the_AIS_stepper_motor_position._Safety_Critical:_NEVER_increase_AISHLM_above_225_steps._Exceeding_mechanical_travel_will_jam_the_stepper_motor_pintle,_requiring_throttle_body_disassembly_or_motor_replacement._Aftermarket_Throttle_Bodies:_Some_aftermarket_throttle_bodies_have_shallower_bypass_cavities.
     .byte 0xDC                       ;Point 1
 
 	;.org	0xc490
@@ -3566,7 +3566,7 @@ WSGRPM_AllowedBoost_FromRpm:
     ;mptblcname WSGRPM
     ;mpxaxis RPM 0 8192 rpm
     ;mpyaxis Boost 0 44.1 psi
-    ;mptbldesc WSGRPM_defines_the_baseline_target_boost_pressure_curve_as_a_function_of_engine_RPM._Target_vs._Actual_Boost:_WSGRPM_sets_the_target_goal_(in_psi_above_baro)._The_wastegate_duty_cycle_algorithm_(DCWOT)_modulates_the_wastegate_solenoid_to_bring_manifold_absolute_pressure_up_to_match_this_target_plus_barometric_pressure._Raising_WSGRPM:_Increases_targeted_boost_pressure._To_raise_boost_to_14_psi,_18_psi,_or_higher,_raise_the_Y-axis_boost_values_in_WSGRPM.
+    ;mptbldesc WSGRPM_defines_the_baseline_target_boost_pressure_curve_as_a_function_of_engine_RPM._Target_vs._Actual_Boost:_WSGRPM_sets_the_target_goal_(in_psi_above_baro)._The_wastegate_duty_cycle_algorithm_(DCWOT)_modulates_the_wastegate_solenoid_to_bring_manifold_absolute_pressure_up_to_match_this_target_plus_barometric_pressure._Raising_WSGRPM:_Increases_targeted_boost_pressure.
     ;mpmapaxis y
     .byte 0x02                       ;Number of points in table
     .byte 0x47, 0x45, 0x00, 0x00     ;Point 1
@@ -3582,7 +3582,7 @@ WSGTIM_AllowedBoost_FromTime:
     ;mptblcname WSGTIM
     ;mpxaxis Time 0 0.72 Sec
     ;mpyaxis Boost 0 44.1 psi
-    ;mptbldesc WSGTIM_limits_target_boost_pressure_as_a_function_of_sustained_time_in_boost._Stock_Setting:_Flat_12.1_psi_(0x69)._In_the_A171_manual_calibration,_Chrysler_chose_not_to_taper_boost_over_time,_keeping_the_limit_flat._Tuning_Guidance:_If_you_raise_WSGRPM_for_higher_boost_(e.g._18_psi),_you_must_also_raise_WSGTIM_to_at_least_18_psi._Because_the_ECU_enforces_the_lowest_value_between_all_target_tables,_leaving_WSGTIM_at_12.1_psi_will_cap_your_boost_to_12.1_psi!
+    ;mptbldesc WSGTIM_limits_target_boost_pressure_as_a_function_of_sustained_time_in_boost._Stock_Setting:_Flat_12.1_psi_(0x69)._In_the_A171_manual_calibration,_Chrysler_chose_not_to_taper_boost_over_time,_keeping_the_limit_flat._Tuning_Guidance:_If_you_raise_WSGRPM_for_higher_boost_(e.g._18_psi),_you_must_also_raise_WSGTIM_to_at_least_18_psi.
     ;mpmapaxis y
     .byte 0x01                       ;Number of points in table
     .byte 0xFF, 0xFF                 ;Point 1
@@ -3647,7 +3647,7 @@ MXSBST_AllowedBoost_FromSpeed:
     ;mptblcname MXSBST
     ;mpxaxis Speed 0 128 mph
     ;mpyaxis Boost 0 44.1 psi
-    ;mptbldesc MXSBST_implements_vehicle_speed-dependent_boost_limiting_(gear-based_/_traction_boost_limiting)._In_front-wheel-drive_Chrysler_turbo_vehicles,_hitting_full_12+_psi_boost_in_1st_gear_causes_uncontrollable_wheelspin_and_violent_torque_steer._1st_Gear_Launch_Traction:_Excellent_tool_for_dialing_in_launch_traction_on_high-horsepower_street_cars._Manual_vs._Automatic:_On_manual_transmission_calibrations,_if_the_Park/Neutral_switch_or_speed_flag_is_grounded,_this_limiter_may_be_bypassed.
+    ;mptbldesc MXSBST_implements_vehicle_speed-dependent_boost_limiting_(gear-based_/_traction_boost_limiting)._1st_Gear_Launch_Traction:_Excellent_tool_for_dialing_in_launch_traction_on_high-horsepower_street_cars._Manual_vs._Automatic:_On_manual_transmission_calibrations,_if_the_Park/Neutral_switch_or_speed_flag_is_grounded,_this_limiter_may_be_bypassed.
     ;mpmapaxis y
     .byte 0x02                       ;Number of points in table
     .byte 0x0B, 0x80, 0x00, 0x00     ;Point 1
@@ -3663,7 +3663,7 @@ WSGPRT_AllowedBoostPartThrottle_FromThrottle:
     ;mptblcname WSGPRT
     ;mpxaxis in 0 255 in
     ;mpyaxis Boost 0 44.1 psi
-    ;mptbldesc WSGPRT_establishes_the_maximum_target_boost_ceiling_permitted_when_the_engine_is_operating_at_part_throttle._Full_boost_should_only_be_available_when_the_driver's_foot_is_mashed_to_Wide-Open_Throttle._Stock_Value:_0x3F_(_7.2_psig_)._Part_Throttle_Drivability:_Keeps_the_car_smooth_and_controllable_when_passing_without_needing_to_downshift_or_floor_the_pedal._Tuning_Guidance:_If_you_want_more_responsive_passing_power_at_60-75%_throttle_without_flooring_it,_raise_WSGPRT_to_9-10_psi.
+    ;mptbldesc WSGPRT_establishes_the_maximum_target_boost_ceiling_permitted_when_the_engine_is_operating_at_part_throttle._Stock_Value:_0x3F_(_7.2_psig_)._Part_Throttle_Drivability:_Keeps_the_car_smooth_and_controllable_when_passing_without_needing_to_downshift_or_floor_the_pedal._Tuning_Guidance:_If_you_want_more_responsive_passing_power_at_60-75%_throttle_without_flooring_it,_raise_WSGPRT_to_9-10_psi.
     ;mpmapaxis y
     .byte 0x45                       ;Point 1
 
@@ -3677,7 +3677,7 @@ RESFAC_BoostMapCorrectionResponseFactor:
     ;mptblcname RESFAC
     ;mpxaxis DeltaBoost -14.7 29.4 psi
     ;mpyaxis Factor 0 1 factor
-    ;mptbldesc RESFAC_defines_the_proportional_closed-loop_response_gain_for_wastegate_duty_cycle_correction._When_actual_manifold_pressure_deviates_from_target_boost_(_Delta_Boost_=_Actual_-_Target_),_the_closed-loop_wastegate_controller_must_modulate_duty_cycle_to_eliminate_the_error._Boost_Stability_vs._Hunting:_Higher_values_speed_up_wastegate_correction,_reducing_initial_boost_spike/overshoot._If_set_too_high,_the_wastegate_solenoid_will_oscillate,_causing_audible_flutter_and_boost_surge.
+    ;mptbldesc RESFAC_defines_the_proportional_closed-loop_response_gain_for_wastegate_duty_cycle_correction._Boost_Stability_vs._Hunting:_Higher_values_speed_up_wastegate_correction,_reducing_initial_boost_spike/overshoot._If_set_too_high,_the_wastegate_solenoid_will_oscillate,_causing_audible_flutter_and_boost_surge.
     ;mpmapaxis x
     .byte 0x02                       ;Number of points in table
     .byte 0x61, 0x06, 0xFF, 0x74     ;Point 1
@@ -3709,7 +3709,7 @@ DCWOT_FullThrottleWastegateDutyCycle_C8is100Percent_FromMap:
     ;mptblcname DCWOT
     ;mpxaxis TargetBoost 0 44.1 psi
     ;mpyaxis Duty_Cycle 0 128 percent
-    ;mptbldesc DCWOT_is_the_primary_feed-forward_(open-loop_baseline)_wastegate_duty_cycle_curve_used_by_the_Chrysler_boost_control_system._Scaling_Mechanics:_Duty_cycle_is_scaled_from_0_to_200_counts_(0x00_=_0%,_0xC8_=_100%,_1_count_=_0.5%)._Tuning_for_Higher_Boost:_When_raising_boost_targets_in_WSGRPM,_you_must_ensure_DCWOT_provides_sufficient_duty_cycle_to_hold_that_boost._If_the_turbo_cannot_reach_target_boost_despite_raising_target_tables,_raise_the_duty_cycle_values_in_DCWOT.
+    ;mptbldesc DCWOT_is_the_primary_feed-forward_(open-loop_baseline)_wastegate_duty_cycle_curve_used_by_the_Chrysler_boost_control_system._Scaling_Mechanics:_Duty_cycle_is_scaled_from_0_to_200_counts_(0x00_=_0%,_0xC8_=_100%,_1_count_=_0.5%)._Tuning_for_Higher_Boost:_When_raising_boost_targets_in_WSGRPM,_you_must_ensure_DCWOT_provides_sufficient_duty_cycle_to_hold_that_boost.
     ;mpmapaxis x
     .byte 0x05                       ;Number of points in table
     .byte 0x20, 0xC8, 0xF5, 0x39     ;Point 1
@@ -3742,7 +3742,7 @@ MAPOFS_BoostMapOffsetForDCWOT:
     ;mptblcname MAPOFS
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis Y 0 255 out
-    ;mptbldesc MAPOFS_establishes_the_manifold_pressure_threshold_below_target_boost_where_wastegate_solenoid_closed-loop_modulation_begins._While_manifold_pressure_is_far_below_the_boost_target_(e.g._during_initial_spool-up),_the_wastegate_should_remain_clamped_100%_shut_to_achieve_the_fastest_possible_spool._Stock_Value:_0x17_(_~_2.65_psi_)._Faster_Spool:_Keeping_MAPOFS_around_2-3_psi_ensures_the_wastegate_stays_clamped_shut_right_up_until_the_turbo_is_within_striking_distance_of_the_boost_target.
+    ;mptbldesc MAPOFS_establishes_the_manifold_pressure_threshold_below_target_boost_where_wastegate_solenoid_closed-loop_modulation_begins._Stock_Value:_0x17_(_~_2.65_psi_)._Faster_Spool:_Keeping_MAPOFS_around_2-3_psi_ensures_the_wastegate_stays_clamped_shut_right_up_until_the_turbo_is_within_striking_distance_of_the_boost_target.
     .byte 0x17                       ;Point 1
 
 	;.org	0xc51e
@@ -3872,7 +3872,7 @@ KDCMIN_WastegateDutyCycleIncreaseMinWhenKnocking:
     ;mptblcname KDCMIN
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc KDCMIN_defines_the_minimum_baseline_duty_cycle_reduction_applied_immediately_upon_the_onset_of_persistent_boost_knock._When_knock-driven_boost_reduction_engages,_dropping_only_a_fraction_of_a_percent_would_take_too_long_to_save_the_engine._KDCMIN_forces_an_immediate_minimum_drop_of_6.0%_duty_cycle_(0x0C),_delivering_an_instant_initial_reduction_in_boost_pressure._Stock_Value:_0x0C_(6.0%_initial_drop)._Tuning_Guidance:_Provides_immediate_physical_relief_to_knocking_cylinders.
+    ;mptbldesc KDCMIN_defines_the_minimum_baseline_duty_cycle_reduction_applied_immediately_upon_the_onset_of_persistent_boost_knock._When_knock-driven_boost_reduction_engages,_dropping_only_a_fraction_of_a_percent_would_take_too_long_to_save_the_engine._Stock_Value:_0x0C_(6.0%_initial_drop)._Tuning_Guidance:_Provides_immediate_physical_relief_to_knocking_cylinders.
     .byte 0x0C                       ;Point 1
 
 	;.org	0xc528
@@ -3952,7 +3952,7 @@ INCPT_AdaptiveIncAfterThisTime:
     ;mptblcname INCPT
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc INCPT_defines_the_dwell_time_in_boost_error_counts_that_underboost_must_persist_before_adaptive_wastegate_duty_cycle_is_incremented._Prevents_transient_turbo_spool_delay_from_prematurely_adapting_the_wastegate_duty_cycle_upward._The_underboost_condition_must_persist_steadily_for_INCPT_counts_before_the_ECU_adds_a_permanent_duty_cycle_correction._Stock_Value:_0x0A_(10_counts)._Tuning_Guidance:_Keeps_adaptive_boost_trims_stable_and_immune_to_momentary_spool_lag.
+    ;mptbldesc INCPT_defines_the_dwell_time_in_boost_error_counts_that_underboost_must_persist_before_adaptive_wastegate_duty_cycle_is_incremented._Prevents_transient_turbo_spool_delay_from_prematurely_adapting_the_wastegate_duty_cycle_upward._Stock_Value:_0x0A_(10_counts)._Tuning_Guidance:_Keeps_adaptive_boost_trims_stable_and_immune_to_momentary_spool_lag.
     .byte 0x0A                       ;Point 1
 
 	;.org	0xc52e
@@ -4071,7 +4071,7 @@ MPSHFT_OverboostFuelShutoffEnablePointFromMap_Timer:
     ;mptblcname MPSHFT
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis Boost 0 44.1 psi
-    ;mptbldesc MPSHFT_establishes_the_timed_overboost_fuel_shutoff_threshold._Stock_Value:_0x76_(_13.6_psig_)._The_"Hitting_a_Brick_Wall"_Sensation:_When_modifying_a_Chrysler_turbo_car_with_a_manual_bleed_valve_or_aftermarket_boost_controller,_hitting_14_psi_triggers_the_overboost_fuel_cut,_causing_the_car_to_violently_buck_forward._Raising_for_More_Boost:_When_tuning_for_15+_psi_boost,_you_must_raise_MPSHFT_(e.g._to_18-20_psi,_or_0xFF_to_disable)_so_higher_boost_targets_can_be_sustained.
+    ;mptbldesc MPSHFT_establishes_the_timed_overboost_fuel_shutoff_threshold._Stock_Value:_0x76_(_13.6_psig_)._The_"Hitting_a_Brick_Wall"_Sensation:_When_modifying_a_Chrysler_turbo_car_with_a_manual_bleed_valve_or_aftermarket_boost_controller,_hitting_14_psi_triggers_the_overboost_fuel_cut,_causing_the_car_to_violently_buck_forward.
     ;mpmapaxis y
     .byte 0x97                       ;Point 1
 
@@ -4085,7 +4085,7 @@ MPSHFA_OverboostFuelShutoffEnablePointFromMap_Absolute:
     ;mptblcname MPSHFA
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis Boost 0 44.1 psi
-    ;mptbldesc MPSHFA_defines_the_instantaneous_hard_overboost_ceiling_offset._While_moderate_overboost_(MPSHFT)_waits_for_a_delay_timer_to_allow_harmless_momentary_pressure_spikes,_extreme_runaway_overboost_requires_instant_intervention._Stock_Value:_0x1A_(_3.0_psi_above_MPSHFT)._Absolute_Failsafe:_Hard_stop_protecting_against_catastrophic_boost_spikes._Tuning_Guidance:_When_raising_MPSHFT,_ensure_MPSHFA_is_adjusted_appropriately,_or_set_MPSHFT_=_0xFF_to_disable_both_stages.
+    ;mptbldesc MPSHFA_defines_the_instantaneous_hard_overboost_ceiling_offset._Stock_Value:_0x1A_(_3.0_psi_above_MPSHFT)._Absolute_Failsafe:_Hard_stop_protecting_against_catastrophic_boost_spikes._Tuning_Guidance:_When_raising_MPSHFT,_ensure_MPSHFA_is_adjusted_appropriately,_or_set_MPSHFT_=_0xFF_to_disable_both_stages.
     ;mpmapaxis y
     .byte 0x0C                       ;Point 1
 
@@ -4205,7 +4205,7 @@ BRPML2_BaroReadLowRPM18002:
     ;mptblcname BRPML2
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis RPM 0 16384 rpm
-    ;mptbldesc BRPML2_defines_the_minimum_engine_speed_(stock_calibration_=_1,800_RPM_/_0x1C20)_required_to_execute_an_in-flight_barometric_pressure_read._Stock_Setting:_0x1C20_(1,800_RPM)._Preventing_Low-Speed_Baro_Cycling:_Solenoid_clicks_during_slow_city_driving_can_occasionally_cause_tiny_manifold_pressure_dips._Keeping_BRPML2_at_or_above_1,800_RPM_ensures_the_baro_solenoid_only_cycles_during_highway_cruising_where_intake_airflow_momentum_absorbs_the_momentary_vent_pulse_seamlessly.
+    ;mptbldesc BRPML2_defines_the_minimum_engine_speed_(stock_calibration_=_1,800_RPM_/_0x1C20)_required_to_execute_an_in-flight_barometric_pressure_read._Stock_Setting:_0x1C20_(1,800_RPM)._Preventing_Low-Speed_Baro_Cycling:_Solenoid_clicks_during_slow_city_driving_can_occasionally_cause_tiny_manifold_pressure_dips.
     .word 0x1770                     ;Point 1
 
 	;.org	0xc542
@@ -4231,7 +4231,7 @@ BRDLAY_BaroReadDelayAfterThrottleClosed2sec:
     ;mptblcname BRDLAY
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis Time 0 2.8 sec
-    ;mptbldesc BRDLAY_establishes_the_settling_time_delay_(stock_calibration_=_45_ticks_/_~2.0_seconds)_that_the_engine_must_remain_in_a_stable,_closed-throttle_state_within_the_valid_RPM_window_before_the_baro_read_solenoid_is_energized._Stock_Value:_0x2D_(~2.0_seconds)._Transient_Resistance:_Increasing_BRDLAY_makes_the_system_more_conservative,_requiring_longer_settled_periods_before_taking_a_reading._Setting_too_low_can_cause_baro_readings_to_be_triggered_during_erratic_pedal_movement.
+    ;mptbldesc BRDLAY_establishes_the_settling_time_delay_(stock_calibration_=_45_ticks_/_~2.0_seconds)_that_the_engine_must_remain_in_a_stable,_closed-throttle_state_within_the_valid_RPM_window_before_the_baro_read_solenoid_is_energized._Stock_Value:_0x2D_(~2.0_seconds)._Transient_Resistance:_Increasing_BRDLAY_makes_the_system_more_conservative,_requiring_longer_settled_periods_before_taking_a_reading.
     .byte 0x17                       ;Point 1
 
 	;.org	0xc545
@@ -4270,7 +4270,7 @@ BRCLTM_BaroReadDelayAfterSolenoidClosedTenthSec:
     ;mptblcname BRCLTM
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis Time 0 2.8 sec
-    ;mptbldesc BRCLTM_defines_the_required_pneumatic_recovery_delay_(stock_calibration_=_5_tenths_of_a_second_/_0.50_sec)_following_the_de-energization_(closure)_of_the_barometric_read_solenoid._Stock_Value:_0x05_(0.50_seconds)._Extended_Vacuum_Routing:_If_the_MAP_sensor_is_installed_far_from_the_intake_plenum_with_long_rubber/silicone_hoses,_increasing_BRCLTM_to_0x07_or_0x08_gives_the_intake_vacuum_additional_time_to_evacuate_the_line_before_fuel_and_spark_calculations_read_the_sensor.
+    ;mptbldesc BRCLTM_defines_the_required_pneumatic_recovery_delay_(stock_calibration_=_5_tenths_of_a_second_/_0.50_sec)_following_the_de-energization_(closure)_of_the_barometric_read_solenoid._During_an_in-flight_baro_reading,_the_solenoid_vents_the_MAP_sensor_chamber_to_atmospheric_air._Once_the_reading_is_captured_into_RAM,_the_solenoid_de-energizes,_reconnecting_the_sensor_port_to_the_intake_manifold_vacuum_runner._Stock_Value:_0x05_(0.50_seconds).
     .byte 0x05                       ;Point 1
 
 	;.org	0xc548
@@ -4283,7 +4283,7 @@ BAROHI_BaroReadValidHighLimit:
     ;mptblcname BAROHI
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis Baro -14.7 29.4 psi
-    ;mptbldesc BAROHI_establishes_the_upper_physical_and_electrical_sanity_boundary_for_atmospheric_barometric_pressure._3-Bar_MAP_Sensor_Upgrades:_When_converting_from_a_factory_2-Bar_MAP_sensor_to_a_3-Bar_sensor,_the_sensor_transfer_slope_changes_dramatically._If_using_custom_scaling,_BAROHI_must_be_adjusted_to_match_the_new_3-Bar_voltage_transfer_curve,_otherwise_valid_ambient_air_pressures_will_exceed_BAROHI_and_force_the_ECU_permanently_into_default_baro_limp_mode_(BARDFT).
+    ;mptbldesc BAROHI_establishes_the_upper_physical_and_electrical_sanity_boundary_for_atmospheric_barometric_pressure._Under_real-world_meteorological_conditions_on_Earth,_ambient_sea-level_barometric_pressure_rarely_exceeds_30.5_-_31.0_inHg_(even_inside_high-pressure_cold_Arctic_air_masses)._3-Bar_MAP_Sensor_Upgrades:_When_converting_from_a_factory_2-Bar_MAP_sensor_to_a_3-Bar_sensor,_the_sensor_transfer_slope_changes_dramatically.
     ;mpmapaxis y
     .byte 0x59                       ;Point 1
 
@@ -4297,7 +4297,7 @@ BAROLO_BaroReadValidLowLimit:
     ;mptblcname BAROLO
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis Baro -14.7 29.4 psi
-    ;mptbldesc BAROLO_establishes_the_lower_physical_and_electrical_sanity_limit_for_atmospheric_barometric_pressure._Even_at_extreme_drivable_elevations_(such_as_the_summit_of_Pikes_Peak_at_14,115_feet),_ambient_atmospheric_pressure_hovers_around_17.8_-_18.0_inHg_(~60_kPa)._Pikes_Peak_/_Extreme_High_Altitude_Racing:_Stock_BAROLO_permits_operation_up_to_~15,000_feet._If_operating_specialized_vehicles_at_extreme_altitudes,_verify_that_raw_baro_readings_do_not_dip_below_BAROLO.
+    ;mptbldesc BAROLO_establishes_the_lower_physical_and_electrical_sanity_limit_for_atmospheric_barometric_pressure._Pikes_Peak_/_Extreme_High_Altitude_Racing:_Stock_BAROLO_permits_operation_up_to_~15,000_feet._If_operating_specialized_vehicles_at_extreme_altitudes,_verify_that_raw_baro_readings_do_not_dip_below_BAROLO.
     ;mpmapaxis y
     .byte 0x2E                       ;Point 1
 
@@ -4364,7 +4364,7 @@ ErrorCodeBitMask0:
     ;mptblcname ERMSK0
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc ERMSK0_is_the_first_of_four_diagnostic_fault_masking_bytes_that_govern_whether_detected_hardware_anomalies_are_logged_into_non-volatile_error_memory_(ErrorBitRegisterStored0)._Disabling_Nuisance_Fault_Codes:_If_a_modified_engine_has_deleted_certain_emissions_components_or_sensor_circuits,_clearing_specific_bits_in_ERMSK0_stops_the_ECU_from_logging_those_error_codes_into_memory_or_flashing_them_on_the_Check_Engine_light._Stock_Value:_0xFF_(all_bits_enabled_in_this_byte).
+    ;mptbldesc ERMSK0_is_the_first_of_four_diagnostic_fault_masking_bytes_that_govern_whether_detected_hardware_anomalies_are_logged_into_non-volatile_error_memory_(ErrorBitRegisterStored0)._Disabling_Nuisance_Fault_Codes:_If_a_modified_engine_has_deleted_certain_emissions_components_or_sensor_circuits,_clearing_specific_bits_in_ERMSK0_stops_the_ECU_from_logging_those_error_codes_into_memory_or_flashing_them_on_the_Check_Engine_light.
     ;mpchoices 54_DistSync  53_Checksum  52_StuckRich  51_StuckLean  47_LowVoltage  46_HighVoltage  45_Overboost  44_LostFJ2
     .byte 0xFF                       ;Point 1
 
@@ -4403,7 +4403,7 @@ ErrorCodeBitMask3:
     ;mptblcname ERMSK3
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc ERMSK3_is_the_fourth_diagnostic_trouble_code_mask,_governing_alternator_field_control_(Code_41),_automatic_shutdown_driver_(Code_42),_ignition_coil_primary_driver_(Code_44),_and_ROM_checksum_self-test_integrity_(Code_53)._External_Alternator_Regulators:_If_an_external_high-amp_racing_alternator_with_its_own_mechanical/internal_voltage_regulator_is_installed,_clearing_the_field_fault_bit_in_ERMSK3_prevents_the_ECU_from_setting_charging_system_fault_codes.
+    ;mptbldesc ERMSK3_is_the_fourth_diagnostic_trouble_code_mask,_governing_alternator_field_control_(Code_41),_automatic_shutdown_driver_(Code_42),_ignition_coil_primary_driver_(Code_44),_and_ROM_checksum_self-test_integrity_(Code_53)._Stock_calibration_sets_ERMSK3_to_0xFF_(all_faults_enabled),_ensuring_complete_system_monitoring_of_the_power_generation_and_ignition_circuits.
     ;mpchoices 21_O2Sensor  17_EngineTooCool  16_BattVoltageSense  15_DistanceSensor  14_MapElectrical  13_MapPneumatic  12_MemPowerLost  11_NotCranked
     .byte 0xFF                       ;Point 1
 
@@ -4430,7 +4430,7 @@ TTEMPL_TstatDiagnosticsMinTempToArmDiagnosticsAtStartup:
     ;mptblcname TTEMPL
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis Coolant_Temp -200 260 deg
-    ;mptbldesc TTEMPL_defines_the_lower_temperature_boundary_(stock_calibration_=_0x63_/_~70_degF)_required_for_the_ECU_to_arm_the_onboard_thermostat_functional_diagnostic_monitor_(Timer_ThermostatDiagnostics)._The_thermostat_diagnostic_routine_checks_whether_the_engine_warms_up_to_operating_temperature_within_a_reasonable_time_window._Cold_Climate_Tuning:_In_freezing_climates,_keeping_TTEMPL_at_stock_(~70_degF)_ensures_that_cold_winter_starts_do_not_trigger_false_Code_17_trouble_codes.
+    ;mptbldesc TTEMPL_defines_the_lower_temperature_boundary_(stock_calibration_=_0x63_/_~70_degF)_required_for_the_ECU_to_arm_the_onboard_thermostat_functional_diagnostic_monitor_(Timer_ThermostatDiagnostics)._Cold_Climate_Tuning:_In_freezing_climates,_keeping_TTEMPL_at_stock_(~70_degF)_ensures_that_cold_winter_starts_do_not_trigger_false_Code_17_trouble_codes.
     .byte 0x63                       ;Point 1
 
 	;.org	0xc554
@@ -4443,7 +4443,7 @@ TTEMPH_TstatDiagnosticsMaxTempToArmDiagnosticsAtStartup:
     ;mptblcname TTEMPH
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis Coolant_Temp -200 260 deg
-    ;mptbldesc TTEMPH_defines_the_upper_temperature_boundary_(stock_calibration_=_0xE4_/_~228_degF)_for_arming_the_thermostat_diagnostic_monitor._If_the_engine_is_restarted_while_already_fully_warmed_up_(e.g._stopping_for_fuel_or_restarting_a_warm_engine),_the_thermostat_diagnostic_is_redundant_because_the_engine_is_already_past_operating_temperature._Stock_Value:_0xE4_(~228_degF)._Tuner_Usage:_Retain_stock_setting._Prevents_unnecessary_diagnostic_timer_execution_on_hot_engine_restarts.
+    ;mptbldesc TTEMPH_defines_the_upper_temperature_boundary_(stock_calibration_=_0xE4_/_~228_degF)_for_arming_the_thermostat_diagnostic_monitor._Stock_Value:_0xE4_(~228_degF)._Tuner_Usage:_Retain_stock_setting._Prevents_unnecessary_diagnostic_timer_execution_on_hot_engine_restarts.
     .byte 0xE4                       ;Point 1
 
 	;.org	0xc555
@@ -4508,7 +4508,7 @@ MTHRMX_ValueOf_MINTHR_WhenBatteryDisconnected:
     ;mptblcname MTHRMX
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc MTHRMX_is_the_default_baseline_closed-throttle_voltage_loaded_into_MINTHR_LowestSessionTPS_whenever_the_battery_is_disconnected_or_the_ECU_undergoes_a_hard_power_reset._Factory_TPS_sensors_typically_output_0.6V_to_0.9V_at_closed_throttle,_but_vary_due_to_mechanical_mounting_tolerances_and_throttle_shaft_wear._Aftermarket_Throttle_Bodies_(Holley_/_Ford_5.0_/_Willys):_When_retrofitting_aftermarket_throttle_bodies,_the_closed-throttle_sensor_voltage_might_rest_higher_or_lower_than_stock.
+    ;mptbldesc MTHRMX_is_the_default_baseline_closed-throttle_voltage_loaded_into_MINTHR_LowestSessionTPS_whenever_the_battery_is_disconnected_or_the_ECU_undergoes_a_hard_power_reset._Aftermarket_Throttle_Bodies_(Holley_/_Ford_5.0_/_Willys):_When_retrofitting_aftermarket_throttle_bodies,_the_closed-throttle_sensor_voltage_might_rest_higher_or_lower_than_stock.
     .byte 0x5C                       ;Point 1
 
 	;.org	0xc55a
@@ -4547,7 +4547,7 @@ MTHROP_NumberOfBitsAbove_MINTHR_ToDetermineOffThrottleTransition:
     ;mptblcname MTHROP
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc MTHROP_defines_the_tight_voltage_threshold_(stock_calibration_=_1_ADC_count_/_~0.02V)_above_MINTHR_LowestSessionTPS_for_the_ECU_to_declare_the_engine_has_returned_to_the_OFF-throttle_state._Sticky_Throttle_Cables:_If_a_sticky_throttle_cable_or_weak_return_spring_causes_the_throttle_to_stop_0.05V_above_the_mechanical_stop,_the_ECU_may_think_the_driver_is_still_resting_a_foot_on_the_gas,_preventing_idle_regulation._Increasing_MTHROP_to_2_or_3_counts_widens_the_off-throttle_window.
+    ;mptbldesc MTHROP_defines_the_tight_voltage_threshold_(stock_calibration_=_1_ADC_count_/_~0.02V)_above_MINTHR_LowestSessionTPS_for_the_ECU_to_declare_the_engine_has_returned_to_the_OFF-throttle_state._Sticky_Throttle_Cables:_If_a_sticky_throttle_cable_or_weak_return_spring_causes_the_throttle_to_stop_0.05V_above_the_mechanical_stop,_the_ECU_may_think_the_driver_is_still_resting_a_foot_on_the_gas,_preventing_idle_regulation.
     .byte 0x01                       ;Point 1
 
 	;.org	0xc55d
@@ -4703,7 +4703,7 @@ ACOUT_DeltaAboveMinThrottleToCutOutAc:
     ;mptblcname ACOUT
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc ACOUT_is_the_Wide_Open_Throttle_(WOT)_A/C_cutout_threshold_(stock_calibration_=_133_counts_/_~2.60V_above_learned_idle_MINTHR)._When_the_driver_pins_the_throttle_to_accelerate,_pass_a_vehicle,_or_launch_at_the_drag_strip,_the_ECU_temporarily_disengages_the_A/C_compressor_clutch._Passing_Power:_Stock_value_0x85_cuts_the_A/C_at_~75%_throttle._Lowering_ACOUT_to_0x60_cuts_the_A/C_sooner_(at_~50%_throttle),_giving_a_sportier,_more_responsive_feel_during_mid-throttle_passing_maneuvers.
+    ;mptbldesc ACOUT_is_the_Wide_Open_Throttle_(WOT)_A/C_cutout_threshold_(stock_calibration_=_133_counts_/_~2.60V_above_learned_idle_MINTHR)._Passing_Power:_Stock_value_0x85_cuts_the_A/C_at_~75%_throttle._Lowering_ACOUT_to_0x60_cuts_the_A/C_sooner_(at_~50%_throttle),_giving_a_sportier,_more_responsive_feel_during_mid-throttle_passing_maneuvers.
     .byte 0x85                       ;Point 1
 
 	;.org	0xc56f
@@ -4756,7 +4756,7 @@ PURHYS_CannisterPurgeBaroHysteresis:
     ;mptblcname PURHYS
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis MAP -14.7 29.4 psi
-    ;mptbldesc PURHYS_provides_a_2-count_(~0.4_inHg)_hysteresis_deadband_for_canister_purge_control._When_driving_at_light_throttle_near_atmospheric_pressure,_manifold_vacuum_naturally_fluctuates_due_to_road_bumps_and_subtle_pedal_adjustments._PURHYS_prevents_the_evaporative_purge_solenoid_from_rapidly_buzzing_or_cycling_on_and_off_as_manifold_pressure_hovers_around_the_purge_threshold._Stock_Value:_0x02._Tuning_Usage:_Retain_stock_value._Ensures_quiet,_reliable_canister_purge_valve_operation.
+    ;mptbldesc PURHYS_provides_a_2-count_(~0.4_inHg)_hysteresis_deadband_for_canister_purge_control._When_driving_at_light_throttle_near_atmospheric_pressure,_manifold_vacuum_naturally_fluctuates_due_to_road_bumps_and_subtle_pedal_adjustments._Stock_Value:_0x02._Tuning_Usage:_Retain_stock_value._Ensures_quiet,_reliable_canister_purge_valve_operation.
     ;mpmapaxis y
     .byte 0x01                       ;Point 1
 
@@ -4770,7 +4770,7 @@ WOTDLT_DeltaThrottleFrom_MINTHR_ToDetermineFullThrottle:
     ;mptblcname WOTDLT
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc WOTDLT_establishes_the_throttle_threshold_for_Wide_Open_Throttle_(WOT)_power_enrichment_and_open-loop_operation._Rather_than_looking_for_a_fixed_absolute_voltage_(e.g._4.0V),_the_ECU_adds_WOTDLT_(stock_calibration_=_133_counts_/_~2.60V)_to_the_learned_closed-throttle_baseline_MINTHR._Earlier_Power_Enrichment:_If_you_want_WOT_fueling_and_max_boost_to_engage_earlier_in_the_pedal_travel_(e.g._at_60%_throttle_for_a_more_responsive_feel),_reduce_WOTDLT_to_0x70_(~2.2V_above_idle).
+    ;mptbldesc WOTDLT_establishes_the_throttle_threshold_for_Wide_Open_Throttle_(WOT)_power_enrichment_and_open-loop_operation._Earlier_Power_Enrichment:_If_you_want_WOT_fueling_and_max_boost_to_engage_earlier_in_the_pedal_travel_(e.g._at_60%_throttle_for_a_more_responsive_feel),_reduce_WOTDLT_to_0x70_(~2.2V_above_idle).
     .byte 0x85                       ;Point 1
 
 	;.org	0xc575
@@ -4822,7 +4822,7 @@ DEFTMP_DefaultEngineTemp:
     ;mptblcname DEFTMP
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc DEFTMP_defines_the_safe,_middle-ground_fallback_coolant_temperature_(stock_calibration_=_0x95_/_~150_degF_/_65_degC)_used_by_the_ECU_whenever_the_coolant_temperature_sensor_is_unplugged_or_shorted_(Code_22)._If_a_coolant_sensor_fails,_the_ECU_cannot_know_if_the_engine_is_freezing_cold_or_boiling_hot._Stock_Value:_0x95_(~150_degF)._Limp-Home_Behavior:_When_DEFTMP_is_active,_warm-up_enrichment_curves_and_closed-loop_O2_timers_operate_under_the_assumption_of_a_lukewarm_engine.
+    ;mptbldesc DEFTMP_defines_the_safe,_middle-ground_fallback_coolant_temperature_(stock_calibration_=_0x95_/_~150_degF_/_65_degC)_used_by_the_ECU_whenever_the_coolant_temperature_sensor_is_unplugged_or_shorted_(Code_22)._Stock_Value:_0x95_(~150_degF)._Limp-Home_Behavior:_When_DEFTMP_is_active,_warm-up_enrichment_curves_and_closed-loop_O2_timers_operate_under_the_assumption_of_a_lukewarm_engine.
     .byte 0x95                       ;Point 1
 
 	;.org	0xc579
@@ -4861,7 +4861,7 @@ DEFCHG_DefaultChargeTemp_Limpin:
     ;mptblcname DEFCHG
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc DEFCHG_defines_the_fail-safe_default_air_charge_temperature_(stock_calibration_=_0xAD_/_~100_degF_/_38_degC)_substituted_into_ChargeTemp_whenever_the_intake_manifold_charge_temperature_sensor_circuit_fails_(Fault_Code_23)._Stock_Value:_0xAD_(~100_degF)._Non-Intercooled_vs_Intercooled:_On_non-intercooled_Turbo_I_cars_with_higher_baseline_manifold_temperatures,_DEFCHG_is_calibrated_slightly_warmer_(0xAD_/_~100_degF)._On_front-mount_intercooled_builds,_DEFCHG_can_remain_stock.
+    ;mptbldesc DEFCHG_defines_the_fail-safe_default_air_charge_temperature_(stock_calibration_=_0xAD_/_~100_degF_/_38_degC)_substituted_into_ChargeTemp_whenever_the_intake_manifold_charge_temperature_sensor_circuit_fails_(Fault_Code_23)._Stock_Value:_0xAD_(~100_degF)._Non-Intercooled_vs_Intercooled:_On_non-intercooled_Turbo_I_cars_with_higher_baseline_manifold_temperatures,_DEFCHG_is_calibrated_slightly_warmer_(0xAD_/_~100_degF).
     .byte 0xAD                       ;Point 1
 
 	;.org	0xc57c
@@ -4952,7 +4952,7 @@ ERRMPH_MPHLimitforErrorCodeSetting:
     ;mptblcname ERRMPH
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis Y 0 255 out
-    ;mptbldesc ERRMPH_defines_the_minimum_vehicle_cruising_speed_(stock_calibration_=_18_MPH_/_0x12)_required_to_evaluate_dynamic_vehicle_sensor_diagnostics._For_example,_to_test_whether_the_vehicle_speed_sensor_(Distance_Sensor_/_VSS)_is_functional,_the_ECU_verifies_whether_the_vehicle_is_operating_at_cruising_RPM_and_load._Code_15_Diagnostics:_If_a_digital_dash_conversion_or_broken_speedometer_cable_causes_Code_15,_the_code_is_only_logged_after_exceeding_18_MPH.
+    ;mptbldesc ERRMPH_defines_the_minimum_vehicle_cruising_speed_(stock_calibration_=_18_MPH_/_0x12)_required_to_evaluate_dynamic_vehicle_sensor_diagnostics._Code_15_Diagnostics:_If_a_digital_dash_conversion_or_broken_speedometer_cable_causes_Code_15,_the_code_is_only_logged_after_exceeding_18_MPH.
     .byte 0x12                       ;Point 1
 
 	;.org	0xc583
@@ -4965,7 +4965,7 @@ ERRKON_KeyOnTimeLimitforErrorCodeSetting:
     ;mptblcname ERRKON
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis Y 0 255 out
-    ;mptbldesc ERRKON_enforces_a_key-on_delay_period_(stock_calibration_=_128_ticks_/_~1.8_minutes)_before_the_ECU_permits_driving-mode_diagnostic_monitors_to_log_fault_codes_into_memory._Ensures_that_transient_battery_voltage_dips_during_starting_or_rapid_ignition_cycling_do_not_cause_erroneous_trouble_codes_to_latch_into_memory._Stock_Value:_0x80_(~1.8_minutes)._Diagnostics:_Guarantees_that_diagnostic_fault_codes_are_only_set_after_the_vehicle_has_been_running_steadily.
+    ;mptbldesc ERRKON_enforces_a_key-on_delay_period_(stock_calibration_=_128_ticks_/_~1.8_minutes)_before_the_ECU_permits_driving-mode_diagnostic_monitors_to_log_fault_codes_into_memory._Stock_Value:_0x80_(~1.8_minutes)._Diagnostics:_Guarantees_that_diagnostic_fault_codes_are_only_set_after_the_vehicle_has_been_running_steadily.
     .byte 0x80                       ;Point 1
 
 	;.org	0xc584
@@ -4978,7 +4978,7 @@ THRLOW_ThrottleLowerLimit:
     ;mptblcname THRLOW
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc THRLOW_sets_the_absolute_minimum_valid_electrical_voltage_(stock_calibration_=_0x08_/_~0.156V)_for_the_Throttle_Position_Sensor_(TPS)_signal_input._Under_normal_mechanical_adjustment,_a_healthy_closed-throttle_TPS_outputs_between_0.60V_and_0.95V._Throttle_Body_Swaps:_When_installing_an_aftermarket_throttle_body,_use_a_scan_tool_or_voltmeter_to_confirm_that_closed-throttle_TPS_voltage_rests_safely_between_0.65V_and_0.90V,_well_above_THRLOW_(0.16V).
+    ;mptbldesc THRLOW_sets_the_absolute_minimum_valid_electrical_voltage_(stock_calibration_=_0x08_/_~0.156V)_for_the_Throttle_Position_Sensor_(TPS)_signal_input._Throttle_Body_Swaps:_When_installing_an_aftermarket_throttle_body,_use_a_scan_tool_or_voltmeter_to_confirm_that_closed-throttle_TPS_voltage_rests_safely_between_0.65V_and_0.90V,_well_above_THRLOW_(0.16V).
     .byte 0x08                       ;Point 1
 
 	;.org	0xc585
@@ -5004,7 +5004,7 @@ MPTHR_MapSwitchPointForFullThrottleOrIdle:
     ;mptblcname MPTHR
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis MAP -14.7 29.4 psi
-    ;mptbldesc MPTHR_is_an_emergency_fail-safe_threshold_(stock_calibration_=_0x68_/_~83_kPa_/_5_inHg_vacuum)_utilized_when_the_Throttle_Position_Sensor_has_suffered_an_electrical_failure_(Code_24)._When_the_TPS_is_dead,_the_ECU_cannot_read_accelerator_pedal_position._Stock_Value:_0x68_(~83_kPa)._Brilliant_Chrysler_Fail-Safe:_Demonstrates_the_extraordinary_depth_of_Chrysler's_1980s_embedded_engine_control_software;_a_broken_TPS_does_not_strand_the_vehicle_or_prevent_turbo_boost.
+    ;mptbldesc MPTHR_is_an_emergency_fail-safe_threshold_(stock_calibration_=_0x68_/_~83_kPa_/_5_inHg_vacuum)_utilized_when_the_Throttle_Position_Sensor_has_suffered_an_electrical_failure_(Code_24)._Stock_Value:_0x68_(~83_kPa)._Brilliant_Chrysler_Fail-Safe:_Demonstrates_the_extraordinary_depth_of_Chrysler's_1980s_embedded_engine_control_software;_a_broken_TPS_does_not_strand_the_vehicle_or_prevent_turbo_boost.
     ;mpmapaxis y
     .byte 0x45                       ;Point 1
 
@@ -5070,7 +5070,7 @@ MAPLOW_MapSensorLowerLimit:
     ;mptblcname MAPLOW
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc MAPLOW_defines_the_absolute_minimum_electrical_voltage_boundary_(stock_calibration_=_0x01_/_~0.02V)_for_the_Manifold_Absolute_Pressure_(MAP)_sensor_input._Under_physical_driving_conditions,_even_full_trailing-throttle_deceleration_at_6,000_RPM_cannot_pull_manifold_absolute_pressure_below_~10-15_kPa_(~0.25V)._Code_14_Diagnosis:_If_Code_14_is_present_and_scan_tool_reads_0.0V,_inspect_the_3-pin_MAP_sensor_connector_for_water_intrusion,_corrosion,_or_a_broken_5V_supply_wire.
+    ;mptbldesc MAPLOW_defines_the_absolute_minimum_electrical_voltage_boundary_(stock_calibration_=_0x01_/_~0.02V)_for_the_Manifold_Absolute_Pressure_(MAP)_sensor_input._Code_14_Diagnosis:_If_Code_14_is_present_and_scan_tool_reads_0.0V,_inspect_the_3-pin_MAP_sensor_connector_for_water_intrusion,_corrosion,_or_a_broken_5V_supply_wire.
     .byte 0x01                       ;Point 1
 
 	;.org	0xc58d
@@ -5122,7 +5122,7 @@ BF80PL_BF80PowerLossLightMask:
     ;mptblcname BF80PL
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis Y 0 255 out
-    ;mptbldesc BF80PL_is_an_8-bit_diagnostic_trigger_mask_(stock_calibration_=_0xDB_/_binary_11011011)_evaluated_inside_WorkWithPowerLossLight_MM._BitFlags_80_is_the_ECU's_primary_runtime_status_register_tracking_limp-home_modes,_sensor_failure_flags,_and_system_error_states._Suppressing_Nuisance_CEL_Lights:_Tuners_creating_custom_engine_swaps_or_standalone_configurations_can_clear_specific_bits_in_BF80PL_to_prevent_secondary_status_flags_from_turning_on_the_Check_Engine_light.
+    ;mptbldesc BF80PL_is_an_8-bit_diagnostic_trigger_mask_(stock_calibration_=_0xDB_/_binary_11011011)_evaluated_inside_WorkWithPowerLossLight_MM._Suppressing_Nuisance_CEL_Lights:_Tuners_creating_custom_engine_swaps_or_standalone_configurations_can_clear_specific_bits_in_BF80PL_to_prevent_secondary_status_flags_from_turning_on_the_Check_Engine_light.
     .byte 0xDB                       ;Point 1
 
 	;.org	0xc592
@@ -5151,7 +5151,7 @@ TMPTL1_TempForColdScaleFromA2D:
     ;mptblcname TMPTL1
     ;mpxaxis raw 0 255 scale
     ;mpyaxis Coolant_Temperature -200 260 F
-    ;mptbldesc TMPTL1_is_the_primary_non-linear_analog_transfer_lookup_table_that_translates_raw_8-bit_ADC_voltages_from_the_Engine_Coolant_Temperature_(ECT)_sensor_into_engineering_temperature_units_when_operating_on_the_cold_temperature_range._Sensor_Swaps_/_Custom_Sensors:_If_swapping_to_an_aftermarket_or_GM_coolant_temperature_sensor_with_a_different_thermistor_resistance_curve,_TMPTL1_and_TMPTL2_must_be_recalibrated_to_match_the_new_sensor's_voltage_output.
+    ;mptbldesc TMPTL1_is_the_primary_non-linear_analog_transfer_lookup_table_that_translates_raw_8-bit_ADC_voltages_from_the_Engine_Coolant_Temperature_(ECT)_sensor_into_engineering_temperature_units_when_operating_on_the_cold_temperature_range._Automotive_coolant_thermistors_have_severe_exponential_resistance_curves_(hundreds_of_thousands_of_ohms_when_freezing,_dropping_to_a_few_hundred_ohms_when_boiling).
     .byte 0x03                       ;Number of points in table
     .byte 0x00, 0xC9, 0xFF, 0xA2     ;Point 1
     .byte 0xD7, 0x7A, 0xFF, 0x0D     ;Point 2
@@ -5237,7 +5237,7 @@ MAPMULT_ScaleMAPVoltsToPresMultiplyConst:
     ;mptblcname MAPMULT
     ;mpxaxis IN 0 255 X
     ;mpyaxis OUT 0 255 Y
-    ;mptbldesc MAPMULT_is_the_foundational_slope_multiplier_in_the_mathematical_transfer_function_that_converts_analog_MAP_sensor_voltage_(MapVolts)_into_calibrated_internal_pressure_units_(MapValue)._3-Bar_MAP_Sensor_Conversion_Guide:_For_Mopar_2-Bar_(Stock):_Set_MAPMULT_=_0x07,_MAPADD_=_0x0361._For_Mopar_Super_60_3-Bar:_Set_MAPMULT_=_0x09,_MAPADD_=_0x0700._For_GM_/_MSD_3-Bar_(12223861_/_16040749):_May_require_fine-tuning_MAPADD_to_0x06C0_-_0x0720_depending_on_sensor_manufacturer_offset_tolerances.
+    ;mptbldesc MAPMULT_is_the_foundational_slope_multiplier_in_the_mathematical_transfer_function_that_converts_analog_MAP_sensor_voltage_(MapVolts)_into_calibrated_internal_pressure_units_(MapValue)._3-Bar_MAP_Sensor_Conversion_Guide:_For_Mopar_2-Bar_(Stock):_Set_MAPMULT_=_0x07,_MAPADD_=_0x0361._For_Mopar_Super_60_3-Bar:_Set_MAPMULT_=_0x09,_MAPADD_=_0x0700.
     ;mpchoices 1.0_Bar 07 1.5_Bar 07 2.0_Bar 07 2.5_Bar 08 3.0_Bar 09 3.5_Bar 09 4.0_Bar 09 4.5_Bar 09
     ;mpmapaxis b
     .byte 0x09                       ;Point 1
@@ -5267,7 +5267,7 @@ VACREG_CruiseControlVacRegularGainGurve_FromDeltaSpeed:
     ;mptblcname VACREG
     ;mpxaxis Delta_Speed 0 127 mph
     ;mpyaxis AccRate 0 5 mph/sec
-    ;mptbldesc VACREG_defines_the_primary_proportional_vacuum_servo_gain_curve_used_by_the_cruise_control_system_under_steady-state_cruising._Speed_Droop_on_Hills:_If_the_vehicle_loses_2-4_MPH_on_highway_hills_before_recovering,_increase_the_upper_points_of_VACREG_to_command_more_aggressive_vacuum_pull._Throttle_Surging_/_Hunting:_If_the_cruise_control_oscillates_or_pulses_the_accelerator_pedal_while_driving_on_flat_roads,_reduce_the_slope_of_VACREG_around_zero_delta_speed.
+    ;mptbldesc VACREG_defines_the_primary_proportional_vacuum_servo_gain_curve_used_by_the_cruise_control_system_under_steady-state_cruising._Speed_Droop_on_Hills:_If_the_vehicle_loses_2-4_MPH_on_highway_hills_before_recovering,_increase_the_upper_points_of_VACREG_to_command_more_aggressive_vacuum_pull.
     .byte 0x05                       ;Number of points in table
     .byte 0x00, 0x00, 0x00, 0x60     ;Point 1
     .byte 0x10, 0x06, 0x00, 0x20     ;Point 2
@@ -5300,7 +5300,7 @@ VENTRG_CruiseControlVentRegularGainCurve_FromDeltaSpeed:
     ;mptblcname VENTRG
     ;mpxaxis Delta_Speed 0 127 mph
     ;mpyaxis AccRate 0 5 mph/sec
-    ;mptbldesc VENTRG_establishes_the_vent_solenoid_pulse_duration_gain_curve_used_to_bleed_vacuum_from_the_cruise_servo_when_vehicle_speed_exceeds_the_set_target._Downhill_Speed_Creep:_If_the_vehicle_gains_significant_speed_on_downhill_stretches_with_cruise_engaged,_increase_VENTRG_values_to_vent_vacuum_more_aggressively._Throttle_Jerkiness:_Setting_VENTRG_excessively_high_causes_the_throttle_to_snap_shut_abruptly,_inducing_driveline_lash_on_manual_transmission_vehicles.
+    ;mptbldesc VENTRG_establishes_the_vent_solenoid_pulse_duration_gain_curve_used_to_bleed_vacuum_from_the_cruise_servo_when_vehicle_speed_exceeds_the_set_target._Downhill_Speed_Creep:_If_the_vehicle_gains_significant_speed_on_downhill_stretches_with_cruise_engaged,_increase_VENTRG_values_to_vent_vacuum_more_aggressively.
     .byte 0x03                       ;Number of points in table
     .byte 0x00, 0x00, 0xFF, 0xC0     ;Point 1
     .byte 0x10, 0xFC, 0xFF, 0xE5     ;Point 2
@@ -5456,7 +5456,7 @@ MAXTHR_CruiseControlDontVacIfThrottleAboveThis:
     ;mptblcname MAXTHR
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc MAXTHR_establishes_the_maximum_throttle_angle_ceiling_allowed_under_cruise_control_operation._The_factory_vacuum_cruise_actuator_is_designed_for_modest_cruising_throttle_adjustments._Steep_Mountain_Grades:_In_hilly_terrain,_if_the_car_loses_speed_on_steep_grades_because_cruise_stops_pulling_at_~30%_throttle,_tuners_can_raise_MAXTHR_to_0x60_or_0x70_to_give_the_cruise_system_more_authority_to_hold_speed._Safety_Margin:_Do_not_raise_MAXTHR_all_the_way_to_100%_(WOT).
+    ;mptbldesc MAXTHR_establishes_the_maximum_throttle_angle_ceiling_allowed_under_cruise_control_operation._Steep_Mountain_Grades:_In_hilly_terrain,_if_the_car_loses_speed_on_steep_grades_because_cruise_stops_pulling_at_~30%_throttle,_tuners_can_raise_MAXTHR_to_0x60_or_0x70_to_give_the_cruise_system_more_authority_to_hold_speed._Safety_Margin:_Do_not_raise_MAXTHR_all_the_way_to_100%_(WOT).
     .byte 0x50                       ;Point 1
 
 	;.org	0xc63b
@@ -5533,7 +5533,7 @@ AISTEP_BitPatternForAisControl:
     ;mptblcname AISTEP
     ;mpxaxis in_desc 4 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc AISTEP_is_the_hardware_commutation_table_(4_bytes:_0x06,_0x0A,_0x09,_0x05)_that_defines_the_sequential_magnetic_coil_excitation_patterns_for_the_Automatic_Idle_Speed_bipolar_stepper_motor._Fixed_Hardware_Driver_Table:_NEVER_MODIFY._Changing_these_bit_patterns_will_cause_the_stepper_motor_coils_to_fight_each_other,_resulting_in_a_buzzing,_vibrating_motor_that_cannot_rotate,_leading_to_permanent_idle_motor_failure_or_blown_driver_transistors_in_the_Power_Module_/_SMEC.
+    ;mptbldesc AISTEP_is_the_hardware_commutation_table_(4_bytes:_0x06,_0x0A,_0x09,_0x05)_that_defines_the_sequential_magnetic_coil_excitation_patterns_for_the_Automatic_Idle_Speed_bipolar_stepper_motor._The_Chrysler_AIS_actuator_contains_two_independent_stator_windings._Fixed_Hardware_Driver_Table:_NEVER_MODIFY.
     .byte 0x43                       ;Point 1
     .byte 0x4F                       ;Point 2
     .byte 0x50                       ;Point 3
@@ -5548,7 +5548,7 @@ RVLSPS_Staging:
     ;mptblcname RVLSPS
     ;mpxaxis X 0 255 in
     ;mpyaxis Speed 0 255 mph
-    ;mptbldesc RVLSPS_defines_the_vehicle_speed_cutoff_threshold_for_the_Turbonator_2-step_staging_launch_rev_limiter._Drag_Launch_Optimization:_Stock_value_of_4_MPH_(0x04)_works_exceptionally_well_for_both_slicks_and_street_tires,_ensuring_the_limiter_does_not_cut_fuel_down-track_if_wheelspin_occurs._Speed_Sensor_Prerequisite:_Requires_a_functioning_vehicle_distance/speed_sensor_(VSS)._If_the_speed_sensor_is_disconnected_or_broken,_the_ECU_will_remain_locked_in_the_staging_limiter!
+    ;mptbldesc RVLSPS_defines_the_vehicle_speed_cutoff_threshold_for_the_Turbonator_2-step_staging_launch_rev_limiter._Drag_Launch_Optimization:_Stock_value_of_4_MPH_(0x04)_works_exceptionally_well_for_both_slicks_and_street_tires,_ensuring_the_limiter_does_not_cut_fuel_down-track_if_wheelspin_occurs._Speed_Sensor_Prerequisite:_Requires_a_functioning_vehicle_distance/speed_sensor_(VSS).
     .byte 0x04                       ;Point 1
 REVLMTX_StagingModFuelShutoff:
     ;mpgrp Turbonator_Features\Staging_Limiter\
@@ -5582,7 +5582,7 @@ RVLSWS_StagingLimiterSwitchSelect:
     ;mptblcname RVLSWS
     ;mpxaxis IN 0 255 X
     ;mpyaxis OUT 0 255 Y
-    ;mptbldesc RVLSWS_selects_the_physical_hardware_switch_input_used_to_arm_and_activate_the_Turbonator_2-step_staging_launch_limiter._T-LM_allows_flexible_configuration_of_the_launch_limiter_arming_trigger:_0x00:_Speed-only_arming_(active_automatically_whenever_vehicle_speed_is_below_RVLSPS)._Manual_Transmission_(Clutch_Switch):_Leave_at_default_0x08._The_2-step_arms_when_staged_with_the_clutch_depressed,_and_disengages_the_instant_the_clutch_pedal_begins_releasing.
+    ;mptbldesc RVLSWS_selects_the_physical_hardware_switch_input_used_to_arm_and_activate_the_Turbonator_2-step_staging_launch_limiter._Manual_Transmission_(Clutch_Switch):_Leave_at_default_0x08._The_2-step_arms_when_staged_with_the_clutch_depressed,_and_disengages_the_instant_the_clutch_pedal_begins_releasing.
     ;mpchoices Cruise_Set(Momentary)  Cruise_Resume(Momentary)  A/C_Clutch_Input(Do_Not_Use)  Brake_Pedal_Switch  P/N_Switch  Nothing(Do_Not_Use)  Cruise_On/Off  Dist_Sync(Do_Not_Use)
     .byte 0x08                       ;Point 1
 rvl_DistSync 		= $%10000000	; Distributor Sync
@@ -5630,7 +5630,7 @@ AKPMON_AlkyPumpOnSetpointFromMAP:
     ;mptblcname AKPMON
     ;mpxaxis X 0 255 in
     ;mpyaxis MAP -14.7 29.4 psi
-    ;mptbldesc AKPMON_establishes_the_manifold_absolute_pressure_(MAP)_turn-on_threshold_for_the_Turbonator_water/methanol_(alky)_injection_delivery_pump._Enabling_Alky_Injection:_Set_cfg_AlkyInj_in_configuration_flags._Calibrate_AKPMON_to_roughly_3-5_psi_of_boost_(approx_0x90_on_a_2-bar_or_3-bar_MAP_sensor)._Early_Priming:_Priming_the_high-pressure_pump_2-3_psi_before_opening_the_injection_nozzle_solenoids_(AKI1ON)_prevents_spray_pressure_lag_and_uneven_atomization.
+    ;mptbldesc AKPMON_establishes_the_manifold_absolute_pressure_(MAP)_turn-on_threshold_for_the_Turbonator_water/methanol_(alky)_injection_delivery_pump._Enabling_Alky_Injection:_Set_cfg_AlkyInj_in_configuration_flags._Calibrate_AKPMON_to_roughly_3-5_psi_of_boost_(approx_0x90_on_a_2-bar_or_3-bar_MAP_sensor).
     ;mpmapaxis y
     .byte 0xAA                       ;Point 1
 
@@ -5732,7 +5732,7 @@ WOTBAT_WOTBatteryVoltsTarget:
     ;mptblcname WOTBAT
     ;mpxaxis in_desc 0 255 in
     ;mpyaxis BatVolts 0 16.2 V
-    ;mptbldesc WOTBAT_specifies_the_target_battery_regulation_voltage_commanded_during_Wide_Open_Throttle_(WOT)_acceleration._Free_Dyno_Horsepower:_Frees_3-5_HP_at_the_wheels_during_full-throttle_acceleration_pulls._Ignition_Coil_Considerations:_Ensure_your_ignition_system_and_fuel_pump_maintain_sufficient_voltage_at_~12.5V._If_running_an_exceptionally_high-draw_fuel_pump_without_a_dedicated_booster,_keep_WOTBAT_around_13.0V_(0xF0)_to_prevent_fuel_pressure_drop.
+    ;mptbldesc WOTBAT_specifies_the_target_battery_regulation_voltage_commanded_during_Wide_Open_Throttle_(WOT)_acceleration._The_Chrysler_logic_module_directly_controls_alternator_charging_field_duty_cycle_via_an_internal_pulse-width_modulated_voltage_regulator._Free_Dyno_Horsepower:_Frees_3-5_HP_at_the_wheels_during_full-throttle_acceleration_pulls._Ignition_Coil_Considerations:_Ensure_your_ignition_system_and_fuel_pump_maintain_sufficient_voltage_at_~12.5V.
     .byte 0xEC                       ;Point 1
 
 BSTSWS_HighBoostSwitchSelect:
@@ -5833,7 +5833,7 @@ MDLCDE_ModelTypeCode:
     ;mptblcname MDLCDE
     ;mpxaxis X 0 255 in
     ;mpyaxis out_desc 0 255 out
-    ;mptbldesc MDLCDE_is_a_2-byte_engineering_classification_word_located_at_$008F._The_first_two_hex_digits_(0x97)_encode_the_Chrysler_model_year_and_vehicle_chassis_platform_(e.g._G-body_Daytona,_P-body_Shadow,_H-body_Lancer/LeBaron_GTS),_while_the_second_two_digits_(0x09)_encode_the_engine_displacement_and_transmission_combination_(2.2L_Turbo_I_/_Turbo_II,_Manual_A555_/_A520_vs_Automatic_A413)._Tuning_Usage:_Factory_identification_constant._Preserve_stock_value_(0x9709)_when_updating_custom_tunes.
+    ;mptbldesc MDLCDE_is_a_2-byte_engineering_classification_word_located_at_$008F._Tuning_Usage:_Factory_identification_constant._Preserve_stock_value_(0x9709)_when_updating_custom_tunes.
     .word 0x9709                     ;Point 1
     ;mp******************************
     ;mpmodelyr 97 1987

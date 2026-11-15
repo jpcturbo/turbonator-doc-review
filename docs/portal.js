@@ -96,7 +96,8 @@
         fileHandle: null
     };
 
-    const MAX_COMMENT_LINE_LEN = 512;
+    // Keep total line <= 480 chars so printable chars + CR/LF + NUL never overflow ASxxxx's 512-byte buffer
+    const MAX_COMMENT_LINE_LEN = 480;
 
     /**
      * Builds an assembler-safe ;mptbldesc line guaranteed not to exceed 512 characters
@@ -225,9 +226,10 @@
             `../${config.jsonFile}`
         ];
 
+        const cacheBuster = `?v=${Date.now()}`;
         for (const p of candidatePaths) {
             try {
-                const response = await fetch(p);
+                const response = await fetch(`${p}${cacheBuster}`, { cache: 'no-store' });
                 if (response.ok) {
                     const data = await response.json();
                     state.descriptorCache[ecmId] = data;

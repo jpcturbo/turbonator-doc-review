@@ -21,7 +21,7 @@ import os
 import re
 import sys
 
-MAX_DESC_LEN = 490
+MAX_DESC_LEN = 450
 
 CUSTOM_SUMMARIES = {
     'BSTSWS': (
