@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDLADD: FuelStabilization FromDeltaRPM | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x818E</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>2 - Spark ➔ C - Scatter Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>IDLADD: FuelStabilization FromDeltaRPM</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>IDLADD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>IDLADD_FuelStabilization_FromDeltaRPM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>2_-_Spark\C_-_Scatter_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x818E</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">2 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">DeltaRPM 0 512 rpm</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Pulsewidth 0 1020 uSec</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x01                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L1394-L1407"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L6367"><code>DIN_ACLRDBOUT_CALCULATE_BASEDON_IDLE_ERROR_ROUTINE</code></a> in <a href="../../T-SBEC_v4.asm.html#L6376"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>IDLADD</code> defines the fuel pulsewidth stabilization correction curve indexed by idle engine speed error. In coordination with spark scatter ignition timing modulation, the engine controller applies high-speed fuel pulsewidth adjustments when engine speed deviates from target idle. When idle speed sags below target, <code>IDLADD</code> adds fuel pulsewidth to increase combustion charge energy; when idle speed flares above target, <code>IDLADD</code> trims fuel pulsewidth. This synchronized fuel and spark control stabilizes engine idle speed far faster than mechanical idle air stepper motor adjustments alone. In factory calibrations, <code>IDLADD</code> provides up to 50 microseconds of fuel pulsewidth adjustment.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Injector Scaling Proportionality</strong>: * When upgrading to larger fuel injectors, scale down <code>IDLADD</code> by the ratio of stock injector flow to new injector flow to prevent over-fueling during idle corrections.</li>
+<li><strong>Surge Prevention with Large Injectors</strong>: * If an engine develops a rich idle surge with large injectors, zeroing <code>IDLADD</code> often resolves the surging by leaving idle stabilization strictly to spark timing.</li>
+<li><strong>Synchronized Spark &amp; Fuel Control</strong>: * Works in direct synergy with <a href="../../2_-_Spark/C_-_Scatter_Control/SPKADD_SparkAdvanceAddedWhenRpmBelowControl_FromDeltaRpm.html"><code>SPKADD</code></a> and <a href="../../2_-_Spark/C_-_Scatter_Control/SPKRET_SparkAdvanceRetardedWhenRpmAboveControl_FromDeltaRpm.html"><code>SPKRET</code></a> to provide comprehensive idle speed dampening.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when idle speed sags below target, IDLADD adds fuel pulsewidth to increase combustion charge energy; when idle speed flares above target, IDLADD trims fuel pulsewidth.</p>
+<ul>
+<li>Evaluated inside <code>DIN_ACLRDBOUT_CALCULATE_BASEDON_IDLE_ERROR_ROUTINE</code> at line 6376 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>IDLADD</code> at ROM address <code>0x818E</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>DIN_ACLRDBOUT_CALCULATE_BASEDON_IDLE_ERROR_ROUTINE</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- DIN_ACLRDBOUT_CALCULATE_BASEDON_IDLE_ERROR_ROUTINE (T-SBEC_v4.asm:6374-6380) ---
+           ldab #0xff          ; load b with value -11111111-
+   LBCC8:  tba                 ; a = b
+           ldx  #IDLADD_FuelStabilization_FromDeltaRPM    ; load index with value
+           jsr  Lookup4ByteTable    ; call subroutine
+           clra                ; a = 0
+           rts                 ; return from subroutine
+</code></pre>
+<p>The CPU executes <code>DIN_ACLRDBOUT_CALCULATE_BASEDON_IDLE_ERROR_ROUTINE</code> where <code>IDLADD</code> is loaded, compared, or interpolated from ROM address <code>0x818E</code> at line 6376.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Type 0 Table</strong>: 3-point curve outputting fuel pulsewidth correction in microseconds.</li>
+<li><strong>Injector Flow Sensitive</strong>: Pulsewidth magnitude must be recalibrated when changing fuel injector sizes.</li>
+<li><strong>Gated by IDLTMP</strong>: Inactive whenever coolant temperature is below <a href="../../2_-_Spark/C_-_Scatter_Control/IDLTMP_Use_IDLADD_AboveThisTemp.html"><code>IDLTMP</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>IDLADD</code>
+        </footer>
+    </div>
+</body>
+</html>

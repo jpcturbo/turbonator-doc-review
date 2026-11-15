@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPKSET: ConstantSparkAdvanceWhenSettingBasicTiming | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x9051</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - Special setup</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>SPKSET: ConstantSparkAdvanceWhenSettingBasicTiming</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>SPKSET</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_ConstantSparkAdvanceWhenSettingBasicTiming</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_Special_setup\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x9051</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Spark Advance (degrees)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x0C                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L8740-L8751"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L10244"><code>HandleSparkScatter</code></a> in <a href="../T-SBECII_v1.asm.html#L10250"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>SPKSET</code> defines the fixed reference spark advance angle commanded by the engine controller when operating in mechanical basic timing mode. Under normal running conditions, the Chrysler SBEC-II constantly modulates ignition timing based on engine speed, manifold pressure, charge temperature, and knock feedback. However, during mechanical distributor installation or timing synchronization, electronic spark advance must be completely frozen so the technician can align the distributor housing with the engine timing pointer using a timing light. When the coolant temperature sensor is disconnected, setting the sensor fault flag, the controller bypasses all advance tables and locks ignition timing precisely to <code>SPKSET</code>. In factory calibrations, <code>SPKSET</code> is configured to 12 degrees BTDC, matching the physical timing marks stamped on the engine bellhousing window and flywheel rim.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Flywheel Mark Alignment</strong>: * Keep <code>SPKSET</code> at 12 degrees BTDC to correspond exactly with the Chrysler factory timing pointer and flywheel scribed mark.</li>
+<li><strong>Custom Triggering &amp; Pointers</strong>: * If utilizing custom degree rings or non-standard engine balance marks (such as 10 degrees BTDC), reconfigure <code>SPKSET</code> to match the physical pointer precisely.</li>
+<li><strong>Tuning Pitfall</strong>: * Do not alter <code>SPKSET</code> in an attempt to add global ignition advance. Altering this value only distorts the calibration reference during distributor alignment, skewing all normal advance tables by that exact angular error.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under normal running conditions, the Chrysler SBEC-II constantly modulates ignition timing based on engine speed, manifold pressure, charge temperature, and knock feedback.</p>
+<ul>
+<li>Evaluated inside <code>HandleSparkScatter</code> at line 10250 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>SPKSET</code> at ROM address <code>0x9051</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>HandleSparkScatter</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- HandleSparkScatter (T-SBECII_v1.asm:10248-10254) ---
+           brset *BitFlags6C, #$%00100000, LDE9D    ; branch if bit(s) set
+           brclr *b5C_IPL1, #$%00000010, LDEA4    ; branch if bit(s) clear
+   LDE9D:  ldab  SPKSET_ConstantSparkAdvanceWhenSettingBasicTiming    ; load B with memory contents (data is 00)
+           stab  Temp5         ; store B into memory
+           bra   LDEB0         ; branch
+
+   LDEA4:  ldaa  BitFlags_AIS    ; load A with memory contents</code></pre>
+<p>The CPU executes <code>HandleSparkScatter</code> where <code>SPKSET</code> is loaded, compared, or interpolated from ROM address <code>0x9051</code> at line 10250.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Fixed Advance Architecture</strong>: Setting timing via <code>SPKSET</code> bypasses all MAP advance lookups (<code>Lookup4ByteTable</code>), knock retard, coolant modifiers, and spark scatter.</li>
+<li><strong>Companion Parameter</strong>: Works alongside <a href="../Idle_-_Special_setup/T_OpenLoopEnrichFactorWhenSettingBasicTiming.html"><code>RICHSA</code></a>, ensuring stable open-loop combustion while timing is physically verified.</li>
+<li><strong>Scale Factor</strong>: 1 count = 1.0 degree of crankshaft advance. Factory data value 0x0C equals 12 degrees BTDC.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>SPKSET</code>
+        </footer>
+    </div>
+</body>
+</html>

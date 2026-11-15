@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MP1: AutoCalMapCellBoundary1 | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8BA7</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel ➔ O2 Feedback Control ➔ Adaptive memory</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MP1: AutoCalMapCellBoundary1</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MP1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MP1_AutoCalMapCellBoundary1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel\O2_Feedback_Control\Adaptive_memory\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8BA7</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Boost Pressure (psi)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x2E                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3_22_T3_MTX_A393.tpl.html#L2596-L2608"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3v1.asm.html#L3450"><code>AdaptiveMemory_DetermineWhichCellApplies_MM</code></a> in <a href="../../../T-T3v1.asm.html#L3453"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MP1</code> defines the first manifold absolute pressure load boundary in the adaptive fuel memory grid, separating Cell 0 and 1 from Cell 2 and 3. The Chrysler Turbo III controller organizes long-term fuel trim into 13 distinct memory cells, comprising 12 off-idle cells arranged across 6 manifold pressure load columns and 2 engine speed rows, plus one dedicated closed-throttle idle cell. <code>MP1</code> represents the transition from extreme high-vacuum conditions, such as trailing-throttle coastdown and steep deceleration overrun, into light-load cruise. In stock calibrations, <code>MP1</code> is set to 36 counts, which corresponds to approximately 4.1 psia or 21.6 inHg of vacuum.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Camshaft Upgrades</strong>: * High-overlap cams produce less engine vacuum at light load; raising <code>MP1</code> prevents light cruise from being trapped in deceleration fuel cells.</li>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>: * Must be scaled down in counts to match the 44.1 psi absolute range (approximately 24 counts on a 3-bar sensor).</li>
+<li><strong>Ascending Order Requirement</strong>: * <code>MP1</code> through <a href="../../../Fuel/O2_Feedback_Control/Adaptive_memory/MP5_AutoCalMapCellBoundary5.html"><code>MP5</code></a> must strictly maintain ascending numerical order: <code>MP1 &lt; MP2 &lt; MP3 &lt; MP4 &lt; MP5</code>.</li>
+<li><strong>Lowering the Boundary</strong>: * Shrinks the decel fuel cell domain, causing Cell 2 and 3 to take effect at higher manifold vacuum.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during adaptive fuel memory operation, defining the manifold pressure load boundary separating Cell 0/1 from Cell 2/3.</p>
+<ul>
+<li>Evaluated inside <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code> at line 3453 in <a href="../../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>MP1</code> at ROM address <code>0x8BA7</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- AdaptiveMemory_DetermineWhichCellApplies_MM (T-T3v1.asm:3451-3457) ---
+           clra                ; a = 0
+           staa Temp0          ; store a into memory
+           ldx  #MP1_AutoCalMapCellBoundary1    ; load index with value
+           ldab PointerIntoAdaptiveMemory    ; load b with memory contents
+           brset *BitFlags66, #b66_OffIdle, ONTHROTTLE_OR_RPMTOOHIGHFORIDLE    ; branch if bit(s) set
+           ldaa TargetIdleSpeedHB    ; load a with memory contents
+           adda IDLOFS_DeltaForIdleRPMForClosedThrottleCell    ;  (data is 03)</code></pre>
+<p>The CPU executes <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code> where <code>MP1</code> is loaded, compared, or interpolated from ROM address <code>0x8BA7</code> at line 3453.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Works directly with <a href="../../../Fuel/O2_Feedback_Control/Adaptive_memory/MP2_AutoCalMapCellBoundary2.html"><code>MP2</code></a>, <a href="../../../Fuel/O2_Feedback_Control/Adaptive_memory/MP3_AutoCalMapCellBoundary3.html"><code>MP3</code></a>, <a href="../../../Fuel/O2_Feedback_Control/Adaptive_memory/MP4_AutoCalMapCellBoundary4.html"><code>MP4</code></a>, <a href="../../../Fuel/O2_Feedback_Control/Adaptive_memory/MP5_AutoCalMapCellBoundary5.html"><code>MP5</code></a>, and <a href="../../../Fuel/O2_Feedback_Control/Adaptive_memory/DLTMAP_MapHysteresisAtMapCellBoundaries.html"><code>DLTMAP</code></a> (hysteresis).</li>
+<li><strong>Cell Geometry</strong>: Defines the ceiling for AutoCal Cell 0 (low RPM) and Cell 1 (high RPM).</li>
+<li><strong>Persistence</strong>: Read on every main loop pass; modifications immediately shift cell boundaries in RAM.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>MP1</code>
+        </footer>
+    </div>
+</body>
+</html>

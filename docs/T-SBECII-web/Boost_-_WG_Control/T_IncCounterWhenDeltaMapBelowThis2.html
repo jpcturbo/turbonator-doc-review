@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPDEL2: IncCounterWhenDeltaMapBelowThis2 | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8242</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Boost - WG Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MPDEL2: IncCounterWhenDeltaMapBelowThis2</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MPDEL2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_IncCounterWhenDeltaMapBelowThis2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Boost_-_WG_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8242</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Boost Pressure (psi)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x06                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L2263-L2275"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L12430"><code>BC_IncrementWGAdaptive</code></a> in <a href="../T-SBECII_v1.asm.html#L12442"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MPDEL2</code> defines the manifold pressure stability threshold required to permit adaptive wastegate duty cycle incrementing when boost is below target. Similar to <code>MPDEL1</code> on the overboost side, <code>MPDEL2</code> verifies that manifold pressure is steady and not undergoing violent fluctuations or throttle transients before allowing the error timer to advance toward an adaptive duty cycle increase. If the difference between instantaneous manifold pressure and rolling average manifold pressure exceeds <code>MPDEL2</code>, adaptive learning is inhibited. Shared between T1 and T2 control routines.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Underboost Manifold Stability Gate</strong>: * Requires <code>|MapValue - AverageMAPValue|</code> to be within <code>MPDEL2</code> to permit adaptive incrementing. * Factory setting is 2 counts (approximately 0.23 psi variance).</li>
+<li><strong>Filtering Transient Spool Lag</strong>: * Prevents rapid throttle tip-in or spool-up transients from triggering upward adaptive duty cycle learning.</li>
+<li><strong>Shared Code Usage</strong>: * Evaluated in both <code>CalcWGDutyCycleT1</code> (line 9710) and <code>CalcWGDutyCycleT2</code> (line 9992).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during boost control, setting the second manifold pressure delta threshold for incrementing the boost control counter.</p>
+<ul>
+<li>Evaluated inside <code>BC_IncrementWGAdaptive</code> at line 12442 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>MPDEL2</code> at ROM address <code>0x8242</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>BC_IncrementWGAdaptive</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- BC_IncrementWGAdaptive (T-SBECII_v1.asm:12440-12446) ---
+           bcc   LEEE0         ; branch if greater or equal
+           nega                ; negate A (set high bit)
+   LEEE0:  cmpa  MPDEL2_IncCounterWhenDeltaMapBelowThis2    ; compare A with memory contents (data is 0a)
+           bhi   BC_ClearBoostErrTimer    ; branch if higher
+           ldaa  EngineRpm_HB    ; load A with memory contents
+           cmpa  DCRPML_NoWastegateDutyCycleCorrectionBelowThisRpm    ; compare A with memory contents (data is 46)
+           bcs   BC_ClearBoostErrTimer    ; branch if lower</code></pre>
+<p>The CPU executes <code>BC_IncrementWGAdaptive</code> where <code>MPDEL2</code> is loaded, compared, or interpolated from ROM address <code>0x8242</code> at line 12442.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Shared Code Architecture</strong>: Evaluated in both T1 and T2 routines under identical label names.</li>
+<li><strong>Knock Interlock</strong>: Immediately following this check at line 9712, <code>WastegateDutyCycleIncreaseFromKnock</code> must be zero for adaptive incrementing to proceed.</li>
+<li><strong>Factory Value</strong>: 0x02 = 2 counts = approx 0.23 psi stability tolerance.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>MPDEL2</code>
+        </footer>
+    </div>
+</body>
+</html>

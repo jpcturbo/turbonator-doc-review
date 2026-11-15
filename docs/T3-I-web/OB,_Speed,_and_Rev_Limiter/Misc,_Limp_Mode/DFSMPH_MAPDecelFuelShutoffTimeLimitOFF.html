@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFSMPH: MAPDecelFuelShutoffTimeLimitOFF | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8C34</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>OB, Speed, and Rev Limiter ➔ Misc, Limp Mode</strong> &nbsp;|&nbsp; Subsystem: <strong>Limiters_Limp</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DFSMPH: MAPDecelFuelShutoffTimeLimitOFF</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DFSMPH</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DFSMPH_MAPDecelFuelShutoffTimeLimitOFF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Limiters_Limp</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>OB,_Speed,_and_Rev_Limiter\Misc,_Limp_Mode\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8C34</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Boost Pressure (psi)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x24                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L3461-L3473"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L6196"><code>Cutout_CheckMPHLimitingValues</code></a> in <a href="../../T-T3v1.asm.html#L6209"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DFSMPH</code> defines the minimum vehicle speed required to enable the secondary deceleration fuel shutoff routine. To prevent vehicle jerking, driveline clunking, or engine stalling when slowing down in stop-and-go city traffic, the controller verifies that the vehicle is traveling at an adequate road speed before cutting fuel on trailing throttle. In the factory 2.5L automatic calibration, <code>DFSMPH</code> is set to 254 counts, corresponding to approximately 127 mph on the low-range vehicle speed scale. This maximum setting disables the secondary deceleration cut routine for ordinary driving, ensuring that fuel is never abruptly cut at neighborhood speeds through this specific branch.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Enabling Road-Speed Fuel Cut</strong>: * Set <code>DFSMPH</code> to 40 counts (20.0 mph) if enabling the secondary deceleration cut branch on manual transmission builds.</li>
+<li><strong>Disabling for Smooth Drivability</strong>: * Keeping <code>DFSMPH</code> at 254 counts ensures fuel is not abruptly cut during gear shifts or low-speed trailing throttle.</li>
+<li><strong>Low-Speed Bucking Avoidance</strong>: * Avoid setting <code>DFSMPH</code> below 15 mph to prevent jerky driveline lash during low-speed crawling.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during deceleration, ensuring deceleration fuel shutoff is only active when vehicle road speed is above this speed limit.</p>
+<ul>
+<li>Evaluated inside <code>Cutout_CheckMPHLimitingValues</code> at line 6209 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>DFSMPH</code> at ROM address <code>0x8C34</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>Cutout_CheckMPHLimitingValues</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- Cutout_CheckMPHLimitingValues (T-T3v1.asm:6207-6213) ---
+           bcs  LBEEB          ; branch if lower
+           ldaa MapValue       ; load a with memory contents
+           cmpa DFSMPH_MAPDecelFuelShutoffTimeLimitOFF          ; compare a with memory contents (data is 24)
+           bhi  LBEEB          ; branch if higher
+           ldaa b5C_IPL1       ; load a with memory contents
+           bita #0xe2          ;  -11100010-
+           bne  LBEEB          ; branch if not equal (not zero)</code></pre>
+<p>The CPU executes <code>Cutout_CheckMPHLimitingValues</code> where <code>DFSMPH</code> is loaded, compared, or interpolated from ROM address <code>0x8C34</code> at line 6209.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Speed Scaling</strong>: Scaled at 0.5 mph per count ($127.5 / 255$). 40 counts = 20.0 mph; 254 counts = 127.0 mph.</li>
+<li><strong>Multi-Condition Chain</strong>: Operates as the second filter in the four-condition chain (<a href="../../OB,_Speed,_and_Rev_Limiter/Misc,_Limp_Mode/DFRPM2_2560RPM_DecelFuelShutoffUpperRpmLimit.html"><code>DFRPM2</code></a>, <code>DFSMPH</code>, <code>DFSTMP</code>, <code>DFSTMR</code>).</li>
+<li><strong>Stage IV Calibrations</strong>: Set to 173 counts (86.5 mph).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>DFSMPH</code>
+        </footer>
+    </div>
+</body>
+</html>

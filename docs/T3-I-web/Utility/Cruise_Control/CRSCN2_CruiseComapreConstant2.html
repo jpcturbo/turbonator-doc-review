@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRSCN2: CruiseComapreConstant2 | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x9015</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Utility ➔ Cruise Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Cruise_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CRSCN2: CruiseComapreConstant2</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CRSCN2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CRSCN2_CruiseComapreConstant2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Cruise_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Utility\Cruise_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x9015</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Time Duration (seconds or loop counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x06                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L6519-L6530"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L11642"><code>ControlCruiseServo0_MM</code></a> in <a href="../../T-T3v1.asm.html#L12148"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CRSCN2</code> defines the speed error deadband threshold for the cable adaptive delta variable. Road surfaces are never perfectly flat; tire expansion, pavement seams, and minor wind gusts cause momentary road speed variations of 1 to 2 miles per hour. If the cruise controller reacted to every minor speed fluctuation, the throttle cable would constantly twitch and the vacuum solenoids would experience excessive wear. <code>CRSCN2</code> establishes a deadband of 6 counts (representing approximately 3.0 miles per hour of speed error), suppressing adaptive servo updates when speed remains within this acceptable margin.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Error Deadband Filtering</strong>: * Filters out road surface noise, tire expansion, and wind gusts below 3.0 mph. * Prevents rapid solenoid cycling and throttle cable flutter during steady highway driving.</li>
+<li><strong>Precision vs. Drivability</strong>: * Lowering to 3 or 4 counts tightens speed holding on flat interstates. * Raising to 8 counts provides a more relaxed, fuel-efficient cruise profile.</li>
+<li><strong>Factory Setting</strong>: * Set to 6 counts (≈ 3.0 mph) in production calibrations.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if the cruise controller reacted to every minor speed fluctuation, the throttle cable would constantly twitch and the vacuum solenoids would experience excessive wear.</p>
+<ul>
+<li>Evaluated inside <code>ControlCruiseServo0_MM</code> at line 12148 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>CRSCN2</code> at ROM address <code>0x9015</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>ControlCruiseServo0_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- ControlCruiseServo0_MM (T-T3v1.asm:12146-12152) ---
+           bpl  LF307          ; branch if plus (hi bit 0)
+           negb
+   LF307:  cmpb CRSCN2_CruiseComapreConstant2    ; compare b with memory contents (data is 06)
+           bcs  LF34B          ; branch if lower
+           ldx  #L002F         ; load index with value
+           ldab CruiseSpeedSetpoint    ; load b with memory contents
+           cmpb CRUZ36_UnknownConstForCruiseControl36    ; compare b with memory contents (data is 8c)</code></pre>
+<p>The CPU executes <code>ControlCruiseServo0_MM</code> where <code>CRSCN2</code> is loaded, compared, or interpolated from ROM address <code>0x9015</code> at line 12148.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Absolute Value Filter</strong>: Uses <code>tba; bpl; negb</code> to compute <code>|CruiseControlVar6|</code> before comparison.</li>
+<li><strong>Deadband Magnitude</strong>: 6 counts ≈ 3.0 mph total error tolerance.</li>
+<li><strong>Companion Parameter</strong>: Coordinates with timer threshold <a href="../../Utility/Cruise_Control/CRSCN1_CruiseComapreConstant1.html"><code>CRSCN1_CruiseComapreConstant1</code></a> and threshold constants <a href="../../Utility/Cruise_Control/CRMSK2_CruiseMask2.html"><code>CRMSK2</code></a> / <a href="../../Utility/Cruise_Control/CRMSK3_CruiseMask3.html"><code>CRMSK3</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>CRSCN2</code>
+        </footer>
+    </div>
+</body>
+</html>

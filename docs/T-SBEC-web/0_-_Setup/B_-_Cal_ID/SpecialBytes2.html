@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SETUP2: Setup bytes 2 | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x800A</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ B - Cal ID</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>SETUP2: Setup bytes 2</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>SETUP2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>SpecialBytes2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\B_-_Cal_ID\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x800A</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">16-bit Word Value</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0x00F4                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L525-L536"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L1"><code>MainProgramLoop</code></a> in <a href="../../T-SBEC_v4.asm.html#L950"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>SETUP2</code> defines a secondary sixteen-bit setup and structural alignment word in the calibration identification header. Factory configured to zero zero seventy-three, <code>SETUP2</code> provides fixed padding and metadata formatting between the primary synchronization bytes and the calibration checksum fixup location. It ensures that critical calibration header entries align predictably with factory diagnostic memory pointers and automated flashing tools used during manufacturing and service programming.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Structural Header Padding</strong>: * Maintains strict byte alignment and memory spacing for diagnostic access routines.</li>
+<li><strong>No Engine Influence</strong>: * Has zero interaction with fuel injection, spark advance, or idle air control.</li>
+<li><strong>Preserve Stock Value</strong>: * Keep at factory setting to maintain standard memory structure and checksum stability.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during key-on system boot, setting hardware configuration parameters and MCU control register flags.</p>
+<ul>
+<li>Evaluated inside <code>MainProgramLoop</code> at line 950 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>SETUP2</code> at ROM address <code>0x800A</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>MainProgramLoop</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- MainProgramLoop (T-SBEC_v4.asm:948-954) ---
+; begin code
+; *****************************************************************************
+
+	.org CodeOrg
+        .msg &quot;Assembling Code...&quot;
+
+</code></pre>
+<p>The CPU executes <code>MainProgramLoop</code> where <code>SETUP2</code> is loaded, compared, or interpolated from ROM address <code>0x800A</code> at line 950.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Header Alignment</strong>: Positioned between <a href="../../0_-_Setup/B_-_Cal_ID/SpecialBytes.html"><code>SETUP</code></a> and <a href="../../0_-_Setup/B_-_Cal_ID/CHKFIX_ChecksumFixupValue.html"><code>CHKFIX</code></a> in the calibration ROM header.</li>
+<li><strong>Structural Fixed Constant</strong>: Configured to 0x0073 in factory 2.5L Turbo I calibrations.</li>
+<li><strong>Checksum Contributor</strong>: Contributes directly to the cumulative checksum evaluated at startup.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>SETUP2</code>
+        </footer>
+    </div>
+</body>
+</html>

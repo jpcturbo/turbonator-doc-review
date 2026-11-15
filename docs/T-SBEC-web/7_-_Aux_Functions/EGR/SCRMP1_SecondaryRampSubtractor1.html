@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCRMP1: SecondaryRampSubtractor1 | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x89FB</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ EGR</strong> &nbsp;|&nbsp; Subsystem: <strong>EGR_Emissions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>SCRMP1: SecondaryRampSubtractor1</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>SCRMP1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>SCRMP1_SecondaryRampSubtractor1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">EGR_Emissions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\EGR\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x89FB</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Time Duration (seconds or loop counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L7693-L7704"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L3295"><code>WorkWithSecondaryRamp</code></a> in <a href="../../T-SBEC_v4.asm.html#L3301"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>SCRMP1</code> (SecondaryRampSubtractor1) establishes the closed-loop oxygen sensor toggle duration modifier used specifically while Phase 2 of the Exhaust Gas Recirculation diagnostic verification routine is active. In normal closed-loop operation, the engine controller looks up secondary ramp timing from a 2D table to pace how rapidly the oxygen sensor feedback counter toggles rich and lean. However, during Phase 2 EGR flow verification, the controller needs heightened sensitivity to detect the rapid exhaust gas composition change when the EGR valve shuts off. At line 3201 in the secondary ramp handler, if Phase 2 is active, the controller subtracts <code>SCRMP1</code> from the toggle timer instead of the standard table lookup value. The factory setting of 2 counts accelerates the oxygen sensor switching rate, ensuring rapid feedback response during the diagnostic test.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Raising SCRMP1</strong>: Accelerates the closed-loop oxygen sensor toggle rate during Phase 2 testing, improving detection speed on older or slower-responding narrowband sensors.</li>
+<li><strong>Lowering SCRMP1</strong>: Slows down the closed-loop integrator adjustment rate during Phase 2. Useful on modified engines with large fuel injectors to avoid overshooting stoichiometric fueling during the test.</li>
+<li><strong>EGR Diagnostic Cross-Coupling</strong>: Directly linked to <code>EGRVar2</code> bit 7; has no effect during normal driving outside of active Phase 2 flow verification.</li>
+<li><strong>Factory Calibration</strong>: 2 counts provides an optimal balance between fast transient detection and closed-loop fuel stability.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during closed-loop operation, establishing the secondary O2 ramp rate under low-speed conditions.</p>
+<ul>
+<li>Evaluated inside <code>WorkWithSecondaryRamp</code> at line 3301 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>SCRMP1</code> at ROM address <code>0x89FB</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>WorkWithSecondaryRamp</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- WorkWithSecondaryRamp (T-SBEC_v4.asm:3299-3305) ---
+           ldaa Timer_O2ToggleDuration    ; load a with memory contents
+           brclr *EGRVar2, #$%10000000, LA1C7    ; branch if bit(s) clear
+           suba SCRMP1_SecondaryRampSubtractor1    ;  (data is 10)
+           bra  LA1C8          ; branch
+
+   LA1C7:  sba                 ; subtract (a=a-b)
+   LA1C8:  bcc  O2_SensorStuckOnOneSideTooLong    ; branch if greater or equal</code></pre>
+<p>The CPU executes <code>WorkWithSecondaryRamp</code> where <code>SCRMP1</code> is loaded, compared, or interpolated from ROM address <code>0x89FB</code> at line 3301.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Single-Byte Type 3 Constant</strong>: Located at calibration address 0x1AD7 (calculated ROM address 0x86EA / template org 0x8832).</li>
+<li><strong>Subsystem Bridge</strong>: Forms a direct control linkage between the EGR diagnostic monitor and the primary closed-loop O2 feedback routine.</li>
+<li><strong>Subtractor Arithmetic</strong>: Replaces table lookup subtraction with a fixed scalar subtraction of 2 counts when Phase 2 is running.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>SCRMP1</code>
+        </footer>
+    </div>
+</body>
+</html>

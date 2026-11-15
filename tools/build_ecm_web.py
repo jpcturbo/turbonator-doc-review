@@ -1638,6 +1638,7 @@ def validate_site_links(output_dir: str) -> tuple[int, list[str]]:
                 target_rel = href.split('#')[0].split('?')[0]
                 if not target_rel:
                     continue
+                target_rel = html.unescape(target_rel)
                 target_abs = os.path.normpath(os.path.join(root, target_rel))
                 total_links_checked += 1
                 if not os.path.exists(target_abs):

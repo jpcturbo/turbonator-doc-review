@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFRPM1: 2050RPM DecelFuelShutoffTurnonLimit | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x80CC</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>OB    Speed    and Rev Limiter</strong> &nbsp;|&nbsp; Subsystem: <strong>Limiters_Limp</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DFRPM1: 2050RPM DecelFuelShutoffTurnonLimit</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DFRPM1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_2050RPM_DecelFuelShutoffTurnonLimit</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Limiters_Limp</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>OB____Speed____and_Rev_Limiter\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x80CC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x26                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L1214-L1225"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L6979"><code>Cutout_UseHysteresisToDetermineWhenToTurnFuelBackOn</code></a> in <a href="../T-SBECII_v1.asm.html#L6992"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DFRPM1</code> defines the engine speed recovery threshold that restores fuel injection following deceleration fuel shutoff initiated through the high-RPM over-rev decel pathway. When a vehicle decelerates from high engine speed with the throttle closed, the controller cuts fuel injection to improve fuel economy, lower exhaust emissions, and provide engine braking. As the vehicle slows and engine speed falls toward idle, fuel must be restored before the engine reaches idle speed to prevent stalling or rough engine sag. In factory calibrations, <code>DFRPM1</code> is set to 64 counts, representing approximately 2050 RPM. If deceleration fuel cut was latched via <code>Turbonator_OverRev</code>, the controller maintains fuel shutoff until engine speed decelerates below <code>DFRPM1</code>, at which point fuel injection resumes smoothly.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Exhaust Pop &amp; Stall Prevention</strong>: * Raising <code>DFRPM1</code> to 2400 to 2600 RPM restores fuel earlier, preventing exhaust backfire and stalling on lightweight flywheels.</li>
+<li><strong>Engine Braking &amp; Economy</strong>: * Lowering <code>DFRPM1</code> toward 1600 RPM extends fuel cut duration during coast-down, enhancing engine braking.</li>
+<li><strong>Idle Transition Stability</strong>: * Keep <code>DFRPM1</code> safely above target idle speed to prevent engine sag when returning to idle.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during closed-throttle deceleration from high engine speed, restoring fuel injection once engine RPM drops below approximately 2,050 RPM to prevent engine stalling.</p>
+<ul>
+<li>Evaluated inside <code>Cutout_UseHysteresisToDetermineWhenToTurnFuelBackOn</code> at line 6992 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>DFRPM1</code> at ROM address <code>0x80CC</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>Cutout_UseHysteresisToDetermineWhenToTurnFuelBackOn</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- Cutout_UseHysteresisToDetermineWhenToTurnFuelBackOn (T-SBECII_v1.asm:6990-6996) ---
+           brclr *BitFlags67, #b67_FallToIdle, Cutout_TurnFuelBackOn    ; branch if bit(s) clear
+           ldaa  EngineRpm_HB    ; load A with memory contents
+           cmpa  DFRPM1_2050RPM_DecelFuelShutoffTurnonLimit    ; compare A with memory contents (data is 1c)
+           bcs   Cutout_TurnFuelBackOn    ; branch if lower
+           ldaa  Temp0         ; load A with memory contents
+           cmpa  DFS20L_20MPHDecelFuelShutoffSpeedLimitON    ; compare A with memory contents (data is 14)
+           bcs   Cutout_TurnFuelBackOn    ; branch if lower</code></pre>
+<p>The CPU executes <code>Cutout_UseHysteresisToDetermineWhenToTurnFuelBackOn</code> where <code>DFRPM1</code> is loaded, compared, or interpolated from ROM address <code>0x80CC</code> at line 6992.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Hysteresis Entry</strong>: Companion restore setpoint to <a href="../OB____Speed____and_Rev_Limiter/T_2550RPM_DecelFuelShutoffUpperRpmLimit.html"><code>DFRPM2</code></a> (upper decel fuel cut arming threshold).</li>
+<li><strong>RPM Scaling</strong>: Scaled at 32 RPM per count ($8160 / 255$). 64 counts equals 64 × 32 = 2048 RPM, matching the label's '2050RPM'.</li>
+<li><strong>Stage IV Setting</strong>: In Stage IV calibrations, <code>DFRPM1</code> is set to 173 counts (approx 5536 RPM).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>DFRPM1</code>
+        </footer>
+    </div>
+</body>
+</html>

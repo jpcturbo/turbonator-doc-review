@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPMMAP: SwitchPointForDownUp FromRpm | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x845F</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ D - Transient Enrichment ➔ Part Throttle Enrichment</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>RPMMAP: SwitchPointForDownUp FromRpm</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>RPMMAP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>RPMMAP_SwitchPointForDownUp_FromRpm</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\D_-_Transient_Enrichment\Part_Throttle_Enrichment\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x845F</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (6-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">6 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">RPM 0 8160 rpm</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">MAP -14.7 14.7 psi</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x05                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-SBEC_25_MTX_A593_Stock.tpl.html#L2523-L2540"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-SBEC_v4.asm.html#L6245"><code>CalculatePartThrottleEnrichmentAndSparkScatterFuel_MM</code></a> in <a href="../../../T-SBEC_v4.asm.html#L6246"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>RPMMAP</code> defines the manifold pressure threshold curve across engine speed that separates the increasing part-throttle enrichment zone from the decreasing part-throttle enrichment zone. During moderate to heavy acceleration before wide-open throttle is reached, the engine controller requires open-loop fuel enrichment to prevent lean misfires and assist turbocharger spool-up. The controller looks up the switchpoint from <code>RPMMAP</code> based on current engine speed and compares it to manifold absolute pressure. When manifold pressure exceeds the curve, the controller increments the open-loop enrichment multiplier. When manifold pressure falls below the curve, the controller decrements the enrichment multiplier back toward baseline. The factory curve transitions from positive boost of approximately 3.1 psi at 2900 RPM down to 9.2 psi of vacuum at 5200 RPM.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Enrichment Onset Threshold</strong>: Lowering table pressure values causes the controller to trigger part-throttle enrichment earlier in the manifold pressure sweep, eliminating lean flat spots and hesitation during moderate pedal tip-in.</li>
+<li><strong>Highway Cruise Economy</strong>: Raising table pressure values delays enrichment until higher manifold boost levels are attained, improving fuel economy during light-load highway cruising.</li>
+<li><strong>3-Bar MAP Recalibration</strong>: When tuning vehicles converted to 3-bar MAP sensors, rescale table pressure values so that the intended boost and vacuum trigger boundaries correspond accurately to the new sensor voltage scaling.</li>
+<li><strong>Camshaft and Drivability Matching</strong>: Engines with high-flow cylinder heads or free-flowing exhaust systems spool turbos faster, often benefiting from a flatter threshold curve that enriches fueling as soon as positive manifold pressure builds.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during moderate to heavy acceleration before wide-open throttle is reached, the engine controller requires open-loop fuel enrichment to prevent lean misfires and assist turbocharger spool-up.</p>
+<ul>
+<li>Evaluated inside <code>CalculatePartThrottleEnrichmentAndSparkScatterFuel_MM</code> at line 6246 in <a href="../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>RPMMAP</code> at ROM address <code>0x845F</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CalculatePartThrottleEnrichmentAndSparkScatterFuel_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculatePartThrottleEnrichmentAndSparkScatterFuel_MM (T-SBEC_v4.asm:6244-6250) ---
+
+CalculatePartThrottleEnrichmentAndSparkScatterFuel_MM:
+           ldx  #RPMMAP_SwitchPointForDownUp_FromRpm    ; load index with value
+           brclr *b5c_IPL1, #$%00001000, LBBE5    ; branch if bit(s) clear
+           ldx  #RPMMP2_SwitchPointForDownUp_FromRpm2        ; load index with value
+   LBBE5:  ldaa EngineRpm_HB    ; load a with memory contents
+           jsr  Lookup4ByteTable    ; call subroutine</code></pre>
+<p>The CPU executes <code>CalculatePartThrottleEnrichmentAndSparkScatterFuel_MM</code> where <code>RPMMAP</code> is loaded, compared, or interpolated from ROM address <code>0x845F</code> at line 6246.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Nomenclature Clarification</strong>: Despite the short name <code>RPMMAP</code> which led some legacy tuners to assume it is indexed by manifold pressure, the assembly routine confirms it is indexed by engine RPM and outputs the manifold pressure switchpoint.</li>
+<li><strong>Companion Parameters</strong>: Works directly with <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTENR_EppPerAmountForIncreasing.html"><code>PTENR</code></a>, <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTENR2_EppPerAmountForDecreasingMultiplier.html"><code>PTENR2</code></a>, <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTENRD_AmountForDecreasingMultiplier_Negative.html"><code>PTENRD</code></a>, <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTELMT_MultiplierMaxLimitFromRpm.html"><code>PTELMT</code></a>, and <a href="../../../1_-_Fuel/D_-_Transient_Enrichment/Part_Throttle_Enrichment/PTEADJ_EnrichAdjust_FromMap.html"><code>PTEADJ</code></a>.</li>
+<li><strong>Firmware Lineage</strong>: Retained across Chrysler SBEC versions as the master boundary governing part-throttle transient enrichment direction.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>RPMMAP</code>
+        </footer>
+    </div>
+</body>
+</html>

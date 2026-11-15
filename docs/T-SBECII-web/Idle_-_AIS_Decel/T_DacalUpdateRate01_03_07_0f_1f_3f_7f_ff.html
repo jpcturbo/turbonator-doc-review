@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCALRT: DacalUpdateRate01 03 07 0f 1f 3f 7f ff | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x9299</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DCALRT: DacalUpdateRate01 03 07 0f 1f 3f 7f ff</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DCALRT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_DacalUpdateRate01_03_07_0f_1f_3f_7f_ff</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x9299</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">8-bit Unsigned Scaling Factor (0 to 255 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x7F                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L10107-L10118"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L1950"><code>CalculateAisPosition</code></a> in <a href="../T-SBECII_v1.asm.html#L2049"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DCALRT</code> defines the loop counter bitmask that paces the execution frequency of the DACAL adaptive idle airflow integrator. Adaptive idle air learning compensates for long-term mechanical changes in the engine, such as throttle body carbon buildup, PCV valve wear, or minor vacuum leaks. Because these physical changes occur very slowly over weeks and months, the adaptive learning integrator must update at an extremely deliberate pace so that temporary intake manifold pressure fluctuations are ignored. <code>DCALRT</code> masks the main program loop counter to enforce a slow learning rate. In factory calibrations, <code>DCALRT</code> is set to 127 counts, representing a binary bitmask allowing the integrator to adjust only once every 128 main loop passes, or approximately every 1.4 seconds.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Dyno Tuning &amp; Fast Learning</strong>: * Temporarily lower <code>DCALRT</code> to 31 or 15 counts during dyno calibration to accelerate adaptive airflow learning.</li>
+<li><strong>Street Stability</strong>: * Retain factory setting of 127 counts (every 128th loop) for normal driving to ensure long-term stability and filter out short-term vacuum perturbations.</li>
+<li><strong>Mask Formatting</strong>: * Must be configured as a power-of-two minus one value (15, 31, 63, 127, 255).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect at closed throttle idle to regulate ff.</p>
+<ul>
+<li>Evaluated inside <code>CalculateAisPosition</code> at line 2049 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>DCALRT</code> at ROM address <code>0x9299</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CalculateAisPosition</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateAisPosition (T-SBECII_v1.asm:2047-2053) ---
+           brclr *PIA2_Buffer, #$%00000001, L9E77    ; branch if bit(s) clear
+           ldaa  Counter_MainLoop    ; load A with memory contents
+           bita  DCALRT_DacalUpdateRate01_03_07_0f_1f_3f_7f_ff    ;  (data is 7f)
+           bne   L9E28         ; branch if not equal (not zero)
+           ldab  Timer_DacalCountdown    ; load B with memory contents
+           ldaa  TempX         ; load A with memory contents
+           cmpa  MapValue      ; compare A with memory contents</code></pre>
+<p>The CPU executes <code>CalculateAisPosition</code> where <code>DCALRT</code> is loaded, compared, or interpolated from ROM address <code>0x9299</code> at line 2049.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameter</strong>: Direct pacing partner to <code>Timer_DacalCountdown</code> and <a href="../Idle_-_AIS_Decel/T_DeltaRpmFromIdleSpeedForDacalUpdate.html"><code>DADRPM</code></a>.</li>
+<li><strong>Loop Clock Reference</strong>: Paced by <code>Counter_MainLoop</code> (~11 ms per tick, 128 ticks = ~1.4 seconds).</li>
+<li><strong>Factory Value</strong>: 0x7F (127 counts = every 128th loop execution).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>DCALRT</code>
+        </footer>
+    </div>
+</body>
+</html>

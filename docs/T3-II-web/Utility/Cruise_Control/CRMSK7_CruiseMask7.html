@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRMSK7: CruiseMask7 | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x902B</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Utility ➔ Cruise Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Cruise_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CRMSK7: CruiseMask7</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CRMSK7</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CRMSK7_CruiseMask7</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Cruise_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Utility\Cruise_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x902B</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">8-bit Unsigned Scaling Factor (0 to 255 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x01                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3ii_T3_MTX.tpl.html#L6761-L6772"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_IIv1.asm.html#L10918"><code>ControlCruiseServo0_MM</code></a> in <a href="../../T-T3_IIv1.asm.html#L11483"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CRMSK7</code> defines the step increment added to the adaptive integrator trim when accumulated servo error exceeds <a href="../../Utility/Cruise_Control/CRMSK2_CruiseMask2.html"><code>CRMSK2</code></a>. When a vehicle begins climbing an extended highway grade, proportional gain increases throttle opening, but some speed droop may persist. To eliminate this steady-state offset, the cruise controller slowly steps up the baseline throttle trim by <code>CRMSK7</code> on each evaluation pass. In factory calibrations, <code>CRMSK7</code> is set to 1 count, delivering a gradual, steady ramp rate that prevents step-induced throttle oscillations.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Integrator Ramp-Up Rate</strong>: * Governs the step increment added to <code>BitFlags_27</code> when climbing steady highway grades. * Factory 1 count provides gentle, seamless throttle adjustment.</li>
+<li><strong>Mountain &amp; Heavy Load Tuning</strong>: * Increasing to 2 counts helps heavy vehicles adapt to steep grades more quickly.</li>
+<li><strong>Clamp Boundary</strong>: * Ramp-up is bounded by upper clamp ceiling <a href="../../Utility/Cruise_Control/CRMSK6_CruiseMask6.html"><code>CRMSK6</code></a> (30 counts).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when a vehicle begins climbing an extended highway grade, proportional gain increases throttle opening, but some speed droop may persist.</p>
+<ul>
+<li>Evaluated inside <code>ControlCruiseServo0_MM</code> at line 11483 in <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>CRMSK7</code> at ROM address <code>0x902B</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>ControlCruiseServo0_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- ControlCruiseServo0_MM (T-T3_IIv1.asm:11481-11487) ---
+           bra  LE93C          ; branch
+
+   LE931:  addb CRMSK7_CruiseMask7    ;  (data is 01)
+           cmpb CRMSK6_CruiseMask6    ; compare b with memory contents (data is 1f)
+           ble  LE93C          ; branch if less or equal
+           ldab CRMSK6_CruiseMask6    ; load b with memory contents (data is 1f)
+   LE93C:  stab 0x00, X</code></pre>
+<p>The CPU executes <code>ControlCruiseServo0_MM</code> where <code>CRMSK7</code> is loaded, compared, or interpolated from ROM address <code>0x902B</code> at line 11483.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Ramp Increment</strong>: Factory calibrated to 0x01 (+1 count).</li>
+<li><strong>Asymmetrical Pairing</strong>: Paired with <a href="../../Utility/Cruise_Control/CRMSK4_CruiseMask4.html"><code>CRMSK4</code></a> (decrement of 2 counts), providing a faster recovery rate than ramp rate.</li>
+<li><strong>Target Variable</strong>: Directly updates learned trim variable <code>BitFlags_27</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>CRMSK7</code>
+        </footer>
+    </div>
+</body>
+</html>

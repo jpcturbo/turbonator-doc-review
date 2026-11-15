@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CELCHG: BitsChangePerUpdateWithinACell | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8050</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - Adaptive memory</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CELCHG: BitsChangePerUpdateWithinACell</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CELCHG</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_BitsChangePerUpdateWithinACell</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_Adaptive_memory\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8050</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">8-bit Unsigned Scaling Factor (0 to 255 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x01                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L720-L731"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L3465"><code>UpdateAdaptive_OffIdle</code></a> in <a href="../T-SBECII_v1.asm.html#L3479"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CELCHG</code> defines the incremental step size in bits by which an active adaptive fuel memory cell is adjusted whenever an update event occurs. The SBEC-II applies long-term fuel trim using a signed mathematical modifier where one unit in an AutoCal cell represents approximately 0.1953 percent (about 0.2 percent) of base fuel delivery. In stock calibrations, <code>CELCHG</code> is set to 1 count (1 bit). When the update timer expires and short-term trim indicates a rich or lean bias, the active cell is stepped by exactly <code>CELCHG</code> toward stoichiometric balance, ensuring gradual and stable long-term learning without sudden fueling jumps.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Adaptation Speed</strong>: * Higher values (2-3 counts) speed up the rate at which adaptive cells correct for fuel delivery errors, useful when testing new calibrations.</li>
+<li><strong>Fuel Trim Stability</strong>: * The factory setting of 1 count ensures very smooth, non-intrusive adaptation (approx 0.2% per update).</li>
+<li><strong>Freezing Adaptive Memory</strong>: * Setting <code>CELCHG</code> to 0 freezes all 13 adaptive cells in their current state, preventing further updates while retaining existing trim offsets.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when transitioning between adaptive fuel cells, enforcing a delay timer before the new cell's adaptive trim begins updating.</p>
+<ul>
+<li>Evaluated inside <code>UpdateAdaptive_OffIdle</code> at line 3479 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>CELCHG</code> at ROM address <code>0x8050</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>UpdateAdaptive_OffIdle</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- UpdateAdaptive_OffIdle (T-SBECII_v1.asm:3477-3483) ---
+           staa  AdaptiveCellUpdateTimer_IncrementedEveryCamRisingEdge    ; store A into memory
+           cli                 ; enable interrupts
+           ldaa  CELCHG_BitsChangePerUpdateWithinACell    ; load A with memory contents (data is 01)
+           ldab  Counter_O2SensorFeedbackCount_Signed    ; load B with memory contents
+           bpl   LA8FF         ; branch if plus (hi bit 0)
+           nega                ; negate A (set high bit)
+   LA8FF:  ldab  AMLIMH_MaxMultiplierCannotBeAbove7F    ; load B with memory contents (data is 00)</code></pre>
+<p>The CPU executes <code>UpdateAdaptive_OffIdle</code> where <code>CELCHG</code> is loaded, compared, or interpolated from ROM address <code>0x8050</code> at line 3479.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Works with <a href="../Fuel_-_Adaptive_memory/T_EPPsBetweenCalChangeUpdateOpenThrottle.html"><code>AMUPDT</code></a>/<a href="../Fuel_-_Adaptive_memory/T_EPPsBetweenCalChangeUpdateClosedThrottle.html"><code>AMUPDI</code></a> (update frequency) and <a href="../Fuel_-_Adaptive_memory/T_MaxMultiplierCannotBeAbove7F.html"><code>AMLIMH</code></a>/<a href="../Fuel_-_Adaptive_memory/T_MinMultiplierCannotBeBelow80.html"><code>AMLIML</code></a> (clamping limits).</li>
+<li><strong>Mathematical Impact</strong>: 1 count = 1 bit = 1/512 = 0.001953 (approx 0.1953% fuel trim per update).</li>
+<li><strong>Persistence</strong>: Persisted directly into EEPROM cell array <code>AutoCalCell0</code> through <code>AutoCalCell12</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>CELCHG</code>
+        </footer>
+    </div>
+</body>
+</html>

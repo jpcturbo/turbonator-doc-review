@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STRNTR: SparkStartRunTransferPointRpm | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x819A</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>2 - Spark ➔ F - Start to Run Transfer</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>STRNTR: SparkStartRunTransferPointRpm</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>STRNTR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>STRNTR_SparkStartRunTransferPointRpm</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>2_-_Spark\F_-_Start_to_Run_Transfer\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x819A</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x62                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L1422-L1433"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L7241"><code>RpmBelowStartRunTransfer</code></a> in <a href="../../T-SBEC_v4.asm.html#L7248"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>STRNTR</code> defines the engine speed distributor pulse period threshold required to transfer ignition control from cranking Start Mode to normal running Run Mode. During engine cranking with the starter motor, crankshaft rotation is slow and irregular (typically 150 to 250 RPM). The engine controller holds fixed base trigger spark advance and cranking dwell until the engine catches and spins past <code>STRNTR</code>. In period-based timing logic, smaller count values represent faster engine speeds. In factory calibrations, <code>STRNTR</code> is set to 49 counts, corresponding to approximately 612 RPM. Once the distributor pulse period drops below <code>STRNTR</code> for the consecutive pulse count specified by <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME_SparkEPPsNeededToBeAboveSR_Hot.html"><code>SRTIME</code></a> or <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME2_SparkEPPsNeededToBeAboveSR_Cold.html"><code>SRTIME2</code></a>, the controller formally transitions ignition into Run Mode.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Period-vs-RPM Inverse Relationship</strong>: * Increasing <code>STRNTR</code> lowers the target transfer RPM (RPM ≈ 30000 / count); decreasing <code>STRNTR</code> raises the required RPM flare.</li>
+<li><strong>Cold Start Flare Tuning</strong>: * If an engine catches on cold mornings but stumbles and stalls when releasing the key, raising <code>STRNTR</code> slightly can help bridge the transfer into running spark tables sooner.</li>
+<li><strong>Starter Kickback Prevention</strong>: * Keep <code>STRNTR</code> comfortably above maximum starter cranking speed (at least 550 to 600 RPM) to prevent premature advance during cranking.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during engine cranking with the starter motor, crankshaft rotation is slow and irregular (typically 150 to 250 RPM).</p>
+<ul>
+<li>Evaluated inside <code>RpmBelowStartRunTransfer</code> at line 7248 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>STRNTR</code> at ROM address <code>0x819A</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>RpmBelowStartRunTransfer</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- RpmBelowStartRunTransfer (T-SBEC_v4.asm:7246-7252) ---
+           cmpb SKAPRD_SparkImmediateSwitchToRunAboveThisRpm    ; compare b with memory contents (data is 48)
+           bcs  ENGINE_IDLING_FASTERTHAN_813RPM    ; branch if lower
+           cmpb STRNTR_SparkStartRunTransferPointRpm    ; compare b with memory contents (data is 62)
+           bcs  ENGINE_IDLING_BETWEEN598_813RPM    ; branch if lower
+           brclr *BitFlags6d, #b6d_DisableNormalDwell, LC35A    ; branch if bit(s) clear
+           clra                ; a = 0
+           staa Timer_NormalDwell    ; store a into memory</code></pre>
+<p>The CPU executes <code>RpmBelowStartRunTransfer</code> where <code>STRNTR</code> is loaded, compared, or interpolated from ROM address <code>0x819A</code> at line 7248.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Period Scaling</strong>: 1 count represents period duration (RPM ≈ 30,000 / count). Factory setting 0x31 = 49 counts ≈ 612 RPM.</li>
+<li><strong>Consecutive Pulses Required</strong>: Crossing <code>STRNTR</code> does not transfer instantly; engine must sustain speed for <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME_SparkEPPsNeededToBeAboveSR_Hot.html"><code>SRTIME</code></a> or <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SRTIME2_SparkEPPsNeededToBeAboveSR_Cold.html"><code>SRTIME2</code></a> pulses.</li>
+<li><strong>Companion Thresholds</strong>: Paired with <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/RNSTTR_SparkRunStartTransferPointRpm.html"><code>RNSTTR</code></a> (stall return) and <a href="../../2_-_Spark/F_-_Start_to_Run_Transfer/SKAPRD_SparkImmediateSwitchToRunAboveThisRpm.html"><code>SKAPRD</code></a> (immediate bypass).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>STRNTR</code>
+        </footer>
+    </div>
+</body>
+</html>

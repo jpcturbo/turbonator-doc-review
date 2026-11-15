@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HIGHM2: ColdLoadFromCoolantTemp2 | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8366</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ C - Modifiers</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Base_Modifiers</strong>
+        </div>
+        
+        <article class="content">
+            <h1>HIGHM2: ColdLoadFromCoolantTemp2</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>HIGHM2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>HIGHM2_ColdLoadFromCoolantTemp2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Base_Modifiers</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\C_-_Modifiers\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8366</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (3-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">3 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Temp -200 260 degrees</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">enrichment 0 99.6 percent</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Temperature (°F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L2035-L2048"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L6453"><code>IncludePartThrottleEnrichmentIfNotFullThrottle</code></a> in <a href="../../T-SBEC_v4.asm.html#L6460"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>HIGHM2</code> defines the part-throttle cold load enrichment curve indexed by engine coolant temperature. When the driver depresses the accelerator pedal and moves off-idle (setting flag <code>b4f_OffIdle</code>), the engine transitions from idle loading to driving load. The controller automatically switches from <a href="../../1_-_Fuel/C_-_Modifiers/HIGHMP_ColdLoadFromCoolantTemp.html"><code>HIGHMP</code></a> to <code>HIGHM2</code>, tailoring cold enrichment specifically for part-throttle acceleration and cruising while the engine is warming up. <code>HIGHM2</code> provides independent temperature scaling that multiplies against part-throttle manifold pressure curve <a href="../../1_-_Fuel/C_-_Modifiers/HMPMU2_ColdLoadFromMAP2.html"><code>HMPMU2</code></a>.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Cold Part-Throttle Acceleration</strong>: * Increase <code>HIGHM2</code> if the vehicle hesitates or stumbles under light acceleration while warming up.</li>
+<li><strong>Off-Idle Transition</strong>: * Selected automatically whenever <code>b4f_OffIdle</code> is set, isolating driving enrichment from closed-throttle idle enrichment.</li>
+<li><strong>Injector Size Compensation</strong>: * Scale table values down proportionally with injector flow increases to avoid rich loading on cold acceleration.</li>
+<li><strong>Bypass at WOT</strong>: * Automatically bypassed when full throttle is reached, preventing double-enrichment over <a href="../../1_-_Fuel/B_-_Running/WOTTBL_FuelFullThrottle.html"><code>WOTTBL</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the driver depresses the accelerator pedal and moves off-idle (setting flag b4f_OffIdle), the engine transitions from idle loading to driving load.</p>
+<ul>
+<li>Evaluated inside <code>IncludePartThrottleEnrichmentIfNotFullThrottle</code> at line 6460 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>HIGHM2</code> at ROM address <code>0x8366</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>IncludePartThrottleEnrichmentIfNotFullThrottle</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- IncludePartThrottleEnrichmentIfNotFullThrottle (T-SBEC_v4.asm:6458-6464) ---
+           brset *BitFlags66, #b66_FullThrottle, LBDA7    ; branch if bit(s) set
+           brset *BitFlags66, #b66_PTEisMaxed, LBDA7    ; branch if bit(s) set
+           ldx  #HIGHM2_ColdLoadFromCoolantTemp2    ; load index with value
+           brset *BitFlags66, #b66_OffIdle, LBD85    ; branch if bit(s) set
+           ldx  #HIGHMP_ColdLoadFromCoolantTemp    ; load index with value
+   LBD85:  ldaa CoolantTemp    ; load a with memory contents
+           jsr  Lookup4ByteTable    ; call subroutine</code></pre>
+<p>The CPU executes <code>IncludePartThrottleEnrichmentIfNotFullThrottle</code> where <code>HIGHM2</code> is loaded, compared, or interpolated from ROM address <code>0x8366</code> at line 6460.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>SBEC Dual Calibration</strong>: SBEC firmware features separate idle (<a href="../../1_-_Fuel/C_-_Modifiers/HIGHMP_ColdLoadFromCoolantTemp.html"><code>HIGHMP</code></a>) and off-idle (<code>HIGHM2</code>) cold load curves, allowing precise drivability tuning.</li>
+<li><strong>Paired with HMPMU2</strong>: Multiplied by <a href="../../1_-_Fuel/C_-_Modifiers/HMPMU2_ColdLoadFromMAP2.html"><code>HMPMU2</code></a> to form total cold part-throttle load enrichment.</li>
+<li><strong>Factory Table</strong>: 3-point curve that tapers to zero enrichment by 95 degF.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>HIGHM2</code>
+        </footer>
+    </div>
+</body>
+</html>

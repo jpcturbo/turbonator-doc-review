@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DLTMAP: MapHysteresisAtMapCellBoundaries | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x804B</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - Adaptive memory</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DLTMAP: MapHysteresisAtMapCellBoundaries</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DLTMAP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_MapHysteresisAtMapCellBoundaries</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_Adaptive_memory\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x804B</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Boost Pressure (psi)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L659-L671"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L3515"><code>AdaptiveMemory_DetermineWhichCellApplies_MM</code></a> in <a href="../T-SBECII_v1.asm.html#L3536"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DLTMAP</code> establishes the directional manifold absolute pressure hysteresis added to each boundary point when determining whether to transition into a higher-load adaptive memory cell. Without hysteresis, small manifold pressure pulses caused by intake valve events could cause the engine controller to rapidly bounce between adjacent cells when cruising precisely at a boundary line. In factory calibrations, <code>DLTMAP</code> is set to 2 counts, corresponding to approximately 0.23 psi or 0.47 inHg of vacuum. This provides a stable deadband that prevents cell chatter and ensures consistent long-term fuel trim learning.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Camshaft and Pulsation Damping</strong>: * Increasing <code>DLTMAP</code> to 3 or 4 counts stabilizes cell selection on engines with erratic intake vacuum caused by high-overlap camshafts.</li>
+<li><strong>Cell Switching Responsiveness</strong>: * Lowering <code>DLTMAP</code> to 1 count allows faster cell transitions during throttle movement, but setting to zero causes boundary chatter.</li>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>: * Because each count on a 3-bar sensor represents 0.173 psi rather than 0.115 psi, leaving <code>DLTMAP</code> at 2 counts widens the physical hysteresis window to 0.35 psi.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when operating near adaptive cell boundaries, providing manifold pressure hysteresis deadband to prevent erratic jumping between adjacent adaptive cells.</p>
+<ul>
+<li>Evaluated inside <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code> at line 3536 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>DLTMAP</code> at ROM address <code>0x804B</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- AdaptiveMemory_DetermineWhichCellApplies_MM (T-SBECII_v1.asm:3534-3540) ---
+           cmpb  Temp0
+           bcc   LA95B         ; branch if greater or equal
+           adda  DLTMAP_MapHysteresisAtMapCellBoundaries    ;  (data is 02)
+   LA95B:  cmpa  MapValue      ; compare A with memory contents
+           bcc   LA96B         ; branch if greater or equal
+           inX                 ; increment index (I=I+1)
+ONTHROTTLE_OR_RPMTOOHIGHFORIDLE:</code></pre>
+<p>The CPU executes <code>AdaptiveMemory_DetermineWhichCellApplies_MM</code> where <code>DLTMAP</code> is loaded, compared, or interpolated from ROM address <code>0x804B</code> at line 3536.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Applied universally across boundaries <a href="../Fuel_-_Adaptive_memory/T_AutoCalMapCellBoundary1.html"><code>MP1</code></a>, <a href="../Fuel_-_Adaptive_memory/T_AutoCalMapCellBoundary2.html"><code>MP2</code></a>, <a href="../Fuel_-_Adaptive_memory/T_AutoCalMapCellBoundary3.html"><code>MP3</code></a>, <a href="../Fuel_-_Adaptive_memory/T_AutoCalMapCellBoundary4.html"><code>MP4</code></a>, and <a href="../Fuel_-_Adaptive_memory/T_AutoCalMapCellBoundary5.html"><code>MP5</code></a>.</li>
+<li><strong>Persistence</strong>: Stored in calibration ROM; immediately affects cell selection in RAM variable <code>PointerIntoAdaptiveMemory</code>.</li>
+<li><strong>Mathematical Impact</strong>: 2 counts equals approximately 0.23 psi on a 2-bar sensor and 0.35 psi on a 3-bar sensor.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>DLTMAP</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTUMP2: PTUMAPThresholdForLock2 | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x89A1</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ PTU Control ➔ Entry Conditions</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PTUMP2: PTUMAPThresholdForLock2</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PTUMP2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>PTUMP2_PTUMAPThresholdForLock2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\PTU_Control\Entry_Conditions\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x89A1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Boost Pressure (psi)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x56                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-SBEC_25_MTX_A593_Stock.tpl.html#L7263-L7275"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-SBEC_v4.asm.html#L1"><code>MainProgramLoop</code></a> in <a href="../../../T-SBEC_v4.asm.html#L950"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PTUMP2</code> defines the secondary manifold absolute pressure delta threshold for Part Throttle Unlock lockup enforcement under gentle throttle modulation. In the assembly source, <code>PTUMP2</code> is stored immediately following <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP1_PTUMAPThresholdForLock1.html"><code>PTUMP1</code></a> in ROM and is accessed via an indexed increment (<code>inx</code>) off base pointer <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP1_PTUMAPThresholdForLock1.html"><code>PTUMP1_PTUMAPThresholdForLock1</code></a>. When throttle delta is below <a href="../../../7_-_Aux_Functions/PTU_Control/Hysteresis/PTUDTP_PTUDeltaTPSForUnlock.html"><code>PTUDTP</code></a>, the controller sets state flag <code>b52_PTU_A</code> and advances the pointer to evaluate <code>PTUMP2</code>. In factory calibrations, <code>PTUMP2</code> is configured to 86 counts, corresponding to approximately 9.9 psi on the 0 to 29.4 psi MAP scale. If manifold pressure change exceeds this lower threshold under light pedal application, the torque converter is locked to maintain smooth cruise coupling.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Indexed Offset Access</strong>: * Evaluated via an indexed pointer offset off base symbol <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP1_PTUMAPThresholdForLock1.html"><code>PTUMP1_PTUMAPThresholdForLock1</code></a> at line 10447.</li>
+<li><strong>Gentle Throttle Calibration</strong>: * Governs lockup threshold under light pedal movement (<code>Temp4 &lt; PTUDTP</code>).</li>
+<li><strong>3-Bar MAP Rescaling</strong>: * Rescale <code>PTUMP2</code> to ~57 counts on 3-bar conversions to maintain the 9.9 psi sensitivity window.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when throttle delta is below PTUDTP, the controller sets state flag b52_PTU_A and advances the pointer to evaluate PTUMP2.</p>
+<ul>
+<li>Evaluated inside <code>MainProgramLoop</code> at line 950 in <a href="../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>PTUMP2</code> at ROM address <code>0x89A1</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>MainProgramLoop</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- MainProgramLoop (T-SBEC_v4.asm:948-954) ---
+; begin code
+; *****************************************************************************
+
+	.org CodeOrg
+        .msg &quot;Assembling Code...&quot;
+
+</code></pre>
+<p>The CPU executes <code>MainProgramLoop</code> where <code>PTUMP2</code> is loaded, compared, or interpolated from ROM address <code>0x89A1</code> at line 950.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Indexed Offset Mechanism</strong>: Stored at offset +1 from <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP1_PTUMAPThresholdForLock1.html"><code>PTUMP1_PTUMAPThresholdForLock1</code></a>.</li>
+<li><strong>Hysteresis Pair</strong>: Works with <a href="../../../7_-_Aux_Functions/PTU_Control/Entry_Conditions/PTUMP1_PTUMAPThresholdForLock1.html"><code>PTUMP1</code></a> to provide dual-level load sensitivity based on pedal position.</li>
+<li><strong>Template Alignment</strong>: Defined as <code>PTUMP2_PTUMAPThresholdForLock2</code> at calibration address 0x17CA.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>PTUMP2</code>
+        </footer>
+    </div>
+</body>
+</html>

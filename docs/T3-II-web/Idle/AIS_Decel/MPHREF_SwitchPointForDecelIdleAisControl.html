@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPHREF: SwitchPointForDecelIdleAisControl | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8DC8</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle ➔ AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MPHREF: SwitchPointForDecelIdleAisControl</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MPHREF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MPHREF_SwitchPointForDecelIdleAisControl</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle\AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8DC8</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Stepper Motor Position (steps / counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x07                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3ii_T3_MTX.tpl.html#L4350-L4361"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_IIv1.asm.html#L1685"><code>CalculateTargetIdleSpeedAndAisPosition_MM</code></a> in <a href="../../T-T3_IIv1.asm.html#L1701"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MPHREF</code> defines the critical vehicle speed threshold that separates moving or rolling deceleration logic from stationary closed-throttle idle control. When a vehicle is moving down the road at highway or suburban speeds, letting off the accelerator pedal requires vehicle deceleration dashpot airflow to cushion engine braking. Conversely, when the vehicle comes to a complete standstill, the engine controller must transition into true stationary idle speed regulation to maintain target idle RPM without causing vehicle creeping or engine surging. <code>MPHREF</code> establishes this vehicle speed boundary across multiple engine control routines, incorporating approximately 1.5 mph of built-in hysteresis to prevent rapid cycling around the switch point. In factory calibrations, <code>MPHREF</code> is set to 8 counts, corresponding to a vehicle speed threshold of 4.0 mph.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stop-and-Go Creep Stability</strong>: * Increase <code>MPHREF</code> to 6.0 to 8.0 mph to eliminate low-speed surging when rolling through heavy traffic or parking structures.</li>
+<li><strong>Coasting Stall Prevention</strong>: * Keep <code>MPHREF</code> at 4.0 to 5.0 mph on lightweight flywheel builds to maintain decel dashpot cushioning until the car has virtually halted.</li>
+<li><strong>Speed Threshold Limits</strong>: * Avoid raising <code>MPHREF</code> above 10.0 mph to prevent unwanted idle hunting while coasting down hills.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when a vehicle is moving down the road at highway or suburban speeds, letting off the accelerator pedal requires vehicle deceleration dashpot airflow to cushion engine braking.</p>
+<ul>
+<li>Evaluated inside <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at line 1701 in <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>MPHREF</code> at ROM address <code>0x8DC8</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateTargetIdleSpeedAndAisPosition_MM (T-T3_IIv1.asm:1699-1705) ---
+           lslb
+           adca #0x00          ;  -00000000-
+           cmpa MPHREF_SwitchPointForDecelIdleAisControl    ; compare a with memory contents (data is 07)
+           bcc  L97A1          ; branch if greater or equal
+           ldd  EngineRpm_HB    ; load d (a&amp;b) with memory contents
+           subd TargetIdleSpeedHB    ; d = d - memory contents
+           bcc  L9792          ; branch if greater or equal</code></pre>
+<p>The CPU executes <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> where <code>MPHREF</code> is loaded, compared, or interpolated from ROM address <code>0x8DC8</code> at line 1701.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Pervasive System Threshold</strong>: Referenced across idle speed calculation, throttle decel checking, and rolling cruise/idle routines.</li>
+<li><strong>Hysteresis Offset</strong>: An automatic 1.5 mph hysteresis adder (+3 counts) is applied in routine <code>L1710</code> at line 8447 to prevent boundary flutter.</li>
+<li><strong>Factory Value</strong>: 0x08 (8 counts = 4.0 mph).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>MPHREF</code>
+        </footer>
+    </div>
+</body>
+</html>

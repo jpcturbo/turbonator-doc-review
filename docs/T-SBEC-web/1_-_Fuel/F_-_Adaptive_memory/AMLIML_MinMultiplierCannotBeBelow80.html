@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMLIML: MinMultiplierCannotBeBelow80 | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x84E1</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ F - Adaptive memory</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>AMLIML: MinMultiplierCannotBeBelow80</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>AMLIML</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>AMLIML_MinMultiplierCannotBeBelow80</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\F_-_Adaptive_memory\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x84E1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">8-bit Unsigned Scaling Factor (0 to 255 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x80                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L3077-L3088"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L3403"><code>UpdateAdaptive_OffIdle</code></a> in <a href="../../T-SBEC_v4.asm.html#L3426"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>AMLIML</code> defines the maximum allowable negative fuel leanout floor for all long-term adaptive fuel memory cells (AutoCal cells). When an engine runs rich due to high fuel pressure or vapor recovery purging, the controller removes fuel by decrementing the active cell. In factory calibrations, <code>AMLIML</code> is set to signed -77 counts (stored as 179 unsigned), which corresponds to approximately -15.0 percent maximum fuel reduction. This lower boundary ensures that a stuck-rich oxygen sensor or leaky injector cannot cause the controller to pull excessive fuel and cause severe lean engine misfires.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Constraining Negative Authority</strong>: * Clamping <code>AMLIML</code> to -25 to -30 counts limits maximum leanout to -5% to -6%, protecting modified engines from excessive lean trimming.</li>
+<li><strong>Disabling Long-Term Trims</strong>: * Setting both <code>AMLIML</code> and <a href="../../1_-_Fuel/F_-_Adaptive_memory/AMLIMH_MaxMultiplierCannotBeAbove7F.html"><code>AMLIMH</code></a> to 0 disables adaptive fuel trims entirely without software modifications.</li>
+<li><strong>Formula &amp; Resolution</strong>: * Minimum fuel modifier is <code>1 + (AMLIML / 512)</code>. Factory -77 counts represents -15.0% fuel leanout.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect whenever adaptive fuel trims are updated during driving, capping the maximum allowable negative leanout to prevent excessive leaning.</p>
+<ul>
+<li>Evaluated inside <code>UpdateAdaptive_OffIdle</code> at line 3426 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>AMLIML</code> at ROM address <code>0x84E1</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>UpdateAdaptive_OffIdle</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- UpdateAdaptive_OffIdle (T-SBEC_v4.asm:3424-3430) ---
+           ldaa 0x00, X        ; load a with memory at index + value
+           bpl  Adaptive_SetCellToMaxOrMinValue    ; branch if plus (hi bit 0)
+           ldab AMLIML_MinMultiplierCannotBeBelow80    ; load b with memory contents (data is 80)
+           bra  Adaptive_SetCellToMaxOrMinValue    ; branch
+
+Adaptive_Overflowed:
+           cba</code></pre>
+<p>The CPU executes <code>UpdateAdaptive_OffIdle</code> where <code>AMLIML</code> is loaded, compared, or interpolated from ROM address <code>0x84E1</code> at line 3426.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Counterpart to <a href="../../1_-_Fuel/F_-_Adaptive_memory/AMLIMH_MaxMultiplierCannotBeAbove7F.html"><code>AMLIMH</code></a> (upper limit) and applies across all 13 <code>AutoCalCell</code> locations.</li>
+<li><strong>Mathematical Formula</strong>: Minimum fuel modifier = <code>1 + (AMLIML / 512)</code> = <code>1 + (-77 / 512)</code> = 0.8496 (-15.0%).</li>
+<li><strong>Persistence</strong>: Clamped value is written directly into active EEPROM cell and mirrored in <code>ValueFromAdaptiveMemory</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>AMLIML</code>
+        </footer>
+    </div>
+</body>
+</html>

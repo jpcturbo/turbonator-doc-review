@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DLTKNK: KnockSensorVoltageForKnock FromRpm | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8FA3</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Spark - Knock Retard</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DLTKNK: KnockSensorVoltageForKnock FromRpm</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DLTKNK</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_KnockSensorVoltageForKnock_FromRpm</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Spark_-_Knock_Retard\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8FA3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (6-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">6 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">RPM 0 8192 rpm</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">A2D 0 5 volts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x05                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L8174-L8190"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L10337"><code>CalculateKnockRetard_MM</code></a> in <a href="../T-SBECII_v1.asm.html#L10362"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DLTKNK</code> defines the knock sensor acoustic noise threshold curve indexed by engine speed (RPM). A piezoelectric knock sensor mounted to the engine cylinder block converts structural vibrations into an AC electrical voltage, which the engine controller rectifies and samples. Normal mechanical engine noise—caused by valvetrain harmonics, piston skirt motion, connecting rod bearing reversals, and accessory drives—naturally amplifies as engine speed increases. To prevent normal mechanical noise from falsely triggering knock retard at high RPM, <code>DLTKNK</code> establishes the baseline acoustic threshold: any knock sensor voltage reading exceeding the curve at that RPM is flagged as genuine combustion detonation.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Filtering Valvetrain &amp; Piston Noise</strong>: * Raising <code>DLTKNK</code> in the 3000 to 5500 RPM band eliminates false knock retard caused by forged piston slap or stiff valve springs.</li>
+<li><strong>Preserving Knock Protection</strong>: * Never raise <code>DLTKNK</code> to maximum voltage (5.0V) across the board; doing so completely disables knock detection, leaving the engine unprotected against bad fuel or overboost.</li>
+<li><strong>Datalogging &amp; Calibration</strong>: * Monitor raw knock sensor voltage during dyno pulls; calibrate <code>DLTKNK</code> roughly 0.3 to 0.5 Volts above the engine's baseline mechanical noise floor to catch genuine detonation spikes.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect across engine operating conditions to establish ignition advance for KnockFromRpms.</p>
+<ul>
+<li>Evaluated inside <code>CalculateKnockRetard_MM</code> at line 10362 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>DLTKNK</code> at ROM address <code>0x8FA3</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CalculateKnockRetard_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateKnockRetard_MM (T-SBECII_v1.asm:10360-10366) ---
+   LDF6F:  staa  MaxRetardFromMAP    ; store A into memory
+           ldaa  EngineRpm_HB    ; load A with memory contents
+           ldx   #DLTKNK_KnockSensorVoltageForKnockFromRpm    ; load index with value
+           jsr   Lookup4ByteTable    ; call subroutine
+           staa  KnockSensorThreshold    ; store A into memory
+           ldaa  INCSR2_KnockRetardIncreaseRate2    ; load A with memory contents (data is ff)
+           ldab  BaroPressure    ; load B with memory contents</code></pre>
+<p>The CPU executes <code>CalculateKnockRetard_MM</code> where <code>DLTKNK</code> is loaded, compared, or interpolated from ROM address <code>0x8FA3</code> at line 10362.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Acoustic Baseline Curve</strong>: Establishes the dynamic RPM-indexed voltage threshold defining combustion knock.</li>
+<li><strong>Type 0 Table</strong>: 6-point curve outputting raw sensor threshold voltages from 0.0 to 5.0 Volts.</li>
+<li><strong>Threshold Span</strong>: Factory calibration scales from 0.31 Volts at 1200 RPM up to 2.40 Volts at 4800+ RPM.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>DLTKNK</code>
+        </footer>
+    </div>
+</body>
+</html>

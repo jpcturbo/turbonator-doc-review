@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMPTL2: TempForHotScaleA2D | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x21E6</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Setup ➔ Transfer Functions</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>TMPTL2: TempForHotScaleA2D</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>TMPTL2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>TMPTL2_TempForHotScaleA2D</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Setup\Transfer_Functions\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x21E6</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (5-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">5 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">raw 0 255 scale</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Coolant_Temperature -200 260 F</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Temperature (°F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x04                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L8677-L8691"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L8122"><code>SetupSystemAndGoToMainLoop</code></a> in <a href="../../T-T3v1.asm.html#L8154"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>TMPTL2</code> is the hot-range non-linear transfer table converting raw voltage counts from the engine coolant temperature sensor into engineering temperature units under warm running conditions. When coolant temperature warms past approximately one hundred forty degrees Fahrenheit, the controller hardware toggles the thermistor pull-up resistor to its low-resistance mode and the firmware switches lookup from the cold scale to this four-point hot scale curve. Because all normal operating temperatures (one hundred eighty to two hundred ten degrees Fahrenheit) reside on <code>TMPTL2</code>, this table directly governs radiator fan cycling, closed-loop fuel trim engagement, adaptive purge flow, and warmup spark modifiers.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Operating Temperature Accuracy</strong>: * Governs coolant temperature calculations across the entire normal running range (140 to 260 degF).</li>
+<li><strong>Fan &amp; Closed-Loop Triggers</strong>: * Radiator fan engagement temperatures and closed-loop oxygen sensor readiness thresholds depend on <code>TMPTL2</code> accuracy.</li>
+<li><strong>Thermostat Changes</strong>: * When installing lower-temperature thermostats, ensure <code>TMPTL2</code> reads accurately around the new operating point.</li>
+<li><strong>Hysteresis Switching</strong>: * Toggles between <a href="../../Setup/Transfer_Functions/TMPTL1_TempForColdScaleFromA2D.html"><code>TMPTL1</code></a> and <code>TMPTL2</code> with built-in voltage deadband filtering to prevent hunting at 140 degF.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when coolant temperature warms past approximately one hundred forty degrees Fahrenheit, the controller hardware toggles the thermistor pull-up resistor to its low-resistance mode and the firmware switches lookup from the cold scale to this four-point hot scale curve.</p>
+<ul>
+<li>Evaluated inside <code>SetupSystemAndGoToMainLoop</code> at line 8154 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>TMPTL2</code> at ROM address <code>0x21E6</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>SetupSystemAndGoToMainLoop</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- SetupSystemAndGoToMainLoop (T-T3v1.asm:8152-8158) ---
+           ldab #0x10          ; load b with value -00010000-
+           stab CPU_A2DControlReg    ; store b into memory
+           ldx  #TMPTL2_TempForHotScaleA2D    ; load index with value
+           brclr *PIA3_Buffer, #pi3_CoolantTemp, ConvertCoolantRawReadingToTemperature    ; branch if bit(s) clear
+           ldx  #TMPTL1_TempForColdScaleFromA2D    ; load index with value
+ConvertCoolantRawReadingToTemperature:
+           jsr  Lookup4ByteTable    ; call subroutine</code></pre>
+<p>The CPU executes <code>SetupSystemAndGoToMainLoop</code> where <code>TMPTL2</code> is loaded, compared, or interpolated from ROM address <code>0x21E6</code> at line 8154.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Table Structure</strong>: 4-point 2D curve translating raw counts (0 to 255) to temperature (-200 to 260 degF).</li>
+<li><strong>High-Temperature Span</strong>: Covers warm running and overheat protection regions.</li>
+<li><strong>Companion Curve</strong>: Directly paired with <a href="../../Setup/Transfer_Functions/TMPTL1_TempForColdScaleFromA2D.html"><code>TMPTL1</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>TMPTL2</code>
+        </footer>
+    </div>
+</body>
+</html>

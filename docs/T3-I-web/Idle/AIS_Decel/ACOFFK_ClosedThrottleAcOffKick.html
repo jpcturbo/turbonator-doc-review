@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACOFFK: ClosedThrottleAcOffKick | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8DC8</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle ➔ AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ACOFFK: ClosedThrottleAcOffKick</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ACOFFK</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ACOFFK_ClosedThrottleAcOffKick</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle\AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8DC8</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Stepper Motor Position (steps / counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x10                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L4214-L4225"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L1984"><code>HandleAcCutout</code></a> in <a href="../../T-T3v1.asm.html#L2114"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ACOFFK</code> defines the closed-throttle stepper motor kick step reduction applied when the air conditioning compressor clutch disengages. While the air conditioning compressor is pumping, auxiliary bypass airflow is injected to prevent the engine from stalling under compressor load. When the air conditioning thermostat satisfied signal opens and the magnetic clutch disengages, this compressor pumping load drops instantly to zero. If the auxiliary air were left in the intake manifold, the suddenly unloaded engine would flare upward into an annoying high-RPM idle surge. <code>ACOFFK</code> immediately subtracts a calibrated block of steps from the idle stepper motor to neutralize the load drop and prevent idle flaring. In factory calibrations, <code>ACOFFK</code> is set to 8 counts, commanding an immediate 8-step closure upon compressor disengagement.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Eliminating A/C Off Idle Flare</strong>: * Increase <code>ACOFFK</code> from 8 to 11 to 14 steps if the engine flares upward when the compressor clutch disengages at a stoplight.</li>
+<li><strong>Preventing Disengagement Undershoot</strong>: * If engine RPM dips below target when the A/C turns off, lower <code>ACOFFK</code> to 5 or 6 steps.</li>
+<li><strong>Cycling Equilibrium</strong>: * Balance <code>ACOFFK</code> against <a href="../../Idle/AIS_Decel/AC2KCK_AcClutchKickOpenAfterAcEnabled.html"><code>AC2KCK</code></a> to make compressor cycling completely transparent to vehicle occupants.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect at closed throttle the instant the A/C compressor clutch disengages, closing down the idle air bypass steps to prevent engine flare.</p>
+<ul>
+<li>Evaluated inside <code>HandleAcCutout</code> at line 2114 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>ACOFFK</code> at ROM address <code>0x8DC8</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>HandleAcCutout</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- HandleAcCutout (T-T3v1.asm:2112-2118) ---
+   L9A21:  stab Timer_AisOrO2Sensor    ; store b into memory
+           brset *BitFlags66, #b66_OffIdle, L9A74    ; branch if bit(s) set
+           ldaa ACOFFK_ClosedThrottleAcOffKick    ; load a with memory contents (data is 10)
+           jsr  MultiplyTempvar1ByA_Pos    ; call subroutine
+           jsr  ClearAisTimer    ; call subroutine
+           bra  L9A77          ; branch
+</code></pre>
+<p>The CPU executes <code>HandleAcCutout</code> where <code>ACOFFK</code> is loaded, compared, or interpolated from ROM address <code>0x8DC8</code> at line 2114.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameter</strong>: Direct counterpart to <a href="../../Idle/AIS_Decel/AC2KCK_AcClutchKickOpenAfterAcEnabled.html"><code>AC2KCK</code></a> (A/C clutch engagement opening kick).</li>
+<li><strong>Altitude Scaling</strong>: Scaled by <code>Temp1</code> (<a href="../../Idle/AIS_Control/BARAIS_AISBaroCompensation.html"><code>BARAIS</code></a> altitude factor) to ensure accurate step reduction at all elevations.</li>
+<li><strong>Factory Value</strong>: 0x08 (8 counts = 8 steps).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>ACOFFK</code>
+        </footer>
+    </div>
+</body>
+</html>

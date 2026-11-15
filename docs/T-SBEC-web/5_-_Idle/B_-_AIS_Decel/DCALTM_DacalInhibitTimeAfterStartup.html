@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCALTM: DacalInhibitTimeAfterStartup | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x86BD</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DCALTM: DacalInhibitTimeAfterStartup</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DCALTM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DCALTM_DacalInhibitTimeAfterStartup</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x86BD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Time Duration (seconds or loop counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x1A                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L4239-L4250"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L1671"><code>CalculateAisPosition_MM</code></a> in <a href="../../T-SBEC_v4.asm.html#L1751"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DCALTM</code> defines the post-start time delay that must elapse before the engine controller is permitted to begin adaptive idle airflow calibration. Immediately following engine start, combustion dynamics, cylinder wall temperature, and manifold pressure undergo rapid transient changes as the engine stabilizes. If the adaptive learning routines were allowed to integrate intake manifold pressure during this settling period, transient post-start vacuum instability would corrupt the long-term learned idle airflow trim. <code>DCALTM</code> enforces a mandatory run-time delay before the DACAL adaptive integrator is unlocked. In factory calibrations, <code>DCALTM</code> is set to 25 counts, enforcing a post-start stabilization period of approximately 1.6 seconds.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Preventing Post-Start Trim Corruption</strong>: * Increase <code>DCALTM</code> to 5.0 to 10.0 seconds on modified engines with long post-start stabilization periods to prevent the ECU from learning inaccurate idle trim.</li>
+<li><strong>Factory Baseline</strong>: * Factory setting of 25 counts (~1.6 seconds) is suitable for stock and mild street setups.</li>
+<li><strong>Low Setting Hazard</strong>: * Setting <code>DCALTM</code> too low allows cranking vacuum dips to skew the long-term idle airflow baseline.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if the adaptive learning routines were allowed to integrate intake manifold pressure during this settling period, transient post-start vacuum instability would corrupt the long-term learned idle airflow trim.</p>
+<ul>
+<li>Evaluated inside <code>CalculateAisPosition_MM</code> at line 1751 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>DCALTM</code> at ROM address <code>0x86BD</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CalculateAisPosition_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateAisPosition_MM (T-SBEC_v4.asm:1749-1755) ---
+           brclr *StartupSwitchMirror1, #sw1_PNswitch, L964E    ; branch if bit(s) clear
+   L95EA:  ldab KeyOnOrEngineRunningTime    ; load b with memory contents
+           cmpb DCALTM_DacalInhibitTimeAfterStartup    ; compare b with memory contents (data is 15)
+           bcs  L964E          ; branch if lower
+           brclr *PIA2_Buffer, #pi2_ACRelay, L964E    ; branch if bit(s) clear
+           ldab CoolantTemp    ; load b with memory contents
+           cmpb DATHOT_EngineTempToStartCalibratingDacal    ; compare b with memory contents (data is cd)</code></pre>
+<p>The CPU executes <code>CalculateAisPosition_MM</code> where <code>DCALTM</code> is loaded, compared, or interpolated from ROM address <code>0x86BD</code> at line 1751.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameter</strong>: Works in conjunction with <a href="../../5_-_Idle/B_-_AIS_Decel/DATHOT_EngineTempToStartCalibratingDacal.html"><code>DATHOT</code></a> (coolant temperature gate) and <a href="../../5_-_Idle/B_-_AIS_Decel/DCALRT_DacalUpdateRate01_03_07_0f_1f_3f_7f_ff.html"><code>DCALRT</code></a> (update rate mask).</li>
+<li><strong>Running Time Variable</strong>: Uses <code>KeyOnOrEngineRunningTime</code>, which increments every 64 ms.</li>
+<li><strong>Factory Value</strong>: 0x19 (25 counts = approximately 1.6 seconds).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>DCALTM</code>
+        </footer>
+    </div>
+</body>
+</html>

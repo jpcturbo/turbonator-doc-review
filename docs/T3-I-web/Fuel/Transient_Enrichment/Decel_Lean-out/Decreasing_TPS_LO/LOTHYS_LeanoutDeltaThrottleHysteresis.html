@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOTHYS: LeanoutDeltaThrottleHysteresis | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8AD2</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel ➔ Transient Enrichment ➔ Decel Lean-out ➔ Decreasing TPS LO</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>LOTHYS: LeanoutDeltaThrottleHysteresis</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>LOTHYS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>LOTHYS_LeanoutDeltaThrottleHysteresis</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel\Transient_Enrichment\Decel_Lean-out\Decreasing_TPS_LO\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8AD2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">8-bit Unsigned Scaling Factor (0 to 255 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-T3_22_T3_MTX_A393.tpl.html#L2056-L2067"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-T3v1.asm.html#L5885"><code>TransFuel_CalculateDecreasingTPSTransientFuel</code></a> in <a href="../../../../T-T3v1.asm.html#L5905"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>LOTHYS</code> provides hysteresis for throttle deceleration lean-out triggers to prevent rapid toggling between normal fueling and decel lean-out. Once deceleration lean-out becomes active, the engine controller adds <code>LOTHYS</code> to the closing throttle delta before comparing it to the trigger thresholds. This artificially expands the active window, requiring the driver to make a more deliberate pedal movement before decel lean-out is cancelled. The factory calibration sets this value to zero because throttle deceleration lean-out is disabled.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Hysteresis Sizing</strong>: When configuring throttle deceleration lean-out, set <code>LOTHYS</code> to approximately 2 to 4 counts (0.04 to 0.08 volts).</li>
+<li><strong>Eliminating Throttle Chatter</strong>: Eliminates chattering and jerky fuel cuts when the driver holds the throttle near the edge of the deceleration threshold.</li>
+<li><strong>Preventing Tip-in Flat Spots</strong>: Setting this value too high keeps deceleration lean-out active even as the driver attempts to roll back into the throttle, causing a momentary flat spot or hesitation.</li>
+<li><strong>Zero Setting Behavior</strong>: Setting to zero leaves the trigger boundaries identical on both entry and exit.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect once deceleration lean-out becomes active, the engine controller adds LOTHYS to the closing throttle delta before comparing it to the trigger thresholds.</p>
+<ul>
+<li>Evaluated inside <code>TransFuel_CalculateDecreasingTPSTransientFuel</code> at line 5905 in <a href="../../../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>LOTHYS</code> at ROM address <code>0x8AD2</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>TransFuel_CalculateDecreasingTPSTransientFuel</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- TransFuel_CalculateDecreasingTPSTransientFuel (T-T3v1.asm:5903-5909) ---
+           ldab Timer_OffThrottleFuelEnrich    ; load b with memory contents
+           beq  LBD07          ; branch if equal (zero)
+           adda LOTHYS_LeanoutDeltaThrottleHysteresis    ;  (data is 02)
+   LBD07:  cmpa LOTTRG_DeltaTriggerForDecelLeanout    ; compare a with memory contents (data is 0b)
+           bcs  LBD25          ; branch if lower
+           cmpa LOTRG2_SecondDecelLeanoutTrigger    ; compare a with memory contents (data is 0b)
+           bcs  LBD1B          ; branch if lower</code></pre>
+<p>The CPU executes <code>TransFuel_CalculateDecreasingTPSTransientFuel</code> where <code>LOTHYS</code> is loaded, compared, or interpolated from ROM address <code>0x8AD2</code> at line 5905.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Active-State Only</strong>: Only added to the delta when <code>Factor_DecelLeanoutWhenThrottleDecreasing</code> is non-zero.</li>
+<li><strong>Template Default</strong>: Factory 2.5 ATX calibration defaults to 0x00 counts, while active performance calibrations use 0x03 counts.</li>
+<li><strong>Companion Parameters</strong>: Directly coordinates with <a href="../../../../Fuel/Transient_Enrichment/Decel_Lean-out/Decreasing_TPS_LO/LOTTRG_DeltaTriggerForDecelLeanout.html"><code>LOTTRG</code></a> and <a href="../../../../Fuel/Transient_Enrichment/Decel_Lean-out/Decreasing_TPS_LO/LOTRG2_SecondDecelLeanoutTrigger.html"><code>LOTRG2</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>LOTHYS</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STGSPD: StageLimiterCutoffSpeed | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x210B</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Turbonator Features ➔ Staging Limiter</strong> &nbsp;|&nbsp; Subsystem: <strong>Limiters_Limp</strong>
+        </div>
+        
+        <article class="content">
+            <h1>STGSPD: StageLimiterCutoffSpeed</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>STGSPD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>STGSPD_StageLimiterCutoffSpeed</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Limiters_Limp</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Turbonator_Features\Staging_Limiter\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x210B</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Vehicle Road Speed (MPH)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x0A                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L8458-L8468"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L6090"><code>Stage_Limiter_On</code></a> in <a href="../../T-T3v1.asm.html#L6093"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>STGSPD</code> defines the vehicle speed cutoff threshold above which launch control is completely disengaged. When launching from the starting line, the staging rev limiter must release the instant the car begins rolling forward so the engine can rev freely through first gear. Once the speed sensor registers a vehicle speed equal to or greater than <code>STGSPD</code>, the controller disables staging spark and fuel cuts, returning full engine power to the drive wheels. The factory setting of 10 mph ensures positive launch disengagement without interfering with stationary staging.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Recommended Cutoff Range</strong>: Set between 5 mph and 10 mph for drag racing to ensure the staging limiter drops out immediately upon vehicle movement.</li>
+<li><strong>Excessive Cutoff Warning</strong>: Setting above 20 mph can cause the staging limiter to remain active during wheelspin out of the hole, cutting engine acceleration in first gear.</li>
+<li><strong>Disabling Feature</strong>: Setting <code>STGSPD</code> to 0 mph prevents launch control from engaging under any circumstance.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when launching from the starting line, the staging rev limiter must release the instant the car begins rolling forward so the engine can rev freely through first gear.</p>
+<ul>
+<li>Evaluated inside <code>Stage_Limiter_On</code> at line 6093 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>STGSPD</code> at ROM address <code>0x210B</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>Stage_Limiter_On</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- Stage_Limiter_On (T-T3v1.asm:6091-6097) ---
+           bset 0, x, #Turbonator_Staging           ; set the flag to indicate that the staging limiter is active...
+	   ldaa Temp1
+	   cmpa STGSPD_StageLimiterCutoffSpeed    ; compare a with memory contents (data is 0a)
+	   bcc  Stage_Limiter_Off		       ; branch if the vehicle speed is greater than the cutoff speed
+	   ldaa STGROF_StageLimiterRPMOffSetpoint ; load a with memory contents (data is 7d)
+	   ldab STGRON_StageLimiterRPMOnSetpoint  ; load b with memory contents (data is 77)
+	   bra  Store_Limiter_Values	       ; branch</code></pre>
+<p>The CPU executes <code>Stage_Limiter_On</code> where <code>STGSPD</code> is loaded, compared, or interpolated from ROM address <code>0x210B</code> at line 6093.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Vehicle Speed Scaling</strong>: Evaluated in integer miles per hour (1 mph per count). Factory setting of 10 counts equals 10 mph.</li>
+<li><strong>Wheel Speed Sensor Requirement</strong>: Accurate vehicle speed sensing via distance sensor input is required for automatic disengagement.</li>
+<li><strong>Option Dependency</strong>: Governed by option flag <code>opt_StageLim</code> in <a href="../../Setup/Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>STGSPD</code>
+        </footer>
+    </div>
+</body>
+</html>

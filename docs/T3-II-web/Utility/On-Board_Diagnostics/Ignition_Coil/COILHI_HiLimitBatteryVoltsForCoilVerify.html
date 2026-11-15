@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COILHI: HiLimitBatteryVoltsForCoilVerify | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x907D</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Utility ➔ On-Board Diagnostics ➔ Ignition Coil</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>COILHI: HiLimitBatteryVoltsForCoilVerify</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>COILHI</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>COILHI_HiLimitBatteryVoltsForCoilVerify</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Utility\On-Board_Diagnostics\Ignition_Coil\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x907D</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Battery Voltage (Volts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xBA                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3_22_T3ii_T3_MTX.tpl.html#L7319-L7330"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3_IIv1.asm.html#L5527"><code>VerifyOperationOfIgnitionCoilDriver_MM</code></a> in <a href="../../../T-T3_IIv1.asm.html#L5541"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>COILHI</code> defines the upper battery voltage boundary for enabling the secondary ignition coil driver diagnostic routine. This secondary ignition diagnostic is specifically designed to monitor ignition coil behavior during engine cranking and low battery voltage operation prior to full alternator charging. Once the engine starts and the alternator charges the electrical system up to normal running voltage (13.5 to 14.5 volts), primary coil verification shifts to direct driver sense feedback. In factory calibrations, <code>COILHI</code> is set to 186 counts, corresponding to approximately 11.6 volts. If battery voltage equals or exceeds <code>COILHI</code>, the secondary coil verification check is bypassed, ensuring that the test operates strictly under sub-charging voltage conditions.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Voltage Window Boundary</strong>: * Confines secondary coil testing between 6.5 volts and 11.6 volts. * Ensures the secondary test automatically turns off once the alternator charges the electrical system above 11.6 volts.</li>
+<li><strong>Cranking Diagnostics</strong>: * If false Fault Code 43 codes occur during prolonged cranking on strong batteries, verify that <code>COILHI</code> is not set excessively high.</li>
+<li><strong>Edge Cases</strong>: * Setting <code>COILHI</code> below 6.5 volts permanently disables this secondary ignition coil diagnostic. * Setting <code>COILHI</code> to 255 counts leaves the secondary check active continuously even during normal highway driving.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect once the engine starts and the alternator charges the electrical system up to normal running voltage (13.5 to 14.5 volts), primary coil verification shifts to direct driver sense feedback.</p>
+<ul>
+<li>Evaluated inside <code>VerifyOperationOfIgnitionCoilDriver_MM</code> at line 5541 in <a href="../../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>COILHI</code> at ROM address <code>0x907D</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>VerifyOperationOfIgnitionCoilDriver_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- VerifyOperationOfIgnitionCoilDriver_MM (T-T3_IIv1.asm:5539-5545) ---
+           cmpa #0x41          ; compare a with value -01000001-
+           bcs  LBAEB          ; branch if lower
+           cmpa COILHI_HiLimitBatteryVoltsForCoilVerify    ; compare a with memory contents (data is ba)
+           bcc  LBAEB          ; branch if greater or equal
+           ldaa MapValueX      ; load a with memory contents
+           suba MapVoltsX
+           bls  LBAEB          ; branch if lower or same</code></pre>
+<p>The CPU executes <code>VerifyOperationOfIgnitionCoilDriver_MM</code> where <code>COILHI</code> is loaded, compared, or interpolated from ROM address <code>0x907D</code> at line 5541.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../../../Utility/On-Board_Diagnostics/Ignition_Coil/COILLO_LoLimitBatteryVoltsForCoilVerify.html"><code>COILLO</code></a> (pressure delta threshold).</li>
+<li><strong>Diagnostic Code</strong>: DRB-II Fault Code 43 (ignition coil primary circuit fault).</li>
+<li><strong>Dual Diagnostic Strategy</strong>: Primary ignition coil verification runs in <code>VerifyOperationOfIgnitionCoilDriver_MM</code> using hardware sense bits; this secondary check runs under low voltage in <code>VerifyOperationOfIgnitionCoilDriver2_MM</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>COILHI</code>
+        </footer>
+    </div>
+</body>
+</html>

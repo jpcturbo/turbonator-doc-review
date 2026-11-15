@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SLRPM: ShiftLightSetpoint | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x20E9</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Turbonator Features ➔ Shift Light</strong> &nbsp;|&nbsp; Subsystem: <strong>Turbonator_Features</strong>
+        </div>
+        
+        <article class="content">
+            <h1>SLRPM: ShiftLightSetpoint</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>SLRPM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>SLRPM_ShiftLightSetpoint</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Turbonator_Features</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Turbonator_Features\Shift_Light\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x20E9</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0x9B00                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L8424-L8434"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L12616"><code>ShiftLight_Run</code></a> in <a href="../../T-T3v1.asm.html#L12618"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>SLRPM</code> (ShiftLightSetpoint) sets the precise engine RPM at which the ECU illuminates the instrument cluster upshift indicator or an external shift light. Turbonator code repurposes the purge/EGR driver output or the factory cluster upshift arrow to function as a programmable high-RPM shift light. When engine speed climbs to <code>SLRPM</code>, the ECU grounds the driver circuit, illuminating the shift light to tell the driver to shift before hitting the rev limiter. Once RPM drops below <code>SLRPM</code> during gear change, the light turns off immediately.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Power Peak Shift Point</strong>: Set <code>SLRPM</code> roughly 200-400 RPM past peak horsepower on your dyno sheet, but 300-500 RPM below your hard rev limiter (<a href="../../OB,_Speed,_and_Rev_Limiter/Misc,_Limp_Mode/REVLMT_MapLimpinAndThrAbove25PercentLower1850.html"><code>REVLMT</code></a>). This gives the driver human reaction time to initiate the shift without bouncing off the limiter.</li>
+<li><strong>Stock Valvetrain Safety</strong>: On stock hydraulic lifter Lotus 16-valve DOHC engines, set <code>SLRPM</code> to 5,600 - 5,800 RPM to protect valvetrain components from valve float.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect at high engine speed, illuminating the instrument cluster upshift arrow or external shift light when engine RPM crosses this threshold.</p>
+<ul>
+<li>Evaluated inside <code>ShiftLight_Run</code> at line 12618 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>SLRPM</code> at ROM address <code>0x20E9</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>ShiftLight_Run</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- ShiftLight_Run (T-T3v1.asm:12616-12622) ---
+ShiftLight_Run:
+       ldx  EngineRpm_HB
+       cpx  SLRPM_ShiftLightSetpoint
+       bcc  ShiftLight_TurnLightOff
+
+ShiftLight_TurnLightOn:
+       bset *PIA2_Buffer, #pi2_PTU</code></pre>
+<p>The CPU executes <code>ShiftLight_Run</code> where <code>SLRPM</code> is loaded, compared, or interpolated from ROM address <code>0x20E9</code> at line 12618.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Reaction Time Buffer</strong>: Set below engine rev limiter to allow adequate driver reaction time.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>SLRPM</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMTEMP: StartTempToSelectHotOrColdAMTimer | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8B87</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel ➔ O2 Feedback Control ➔ Adaptive Memory Timer</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>AMTEMP: StartTempToSelectHotOrColdAMTimer</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>AMTEMP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>AMTEMP_StartTempToSelectHotOrColdAMTimer</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel\O2_Feedback_Control\Adaptive_Memory_Timer\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8B87</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Spark Advance (degrees)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xCA                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3_22_T3_MTX_A393.tpl.html#L2524-L2535"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3v1.asm.html#L3523"><code>AMTimer_EngineRunning</code></a> in <a href="../../../T-T3v1.asm.html#L3527"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>AMTEMP</code> defines the engine coolant temperature threshold that switches the adaptive fuel memory system between cold warmup delay timing and fully warmed hot engine operation. Before long-term adaptive fuel trim cells are permitted to learn and update, the engine must reach thermal equilibrium so that temporary cold warmup enrichment does not distort learned fuel tables. In factory calibrations, <code>AMTEMP</code> is configured to 205 counts, corresponding to approximately 196 degF. When coolant temperature is below <code>AMTEMP</code>, the controller repeatedly reloads the adaptive delay timer from the coolant temperature curve; once coolant temperature reaches or reaches beyond <code>AMTEMP</code>, the delay timer decrements toward zero to unlock adaptive cell learning.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Thermostat Compatibility</strong>: * When replacing the factory 195 degF thermostat with a 180 degF or 160 degF unit, <code>AMTEMP</code> must be lowered to approximately 170 to 175 degF (185 to 190 counts); otherwise, the engine will never enable adaptive learning.</li>
+<li><strong>Locking Out Adaptive Learning</strong>: * Setting <code>AMTEMP</code> to 255 counts prevents adaptive trims from updating under any operating temperature, functioning as a global lock on long-term trim updates.</li>
+<li><strong>Lowering the Threshold</strong>: * Allows adaptive memory to start adapting sooner during warmup, but setting it below 160 degF risks corrupting fuel trims with uncalibrated warmup enrichment.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during engine startup and warm-up, establishing the coolant temperature threshold that switches between hot and cold adaptive learning timers.</p>
+<ul>
+<li>Evaluated inside <code>AMTimer_EngineRunning</code> at line 3527 in <a href="../../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>AMTEMP</code> at ROM address <code>0x8B87</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>AMTimer_EngineRunning</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- AMTimer_EngineRunning (T-T3v1.asm:3525-3531) ---
+           ldab Counter_MainLoop    ; load b with memory contents
+           bne  LA4B7          ; branch if not equal (not zero)
+           cmpa AMTEMP_StartTempToSelectHotOrColdAMTimer    ; compare a with memory contents (data is ca)
+           bcs  LA4AB          ; branch if lower
+           ldab Timer_O2CNTR_CountdownFromAbove196FtoEnableClosedLoop    ; load b with memory contents
+           beq  LA4B7          ; branch if equal (zero)
+           decb</code></pre>
+<p>The CPU executes <code>AMTimer_EngineRunning</code> where <code>AMTEMP</code> is loaded, compared, or interpolated from ROM address <code>0x8B87</code> at line 3527.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Works directly with <a href="../../../Fuel/O2_Feedback_Control/Adaptive_Memory_Timer/AMTPSW_TempPointToEnableSelectedAMTimer.html"><code>AMTPSW</code></a> (delay timer lookup curve) and <a href="../../../Fuel/O2_Feedback_Control/Adaptive_Memory_Timer/CLTEMP_TempToStartCLTIMETimer.html"><code>CLTEMP</code></a> (closed-loop temperature threshold).</li>
+<li><strong>Units Conversion</strong>: 205 counts corresponds to approximately 196 degF on Chrysler's standard thermistor scaling.</li>
+<li><strong>Persistence</strong>: Read dynamically on every main loop rollover; changes immediately shift the temperature threshold.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>AMTEMP</code>
+        </footer>
+    </div>
+</body>
+</html>

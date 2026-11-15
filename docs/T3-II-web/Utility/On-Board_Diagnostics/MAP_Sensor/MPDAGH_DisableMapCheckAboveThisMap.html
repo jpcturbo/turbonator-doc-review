@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPDAGH: DisableMapCheckAboveThisMap | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x9088</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Utility ➔ On-Board Diagnostics ➔ MAP Sensor</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MPDAGH: DisableMapCheckAboveThisMap</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MPDAGH</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MPDAGH_DisableMapCheckAboveThisMap</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Utility\On-Board_Diagnostics\MAP_Sensor\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x9088</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Boost Pressure (psi)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x81                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3_22_T3ii_T3_MTX.tpl.html#L7439-L7451"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3_IIv1.asm.html#L6829"><code>NotSure2</code></a> in <a href="../../../T-T3_IIv1.asm.html#L6864"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MPDAGH</code> defines the upper manifold pressure boundary for the steady-state manifold absolute pressure sensor rationality validation window. When testing whether the pressure sensor is healthy and delivering plausible signals, the engine controller requires manifold pressure to stay below heavy load or boost levels. Under wide-open throttle or positive turbocharger boost pressure, rapid airflow changes make steady-state rationality validation unreliable. In factory calibrations, <code>MPDAGH</code> is set to 129 counts, corresponding to approximately 14.9 psi absolute pressure (roughly 0.2 psi gauge boost or atmospheric barometric pressure). If manifold pressure equals or exceeds <code>MPDAGH</code>, the engine controller suspends the steady-state sensor rationality check, ensuring validation occurs strictly under light-load intake vacuum.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>: * Crucial calibration requirement: rescale <code>MPDAGH</code> by multiplying by 0.667 (from 129 counts down to 86 counts) when converting to a 3-bar MAP sensor. * Without rescaling, the steady-state check remains active up into positive boost (22 psi absolute), causing false sensor errors.</li>
+<li><strong>Camshaft Compatibility</strong>: * Ensure <code>MPDAGH</code> is comfortably above the engine's warm idle manifold pressure.</li>
+<li><strong>Edge Cases</strong>: * Setting <code>MPDAGH</code> below normal idle manifold pressure prevents <code>b47_MapOK</code> from ever setting. * Setting <code>MPDAGH</code> to maximum (255 counts) allows steady-state validation during peak turbo boost.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when testing whether the pressure sensor is healthy and delivering plausible signals, the engine controller requires manifold pressure to stay below heavy load or boost levels.</p>
+<ul>
+<li>Evaluated inside <code>NotSure2</code> at line 6864 in <a href="../../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>MPDAGH</code> at ROM address <code>0x9088</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>NotSure2</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- NotSure2 (T-T3_IIv1.asm:6862-6868) ---
+           cmpa MPDAGL_DisableMapCheckBelowThisMap    ; compare a with memory contents (data is 10)
+           bcs  LC53D          ; branch if lower
+           cmpa MPDAGH_DisableMapCheckAboveThisMap    ; compare a with memory contents (data is 81)
+           bcs  LC506          ; branch if lower
+   LC4E0:  bra  LC53D          ; branch
+
+   LC4E2:  suba MPDELT_DeltaMapThatChecksGood    ;  (data is 01)</code></pre>
+<p>The CPU executes <code>NotSure2</code> where <code>MPDAGH</code> is loaded, compared, or interpolated from ROM address <code>0x9088</code> at line 6864.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../../../Utility/On-Board_Diagnostics/MAP_Sensor/MPDAGL_DisableMapCheckBelowThisMap.html"><code>MPDAGL</code></a> (lower MAP boundary), <a href="../../../Utility/On-Board_Diagnostics/MAP_Sensor/MPRPML_DisableMapCheckUnderThisRpm_600.html"><code>MPRPML</code></a>, and <a href="../../../Utility/On-Board_Diagnostics/MAP_Sensor/MPRPMH_DisableMapCheckAboveThisRpm_1500.html"><code>MPRPMH</code></a>.</li>
+<li><strong>Diagnostic Role</strong>: Ensures turbo boost and wide-open throttle do not interfere with steady-state MAP rationality testing.</li>
+<li><strong>3-Bar Rescaling</strong>: Essential: scale down by 2/3 (0.667) when converting to 3-bar MAP.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>MPDAGH</code>
+        </footer>
+    </div>
+</body>
+</html>

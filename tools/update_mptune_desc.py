@@ -150,6 +150,10 @@ def main():
     targets = sys.argv[1:] if len(sys.argv) > 1 else [
         'docs/t_lm_descriptors.json',
         'docs/t_smec_descriptors.json',
+        'docs/t_sbec_descriptors.json',
+        'docs/t_sbecii_descriptors.json',
+        'docs/t_t3_i_descriptors.json',
+        'docs/t_t3_ii_descriptors.json',
     ]
     for t in targets:
         update_json_file(t)

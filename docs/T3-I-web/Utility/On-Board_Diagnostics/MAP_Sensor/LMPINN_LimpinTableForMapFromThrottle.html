@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMPINN: LimpinTableForMapFromThrottle | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x9046</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Utility ➔ On-Board Diagnostics ➔ MAP Sensor</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>LMPINN: LimpinTableForMapFromThrottle</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>LMPINN</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>LMPINN_LimpinTableForMapFromThrottle</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Utility\On-Board_Diagnostics\MAP_Sensor\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x9046</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (6-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">6 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">TPS 0 255 tps</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">MAP -14.7 14.7 psi</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Boost Pressure (psi)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x05                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3_22_T3_MTX_A393.tpl.html#L7129-L7146"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3v1.asm.html#L5034"><code>SimulateMapReadingFromTps</code></a> in <a href="../../../T-T3v1.asm.html#L5051"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>LMPINN</code> provides the engine controller with a synthetic manifold pressure estimate derived from throttle position whenever the primary manifold absolute pressure sensor fails or is disconnected. Because turbocharged engines rely heavily on manifold pressure to calculate mass airflow demand, a failed pressure sensor would normally render the fuel and ignition algorithms inoperative. When an electrical open circuit or short circuit is detected on the sensor circuit, the engine controller flags <strong>Fault Code 14</strong> and transitions to limp-home operation. During this emergency mode, the controller calculates engine speed and throttle opening, then looks up <code>LMPINN</code> to estimate manifold density across five reference points from closed throttle at deep idle vacuum (-14.7 psi gauge or 0.0 psi absolute) up to approximately 27 percent throttle at light cruising load (-3.3 psi gauge or 11.4 psi absolute). This synthetic manifold pressure table allows the driver to safely navigate the vehicle to a service facility rather than being stranded by a sensor fault.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>: * When converting from a factory 2-bar sensor to a 3-bar MAP sensor, the sensor voltage span expands from 29.4 psi absolute to 44.1 psi absolute. * Multiply all table pressure output values by 0.667 to maintain factory-equivalent limp-in manifold pressure estimates.</li>
+<li><strong>Camshaft and Throttle Body Modifications</strong>: * Large throttle bodies flow substantially more air at small opening angles, requiring higher intermediate points in <code>LMPINN</code> to avoid lean flat spots. * High-duration performance camshafts with reduced idle vacuum may require raising the lower table points to match the engine's true airflow.</li>
+<li><strong>Lowering &amp; Edge Cases</strong>: * Lowering table points leans out limp-home fueling and advances ignition timing. * Setting points to zero produces severe lean misfires when the sensor faults, while setting points to maximum creates rich flooding.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when a MAP sensor failure is detected, substituting a calculated manifold pressure lookup from throttle position to allow limp-in driving.</p>
+<ul>
+<li>Evaluated inside <code>SimulateMapReadingFromTps</code> at line 5051 in <a href="../../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>LMPINN</code> at ROM address <code>0x9046</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>SimulateMapReadingFromTps</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- SimulateMapReadingFromTps (T-T3v1.asm:5049-5055) ---
+           bcc  LAF38          ; branch if greater or equal
+           clra                ; a = 0
+   LAF38:  ldx  #LMPINN_LimpinTableForMapFromThrottle    ; load index with value
+           jsr  Lookup4ByteTable    ; call subroutine
+           adda MPLMOF_OffsetForCalcMapInMapLimpin    ;  (data is 20)
+           rts                 ; return from subroutine
+</code></pre>
+<p>The CPU executes <code>SimulateMapReadingFromTps</code> where <code>LMPINN</code> is loaded, compared, or interpolated from ROM address <code>0x9046</code> at line 5051.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works directly with <a href="../../../Utility/On-Board_Diagnostics/MAP_Sensor/MPLMOF_OffsetForCalcMapInMapLimpin.html"><code>MPLMOF</code></a> (simulated MAP offset), <a href="../../../Utility/On-Board_Diagnostics/THROFF_OffsetAddedToCalcThrottle.html"><code>THROFF</code></a> (throttle voltage offset), <a href="../../../Utility/On-Board_Diagnostics/MAP_Sensor/MAPLOW_MapSensorLowerLimit.html"><code>MAPLOW</code></a> (lower electrical limit), and <a href="../../../Utility/On-Board_Diagnostics/MAP_Sensor/MAPHIG_MapSensorUpperLimit.html"><code>MAPHIG</code></a> (upper electrical limit).</li>
+<li><strong>Diagnostic Code</strong>: Triggered exclusively under DRB-II Fault Code 14 (MAP sensor voltage out of range).</li>
+<li><strong>Table Format</strong>: Type 0 2D curve containing 5 points formatted as 4-byte segments <code>(x, y, dx, dy)</code>.</li>
+<li><strong>3-Bar MAP Calibration</strong>: When upgrading from stock 2-bar to 3-bar MAP, scale all pressure values by 2/3 to prevent excessively rich fueling during limp-home operation.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>LMPINN</code>
+        </footer>
+    </div>
+</body>
+</html>

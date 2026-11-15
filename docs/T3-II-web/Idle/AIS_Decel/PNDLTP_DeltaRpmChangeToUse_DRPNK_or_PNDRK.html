@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PNDLTP: DeltaRpmChangeToUse DRPNK or PNDRK B | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8DD2</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle ➔ AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PNDLTP: DeltaRpmChangeToUse DRPNK or PNDRK B</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PNDLTP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>PNDLTP_DeltaRpmChangeToUse_DRPNK_or_PNDRK</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle\AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8DD2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0x00C8                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3ii_T3_MTX.tpl.html#L4389-L4400"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_IIv1.asm.html#L1829"><code>HandleAcCutout</code></a> in <a href="../../T-T3_IIv1.asm.html#L2020"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PNDLTP</code> defines the engine speed error threshold required before the controller triggers the automatic transmission Drive to Park/Neutral step reduction table. When the driver shifts an automatic transmission out of Drive or Reverse into Park or Neutral, the hydraulic load of the torque converter is suddenly released from the crankshaft. If the idle air stepper motor remained in its loaded in-gear position, the sudden uncoupling of transmission drag would cause the engine to flare upward loudly into a high-RPM surge. To prevent this flare, the ECU detects the RPM change upon shifting out of gear. If the difference between target idle speed and actual engine speed exceeds <code>PNDLTP</code>, the controller advances its memory pointer to index the <a href="../../Idle/AIS_Decel/DRPNK_DriveToParkNeutralKicks_FromTemp.html"><code>DRPNK</code></a> closing step table. In factory calibrations, <code>PNDLTP</code> is set to 160 counts, representing an RPM delta trigger threshold of approximately 80 RPM.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Eliminating Neutral Shift Flare</strong>: * Lower <code>PNDLTP</code> to 50 to 65 RPM if the engine flares upward loudly when shifting out of gear into Park or Neutral.</li>
+<li><strong>Threshold Minimum</strong>: * Do not set <code>PNDLTP</code> below 30 RPM to avoid false triggering from natural idle speed oscillations.</li>
+<li><strong>Complementary Trigger</strong>: * Direct counterpart to <a href="../../Idle/AIS_Decel/PNDLTN_DeltaRpmChangeToUse_DRPNK_or_PNDRK.html"><code>PNDLT</code></a>, governing the opposite shift transition.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the driver shifts an automatic transmission out of Drive or Reverse into Park or Neutral, the hydraulic load of the torque converter is suddenly released from the crankshaft.</p>
+<ul>
+<li>Evaluated inside <code>HandleAcCutout</code> at line 2020 in <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>PNDLTP</code> at ROM address <code>0x8DD2</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>HandleAcCutout</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- HandleAcCutout (T-T3_IIv1.asm:2018-2024) ---
+   L9A38:  brclr *BitFlags_36, #$%00000100, L9A6D    ; branch if bit(s) clear
+           brclr *BitFlags_36, #$%00001000, L9A49    ; branch if bit(s) clear
+           ldx  #PNDLTP_DeltaRpmChangeToUse_DRPNK_or_PNDRK    ; load index with value
+           ldd  TargetIdleSpeedHB    ; load d (a&amp;b) with memory contents
+           subd EngineRpm_HB    ; d = d - memory contents
+           bra  L9A50          ; branch
+</code></pre>
+<p>The CPU executes <code>HandleAcCutout</code> where <code>PNDLTP</code> is loaded, compared, or interpolated from ROM address <code>0x8DD2</code> at line 2020.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Memory Layout</strong>: Sits immediately prior to <a href="../../Idle/AIS_Decel/DRPNK_DriveToParkNeutralKicks_FromTemp.html"><code>DRPNK</code></a> in ROM; the CPU advances past <code>PNDLTP</code> via <code>inx; inx</code> to access <a href="../../Idle/AIS_Decel/DRPNK_DriveToParkNeutralKicks_FromTemp.html"><code>DRPNK</code></a>.</li>
+<li><strong>Word-Length Constant</strong>: Type 4 (16-bit word), factory value 0x00A0 (160 counts = ~80 RPM).</li>
+<li><strong>Companion Parameter</strong>: Gates access to <a href="../../Idle/AIS_Decel/DRPNK_DriveToParkNeutralKicks_FromTemp.html"><code>DRPNK</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>PNDLTP</code>
+        </footer>
+    </div>
+</body>
+</html>

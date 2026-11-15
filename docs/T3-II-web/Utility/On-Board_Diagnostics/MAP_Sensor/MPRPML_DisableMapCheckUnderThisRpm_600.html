@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPRPML: DisableMapCheckUnderThisRpm 600 | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x9083</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Utility ➔ On-Board Diagnostics ➔ MAP Sensor</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MPRPML: DisableMapCheckUnderThisRpm 600</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MPRPML</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MPRPML_DisableMapCheckUnderThisRpm_600</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Utility\On-Board_Diagnostics\MAP_Sensor\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x9083</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0x12C0                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3_22_T3ii_T3_MTX.tpl.html#L7399-L7410"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3_IIv1.asm.html#L6829"><code>NotSure2</code></a> in <a href="../../../T-T3_IIv1.asm.html#L6857"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MPRPML</code> defines the lower engine speed limit for the manifold absolute pressure sensor steady-state rationality validation window. To confirm that the MAP sensor is operating accurately and providing trustworthy load signals, the engine controller validates the sensor reading against expected manifold pressure boundaries under steady idle and light cruising conditions. However, during engine cranking, initial startup flare, or unstable low-speed chugging below normal idle speed, manifold vacuum fluctuates wildly. In factory calibrations, <code>MPRPML</code> is configured to 4800 counts, corresponding to exactly 600 RPM. If engine speed is below <code>MPRPML</code>, the controller suspends steady-state sensor validation, preventing false rationality errors during engine start.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Camshaft &amp; High Idle Tuning</strong>: * If installing performance camshafts that require an elevated idle target (e.g., 950 RPM), raise <code>MPRPML</code> from 600 RPM to 750 RPM to avoid erratic validation during lope.</li>
+<li><strong>Startup Stability</strong>: * Keeping <code>MPRPML</code> above cranking speed (600 RPM vs 200-250 RPM cranking) prevents false rationality judgments during engine startup.</li>
+<li><strong>Edge Cases</strong>: * Zeroing <code>MPRPML</code> forces validation during engine cranking when manifold vacuum is completely unstable. * Setting <code>MPRPML</code> higher than normal cruising RPM disables MAP steady-state validation entirely.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if engine speed is below MPRPML, the controller suspends steady-state sensor validation, preventing false rationality errors during engine start.</p>
+<ul>
+<li>Evaluated inside <code>NotSure2</code> at line 6857 in <a href="../../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>MPRPML</code> at ROM address <code>0x9083</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>NotSure2</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- NotSure2 (T-T3_IIv1.asm:6855-6861) ---
+           bcc  LC537          ; branch if greater or equal
+           ldd  EngineRpm_HB    ; load d (a&amp;b) with memory contents
+           cmpD MPRPML_DisableMapCheckUnderThisRpm_600    ; compare D (data is 12)
+           bcs  LC53D          ; branch if lower
+           cmpD MPRPMH_DisableMapCheckAboveThisRpm_1500    ; compare D (data is 2e)
+           bcc  LC53D          ; branch if greater or equal
+           ldaa MapVolts       ; load a with memory contents</code></pre>
+<p>The CPU executes <code>NotSure2</code> where <code>MPRPML</code> is loaded, compared, or interpolated from ROM address <code>0x9083</code> at line 6857.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../../../Utility/On-Board_Diagnostics/MAP_Sensor/MPRPMH_DisableMapCheckAboveThisRpm_1500.html"><code>MPRPMH</code></a> (high RPM gate), <a href="../../../Utility/On-Board_Diagnostics/MAP_Sensor/MPDAGL_DisableMapCheckBelowThisMap.html"><code>MPDAGL</code></a> (low MAP gate), and <a href="../../../Utility/On-Board_Diagnostics/MAP_Sensor/MPDAGH_DisableMapCheckAboveThisMap.html"><code>MPDAGH</code></a> (high MAP gate).</li>
+<li><strong>Validation Target</strong>: Qualifies setting of internal flag <code>b47_MapOK</code> in <code>BitFlags_47</code>.</li>
+<li><strong>16-Bit Word Constant</strong>: Stored as a 2-byte word where 8 counts equal 1 RPM (4800 counts = 600 RPM).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>MPRPML</code>
+        </footer>
+    </div>
+</body>
+</html>

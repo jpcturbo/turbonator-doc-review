@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DECEL: DecelLeanoutFactorMAP FromTemp | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8421</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ D - Transient Enrichment ➔ Decel Lean-out ➔ Decreasing MAP LO</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DECEL: DecelLeanoutFactorMAP FromTemp</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DECEL</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DECEL_DecelLeanoutFactorMAP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\D_-_Transient_Enrichment\Decel_Lean-out\Decreasing_MAP_LO\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8421</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (3-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">3 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Temp -200 260 degrees</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Factor 0 0.996 factor</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Temperature (°F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SBEC_25_MTX_A593_Stock.tpl.html#L2324-L2337"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SBEC_v4.asm.html#L5780"><code>TransFuel_CalculateDecreasingMAPTransientFuel</code></a> in <a href="../../../../T-SBEC_v4.asm.html#L5808"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DECEL</code> defines the coolant temperature-dependent fuel multiplier applied when manifold absolute pressure drops rapidly during engine deceleration. As the throttle closes, intake manifold vacuum deepens sharply, vaporizing raw fuel off the intake runner walls and creating a rich air-fuel mixture. To prevent spark plug fouling, unburnt hydrocarbon emissions, and exhaust burble, the engine controller looks up <code>DECEL</code> when manifold pressure drops exceed the second trigger threshold. The factory calibration applies no fuel reduction at coolant temperatures below 144 degF to protect cold driveability, and ramps up to an 7.4 percent fuel reduction once the engine warms to 177 degF.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Adjusting Deceleration Leaning</strong>: Increasing table values (closer to 255 counts, or 1.00 factor) reduces the amount of deceleration fuel leaning, preserving richer mixtures during lift-off.</li>
+<li><strong>Fuel Economy and Engine Braking</strong>: Lowering table values cuts fuel more aggressively, improving fuel economy and engine braking on long downhill descents.</li>
+<li><strong>Exhaust Crackle and Pop Calibration</strong>: Tuners seeking exhaust crackle, burble, or pops on deceleration often zero out or disable this fuel reduction table while adjusting ignition timing.</li>
+<li><strong>Re-Acceleration Transition</strong>: Cutting too much fuel on turbocharged engines can cause lean hesitations upon re-acceleration if manifold wall-wetting is depleted.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during closed-throttle deceleration, reducing fuel injection pulsewidth under high manifold vacuum to improve engine braking and emissions.</p>
+<ul>
+<li>Evaluated inside <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> at line 5808 in <a href="../../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>DECEL</code> at ROM address <code>0x8421</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- TransFuel_CalculateDecreasingMAPTransientFuel (T-SBEC_v4.asm:5806-5812) ---
+           staa Timer_O2InhibitSwitchingRichIdleToClosedLoop    ; store a into memory
+           ldaa CoolantTemp    ; load a with memory contents
+           ldx  #DECEL_DecelLeanoutFactorMAP    ; load index with value
+           jsr  Lookup4ByteTable    ; call subroutine
+           bra  LB8A3          ; branch
+
+   LB89C:  tstb</code></pre>
+<p>The CPU executes <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> where <code>DECEL</code> is loaded, compared, or interpolated from ROM address <code>0x8421</code> at line 5808.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Primary Deceleration Multiplier</strong>: Acts as the principal map-based decel fuel leaning parameter in SBEC firmware.</li>
+<li><strong>Temperature Profiling</strong>: In stock form, provides 1.00 (neutral) at 144 degF and decays to 0xED (0.926 multiplier) at 177 degF.</li>
+<li><strong>Companion Parameters</strong>: Directly coordinates with <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DECTRG_DeltaMapTriggerForNoIncrementalLeanout.html"><code>DECTRG</code></a>, <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DTRG2_DeltaMapTriggerForMaxLeanout.html"><code>DTRG2</code></a>, <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DECHYS_DeltaMapHysteresisonTriggerLevels.html"><code>DECHYS</code></a>, <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/LOTRPM_MinRpmForMapLeanout.html"><code>LOTRPM</code></a>, and <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DCELTM_O2CNTRInhibitAfterLeanoutDone.html"><code>DCELTM</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>DECEL</code>
+        </footer>
+    </div>
+</body>
+</html>

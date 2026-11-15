@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BARAIS: BaroCompensation FromBaro | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8CE3</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle ➔ AIS Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BARAIS: BaroCompensation FromBaro</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BARAIS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BARAIS_AISBaroCompensation</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle\AIS_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8CE3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (3-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">3 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Baro -14.7 14.7 psi</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Factor 0 1 scale</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Stepper Motor Position (steps / counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L3798-L3812"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L1840"><code>CalculateTargetIdleSpeedAndAisPosition_MM</code></a> in <a href="../../T-T3v1.asm.html#L1875"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BARAIS</code> is a 2D calibration curve that provides barometric pressure compensation for idle and air conditioning stepper motor adjustments. At higher altitudes, atmospheric pressure drops, reducing air density and oxygen mass per unit volume of intake air. To achieve the exact same mass airflow required to maintain target idle speed or absorb accessory loads, the idle air stepper motor must open further at high elevation than at sea level. <code>BARAIS</code> looks up an altitude scaling factor from barometric pressure that is stored in temporary memory and applied to downstream idle step calculations. In factory calibrations, <code>BARAIS</code> scales from a positive compensation multiplier at high altitudes (low barometric pressure) down to zero correction at sea level (14.7 psi absolute / 29.9 inHg).</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>High-Altitude Stall Prevention</strong>: * If operating at elevations above 4000 feet and experiencing accessory load idle sag, elevate the low-pressure cells in <code>BARAIS</code> to increase stepper motor compensation.</li>
+<li><strong>Sea-Level Baseline</strong>: * Factory calibrations flatten to zero compensation near standard sea-level atmospheric pressure (14.7 psi).</li>
+<li><strong>Table Verification</strong>: * Ensure points are monotonically decreasing as barometric pressure increases toward sea level.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect at high elevation, applying barometric altitude compensation to idle air stepper step targets.</p>
+<ul>
+<li>Evaluated inside <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at line 1875 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>BARAIS</code> at ROM address <code>0x8CE3</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateTargetIdleSpeedAndAisPosition_MM (T-T3v1.asm:1873-1879) ---
+           clr  Timer_CountdownFromStartRunForAisFeedback    ; zero byte at memory location
+   L9821:  ldaa BaroPressure    ; load a with memory contents
+           ldx  #BARAIS_AISBaroCompensation    ; load index with value
+           jsr  Lookup4ByteTable    ; call subroutine
+           staa Temp1          ; store a into memory
+           brclr *BitFlags_AIS, #b10_ATXChngGear, L9832    ; branch if bit(s) clear
+           jmp  L98BA</code></pre>
+<p>The CPU executes <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> where <code>BARAIS</code> is loaded, compared, or interpolated from ROM address <code>0x8CE3</code> at line 1875.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Multiplier Storage</strong>: Output is held in <code>Temp1</code> and acts as a dynamic multiplier across multiple idle subroutines.</li>
+<li><strong>Companion Parameter</strong>: Works alongside <a href="../../Idle/AIS_Decel/BARFLR_OffsetCorrectionTo_MAPFLR_FromBaro.html"><code>BARFLR</code></a>, which applies barometric correction to decel control MAP.</li>
+<li><strong>Table Resolution</strong>: 2 points (Baro pressure vs altitude factor).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>BARAIS</code>
+        </footer>
+    </div>
+</body>
+</html>

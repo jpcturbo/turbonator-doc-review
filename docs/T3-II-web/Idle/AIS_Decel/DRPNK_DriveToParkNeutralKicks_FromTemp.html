@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRPNK: DriveToParkNeutralKicks FromTemp | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x1133</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle ➔ AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DRPNK: DriveToParkNeutralKicks FromTemp</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DRPNK</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DRPNK_DriveToParkNeutralKicks_FromTemp</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle\AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x1133</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">2 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Temp -200 260 degrees</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">out_desc 0 255 scale</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Temperature (°F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x01                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3ii_T3_MTX.tpl.html#L4402-L4413"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_IIv1.asm.html#L1"><code>MainProgramLoop</code></a> in <a href="../../T-T3_IIv1.asm.html#L866"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DRPNK</code> is a 2D calibration curve that establishes the closing step reduction applied to the idle air stepper motor when shifting an automatic transmission from Drive into Park or Neutral. While in gear, the idle air motor is held open further to overcome the hydraulic viscous drag of the torque converter. When the driver shifts into Park or Neutral, this converter load vanishes instantly. If the extra in-gear airflow were not removed immediately, the unloaded engine would flare to high RPM. DRPNK commands an instantaneous reduction in stepper motor opening steps as a function of engine coolant temperature. In factory calibrations, <code>DRPNK</code> commands a large step reduction during cold warm-up (approximately 15 to 20 steps) that tapers down to 6 to 8 steps when the engine is fully warmed up.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Eliminating Park/Neutral Flare</strong>: * Increase <code>DRPNK</code> step reduction by 3 to 6 steps if shifting out of gear produces a noticeable flare above 1200 RPM.</li>
+<li><strong>Preventing Shift Undershoot</strong>: * If engine speed dives below target idle when shifting into Neutral, reduce <code>DRPNK</code> closing steps.</li>
+<li><strong>Seamless Gear Transitions</strong>: * Properly balanced <code>DRPNK</code> and <a href="../../Idle/AIS_Decel/PNDRK_ParkNeutralToDriveKicks_FromTemp.html"><code>PNDRK</code></a> curves produce completely flat, seamless gear shifts without RPM flaring or sagging.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect while in gear, the idle air motor is held open further to overcome the hydraulic viscous drag of the torque converter.</p>
+<ul>
+<li>Evaluated inside <code>MainProgramLoop</code> at line 866 in <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>DRPNK</code> at ROM address <code>0x1133</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>MainProgramLoop</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- MainProgramLoop (T-T3_IIv1.asm:864-870) ---
+; begin code
+; *****************************************************************************
+
+	.org CodeOrg
+        .msg &quot;Assembling Code...&quot;
+
+Interrupt_TimerOutputCapture1:</code></pre>
+<p>The CPU executes <code>MainProgramLoop</code> where <code>DRPNK</code> is loaded, compared, or interpolated from ROM address <code>0x1133</code> at line 866.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Indexed Access</strong>: Like <a href="../../Idle/AIS_Decel/PNDRK_ParkNeutralToDriveKicks_FromTemp.html"><code>PNDRK</code></a>, <code>DRPNK</code> is accessed via index pointer increment (<code>inx; inx</code>) off <a href="../../Idle/AIS_Decel/PNDLTP_DeltaRpmChangeToUse_DRPNK_or_PNDRK.html"><code>PNDLTP</code></a> rather than by direct symbol reference in opcode operands.</li>
+<li><strong>Companion Parameter</strong>: Direct counterpart to <a href="../../Idle/AIS_Decel/PNDRK_ParkNeutralToDriveKicks_FromTemp.html"><code>PNDRK</code></a> (in-gear kick table).</li>
+<li><strong>Table Resolution</strong>: 3 points (Temp vs Steps).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>DRPNK</code>
+        </footer>
+    </div>
+</body>
+</html>

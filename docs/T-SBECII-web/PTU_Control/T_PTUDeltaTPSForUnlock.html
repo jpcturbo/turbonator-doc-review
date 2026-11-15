@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTUDTP: PTUDeltaTPSForUnlock | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x83B7</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>PTU Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PTUDTP: PTUDeltaTPSForUnlock</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PTUDTP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_PTUDeltaTPSForUnlock</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>PTU_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x83B7</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">8-bit Unsigned Scaling Factor (0 to 255 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x29                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L4100-L4111"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L8672"><code>ControlPTU_MM</code></a> in <a href="../T-SBECII_v1.asm.html#L8713"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PTUDTP</code> defines the throttle position sensor voltage delta threshold used to classify throttle application as either gentle or aggressive in the Part Throttle Unlock system. When evaluating entry conditions for lockup retention, the controller subtracts learned closed-throttle <code>MINTHR</code> from current TPS voltage to calculate throttle opening delta. In factory calibrations, <code>PTUDTP</code> is configured to 52 counts, corresponding to approximately 1.02 Volts above closed throttle. If throttle delta is below <code>PTUDTP</code>, the controller sets state flag <code>b52_PTU_A</code> and checks secondary MAP threshold <code>PTUMP2</code>. If throttle delta equals or exceeds <code>PTUDTP</code>, the controller sets flag <code>b52_PTU_B</code> and evaluates primary MAP threshold <a href="../PTU_Control/T_PTUMAPThresholdForLock1.html"><code>PTUMP1</code></a>.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Pedal Sensitivity Classification</strong>: * Establishes the 1.02 V boundary dividing light throttle modulation from aggressive throttle application.</li>
+<li><strong>Tuning Lockup Sensitivity</strong>: * Raise <code>PTUDTP</code> to 60 to 70 counts (~1.2 to 1.4 V) to allow more throttle movement before aggressive lockup logic engages.</li>
+<li><strong>State Flag Routing</strong>: * Sets <code>b52_PTU_A</code> (below threshold) or <code>b52_PTU_B</code> (above threshold) to select between <code>PTUMP2</code> and <a href="../PTU_Control/T_PTUMAPThresholdForLock1.html"><code>PTUMP1</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when evaluating entry conditions for lockup retention, the controller subtracts learned closed-throttle MINTHR from current TPS voltage to calculate throttle opening delta.</p>
+<ul>
+<li>Evaluated inside <code>ControlPTU_MM</code> at line 8713 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>PTUDTP</code> at ROM address <code>0x83B7</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>ControlPTU_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- ControlPTU_MM (T-SBECII_v1.asm:8711-8717) ---
+           brset *BitFlags6A, #b6a_Cruise4, LD2E8    ; branch if bit(s) set
+           ldaa  Temp4         ; load A with memory contents
+           cmpa  PTUDTP_PTUDeltaTPSForUnlock    ; compare A with memory contents (data is 29)
+           bcs   LD2E5         ; branch if lower
+           bset  *BitFlags6A, #b6a_Cruise3    ; set bits
+           bra   LD2E9         ; branch
+</code></pre>
+<p>The CPU executes <code>ControlPTU_MM</code> where <code>PTUDTP</code> is loaded, compared, or interpolated from ROM address <code>0x83B7</code> at line 8713.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Voltage Scaling</strong>: 52 counts equals approximately 1.02 Volts (5.0 V / 255 counts = 0.0196 V/count).</li>
+<li><strong>Relative to Learned Idle</strong>: Evaluates throttle position relative to <code>MINTHR_LowestSessionTPS</code>.</li>
+<li><strong>Branch Dispatcher</strong>: Acts as the master fork between primary (<a href="../PTU_Control/T_PTUMAPThresholdForLock1.html"><code>PTUMP1</code></a>) and secondary (<code>PTUMP2</code>) MAP delta evaluations.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>PTUDTP</code>
+        </footer>
+    </div>
+</body>
+</html>

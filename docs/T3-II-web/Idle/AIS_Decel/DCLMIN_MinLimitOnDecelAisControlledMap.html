@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCLMIN: MinLimitOnDecelAisControlledMap | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8DC2</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle ➔ AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DCLMIN: MinLimitOnDecelAisControlledMap</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DCLMIN</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DCLMIN_MinLimitOnDecelAisControlledMap</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle\AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8DC2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Boost Pressure (psi)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x01                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3ii_T3_MTX.tpl.html#L4271-L4283"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_IIv1.asm.html#L1513"><code>CalculateAisPosition_MM</code></a> in <a href="../../T-T3_IIv1.asm.html#L1648"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DCLMIN</code> establishes a minimum lower clamp on the calculated deceleration control manifold absolute pressure value. During closed-throttle deceleration, intake manifold vacuum reaches extreme levels. If the synthetic decel control MAP calculation were allowed to drop to near-absolute zero pressure, the difference between actual MAP and control MAP would become artificially small, preventing the controller from recognizing deep deceleration vacuum and failing to open the dashpot. <code>DCLMIN</code> enforces a hard lower floor on the calculated decel control MAP. In factory calibrations, <code>DCLMIN</code> is set to 10 counts, enforcing an absolute pressure floor of approximately 1.1 psi absolute (2.3 inHg / 27.6 inHg vacuum).</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Deep Overrun Anti-Stall</strong>: * Increase <code>DCLMIN</code> to 14 to 18 counts if the engine pulls extreme overrun vacuum and stalls when the clutch is pressed.</li>
+<li><strong>Factory Minimum Baseline</strong>: * Factory setting of 10 counts (~1.1 psi absolute) guarantees a safe floor on stock induction systems.</li>
+<li><strong>Part-Throttle Boundary</strong>: * Keep <code>DCLMIN</code> below 25 counts to prevent false decel triggering during light part-throttle cruising.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during closed-throttle deceleration, intake manifold vacuum reaches extreme levels.</p>
+<ul>
+<li>Evaluated inside <code>CalculateAisPosition_MM</code> at line 1648 in <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>DCLMIN</code> at ROM address <code>0x8DC2</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CalculateAisPosition_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateAisPosition_MM (T-T3_IIv1.asm:1646-1652) ---
+           cmpb DCLRFQ_TimeBetweenAisPulsesForDecelAis    ; compare b with memory contents (data is 14)
+           bcs  L970D          ; branch if lower
+           cmpa DCLMIN_MinLimitOnDecelAisControlledMap    ; compare a with memory contents (data is 01)
+           bcc  L971D          ; branch if greater or equal
+           ldaa DCLMIN_MinLimitOnDecelAisControlledMap    ; load a with memory contents (data is 01)
+   L971D:  cmpa DCLMN2_NoAisControlIfMapAndControlMapBelowThis    ; compare a with memory contents (data is 15)
+           bcc  L9729          ; branch if greater or equal</code></pre>
+<p>The CPU executes <code>CalculateAisPosition_MM</code> where <code>DCLMIN</code> is loaded, compared, or interpolated from ROM address <code>0x8DC2</code> at line 1648.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Clamp Sequence</strong>: Applied immediately before checking the global lockout threshold <a href="../../Idle/AIS_Decel/DCLMN2_NoAisControlIfMapAndControlMapBelowThis.html"><code>DCLMN2</code></a>.</li>
+<li><strong>Companion Parameter</strong>: Direct predecessor to <a href="../../Idle/AIS_Decel/DCLMN2_NoAisControlIfMapAndControlMapBelowThis.html"><code>DCLMN2</code></a> in the decel evaluation chain.</li>
+<li><strong>Factory Value</strong>: 0x0A (10 counts = approximately 1.1 psi absolute).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>DCLMIN</code>
+        </footer>
+    </div>
+</body>
+</html>

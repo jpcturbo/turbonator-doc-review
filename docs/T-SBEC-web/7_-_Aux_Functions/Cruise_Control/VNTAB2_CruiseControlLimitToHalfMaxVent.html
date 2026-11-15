@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VNTAB2: CruiseControlLimitToHalfMaxVent | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8975</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Cruise Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Cruise_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>VNTAB2: CruiseControlLimitToHalfMaxVent</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>VNTAB2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>VNTAB2_CruiseControlLimitToHalfMaxVent</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Cruise_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Cruise_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8975</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Duty Cycle (% PWM; 0 to 100%)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x60                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L6715-L6726"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L9368"><code>DropOutOfCruise</code></a> in <a href="../../T-SBEC_v4.asm.html#L9946"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>VNTAB2</code> defines the intermediate overspeed error threshold for commanding a fixed half-maximum vent pulse duration. When vehicle speed climbs above target cruise speed on rolling highway terrain, gentle proportional venting from <a href="../../7_-_Aux_Functions/Cruise_Control/VENTRG_CruiseControlVentRegularGainCurve_FromDeltaSpeed.html"><code>VENTRG</code></a> may be outpaced by vehicle momentum. If speed error exceeds <code>VNTAB2</code>, the controller commands a stepped, half-authority vent duration to check speed increase more quickly. In factory calibrations, <code>VNTAB2</code> is set to 240 counts, representing approximately 120 miles per hour of speed error, positioning it immediately below the maximum vent threshold.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stepped Vent Authority</strong>: * Commands a fixed half-authority vent pulse when overspeed exceeds <code>VNTAB2</code> but remains below <a href="../../7_-_Aux_Functions/Cruise_Control/VNTAB1_CruiseControlLimitToAMaxVent.html"><code>VNTAB1</code></a>. * Bridges the gap between gentle proportional curve venting and emergency full vent.</li>
+<li><strong>Downhill Speed Stability</strong>: * Lowering <code>VNTAB2</code> to 20 to 30 counts helps curb vehicle acceleration when cresting moderate highway hills.</li>
+<li><strong>Factory Calibration</strong>: * Set to 240 counts in production calibrations, keeping stepped venting dormant during normal minor speed variations.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when cruise control overspeeds down a highway descent, setting an intermediate vent solenoid pulse duration clamp to prevent throttle hunting.</p>
+<ul>
+<li>Evaluated inside <code>DropOutOfCruise</code> at line 9946 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>VNTAB2</code> at ROM address <code>0x8975</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>DropOutOfCruise</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- DropOutOfCruise (T-SBEC_v4.asm:9944-9950) ---
+           tba                 ; a = b
+           ldab Temp0          ; load b with memory contents
+           cmpa VNTAB2_CruiseControlLimitToHalfMaxVent    ; compare a with memory contents (data is 60)
+           bcs  LD8BC          ; branch if lower
+           ldaa #0x05          ; load a with value -00000101-
+           bra  LD89F          ; branch
+</code></pre>
+<p>The CPU executes <code>DropOutOfCruise</code> where <code>VNTAB2</code> is loaded, compared, or interpolated from ROM address <code>0x8975</code> at line 9946.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Intermediate Stage</strong>: Positions stepped venting between proportional <a href="../../7_-_Aux_Functions/Cruise_Control/VENTRG_CruiseControlVentRegularGainCurve_FromDeltaSpeed.html"><code>VENTRG</code></a> and hard ceiling <a href="../../7_-_Aux_Functions/Cruise_Control/VNTAB1_CruiseControlLimitToAMaxVent.html"><code>VNTAB1</code></a>.</li>
+<li><strong>Half-Max Value</strong>: Outputs 5 counts pulse duration with vent direction bit 7 asserted (0x85), giving measured vacuum bleed without complete diaphragm collapse.</li>
+<li><strong>Companion Limiter</strong>: Paired directly with <a href="../../7_-_Aux_Functions/Cruise_Control/VNTAB1_CruiseControlLimitToAMaxVent.html"><code>VNTAB1_CruiseControlLimitToAMaxVent</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>VNTAB2</code>
+        </footer>
+    </div>
+</body>
+</html>

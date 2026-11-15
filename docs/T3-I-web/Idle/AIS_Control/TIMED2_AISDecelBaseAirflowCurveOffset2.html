@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TIMED2: DecelAisBaseAirflowCurveOffset FromTime2 | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8C62</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle ➔ AIS Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>TIMED2: DecelAisBaseAirflowCurveOffset FromTime2</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>TIMED2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>TIMED2_AISDecelBaseAirflowCurveOffset2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle\AIS_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8C62</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (3-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">3 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">in_desc 0 255 scale</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Time 0 720 sec</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Time Duration (seconds or loop counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L3603-L3616"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L1840"><code>CalculateTargetIdleSpeedAndAisPosition_MM</code></a> in <a href="../../T-T3v1.asm.html#L1907"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>TIMED2</code> is a 2D lookup curve that provides a time-decaying target idle speed adder following engine startup. When an engine first fires, extra intake air and elevated idle speed are beneficial to help clear fuel puddling, build oil pressure, and ensure smooth operation while initial combustion heat begins warming the cylinder walls. As engine run time accumulates, this elevated startup flare target must smoothly decay back down to the normal steady-state idle speed determined by coolant temperature. <code>TIMED2</code> is indexed by engine running time in seconds and adds an RPM offset directly to the base target idle speed. In factory calibrations, <code>TIMED2</code> provides an initial boost of approximately 36 to 40 RPM that decays smoothly to 0 RPM over the first 25 seconds of continuous engine run time.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Post-Start Flare Shaping</strong>: * Increase initial RPM offset points in <code>TIMED2</code> to 80 to 150 RPM if modified engines suffer from lean stumble or low vacuum in the first 15 seconds after firing.</li>
+<li><strong>Extended Warm-Up Drivability</strong>: * Lengthening the decay time beyond 25 seconds provides a gentle, gradual ramp down to base idle, improving cold morning drivability.</li>
+<li><strong>Quick Idle Drop</strong>: * Zeroing <code>TIMED2</code> causes the engine idle target to drop directly to base temperature-curve RPM immediately upon starting.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when an engine first fires, extra intake air and elevated idle speed are beneficial to help clear fuel puddling, build oil pressure, and ensure smooth operation while initial combustion heat begins warming the cylinder walls.</p>
+<ul>
+<li>Evaluated inside <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at line 1907 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>TIMED2</code> at ROM address <code>0x8C62</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateTargetIdleSpeedAndAisPosition_MM (T-T3v1.asm:1905-1911) ---
+           staa Temp0          ; store a into memory
+           ldaa KeyOnOrEngineRunningTime    ; load a with memory contents
+           ldx  #TIMED2_AISDecelBaseAirflowCurveOffset2    ; load index with value
+           jsr  Lookup4ByteTable    ; call subroutine
+           adda Temp0
+           bcc  L9880          ; branch if greater or equal
+           ldaa #0xff          ; load a with value -11111111-</code></pre>
+<p>The CPU executes <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> where <code>TIMED2</code> is loaded, compared, or interpolated from ROM address <code>0x8C62</code> at line 1907.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Dual Decay Architecture</strong>: Works in parallel with <a href="../../Idle/AIS_Decel/TIMEDC_AISDecelBaseAirflowCurveOffset.html"><code>TIMEDC</code></a>, but whereas <a href="../../Idle/AIS_Decel/TIMEDC_AISDecelBaseAirflowCurveOffset.html"><code>TIMEDC</code></a> adds decel airflow steps in <code>CalculateAisPosition_MM</code>, <code>TIMED2</code> directly raises the target idle RPM in <code>CalculateTargetIdleSpeedAndAisPosition_MM</code>.</li>
+<li><strong>Table Size</strong>: 2 points (time vs RPM offset).</li>
+<li><strong>Factory Points</strong>: Point 1 at 19 seconds (+36 RPM), Point 2 at 25 seconds (0 RPM).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>TIMED2</code>
+        </footer>
+    </div>
+</body>
+</html>

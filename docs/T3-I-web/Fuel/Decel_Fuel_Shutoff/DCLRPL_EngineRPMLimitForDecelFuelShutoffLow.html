@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCLRPL: EngineRPMLimitForDecelFuelShutoffLow | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x90BC</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel ➔ Decel Fuel Shutoff</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DCLRPL: EngineRPMLimitForDecelFuelShutoffLow</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DCLRPL</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DCLRPL_EngineRPMLimitForDecelFuelShutoffLow</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel\Decel_Fuel_Shutoff\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x90BC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x0F                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L8185-L8196"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L1840"><code>CalculateTargetIdleSpeedAndAisPosition_MM</code></a> in <a href="../../T-T3v1.asm.html#L1863"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DCLRPL</code> defines the low engine speed delta above target idle speed at which the decel fuel cut flag is disarmed. Once decel fuel shutoff has been armed, engine speed delta must remain above <code>DCLRPL</code>. As the vehicle slows down and engine speed drops toward idle, approaching within <code>DCLRPL</code> of target idle disarms the decel fuel cut flag and commands the idle air stepper motor to step open. In factory calibrations, <code>DCLRPL</code> is set to 15 counts, representing 480 RPM above target idle speed.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Coast-Down Stall Prevention</strong>: * If depressing the clutch during deceleration causes RPM to plummet below idle, increase <code>DCLRPL</code> by 2 to 4 counts.</li>
+<li><strong>Extended Fuel Shutoff</strong>: * Lowering <code>DCLRPL</code> extends fuel shutoff duration as the engine slows down, improving fuel economy on highway decel.</li>
+<li><strong>AIS Dashpot Preparation</strong>: * Crossing below <code>DCLRPL</code> triggers <a href="../../Fuel/Decel_Fuel_Shutoff/DCAISI_AISIncrementWhenUsingDecelFuelShut.html"><code>DCAISI</code></a>, adding bypass air steps to catch falling RPM.</li>
+<li><strong>Hysteresis Pair</strong>: * Works with <a href="../../Fuel/Decel_Fuel_Shutoff/DCLRPH_EngineRPMLimitForDecelFuelShutoffHigh.html"><code>DCLRPH</code></a>; delta between <a href="../../Fuel/Decel_Fuel_Shutoff/DCLRPH_EngineRPMLimitForDecelFuelShutoffHigh.html"><code>DCLRPH</code></a> and <code>DCLRPL</code> prevents flag hunting.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect once decel fuel shutoff has been armed, engine speed delta must remain above DCLRPL.</p>
+<ul>
+<li>Evaluated inside <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at line 1863 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>DCLRPL</code> at ROM address <code>0x90BC</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateTargetIdleSpeedAndAisPosition_MM (T-T3v1.asm:1861-1867) ---
+           clra                ; a = 0
+   L9802:  brclr *BitFlags6B, #b6b_DecelFuelCut, L9816    ; branch if bit(s) clear
+           cmpa DCLRPL_EngineRPMLimitForDecelFuelShutoffLow    ; compare a with memory contents (data is 0f)
+           bhi  L981B          ; branch if higher
+           ldaa DCAISI_AISIncrementWhenUsingDecelFuelShut    ; load a with memory contents (data is 00)
+           jsr  ClearAisTimer    ; call subroutine
+   L9811:  bclr *BitFlags6B, #b6b_DecelFuelCut    ; clear bits</code></pre>
+<p>The CPU executes <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> where <code>DCLRPL</code> is loaded, compared, or interpolated from ROM address <code>0x90BC</code> at line 1863.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Idle Hand-Off</strong>: Disarming here triggers feed-forward idle air stepping via <a href="../../Fuel/Decel_Fuel_Shutoff/DCAISI_AISIncrementWhenUsingDecelFuelShut.html"><code>DCAISI</code></a> before fuel is restored.</li>
+<li><strong>RPM Delta Resolution</strong>: 15 counts * 32 RPM = 480 RPM above target idle.</li>
+<li><strong>Paired with DCLRPH</strong>: 17 counts high vs 15 counts low provides a 64 RPM hysteresis buffer.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>DCLRPL</code>
+        </footer>
+    </div>
+</body>
+</html>

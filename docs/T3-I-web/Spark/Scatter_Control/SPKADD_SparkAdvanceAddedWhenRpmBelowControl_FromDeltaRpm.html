@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPKADD: SparkAdvanceAddedWhenRpmBelowControl FromDeltaRpm | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x85AF</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Spark ➔ Scatter Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>SPKADD: SparkAdvanceAddedWhenRpmBelowControl FromDeltaRpm</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>SPKADD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>SPKADD_SparkAdvanceAddedWhenRpmBelowControl_FromDeltaRpm</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Spark\Scatter_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x85AF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 2 (4-point Signed Curve / Table)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">4 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">DeltaRPM 0 512 RPM</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Advance 0 127.5 degrees</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x03                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L926-L940"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L8743"><code>CheckMaxSparkAdvance</code></a> in <a href="../../T-T3v1.asm.html#L8784"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>SPKADD</code> defines the spark advance addition curve applied by the spark scatter algorithm when engine speed drops below target idle speed. Because the mechanical automatic idle speed stepper motor reacts relatively slowly to airflow demands, the engine controller uses ignition timing advance as an instantaneous torque actuator. When engine RPM falls below target idle speed, <code>SPKADD</code> looks up an advance adder indexed by the RPM undershoot delta (scaled in 16 RPM increments). The looked-up advance (up to 8.0 degrees BTDC) is added immediately on the very next distributor firing pulse, boosting combustion cylinder pressure and generating immediate torque to arrest the RPM dip.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Arresting Idle Dips</strong>: * Increasing <code>SPKADD</code> delivers instantaneous torque recovery when heavy loads (such as electric cooling fans or power steering) drag idle speed down.</li>
+<li><strong>Over-Correction Oscillation</strong>: * If the engine bounces or rhythmically lopes between high and low idle, reduce <code>SPKADD</code> values to dampen the advance kick.</li>
+<li><strong>16 RPM Table Indexing</strong>: * Table delta RPM is shifted right 4 times (divided by 16); each table breakpoint represents 16 RPM of undershoot.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when engine RPM falls below target idle speed, SPKADD looks up an advance adder indexed by the RPM undershoot delta (scaled in 16 RPM increments).</p>
+<ul>
+<li>Evaluated inside <code>CheckMaxSparkAdvance</code> at line 8784 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>SPKADD</code> at ROM address <code>0x85AF</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CheckMaxSparkAdvance</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CheckMaxSparkAdvance (T-T3v1.asm:8782-8788) ---
+           subd TargetIdleSpeedHB    ; d = d - memory contents
+           bcc  LD3F8          ; branch if greater or equal
+           ldx  #SPKADD_SparkAdvanceAddedWhenRpmBelowControl_FromDeltaRpm    ; load index with value
+           brset *BitFlags_AIS, #b10_ATXInGear, LD3F3    ; branch if bit(s) set
+           ldx  #SPKAD2_SparkAdvanceAddedWhenRpmBelowControl2_FromDeltaRpm    ; load index with value
+   LD3F3:  coma
+           comb</code></pre>
+<p>The CPU executes <code>CheckMaxSparkAdvance</code> where <code>SPKADD</code> is loaded, compared, or interpolated from ROM address <code>0x85AF</code> at line 8784.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Type 2 Table</strong>: 2-point curve outputting positive advance in half-degree increments.</li>
+<li><strong>Dual Byte Lookup</strong>: Accumulator B returns spark adjustment added to timing; accumulator A returns step added to <code>SparkScatter</code>.</li>
+<li><strong>Symmetric Pair</strong>: Paired with <a href="../../Spark/Scatter_Control/SPKRET_SparkAdvanceRetardedWhenRpmAboveControl_FromDeltaRpm.html"><code>SPKRET</code></a> (which handles engine speed overshoot above target).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>SPKADD</code>
+        </footer>
+    </div>
+</body>
+</html>

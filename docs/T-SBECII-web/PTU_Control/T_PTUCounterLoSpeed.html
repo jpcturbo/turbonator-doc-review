@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTUCNL: PTUCounterLoSpeed | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x83B6</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>PTU Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PTUCNL: PTUCounterLoSpeed</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PTUCNL</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_PTUCounterLoSpeed</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>PTU_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x83B6</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Vehicle Road Speed (MPH)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xB9                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L4088-L4099"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L8753"><code>PTU_LookupPTUParam</code></a> in <a href="../T-SBECII_v1.asm.html#L8762"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PTUCNL</code> defines the low-speed debounce counter reload value for Part Throttle Unlock state transitions. When the vehicle is operating below <a href="../PTU_Control/T_PTUMinLockSpeed.html"><code>PTUMSP</code></a> (city and suburban driving), stop-and-go conditions create frequent throttle modulations. When <code>Counter_PartThrottleUnlock</code> expires at low speed, the controller reloads the counter from <code>PTUCNL</code>. In factory calibrations, <code>PTUCNL</code> is configured to 93 counts. This sets the required dwell time before the torque converter clutch can toggle between locked and unlocked states in lower gears.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stop-and-Go Smoothing</strong>: * Raise <code>PTUCNL</code> to 120 to 140 counts to reduce annoying converter cycling in heavy urban traffic.</li>
+<li><strong>Low-Speed Tip-In Response</strong>: * Lower <code>PTUCNL</code> to 50 to 60 counts for faster torque multiplication when pulling away from low speeds.</li>
+<li><strong>Driveline Lash Prevention</strong>: * Avoid setting <code>PTUCNL</code> below 30 counts to prevent converter clutch shudder.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the vehicle is operating below PTUMSP (city and suburban driving), stop-and-go conditions create frequent throttle modulations.</p>
+<ul>
+<li>Evaluated inside <code>PTU_LookupPTUParam</code> at line 8762 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>PTUCNL</code> at ROM address <code>0x83B6</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>PTU_LookupPTUParam</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- PTU_LookupPTUParam (T-SBECII_v1.asm:8760-8766) ---
+           cmpa  PTUMSP_PTUMinLockSpeed    ; compare A with memory contents (data is 5a)
+           bcc   LD2F6         ; branch if greater or equal
+           ldab  PTUCNL_PTUCounterLoSpeed    ; load B with memory contents (data is b9)
+           bra   LD2F6         ; branch
+
+LookupTableFromVehSpdAndCompareToTPS:
+           ldd   VehicleSpeed_HB    ; load D (A&amp;B) with memory contents</code></pre>
+<p>The CPU executes <code>PTU_LookupPTUParam</code> where <code>PTUCNL</code> is loaded, compared, or interpolated from ROM address <code>0x83B6</code> at line 8762.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Low-Speed Companion</strong>: Companion to high-speed counter <code>PTUCNH_PTUCounterHiSpeed</code>.</li>
+<li><strong>Speed Gate</strong>: Applied exclusively when vehicle speed is below <code>PTUMSP_PTUMinLockSpeed</code>.</li>
+<li><strong>Counter Decrement</strong>: Controlled by <code>PTUCNI_PTUCounterTimerIntervalForLoop</code> decimation rate.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>PTUCNL</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAROCP: BaroCompensationOfWarmupFactor FromBaro | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8390</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ C - Modifiers</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Base_Modifiers</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BAROCP: BaroCompensationOfWarmupFactor FromBaro</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BAROCP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BAROCP_BaroCompensationOfWarmupFactor_FromBaro</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Base_Modifiers</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\C_-_Modifiers\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8390</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">2 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Baro -14.7 14.7 psi</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Factor 0 99.6 percent</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Pressure / Vacuum (inHg)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x01                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L2069-L2082"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L6485"><code>HandleBaroCompForWarmup</code></a> in <a href="../../T-SBEC_v4.asm.html#L6487"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BAROCP</code> defines the barometric pressure compensation curve for warm-up fuel enrichment. At higher elevations with reduced atmospheric pressure and thinner air, the engine requires less supplementary fuel during warm-up because air mass per cylinder stroke is naturally lower. <code>BAROCP</code> scales down the total accumulated warm-up enrichment factor as barometric pressure decreases. This table prevents rich stumbling, carbon foul on spark plugs, and excessive exhaust emissions during cold engine warm-up in high-altitude environments.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>High Altitude Warm-Up Tuning</strong>: * If cold driveaway in the mountains produces black smoke and rich stumbling, increase the reduction factor at low barometric pressures.</li>
+<li><strong>Sea Level Retention</strong>: * Keep <code>BAROCP</code> at zero reduction near 14.7 psi barometric pressure so sea-level warm-up enrichment remains unaffected.</li>
+<li><strong>3-Bar MAP Sensor Calibration</strong>: * Barometric pressure is sampled from the MAP sensor at key-on; verify sensor transfer curves match the sensor hardware.</li>
+<li><strong>Multiplicative Scale</strong>: * Multiplies the entire accumulated cold enrichment sum (<code>Temp0</code>) before charge temperature compensation.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during cold starts and warm-up driving at altitude, adjusting warm-up fuel enrichment based on ambient barometric pressure.</p>
+<ul>
+<li>Evaluated inside <code>HandleBaroCompForWarmup</code> at line 6487 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>BAROCP</code> at ROM address <code>0x8390</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>HandleBaroCompForWarmup</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- HandleBaroCompForWarmup (T-SBEC_v4.asm:6485-6491) ---
+HandleBaroCompForWarmup:
+           ldaa BaroPressure    ; load a with memory contents
+           ldx  #BAROCP_BaroCompensationOfWarmupFactor_FromBaro    ; load index with value
+           jsr  Lookup4ByteTable    ; call subroutine
+           puly                ; pop Y from stack
+           beq  LBDC8          ; branch if equal (zero)
+           jsr  ScaleYbyA      ; call subroutine</code></pre>
+<p>The CPU executes <code>HandleBaroCompForWarmup</code> where <code>BAROCP</code> is loaded, compared, or interpolated from ROM address <code>0x8390</code> at line 6487.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Universal Multiplier</strong>: Directly scales the sum of all preceding cold enrichment terms (<a href="../../1_-_Fuel/B_-_Running/CURVEA_FuelColdEnrichmentCurveA.html"><code>CURVEA</code></a>, <a href="../../1_-_Fuel/B_-_Running/CURVEB_FuelColdEnrichmentCurveB.html"><code>CURVEB</code></a>, <a href="../../1_-_Fuel/B_-_Running/CURVEC_FuelColdEnrichmentCurveC.html"><code>CURVEC</code></a>, <a href="../../1_-_Fuel/C_-_Modifiers/HIGHMP_ColdLoadFromCoolantTemp.html"><code>HIGHMP</code></a>, <a href="../../1_-_Fuel/C_-_Modifiers/HIGHM2_ColdLoadFromCoolantTemp2.html"><code>HIGHM2</code></a>).</li>
+<li><strong>Single Point Factory ROM</strong>: Stored as a 1-point table in factory ROM (0xFF at Point 1), providing flat sea-level compensation.</li>
+<li><strong>Zero-Check Optimization</strong>: If the returned factor is zero, <code>beq L1522</code> skips scaling, preserving <code>Temp0</code> unaltered.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>BAROCP</code>
+        </footer>
+    </div>
+</body>
+</html>

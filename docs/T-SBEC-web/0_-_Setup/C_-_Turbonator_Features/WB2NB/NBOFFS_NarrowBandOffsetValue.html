@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NBOFFS: NarrowBandOffsetValue | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x24CD</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ C - Turbonator Features ➔ WB2NB</strong> &nbsp;|&nbsp; Subsystem: <strong>Turbonator_Features</strong>
+        </div>
+        
+        <article class="content">
+            <h1>NBOFFS: NarrowBandOffsetValue</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>NBOFFS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>NBOFFS_NarrowBandOffsetValue</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Turbonator_Features</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\C_-_Turbonator_Features\WB2NB\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x24CD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 19 Constant</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Battery Voltage (Volts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x80                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-SBEC_25_MTX_A593_Stock.tpl.html#L9420-L9430"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-SBEC_v4.asm.html#L12778"><code>LookupWB2NBXferFunc</code></a> in <a href="../../../T-SBEC_v4.asm.html#L12785"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>NBOFFS</code> provides a fine-tuning voltage offset added to the simulated narrowband oxygen sensor voltage in the wideband conversion routine. During closed-loop fueling, the engine controller continuously trims injector pulse width to oscillate sensor voltage across a fixed 0.45-volt switching threshold. By adding a calibrated positive or negative voltage offset to the simulated sensor signal, <code>NBOFFS</code> shifts the effective closed-loop target air-fuel ratio richer or leaner without requiring modification of the main <a href="../../../0_-_Setup/C_-_Turbonator_Features/WB2NB/AFR2NB_WidebandAFRToO2TransferFunction.html"><code>AFR2NB</code></a> transfer curve. The factory setting of 128 counts represents zero voltage offset.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Biasing Richer</strong>: Lowering below 128 counts subtracts voltage, prompting closed-loop feedback to trim fueling richer (useful for smoothing lumpy idle on large camshafts).</li>
+<li><strong>Biasing Leaner</strong>: Raising above 128 counts adds voltage, prompting closed-loop feedback to trim fueling leaner for highway economy.</li>
+<li><strong>Neutral Setting</strong>: 128 counts represents zero offset, maintaining the exact stoichiometric crossover points programmed in <a href="../../../0_-_Setup/C_-_Turbonator_Features/WB2NB/AFR2NB_WidebandAFRToO2TransferFunction.html"><code>AFR2NB</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during closed-loop fueling, the engine controller continuously trims injector pulse width to oscillate sensor voltage across a fixed 0.45-volt switching threshold.</p>
+<ul>
+<li>Evaluated inside <code>LookupWB2NBXferFunc</code> at line 12785 in <a href="../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>NBOFFS</code> at ROM address <code>0x24CD</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>LookupWB2NBXferFunc</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- LookupWB2NBXferFunc (T-SBEC_v4.asm:12783-12789) ---
+        ldx  #AFR2NB_WidebandAFRToO2TransferFunction  ; load index with value
+        jsr  Lookup4ByteTable                     ; call subroutine
+        adda NBOFFS_NarrowBandOffsetValue
+
+WB2NB_Return:
+        staa O2SensorValue
+        rts                            ; * there is still code after this instruction</code></pre>
+<p>The CPU executes <code>LookupWB2NBXferFunc</code> where <code>NBOFFS</code> is loaded, compared, or interpolated from ROM address <code>0x24CD</code> at line 12785.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Direct Voltage Addition</strong>: Added directly to the simulated oxygen sensor voltage via <code>adda</code> at line 10322.</li>
+<li><strong>Offset Encoding</strong>: Signed offset format where 128 equals zero offset, 255 equals maximum positive bias, and 0 equals maximum negative bias.</li>
+<li><strong>Option Dependency</strong>: Evaluated only when <code>opt_WB2NB</code> is enabled in <a href="../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>NBOFFS</code>
+        </footer>
+    </div>
+</body>
+</html>

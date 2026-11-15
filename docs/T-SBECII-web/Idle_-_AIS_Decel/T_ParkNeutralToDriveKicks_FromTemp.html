@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PNDRK: ParkNeutralToDriveKicks FromTemp | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x92CE</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PNDRK: ParkNeutralToDriveKicks FromTemp</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PNDRK</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_ParkNeutralToDriveKicks_FromTemp</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x92CE</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (5-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">5 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Temp -200 260 degrees</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">out_desc 0 255 scale</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Temperature (°F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x04                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L10280-L10295"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L2225"><code>KickUpAisBy2DuringDecel</code></a> in <a href="../T-SBECII_v1.asm.html#L2245"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PNDRK</code> is a 2D calibration curve that establishes the pre-emptive opening steps added to the idle air stepper motor when shifting an automatic transmission from Park or Neutral into Drive. When the transmission shifts into gear, the hydraulic torque converter immediately places a heavy mechanical drag on the crankshaft. If the engine controller relied purely on closed-loop feedback to catch this load, engine speed would sag significantly before the stepper motor could respond. <code>PNDRK</code> injects a rapid, pre-emptive kick opening into the stepper motor as a function of coolant temperature. In factory calibrations, <code>PNDRK</code> commands a large opening kick during cold warm-up (approximately 20 to 25 steps) that tapers down to 4 to 6 steps once the engine and transmission fluid are fully warmed up.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Curing In-Gear Shudder &amp; Stalls</strong>: * Increase <code>PNDRK</code> step values by 4 to 8 steps if shifting from Park/Neutral into Drive causes RPM to plunge or stumble.</li>
+<li><strong>Preventing In-Gear Vehicle Surge</strong>: * If the car surges forward or pulls hard against the brakes upon gear engagement, reduce <code>PNDRK</code> step points.</li>
+<li><strong>High-Stall Aftermarket Converters</strong>: * Looser converters exhibit lower fluid coupling drag at idle, allowing smaller <code>PNDRK</code> opening kicks.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect at idle when shifting an automatic transmission from Park/Neutral into Drive or Reverse, pre-emptively opening the idle air motor to catch driveline drag.</p>
+<ul>
+<li>Evaluated inside <code>KickUpAisBy2DuringDecel</code> at line 2245 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>PNDRK</code> at ROM address <code>0x92CE</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>KickUpAisBy2DuringDecel</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- KickUpAisBy2DuringDecel (T-SBECII_v1.asm:2243-2249) ---
+           bra   L9FA0         ; branch
+
+   L9F9D:  ldx   #PNDRK_ParkNeutralToDriveKicks_FromTemp    ; load index with value
+   L9FA0:  brset *BitFlags_AIS, #$%00001000, L9FB0    ; branch if bit(s) set
+           brset *BitFlags37, #bf37_ATXInDrive, L9FAD    ; branch if bit(s) set
+           ldx   #PNDLTP_DeltaRpmChangeToUse_DRPNK_or_PNDRK    ; load index with value
+           bra   L9FB0         ; branch</code></pre>
+<p>The CPU executes <code>KickUpAisBy2DuringDecel</code> where <code>PNDRK</code> is loaded, compared, or interpolated from ROM address <code>0x92CE</code> at line 2245.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Indexed Address Offset</strong>: In <code>T-SBECII_v19.asm</code>, <code>PNDRK</code> is not referenced by direct symbol in opcode operands; it is indexed via <code>inx; inx</code> off <code>PNDLTN</code>.</li>
+<li><strong>Altitude Scaling</strong>: Step values are dynamically scaled by <code>Temp1</code> (altitude factor from <a href="../Idle_-_AIS_Control/T_BaroCompensation_FromBaro.html"><code>BARAIS</code></a>).</li>
+<li><strong>Companion Parameter</strong>: Direct counterpart to <a href="../Idle_-_AIS_Decel/T_DriveToParkNeutralKicks_FromTemp.html"><code>DRPNK</code></a> (Drive to Neutral kick).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>PNDRK</code>
+        </footer>
+    </div>
+</body>
+</html>

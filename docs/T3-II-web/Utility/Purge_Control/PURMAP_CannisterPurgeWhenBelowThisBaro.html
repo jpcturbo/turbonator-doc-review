@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PURMAP: CannisterPurgeWhenBelowThisBaro | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8F16</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Utility ➔ Purge Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PURMAP: CannisterPurgeWhenBelowThisBaro</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PURMAP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>PURMAP_CannisterPurgeWhenBelowThisBaro</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Utility\Purge_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8F16</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Boost Pressure (psi)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x7F                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3ii_T3_MTX.tpl.html#L5742-L5754"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_IIv1.asm.html#L8149"><code>CanisterPurgeOff</code></a> in <a href="../../T-T3_IIv1.asm.html#L8156"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PURMAP</code> establishes the intake manifold vacuum margin required below atmospheric barometric pressure to enable the evaporative emission canister purge solenoid. The evaporative emission system draws stored fuel vapors from the charcoal canister into the engine intake manifold using engine vacuum. On turbocharged engines, under boost or wide-open throttle, intake manifold pressure becomes positive relative to atmospheric pressure. If the canister purge solenoid opened during boost, pressurized intake air would blow backwards through the purge lines into the charcoal canister and fuel tank. In factory calibrations, <code>PURMAP</code> is set to 5 counts, corresponding to approximately 0.6 psi (1.2 inHg) of vacuum below barometric pressure. Manifold pressure must stay at least this far below atmospheric pressure before purge is permitted.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>3-Bar MAP Scaling</strong>: * Verify and rescale <code>PURMAP</code> on 3-bar sensor conversions to maintain proper vacuum margins on the 44.1 psi scale.</li>
+<li><strong>Boost Backflow Protection</strong>: * Software failsafe that guarantees the purge valve closes before intake pressure reaches atmospheric zero or positive boost.</li>
+<li><strong>Shift Light Repurposing</strong>: * When option bit <code>cfg_PurgeShiftLight</code> is enabled in Turbonator calibrations, this output drives the driver shift light.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under intake manifold vacuum, setting the manifold pressure threshold required to open the canister purge solenoid.</p>
+<ul>
+<li>Evaluated inside <code>CanisterPurgeOff</code> at line 8156 in <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>PURMAP</code> at ROM address <code>0x8F16</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CanisterPurgeOff</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CanisterPurgeOff (T-T3_IIv1.asm:8154-8160) ---
+           brset *CCDFlags1, #$%00100000, LCF8F    ; branch if bit(s) set
+           subb PURHYS_CannisterPurgeBaroHysteresis    ; subtract memory contents from b (data is 02)
+   LCF8F:  tst  PURMAP_CannisterPurgeWhenBelowThisBaro    ;  (data is 7f)
+           bpl  LCFA0          ; branch if plus (hi bit 0)
+           tba                 ; a = b
+           ldab PURMAP_CannisterPurgeWhenBelowThisBaro    ; load b with memory contents (data is 7f)
+           negb</code></pre>
+<p>The CPU executes <code>CanisterPurgeOff</code> where <code>PURMAP</code> is loaded, compared, or interpolated from ROM address <code>0x8F16</code> at line 8156.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Hysteresis Companion</strong>: Works directly with <a href="../../Utility/Purge_Control/PURHYS_CannisterPurgeBaroHysteresis.html"><code>PURHYS_CannisterPurgeBaroHysteresis</code></a> to prevent solenoid buzzing.</li>
+<li><strong>Temperature Interlock</strong>: Gated by <a href="../../Utility/Purge_Control/PURTMP_CanisterPurgeCoolantTemp.html"><code>PURTMP_CanisterPurgeCoolantTemp</code></a>; purge cannot activate when engine is cold.</li>
+<li><strong>Loop State Dependency</strong>: Gated by closed loop status (<code>b50_OpenLoop</code>) and valid oxygen sensor feedback.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>PURMAP</code>
+        </footer>
+    </div>
+</body>
+</html>

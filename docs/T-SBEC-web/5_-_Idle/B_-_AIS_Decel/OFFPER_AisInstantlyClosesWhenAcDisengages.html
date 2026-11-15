@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OFFPER: AisInstantlyClosesWhenAcDisengages | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x86F0</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>OFFPER: AisInstantlyClosesWhenAcDisengages</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>OFFPER</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>OFFPER_AisInstantlyClosesWhenAcDisengages</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x86F0</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Stepper Motor Position (steps / counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xC0                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L4517-L4528"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L2005"><code>HandleAcCutout</code></a> in <a href="../../T-SBEC_v4.asm.html#L2162"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>OFFPER</code> defines the percentage proportion of the off-idle air conditioning airflow adder <a href="../../5_-_Idle/B_-_AIS_Decel/ACCTBL_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a> that is instantly retracted when the compressor clutch disengages. While driving off-idle with the air conditioner on, <a href="../../5_-_Idle/B_-_AIS_Decel/ACCTBL_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a> injects auxiliary bypass airflow to counteract compressor drag during coast-down. When the compressor clutch disengages, compressor drag vanishes immediately. If the full off-idle air offset were allowed to decay away slowly, the vehicle would continue to coast forward with diminished engine braking, feeling like the throttle is hanging open. <code>OFFPER</code> dictates what percentage of the <a href="../../5_-_Idle/B_-_AIS_Decel/ACCTBL_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a> airflow adder is instantly subtracted from the stepper motor position at the exact moment the clutch disengages. In factory calibrations, <code>OFFPER</code> is set to 192 counts, commanding an instantaneous retraction of exactly 75 percent (192/256) of the A/C airflow adder.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Eliminating Coasting Forward Push</strong>: * Increase <code>OFFPER</code> to 220 to 255 counts (86% to 100%) to instantly eliminate all A/C dashpot air when the clutch opens, restoring firm engine braking.</li>
+<li><strong>Softening Disengagement Jerk</strong>: * Lower <code>OFFPER</code> to 128 counts (50%) if the car jerks backward into abrupt engine braking when the compressor disengages.</li>
+<li><strong>Percentage Scalar</strong>: * 255 counts represents 100%; factory setting of 192 counts represents 75%.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect while driving off-idle with the air conditioner on, ACCTBL injects auxiliary bypass airflow to counteract compressor drag during coast-down.</p>
+<ul>
+<li>Evaluated inside <code>HandleAcCutout</code> at line 2162 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>OFFPER</code> at ROM address <code>0x86F0</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>HandleAcCutout</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- HandleAcCutout (T-SBEC_v4.asm:2160-2166) ---
+           asld                ; shift left (d=d*2)
+           jsr  Lookup4ByteTable    ; call subroutine
+           ldab OFFPER_AisInstantlyClosesWhenAcDisengages    ; load b with memory contents (data is 80)
+           mul                 ; multiply (d=a*b)
+           jsr  MultiplyTempvar1ByA_Pos    ; call subroutine
+           nega                ; negate a (set high bit)
+           jsr  L9B1E          ; call subroutine</code></pre>
+<p>The CPU executes <code>HandleAcCutout</code> where <code>OFFPER</code> is loaded, compared, or interpolated from ROM address <code>0x86F0</code> at line 2162.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameter</strong>: Direct counterpart to <a href="../../5_-_Idle/B_-_AIS_Decel/OFFPER2_AisInstantlyClosesWhenAcDisengages2.html"><code>OFFPER2</code></a> (secondary branch retraction percentage).</li>
+<li><strong>Scaling</strong>: 192 counts = 192 / 256 = 0.75 (75%).</li>
+<li><strong>Factory Value</strong>: 0xC0 (192 counts).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>OFFPER</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPMLIM: NoCellUpdateAboveThisRPMInRPMOver32 | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8057</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - Adaptive memory</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>RPMLIM: NoCellUpdateAboveThisRPMInRPMOver32</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>RPMLIM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_NoCellUpdateAboveThisRPMInRPMOver32</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_Adaptive_memory\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8057</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x56                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L806-L817"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L3212"><code>O2Signal_BelowToggle</code></a> in <a href="../T-SBECII_v1.asm.html#L3219"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>RPMLIM</code> establishes the upper engine speed limit for closed-loop oxygen sensor feedback and adaptive fuel memory updates. At high engine speeds, rapid valve timing and high exhaust gas velocity reduce the precision of narrowband oxygen sensor feedback, while engine load demands favor rich, open-loop power enrichment. In factory calibrations, <code>RPMLIM</code> is configured to 86 counts in high-byte RPM scaling (where each count represents 32 RPM), setting the threshold at 2752 RPM. Above this speed, the engine controller locks out closed loop and operates in open loop.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Highway Cruising Extension</strong>: * Raising <code>RPMLIM</code> to 100-115 counts (3200-3680 RPM) maintains closed-loop fuel economy on vehicles with short final drive gearing.</li>
+<li><strong>Race Applications</strong>: * Lowering <code>RPMLIM</code> to 2200-2400 RPM forces early open loop, protecting exhaust valves with rich mixtures during aggressive driving.</li>
+<li><strong>RPM Scaling</strong>: * High-byte engine speed scaling (1 count = 32 RPM; 86 counts = 2752 RPM).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during closed-loop operation, setting the maximum engine RPM ceiling above which adaptive fuel updates and O2 feedback are disabled.</p>
+<ul>
+<li>Evaluated inside <code>O2Signal_BelowToggle</code> at line 3219 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>RPMLIM</code> at ROM address <code>0x8057</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>O2Signal_BelowToggle</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- O2Signal_BelowToggle (T-SBECII_v1.asm:3217-3223) ---
+
+   LA716:  ldab  EngineRpm_HB    ; load B with memory contents
+           cmpb  RPMLIM_NoCellUpdateAboveThisRPMInRPMOver32    ; compare B with memory contents (data is 56)
+           bhi   LA713         ; branch if higher
+           ldab  Timer_FuelEnrich    ; load B with memory contents
+           orab  Timer_O2CNTR_CountdownFromAbove196FtoEnableClosedLoop
+           bne   LA766         ; branch if not equal (not zero)</code></pre>
+<p>The CPU executes <code>O2Signal_BelowToggle</code> where <code>RPMLIM</code> is loaded, compared, or interpolated from ROM address <code>0x8057</code> at line 3219.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Works with <a href="../Fuel_-_Adaptive_memory/T_NoCellUpdateAboveThisMAP.html"><code>MAPLIM</code></a> and <a href="../Fuel_-_Adaptive_memory/T_RPMCellBoundaryInRPMover32.html"><code>R1</code></a> to constrain the closed-loop operating envelope.</li>
+<li><strong>Units</strong>: High-byte engine speed (1 count = 32 RPM).</li>
+<li><strong>Persistence</strong>: Read on every main loop pass; dynamically gates closed loop in RAM.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>RPMLIM</code>
+        </footer>
+    </div>
+</body>
+</html>

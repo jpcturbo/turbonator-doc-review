@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RNSTTR: SparkRunStartTransferPointRpm | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x85EF</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Spark ➔ Start to Run Transfer</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>RNSTTR: SparkRunStartTransferPointRpm</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>RNSTTR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>RNSTTR_SparkRunStartTransferPointRpm</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Spark\Start_to_Run_Transfer\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x85EF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x82                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3ii_T3_MTX.tpl.html#L1251-L1262"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_IIv1.asm.html#L6642"><code>CrankInterrupt_FallingEdge</code></a> in <a href="../../T-T3_IIv1.asm.html#L6729"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>RNSTTR</code> defines the stall-detection hysteresis distributor pulse period threshold that drops ignition control back from running Run Mode into cranking Start Mode. Once an engine is running, sudden clutch engagement, severe electrical loading, or abrupt idle undershoot can cause engine speed to sag toward a stall. In period-based logic, a sagging engine speed produces an increasing pulse period. If the distributor pulse period exceeds <code>RNSTTR</code> (engine speed falls below approximately 422 RPM in factory calibrations), the engine controller recognizes that self-sustaining engine operation has ceased. It sets the dwell disable flag and transitions ignition back to cranking mode (fixed base trigger timing and full cranking dwell) to assist immediate restart.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stall Recovery Hysteresis</strong>: * Factory setting of 422 RPM (71 counts) sits well below idle speed (850 to 950 RPM), providing a wide 400+ RPM buffer against accidental stall triggering.</li>
+<li><strong>Anti-Lug Drivability</strong>: * Raising <code>RNSTTR</code> allows manual transmission drivers to lug the engine down to 350 RPM without the controller abruptly switching to locked cranking spark advance.</li>
+<li><strong>Period Inversion Reminder</strong>: * Higher period values correspond to lower engine speeds (Period = 30000 / RPM).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect once an engine is running, sudden clutch engagement, severe electrical loading, or abrupt idle undershoot can cause engine speed to sag toward a stall.</p>
+<ul>
+<li>Evaluated inside <code>CrankInterrupt_FallingEdge</code> at line 6729 in <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>RNSTTR</code> at ROM address <code>0x85EF</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CrankInterrupt_FallingEdge</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CrankInterrupt_FallingEdge (T-T3_IIv1.asm:6727-6733) ---
+           ldab STRNTR_SparkStartRunTransferPointRpm    ; load b with memory contents (data is 62)
+           brset *BitFlags6e, #$%00000010, LC3AA    ; branch if bit(s) set
+           ldab RNSTTR_SparkRunStartTransferPointRpm    ; load b with memory contents (data is 82)
+   LC3AA:  cmpb DistributorFallingEdgePulsewidth_HB
+           bcc  LC3B3          ; branch if greater or equal
+   LC3AE:  bset *BitFlags6e, #$%00000010    ; set bits
+           bra  LC3BC          ; branch</code></pre>
+<p>The CPU executes <code>CrankInterrupt_FallingEdge</code> where <code>RNSTTR</code> is loaded, compared, or interpolated from ROM address <code>0x85EF</code> at line 6729.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Hysteresis Relationship</strong>: Works directly with <a href="../../Spark/Start_to_Run_Transfer/STRNTR_SparkStartRunTransferPointRpm.html"><code>STRNTR</code></a> (612 RPM transfer vs. 422 RPM stall drop) to provide a 190 RPM deadband.</li>
+<li><strong>Scaling</strong>: 1 count represents period duration (RPM ≈ 30,000 / count). Factory setting 0x47 = 71 counts ≈ 422 RPM.</li>
+<li><strong>Dwell State Flag</strong>: Directly toggles bit <code>b54_DisableNormalDwell</code> in <code>BitFlags_54</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>RNSTTR</code>
+        </footer>
+    </div>
+</body>
+</html>

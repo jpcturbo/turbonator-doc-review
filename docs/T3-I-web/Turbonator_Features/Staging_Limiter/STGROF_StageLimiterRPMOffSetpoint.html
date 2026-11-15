@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STGROF: StageLimiterRPMOffSetpoint | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x2117</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Turbonator Features ➔ Staging Limiter</strong> &nbsp;|&nbsp; Subsystem: <strong>Limiters_Limp</strong>
+        </div>
+        
+        <article class="content">
+            <h1>STGROF: StageLimiterRPMOffSetpoint</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>STGROF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>STGROF_StageLimiterRPMOffSetpoint</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Limiters_Limp</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Turbonator_Features\Staging_Limiter\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x2117</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x7D                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L8470-L8480"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L6090"><code>Stage_Limiter_On</code></a> in <a href="../../T-T3v1.asm.html#L6095"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>STGROF</code> establishes the upper engine speed limit where launch control cuts ignition and/or fuel injection while staging. When staging at wide-open throttle, the engine revs rapidly toward this setpoint. The instant engine speed reaches <code>STGROF</code>, the engine controller triggers rotating spark cuts and/or fuel cuts depending on configured options, arresting engine acceleration and locking RPM within the staging window. The factory setting of 125 counts corresponds to 4000 RPM, providing a solid rev limit ceiling for turbo boost generation on the starting line.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Target Staging RPM</strong>: Calibrate to desired launch ceiling (3200-3600 RPM for street tires, 4200-4800 RPM for drag slicks or high-stall converters).</li>
+<li><strong>Pairing With Resume Point</strong>: Always maintain <code>STGROF</code> strictly higher than <a href="../../Turbonator_Features/Staging_Limiter/STGRON_StageLimiterRPMOnSetpoint.html"><code>STGRON</code></a> by roughly 150 to 250 RPM to establish proper hysteresis.</li>
+<li><strong>Rev Limit Strategy</strong>: Enable <code>opt_SprkRevLim</code> in <a href="../../Setup/Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a> for boost building via rotating spark cut. Fuel cut (<code>opt_FuelRevLim</code>) halts turbine drive energy and slows boost spool.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when staging at wide-open throttle, the engine revs rapidly toward this setpoint.</p>
+<ul>
+<li>Evaluated inside <code>Stage_Limiter_On</code> at line 6095 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>STGROF</code> at ROM address <code>0x2117</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>Stage_Limiter_On</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- Stage_Limiter_On (T-T3v1.asm:6093-6099) ---
+	   cmpa STGSPD_StageLimiterCutoffSpeed    ; compare a with memory contents (data is 0a)
+	   bcc  Stage_Limiter_Off		       ; branch if the vehicle speed is greater than the cutoff speed
+	   ldaa STGROF_StageLimiterRPMOffSetpoint ; load a with memory contents (data is 7d)
+	   ldab STGRON_StageLimiterRPMOnSetpoint  ; load b with memory contents (data is 77)
+	   bra  Store_Limiter_Values	       ; branch
+
+Stage_Limiter_Off:</code></pre>
+<p>The CPU executes <code>Stage_Limiter_On</code> where <code>STGROF</code> is loaded, compared, or interpolated from ROM address <code>0x2117</code> at line 6095.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>RPM Scaling</strong>: Scaled at 32 RPM per count. The factory setting of 125 counts equals 4000 RPM.</li>
+<li><strong>Hysteresis Window Upper Bound</strong>: Governs the peak cut point in the staging hysteresis loop with <a href="../../Turbonator_Features/Staging_Limiter/STGRON_StageLimiterRPMOnSetpoint.html"><code>STGRON</code></a>.</li>
+<li><strong>Option Flags</strong>: Activates fuel cut if <code>opt_FuelRevLim</code> is enabled in <a href="../../Setup/Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a> and spark cut if <code>opt_SprkRevLim</code> is enabled in <a href="../../Setup/Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>STGROF</code>
+        </footer>
+    </div>
+</body>
+</html>

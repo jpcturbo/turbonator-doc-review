@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMPTL1: TempForColdScaleFromA2D | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x9377</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Setup - Transfer Functions</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>TMPTL1: TempForColdScaleFromA2D</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>TMPTL1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_TempForColdScaleFromA2D</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Setup_-_Transfer_Functions\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x9377</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (8-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">8 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">raw 0 255 scale</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Coolant_Temperature -200 260 F</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Temperature (°F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x07                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L10647-L10665"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L8384"><code>ResetInterrupt</code></a> in <a href="../T-SBECII_v1.asm.html#L8589"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>TMPTL1</code> is the primary non-linear transfer table converting raw voltage counts from the engine coolant temperature sensor into engineering temperature units under cold operating conditions. The Chrysler SBEC-II hardware incorporates a dual-range thermistor input circuit with a switched pull-up resistor. When the engine is cold (ranging from minus forty degrees Fahrenheit up to approximately one hundred forty degrees Fahrenheit), the controller switches the circuit to high sensitivity and looks up coolant temperature through this seven-point curve. By expanding sensor resolution across low temperatures, <code>TMPTL1</code> provides precise cold-start fueling enrichment, cranking fuel scheduling, and cold idle target control.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Factory Thermistor Match</strong>: * Matches the low-temperature resistance curve of the factory Chrysler two-pin coolant temperature sensor.</li>
+<li><strong>Aftermarket Sensor Swaps</strong>: * If swapping to a non-stock sensor (such as a GM or Bosch thermistor), <code>TMPTL1</code> must be re-curved to maintain cold-start enrichment accuracy.</li>
+<li><strong>Cold-Range Resolution</strong>: * Dedicated to engine temperatures below one hundred forty degrees Fahrenheit, where fuel vaporization is minimal.</li>
+<li><strong>Companion Curve</strong>: * Seamlessly hands off to <a href="../Setup_-_Transfer_Functions/T_TempForHotScaleA2D.html"><code>TMPTL2</code></a> as the engine reaches normal operating temperature.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the engine is cold (ranging from minus forty degrees Fahrenheit up to approximately one hundred forty degrees Fahrenheit), the controller switches the circuit to high sensitivity and looks up coolant temperature through this seven-point curve.</p>
+<ul>
+<li>Evaluated inside <code>ResetInterrupt</code> at line 8589 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>TMPTL1</code> at ROM address <code>0x9377</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>ResetInterrupt</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- ResetInterrupt (T-SBECII_v1.asm:8587-8593) ---
+           ldx   #TMPTL2_TempForHotScaleA2D    ; load index with value
+           brclr *PIA1_Buffer, #$%00010000, LD1C0    ; branch if bit(s) clear
+           ldx   #TMPTL1_TempForColdScaleA2D    ; load index with value
+   LD1C0:  jsr   Lookup4ByteTable    ; call subroutine
+           staa  CoolantTemp    ; store A into memory
+           ldaa  LastChargeTempVolts    ; load A with memory contents
+           ldx   #TMPTL2_TempForHotScaleA2D    ; load index with value</code></pre>
+<p>The CPU executes <code>ResetInterrupt</code> where <code>TMPTL1</code> is loaded, compared, or interpolated from ROM address <code>0x9377</code> at line 8589.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Table Structure</strong>: 7-point 2D curve translating raw counts (0 to 255) to temperature (-200 to 260 degF).</li>
+<li><strong>Hardware Range Switching</strong>: Toggled via bit 7 of <code>PIA2_PortB_DataDirection</code>.</li>
+<li><strong>Companion Curve</strong>: Directly paired with <code>TMPTL2_TempForHotScaleA2D</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>TMPTL1</code>
+        </footer>
+    </div>
+</body>
+</html>

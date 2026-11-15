@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EGRR18A: ExhGasRecircConstHiLimit18a | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8403</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>EGR</strong> &nbsp;|&nbsp; Subsystem: <strong>EGR_Emissions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>EGRR18A: ExhGasRecircConstHiLimit18a</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>EGRR18A</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_ExhGasRecircConstHiLimit18a</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">EGR_Emissions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>EGR\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8403</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">8-bit Unsigned Scaling Factor (0 to 255 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xFF                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L4413-L4424"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L1"><code>MainProgramLoop</code></a> in <a href="../T-SBECII_v1.asm.html#L778"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>EGRR18A</code> (ExhGasRecircConstHiLimit18a) establishes the upper manifold absolute pressure boundary for the Phase 1 Exhaust Gas Recirculation diagnostic sampling window. Located immediately following <a href="../EGR/T_ExhGasRecircConstLoLimit18.html"><code>EGR18</code></a> in calibration memory, this parameter defines the maximum intake manifold pressure under which Phase 1 baseline oxygen sensor tracking is permitted to operate. When the boundary checking routine is called at line 5429, the controller verifies that manifold pressure does not exceed the value stored at offset +1 from the <a href="../EGR/T_ExhGasRecircConstLoLimit18.html"><code>EGR18</code></a> base pointer. The factory setting of 255 counts represents full-scale pressure (approximately 14.7 psi boost in a 2-bar system), which ensures that the upper limit check never aborts the diagnostic sequence under normal driving conditions.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Lowering EGRR18A</strong>: Imposes an upper manifold pressure ceiling on Phase 1 baseline sampling. Useful if tuners wish to ensure baseline oxygen sensor readings are gathered strictly under deep manifold vacuum.</li>
+<li><strong>Factory Ceiling (255 counts)</strong>: Maximizes diagnostic window availability by setting the upper boundary to full-scale pressure.</li>
+<li><strong>3-Bar MAP Sensor Scaling</strong>: When implementing a 3-bar MAP sensor, if a specific vacuum or pressure ceiling is calibrated, scale down the threshold by 0.667 (two-thirds) to preserve the intended manifold pressure window.</li>
+<li><strong>Pair Synchronization</strong>: Ensure <code>EGRR18A</code> is always greater than or equal to <a href="../EGR/T_ExhGasRecircConstLoLimit18.html"><code>EGR18</code></a>; setting <code>EGRR18A</code> lower than <a href="../EGR/T_ExhGasRecircConstLoLimit18.html"><code>EGR18</code></a> creates an impossible condition that immediately aborts every Phase 1 attempt.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle cruising, modulating the exhaust gas recirculation (EGR) solenoid duty cycle to control combustion temperatures.</p>
+<ul>
+<li>Evaluated inside <code>MainProgramLoop</code> at line 778 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>EGRR18A</code> at ROM address <code>0x8403</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>MainProgramLoop</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- MainProgramLoop (T-SBECII_v1.asm:776-782) ---
+; begin code
+; *****************************************************************************
+
+	.org CodeOrg
+        .msg &quot;Assembling Code...&quot;
+
+ControlAirConditioning_MM:</code></pre>
+<p>The CPU executes <code>MainProgramLoop</code> where <code>EGRR18A</code> is loaded, compared, or interpolated from ROM address <code>0x8403</code> at line 778.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Indexed Companion Limit</strong>: Stored at ROM address 0x1A07 (org 0x8822), exactly one byte after <a href="../EGR/T_ExhGasRecircConstLoLimit18.html"><code>EGR18</code></a>.</li>
+<li><strong>Pointer Offset</strong>: Not referenced by label name in assembly operand; evaluated dynamically via index register offset <code>0x01,x</code>.</li>
+<li><strong>Window Logic</strong>: Must remain greater than or equal to <a href="../EGR/T_ExhGasRecircConstLoLimit18.html"><code>EGR18</code></a> to prevent permanent diagnostic monitor lockout.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>EGRR18A</code>
+        </footer>
+    </div>
+</body>
+</html>

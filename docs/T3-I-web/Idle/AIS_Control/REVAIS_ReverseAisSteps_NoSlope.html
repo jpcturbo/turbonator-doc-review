@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REVAIS: ReverseAisSteps NoSlope | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8D10</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle ➔ AIS Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>REVAIS: ReverseAisSteps NoSlope</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>REVAIS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>REVAIS_ReverseAisSteps_NoSlope</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle\AIS_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8D10</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 12 Constant</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Stepper Motor Position (steps / counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x04                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L3847-L3862"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L1984"><code>HandleAcCutout</code></a> in <a href="../../T-T3v1.asm.html#L2206"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>REVAIS</code> is the proportional correction lookup table that commands closing steps on the automatic idle speed stepper motor whenever engine speed exceeds target idle. During idle operation, sudden reductions in engine load (such as the cooling fan turning off or shifting from Drive into Neutral) can cause engine speed to flare above the desired setpoint. The Turbo III controller continuously calculates overspeed error by subtracting target idle speed from actual engine speed. <code>REVAIS</code> indexes this overspeed delta to determine how many closing steps (negative values) to apply to bring engine speed back down to target. In factory calibrations, <code>REVAIS</code> includes a 30 RPM deadband where 0 steps are taken, followed by -1 step at 40 RPM error, -2 steps at 70 RPM error, -3 steps at 100 RPM error, and -4 steps at 160 RPM error.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Curing High Idle Hanging</strong>: * If engine speed hangs above 1200 RPM after releasing the accelerator, increase the closing step magnitude in <code>REVAIS</code> at 70 to 100 RPM error.</li>
+<li><strong>Preventing Undershoot Choke</strong>: * If the engine plunges past target idle and nearly stalls when returning to idle, reduce the closing steps in <code>REVAIS</code> to create a gentler landing.</li>
+<li><strong>Symmetry with FWDAIS</strong>: * Maintain balanced proportional authority between <a href="../../Idle/AIS_Control/FWDAIS_ForwardAisSteps_NoSlope.html"><code>FWDAIS</code></a> (opening) and <code>REVAIS</code> (closing) to prevent cyclic idle hunting.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during idle operation, sudden reductions in engine load (such as the cooling fan turning off or shifting from Drive into Neutral) can cause engine speed to flare above the desired setpoint.</p>
+<ul>
+<li>Evaluated inside <code>HandleAcCutout</code> at line 2206 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>REVAIS</code> at ROM address <code>0x8D10</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>HandleAcCutout</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- HandleAcCutout (T-T3v1.asm:2204-2210) ---
+           subd EngineRpm_HB    ; d = d - memory contents
+           bcc  L9AF6          ; branch if greater or equal
+           ldx  #REVAIS_ReverseAisSteps_NoSlope    ; load index with value
+           coma
+           comb
+   L9AF6:  lsrd                ; shift right (d=d/2)
+           lsrd                ; shift right (d=d/2)</code></pre>
+<p>The CPU executes <code>HandleAcCutout</code> where <code>REVAIS</code> is loaded, compared, or interpolated from ROM address <code>0x8D10</code> at line 2206.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Two's Complement Scaling</strong>: Step values in <code>REVAIS</code> are stored as two's complement negative integers (e.g., 0xFF = -1 step, 0xFE = -2 steps, 0xFD = -3 steps, 0xFC = -4 steps).</li>
+<li><strong>Companion Parameter</strong>: Direct counterpart to <a href="../../Idle/AIS_Control/FWDAIS_ForwardAisSteps_NoSlope.html"><code>FWDAIS</code></a>.</li>
+<li><strong>Deadband Width</strong>: First entry (0x1E) establishes an identical 30 RPM error deadband before closing steps are triggered.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>REVAIS</code>
+        </footer>
+    </div>
+</body>
+</html>

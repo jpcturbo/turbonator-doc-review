@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FNSPHI: FanControlSpeedHi | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x17CA</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>6 - Fan Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Fan_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>FNSPHI: FanControlSpeedHi</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>FNSPHI</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>FNSPHI_FanControlSpeedHi</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fan_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>6_-_Fan_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x17CA</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Vehicle Road Speed (MPH)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x0B                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T-SBEC_25_MTX_A593_Stock.tpl.html#L6089-L6099"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBEC_v4.asm.html#L1577"><code>PreventRadSteaming</code></a> in <a href="../T-SBEC_v4.asm.html#L1597"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>FNSPHI</code> defines the high vehicle speed transition threshold that switches the cooling fan logic between low-speed city mode and high-speed highway mode. The engine controller monitors road speed via the transmission distance sensor, which stores the pulse period between speedometer pulses in high-byte variable <code>VehicleSpeed_HB</code>. Because this variable measures time duration between pulses, smaller count values represent faster road speeds. In factory calibrations, <code>FNSPHI</code> is set to 11 counts, representing approximately 44 MPH. When road speed exceeds this threshold, the controller switches from low-speed fan setpoints (<a href="../6_-_Fan_Control/FANTMP3_FanTurnOnTempBelow35Mph.html"><code>FANTMP3</code></a>/<a href="../6_-_Fan_Control/FANTMP4_FanTurnOffTempBelow35Mph.html"><code>FANTMP4</code></a>) to highway setpoints (<a href="../6_-_Fan_Control/FANTMP1_FanTurnOnTempAbove45Mph.html"><code>FANTMP1</code></a>/<a href="../6_-_Fan_Control/FANTMP2_FanTurnOffTempAbove45Mph.html"><code>FANTMP2</code></a>).</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Pulse Period Inversion</strong>: * Lower count values in <code>FNSPHI</code> represent higher road speeds in miles per hour.</li>
+<li><strong>Speed Hysteresis Window</strong>: * Works with <a href="../6_-_Fan_Control/FNSPLO_FanControlSpeedLo.html"><code>FNSPLO</code></a> to prevent fan threshold hunting when driving at moderate speeds (36 to 44 MPH).</li>
+<li><strong>Tire &amp; Gear Ratio Changes</strong>: * Adjust <code>FNSPHI</code> if significant tire diameter or final drive gear changes alter speedometer pulse calibration.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when road speed exceeds this threshold, the controller switches from low-speed fan setpoints (FANTMP3/FANTMP4) to highway setpoints (FANTMP1/FANTMP2).</p>
+<ul>
+<li>Evaluated inside <code>PreventRadSteaming</code> at line 1597 in <a href="../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>FNSPHI</code> at ROM address <code>0x17CA</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>PreventRadSteaming</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- PreventRadSteaming (T-SBEC_v4.asm:1595-1601) ---
+           ldx  #FANTMP1_FanTurnOnTempAbove45Mph    ; load index with value
+           ldaa VehicleSpeed_HB    ; load a with memory contents
+           cmpa FNSPHI_FanControlSpeedHi          ; compare a with value -00001011-
+           bcc  Above44MPH     ; branch if greater or equal
+           cmpa FNSPLO_FanControlSpeedLo          ; compare a with value -00001001-
+           bcs  Below36MPH     ; branch if lower
+           brset *BitFlags68, #b68_SpeedOver40, L94CC    ; branch if bit(s) set</code></pre>
+<p>The CPU executes <code>PreventRadSteaming</code> where <code>FNSPHI</code> is loaded, compared, or interpolated from ROM address <code>0x17CA</code> at line 1597.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Pulse Timing Base</strong>: Measured as the timer capture period between speedometer distance sensor pulses.</li>
+<li><strong>Companion Parameter</strong>: Must remain higher in count value (lower in MPH) than <a href="../6_-_Fan_Control/FNSPLO_FanControlSpeedLo.html"><code>FNSPLO_FanControlSpeedLo</code></a>.</li>
+<li><strong>Flag Management</strong>: Sets bit <code>b51_SpeedUnder40</code> in <code>BitFlags_51</code> when vehicle speed drops below the threshold.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>FNSPHI</code>
+        </footer>
+    </div>
+</body>
+</html>

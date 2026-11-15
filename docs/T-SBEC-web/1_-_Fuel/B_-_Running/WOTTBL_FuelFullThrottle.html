@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WOTTBL: FuelFullThrottle | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x828B</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ B - Running</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Base_Modifiers</strong>
+        </div>
+        
+        <article class="content">
+            <h1>WOTTBL: FuelFullThrottle</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>WOTTBL</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>WOTTBL_FuelFullThrottle</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Base_Modifiers</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\B_-_Running\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x828B</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 1 (9-point 2D Table unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">9 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">MAP -14.7 14.7 psi</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Pulsewidth 0 65535 uSec</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">8-bit Unsigned Scaling Factor (0 to 255 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x00                   ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L1766-L1787"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L6961"><code>CalculateInjectorPulsewidthForEngineRunning</code></a> in <a href="../../T-SBEC_v4.asm.html#L6968"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>WOTTBL</code> defines the wide-open throttle base fuel delivery curve indexed by manifold absolute pressure. Whenever the driver presses the accelerator pedal to wide-open throttle, the controller activates open-loop fueling and looks up base injector pulsewidth from <code>WOTTBL</code>. In addition to controlling full-power fuel delivery, <code>WOTTBL</code> serves as the universal upper ceiling for both closed-throttle (<a href="../../1_-_Fuel/B_-_Running/MAPIDL_FuelBaselineFromMap.html"><code>MAPIDL</code></a>) and part-throttle (<a href="../../1_-_Fuel/B_-_Running/MAPTBL_FuelPartThrottle.html"><code>MAPTBL</code></a>) calculations. This table supplies rich, safe air-fuel mixtures under maximum engine load and positive turbocharger boost.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Boost Fueling Adjustment</strong>: * Adjust <code>WOTTBL</code> points under positive manifold pressure to achieve target wideband air-fuel ratios (typically 11.2:1 to 12.0:1 on turbo setups).</li>
+<li><strong>Injector Scaling</strong>: * Scale the entire table downward when swapping to larger injectors to maintain desired air-fuel ratios.</li>
+<li><strong>3-Bar MAP Sensor Calibration</strong>: * Re-index pressure points to support boost up to 29 psi gauge on a 3-bar sensor.</li>
+<li><strong>Universal Fuel Ceiling</strong>: * Because <code>WOTTBL</code> clamps <a href="../../1_-_Fuel/B_-_Running/MAPIDL_FuelBaselineFromMap.html"><code>MAPIDL</code></a> and <a href="../../1_-_Fuel/B_-_Running/MAPTBL_FuelPartThrottle.html"><code>MAPTBL</code></a>, ensure <code>WOTTBL</code> values in vacuum regions remain above part-throttle values to prevent unintended lean limiting.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect whenever the driver presses the accelerator pedal to wide-open throttle, the controller activates open-loop fueling and looks up base injector pulsewidth from WOTTBL.</p>
+<ul>
+<li>Evaluated inside <code>CalculateInjectorPulsewidthForEngineRunning</code> at line 6968 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>WOTTBL</code> at ROM address <code>0x828B</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CalculateInjectorPulsewidthForEngineRunning</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateInjectorPulsewidthForEngineRunning (T-SBEC_v4.asm:6966-6972) ---
+
+   LC124:  brclr *BitFlags66, #b66_FullThrottle, LC130    ; branch if bit(s) clear
+           ldx  #WOTTBL_FuelFullThrottle    ; load index with value
+           jsr  Lookup5ByteTable    ; call subroutine
+           bra  LC151          ; branch
+
+   LC130:  ldx  #MAPTBL_FuelPartThrottle    ; load index with value</code></pre>
+<p>The CPU executes <code>CalculateInjectorPulsewidthForEngineRunning</code> where <code>WOTTBL</code> is loaded, compared, or interpolated from ROM address <code>0x828B</code> at line 6968.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Target AFR Metadata vs ECU Reality</strong>: In template files, <code>;mpfuelfull*</code> entries are visualization guides for MPTune only; the ECU executes the raw pulsewidth values in <code>WOTTBL</code>.</li>
+<li><strong>Dual-Role Function</strong>: Acts both as the full-throttle fuel delivery table and the universal upper clamp for idle and part-throttle fueling.</li>
+<li><strong>Extrapolated Type 1 Format</strong>: 4-point table storing 16-bit pulsewidth values with slope extrapolation.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>WOTTBL</code>
+        </footer>
+    </div>
+</body>
+</html>

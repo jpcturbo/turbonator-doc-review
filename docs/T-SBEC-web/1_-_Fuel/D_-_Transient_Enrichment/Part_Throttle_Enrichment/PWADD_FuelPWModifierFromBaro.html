@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWADD: FuelPWModifierFromBaro | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x83DD</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ D - Transient Enrichment ➔ Part Throttle Enrichment</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PWADD: FuelPWModifierFromBaro</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PWADD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>PWADD_FuelPWModifierFromBaro</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\D_-_Transient_Enrichment\Part_Throttle_Enrichment\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x83DD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (4-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">4 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Baro -14.7 14.7 psi</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Pulsewidth 0 12288 uSec</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Pressure / Vacuum (inHg)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x03                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-SBEC_25_MTX_A593_Stock.tpl.html#L2148-L2164"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-SBEC_v4.asm.html#L6245"><code>CalculatePartThrottleEnrichmentAndSparkScatterFuel_MM</code></a> in <a href="../../../T-SBEC_v4.asm.html#L6333"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PWADD</code> provides barometric pressure fuel compensation by adding injector pulse width at high altitudes. As ambient atmospheric pressure decreases when operating in elevated terrain, lower intake air density can destabilize idle combustion and cause lean engine surging. The engine controller looks up barometric pressure from <code>PWADD</code> during foreground latency updates and converts the resulting value into an additive microsecond fuel pulse. At sea-level barometric pressure of approximately 14.7 psi or 29.9 inHg, the factory calibration delivers zero additional pulse width. As barometric pressure drops below 13.1 psi toward 10.5 psi at high elevations, the table progressively adds between 64 and 100 microseconds of injection pulse width to stabilize idle combustion and low-speed driveability.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>High-Altitude Compensation</strong>: Raise table values if the engine experiences lean surging, rough idle, or hesitation when driving in high-altitude environments.</li>
+<li><strong>Over-Rich Altitude Correction</strong>: Lower or zero out table values if modified engines or large injectors run excessively rich at elevation.</li>
+<li><strong>Injector Sizing Adjustments</strong>: When upgrading to larger fuel injectors, scale down <code>PWADD</code> values inversely to match the percentage increase in injector flow rate so that total delivered fuel remains constant.</li>
+<li><strong>MAP Sensor Scaling Consideration</strong>: If tuning an engine converted to a 3-bar MAP sensor, confirm that initial key-on barometric pressure readings accurately align with real-world atmospheric conditions.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during engine running fuel calculation to calibrate FuelPWModifierFromBaro.</p>
+<ul>
+<li>Evaluated inside <code>CalculatePartThrottleEnrichmentAndSparkScatterFuel_MM</code> at line 6333 in <a href="../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>PWADD</code> at ROM address <code>0x83DD</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CalculatePartThrottleEnrichmentAndSparkScatterFuel_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculatePartThrottleEnrichmentAndSparkScatterFuel_MM (T-SBEC_v4.asm:6331-6337) ---
+           staa InjectorLatency    ; store a into memory
+           ldaa BaroPressure    ; load a with memory contents
+           ldx  #PWADD_FuelPWModifierFromBaro    ; load index with value
+           jsr  Lookup4ByteTable    ; call subroutine
+           clra                ; a = 0
+           asld                ; shift left (d=d*2)
+           asld                ; shift left (d=d*2)</code></pre>
+<p>The CPU executes <code>CalculatePartThrottleEnrichmentAndSparkScatterFuel_MM</code> where <code>PWADD</code> is loaded, compared, or interpolated from ROM address <code>0x83DD</code> at line 6333.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameter</strong>: Coordinates with <a href="../../../1_-_Fuel/B_-_Running/BATOFF_FuelBatteryOffset.html"><code>BATOFF_FuelBatteryOffset</code></a> and <a href="../../../1_-_Fuel/C_-_Modifiers/BAROCP_BaroCompensationOfWarmupFactor_FromBaro.html"><code>BAROCP_BaroCompensationOfWarmupFactor_FromBaro</code></a>.</li>
+<li><strong>Fuel Addition Routing</strong>: Although categorized under Part Throttle Enrichment in MPTune, this table feeds into <code>SparkScatterFuelStabilizationValue_HB</code> which provides additive pulse width to baseline fueling.</li>
+<li><strong>Injector Scaling Interaction</strong>: Because this table outputs raw pulse width counts, it does not automatically scale with global fuel flow constants. It must be manually reduced when installing higher-flow fuel injectors.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>PWADD</code>
+        </footer>
+    </div>
+</body>
+</html>

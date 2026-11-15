@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIRTMP: FuelEnrichmentFromChargeTemp | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8B75</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - Modifiers</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Base_Modifiers</strong>
+        </div>
+        
+        <article class="content">
+            <h1>AIRTMP: FuelEnrichmentFromChargeTemp</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>AIRTMP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_FuelEnrichmentFromChargeTemp</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Base_Modifiers</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_Modifiers\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8B75</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">2 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Charge_Temp -200 260 volts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Factor 1 2 factor</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Temperature (°F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x01                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L6763-L6775"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L7189"><code>CalculateSumOfAllFuelModifiers_MM</code></a> in <a href="../T-SBECII_v1.asm.html#L7255"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>AIRTMP</code> defines the intake air charge temperature fuel compensation curve. Ambient and compressed air density varies inversely with temperature: cold air is dense and contains more oxygen molecules per volume, while hot compressed charge air is less dense. <code>AIRTMP</code> reads the raw intake charge temperature sensor voltage (where higher voltage represents colder air and lower voltage represents hot compressed air) and scales fuel pulsewidth accordingly. This table provides weather compensation across freezing winter and blistering summer conditions, as well as compensating for turbocharger intercooler heat soak.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Cold Weather Density Compensation</strong>: * Increases fueling in freezing ambient conditions to prevent lean combustion from dense winter air.</li>
+<li><strong>Intercooler Heat Soak Trimming</strong>: * Reduces pulsewidth under hot charge air conditions (low sensor voltage), preventing rich bogging on consecutive boost pulls.</li>
+<li><strong>Inverted Voltage Axis</strong>: * Sensor voltage is inversely proportional to temperature: high voltage (4.0 to 5.0 Volts) = cold air; low voltage (0.0 to 1.5 Volts) = hot air.</li>
+<li><strong>Lineage from T2 Calibration</strong>: * Copied from the factory 1989 T2 calibration into T-SBECII to support charge temperature sensor equipped engines.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect continuously across all running conditions, adjusting fuel delivery based on intake air charge temperature to compensate for air density changes.</p>
+<ul>
+<li>Evaluated inside <code>CalculateSumOfAllFuelModifiers_MM</code> at line 7255 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>AIRTMP</code> at ROM address <code>0x8B75</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CalculateSumOfAllFuelModifiers_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateSumOfAllFuelModifiers_MM (T-SBECII_v1.asm:7253-7259) ---
+           staa  BaroCompFactorFuel    ; store A into memory
+           ldaa  ChargeTempVolts    ; load A with memory contents
+           ldx   #AIRTMP_FuelEnrichmentFromChargeTemp    ; load index with value
+           jsr   Lookup4ByteTable    ; call subroutine
+           psha                ; push A onto stack
+           ldaa  MapValue      ; load A with memory contents
+           ldx   #AIRMAP_MAPMultiplierForAIRTMP    ; load index with value</code></pre>
+<p>The CPU executes <code>CalculateSumOfAllFuelModifiers_MM</code> where <code>AIRTMP</code> is loaded, compared, or interpolated from ROM address <code>0x8B75</code> at line 7255.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>T2 Calibration Feature</strong>: Originally featured in 1989 T2 (intercooled) calibrations, ported into T-SBECII for enhanced charge density modeling.</li>
+<li><strong>Unfiltered Sensor ADC</strong>: Reads <code>ChargeTemp</code> directly from the analog-to-digital converter without heavy low-pass filtering to respond rapidly to boost temperature changes.</li>
+<li><strong>Factor Scaling</strong>: Output ranges from 1.000 to 1.996 (0x00 = 1.0x factor; 0x40 = 1.25x factor).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>AIRTMP</code>
+        </footer>
+    </div>
+</body>
+</html>

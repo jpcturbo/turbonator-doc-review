@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACDTHR: PartThrottleAcCutoutDisableThrottle | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8DDA</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle ➔ AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ACDTHR: PartThrottleAcCutoutDisableThrottle</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ACDTHR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ACDTHR_PartThrottleAcCutoutDisableThrottle</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle\AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8DDA</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">8-bit Unsigned Scaling Factor (0 to 255 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xFF                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L4435-L4446"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L1984"><code>HandleAcCutout</code></a> in <a href="../../T-T3v1.asm.html#L1996"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ACDTHR</code> defines the throttle position sensor voltage delta threshold required to activate part-throttle air conditioning compressor cutout. When accelerating moderately to merge onto a highway or pass traffic, disengaging the air conditioning compressor eliminates parasitic pumping loss and delivers maximum engine torque to the drive wheels. ACDTHR establishes the throttle opening threshold (measured relative to the base closed-throttle stop) above which the controller initiates a temporary compressor cutout. In factory calibrations, <code>ACDTHR</code> is set to 255 counts (5.0 Volts delta above idle stop). This maximum setting disables part-throttle cutout on factory calibrations, ensuring that the air conditioning remains active until true wide-open throttle is reached.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Brisk Passing Boost</strong>: * Lower <code>ACDTHR</code> to 2.0 to 2.5 Volts to automatically cut the A/C compressor during half-throttle acceleration, improving passing power.</li>
+<li><strong>Uninterrupted Cabin Cooling</strong>: * Retain factory 255 counts (5.0 Volts) to prevent the air conditioner from cutting out during part-throttle driving.</li>
+<li><strong>Delta TPS Input</strong>: * Evaluated relative to <code>MINTHR</code>, meaning physical TPS mounting variations are automatically zeroed out.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during part-throttle acceleration with the A/C on, requiring throttle position increase to exceed this threshold before disengaging the compressor clutch.</p>
+<ul>
+<li>Evaluated inside <code>HandleAcCutout</code> at line 1996 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>ACDTHR</code> at ROM address <code>0x8DDA</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>HandleAcCutout</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- HandleAcCutout (T-T3v1.asm:1994-2000) ---
+           suba MINTHR_LowestSessionTPS
+           bcs  L9978          ; branch if lower
+           cmpa ACDTHR_PartThrottleAcCutoutDisableThrottle    ; compare a with memory contents (data is ff)
+           bcs  L9978          ; branch if lower
+           ldx  VehicleSpeed_HB
+           cpx  ACDSPD_PartThrottleAcCutoutDisableSpeed    ;  (data is 0000)
+           bcc  L9978          ; branch if greater or equal</code></pre>
+<p>The CPU executes <code>HandleAcCutout</code> where <code>ACDTHR</code> is loaded, compared, or interpolated from ROM address <code>0x8DDA</code> at line 1996.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Relative TPS Measurement</strong>: Uses delta voltage (<code>TpsVolts - MINTHR</code>).</li>
+<li><strong>Companion Parameter</strong>: Direct gating partner to <a href="../../Idle/AIS_Decel/ACDTMP_PartThrottleAcCutoutDisableTemp.html"><code>ACDTMP</code></a> and <a href="../../Idle/AIS_Decel/ACDSPD_PartThrottleAcCutoutDisableSpeed.html"><code>ACDSPD</code></a>.</li>
+<li><strong>Factory Value</strong>: 0xFF (255 counts = 5.0 Volts).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>ACDTHR</code>
+        </footer>
+    </div>
+</body>
+</html>

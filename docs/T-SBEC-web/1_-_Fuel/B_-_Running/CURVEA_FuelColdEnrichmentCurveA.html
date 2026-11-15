@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CURVEA: FuelColdEnrichmentCurveA | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x82BD</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ B - Running</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Base_Modifiers</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CURVEA: FuelColdEnrichmentCurveA</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CURVEA</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CURVEA_FuelColdEnrichmentCurveA</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Base_Modifiers</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\B_-_Running\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x82BD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (8-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">8 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Temp -200 260 degrees</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">factor 1 1.996 factor</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Temperature (°F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x07                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L1819-L1837"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L6412"><code>ClearTemp0ForResultStorage</code></a> in <a href="../../T-SBEC_v4.asm.html#L6429"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CURVEA</code> defines the initial post-start enrichment curve (Curve A) indexed against engine coolant temperature. Immediately after the engine catches and enters running mode, fuel condensation on cold metal surfaces remains severe until intake air motion and combustion heat warm the intake tract. <code>CURVEA</code> delivers substantial extra fuel during the first several seconds after startup. This enrichment is held at full strength for a duration determined by <a href="../../1_-_Fuel/B_-_Running/CLDHLD_CurveAColdHoldTime.html"><code>CLDHLD</code></a> or <a href="../../1_-_Fuel/B_-_Running/HOTHLD_CurveAHotHoldTime.html"><code>HOTHLD</code></a>, and then tapers smoothly down to zero via decay constants <a href="../../1_-_Fuel/B_-_Running/DCYTMC_CurveAColdDecayTime.html"><code>DCYTMC</code></a> or <a href="../../1_-_Fuel/B_-_Running/DCYTMH_CurveAHotDecayTime.html"><code>DCYTMH</code></a>.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Cold Driveaway Stumble</strong>: * If the vehicle stumbles or pops in the intake when pulling away within 30 seconds of starting, increase <code>CURVEA</code> in the lower temperature range.</li>
+<li><strong>Warm Restart Smoking</strong>: * Lower <code>CURVEA</code> at temperatures above 140 degF if warm restarts produce dark exhaust smoke or rough, over-rich idling.</li>
+<li><strong>E85 Conversions</strong>: * Ethanol fuels require substantial after-start enrichment due to poor cold vaporization; increase values across cold temperatures.</li>
+<li><strong>Companion Hold &amp; Decay</strong>: * Adjust <code>CURVEA</code> in coordination with <a href="../../1_-_Fuel/B_-_Running/CLDHLD_CurveAColdHoldTime.html"><code>CLDHLD</code></a> (hold time) and <a href="../../1_-_Fuel/B_-_Running/DCYTMC_CurveAColdDecayTime.html"><code>DCYTMC</code></a> (decay rate) to shape the complete after-start enrichment window.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during engine running fuel calculation to calibrate FuelColdEnrichmentCurveA.</p>
+<ul>
+<li>Evaluated inside <code>ClearTemp0ForResultStorage</code> at line 6429 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>CURVEA</code> at ROM address <code>0x82BD</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>ClearTemp0ForResultStorage</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- ClearTemp0ForResultStorage (T-SBEC_v4.asm:6427-6433) ---
+           staa Temp0          ; store a into memory
+           ldaa Temp1          ; load a with memory contents
+   LBD3C:  ldx  #CURVEA_FuelColdEnrichmentCurveA    ; load index with value
+           jsr  Lookup4ByteTable    ; call subroutine
+           brclr *BitFlags67, #b67_bit1, LBD4B    ; branch if bit(s) clear
+           ldab Factor_ACVDCY_CurveACurveCDecayAfterRunModeReached    ; load b with memory contents
+           mul                 ; multiply (d=a*b)</code></pre>
+<p>The CPU executes <code>ClearTemp0ForResultStorage</code> where <code>CURVEA</code> is loaded, compared, or interpolated from ROM address <code>0x82BD</code> at line 6429.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Tripartite Strategy</strong>: Represents Stage 1 of Chrysler's three-stage cold enrichment system (<code>CURVEA</code>, <a href="../../1_-_Fuel/B_-_Running/CURVEB_FuelColdEnrichmentCurveB.html"><code>CURVEB</code></a>, <a href="../../1_-_Fuel/B_-_Running/CURVEC_FuelColdEnrichmentCurveC.html"><code>CURVEC</code></a>).</li>
+<li><strong>Decay Modulation</strong>: Multiplied by <code>Factor_ACVDCY_CurveACurveCDecayAfterRunModeReached</code> as hold time expires and decay begins.</li>
+<li><strong>Factory Span</strong>: Enriches fuel by up to 1.8x at sub-zero temperatures, tapering to 1.0x (zero enrichment) once warm.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>CURVEA</code>
+        </footer>
+    </div>
+</body>
+</html>

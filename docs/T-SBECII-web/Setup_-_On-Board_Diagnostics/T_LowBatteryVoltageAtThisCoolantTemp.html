@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTLRPM: LowBatteryVoltageAtThisCoolantTemp | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8497</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Setup - On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CTLRPM: LowBatteryVoltageAtThisCoolantTemp</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CTLRPM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_LowBatteryVoltageAtThisCoolantTemp</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Setup_-_On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8497</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xCD                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L5058-L5069"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L4994"><code>VerifyOperationOfASDRelayAndO2Sensor_MM</code></a> in <a href="../T-SBECII_v1.asm.html#L5015"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CTLRPM</code> specifies the minimum engine coolant temperature required before the engine controller enables diagnostic testing of the oxygen sensor middle-band circuit. Although the parameter label contains a historical misnomer referring to battery voltage, firmware reverse engineering reveals that it functions as a coolant temperature gate. An unheated or single-wire zirconia oxygen sensor requires hot exhaust gases to reach its operating temperature, and cold-engine warm-up mixtures naturally hold the sensor rich. To avoid falsely condemning an oxygen sensor while the engine is warming up, the controller suppresses the stuck-in-middle test until coolant temperature reaches <code>CTLRPM</code>. In factory calibrations, <code>CTLRPM</code> is set to 205 counts, corresponding to approximately 170 deg F. If coolant temperature is below <code>CTLRPM</code>, the controller suspends the oxygen sensor diagnostic timer.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Low-Temperature Thermostat Tuning</strong>: * If running a 160 deg F thermostat, lower <code>CTLRPM</code> from 170 deg F down to 150 deg F so the oxygen sensor diagnostic check runs reliably.</li>
+<li><strong>Template Label Note</strong>: * Despite the name <code>LowBatteryVoltageAtThisCoolantTemp</code>, this parameter operates in firmware as the coolant temperature gate for oxygen sensor Fault Code 21.</li>
+<li><strong>Edge Cases</strong>: * Setting <code>CTLRPM</code> to maximum (255 counts) permanently disables the oxygen sensor middle-band diagnostic. * Setting <code>CTLRPM</code> to zero runs oxygen sensor diagnostics during freezing cold starts, triggering false codes.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if coolant temperature is below CTLRPM, the controller suspends the oxygen sensor diagnostic timer.</p>
+<ul>
+<li>Evaluated inside <code>VerifyOperationOfASDRelayAndO2Sensor_MM</code> at line 5015 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>CTLRPM</code> at ROM address <code>0x8497</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>VerifyOperationOfASDRelayAndO2Sensor_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- VerifyOperationOfASDRelayAndO2Sensor_MM (T-SBECII_v1.asm:5013-5019) ---
+           bcs   LB405         ; branch if lower
+           ldaa  CoolantTemp    ; load A with memory contents
+           cmpa  CTLRPM_LowBatteryVoltageAtThisCoolantTemp    ; compare A with memory contents (data is cd)
+           bcs   LB405         ; branch if lower
+           brclr *BitFlags67, #b67_InMotion, LB40A    ; branch if bit(s) clear
+           ldaa  FuelLookupValue3D    ; load A with memory contents
+           cmpa  O2DIAG_CounterLimitForO2SensorDiag    ; compare A with memory contents (data is 13)</code></pre>
+<p>The CPU executes <code>VerifyOperationOfASDRelayAndO2Sensor_MM</code> where <code>CTLRPM</code> is loaded, compared, or interpolated from ROM address <code>0x8497</code> at line 5015.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../Setup_-_On-Board_Diagnostics/T_LowBatteryVoltageAtThisRpm1500_2.html"><code>BTLRPM2</code></a> (engine speed gate), <a href="../Fuel_-_O2_Controller/T_LowLimitForInMiddleDetermination.html"><code>O2MIDL</code></a>, and <a href="../Fuel_-_O2_Controller/T_HighLimitForInMiddleDetermination.html"><code>O2MIDH</code></a> (middle band limits).</li>
+<li><strong>Diagnostic Code</strong>: DRB-II Fault Code 21 (oxygen sensor stuck in middle band).</li>
+<li><strong>Historical Nomenclature</strong>: Named <code>LowBatteryVoltageAtThisCoolantTemp</code> in original MPTune templates due to proximity to battery routines.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>CTLRPM</code>
+        </footer>
+    </div>
+</body>
+</html>

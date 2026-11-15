@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTUMTP: PTUMinLockTemperature | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x899B</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ PTU Control ➔ Entry Conditions</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PTUMTP: PTUMinLockTemperature</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PTUMTP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>PTUMTP_PTUMinLockTemperature</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\PTU_Control\Entry_Conditions\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x899B</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Temperature (°F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xC1                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-SBEC_25_MTX_A593_Stock.tpl.html#L7184-L7195"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-SBEC_v4.asm.html#L12445"><code>PTU_CheckThrottleForLock</code></a> in <a href="../../../T-SBEC_v4.asm.html#L12451"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PTUMTP</code> defines the minimum engine coolant temperature threshold required to permit Part Throttle Unlock (PTU) torque converter clutch modulation. The Part Throttle Unlock system was adapted from the throttle body injection and V6 engine controllers to control the automatic transmission torque converter lockup clutch during part-throttle cruising. When automatic transmission fluid and engine coolant are cold, fluid viscosity is thick and hydraulic line pressures are high, making converter clutch apply and release harsh. In factory calibrations, <code>PTUMTP</code> is set to 193 counts, corresponding to approximately 147 °F. Until the engine warms above this temperature, the controller holds the torque converter locked and inhibits part-throttle unlock cycling.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Cold Driveline Protection</strong>: * Raise <code>PTUMTP</code> to 160 °F to 170 °F to prevent harsh lockup cycling on thick transmission fluid.</li>
+<li><strong>Aftermarket Torque Converters</strong>: * High-stall lockup converters with aggressive friction linings benefit from higher temperature thresholds to avoid shudder.</li>
+<li><strong>Warmup Behavior</strong>: * Below <code>PTUMTP</code>, the transmission remains locked in gear once engaged, bypassing throttle-induced unlock.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when automatic transmission fluid and engine coolant are cold, fluid viscosity is thick and hydraulic line pressures are high, making converter clutch apply and release harsh.</p>
+<ul>
+<li>Evaluated inside <code>PTU_CheckThrottleForLock</code> at line 12451 in <a href="../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>PTUMTP</code> at ROM address <code>0x899B</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>PTU_CheckThrottleForLock</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- PTU_CheckThrottleForLock (T-SBEC_v4.asm:12449-12455) ---
+           staa Temp4          ; store a into memory
+           ldaa CoolantTemp    ; load a with memory contents
+           cmpa PTUMTP_PTUMinLockTemperature    ; compare a with memory contents (data is ff)
+           bcs  PTU_SetPTUBits    ; branch if lower
+           brclr *BitFlags_AIS, #b10_ATXInGear, PTU_SetPTUBits    ; branch if bit(s) clear
+           brset *StartupSwitchMirror1, #sw1_Brake, PTU_SetPTUBits    ; branch if bit(s) set
+           ldd  VehicleSpeed_HB    ; load d (a&amp;b) with memory contents</code></pre>
+<p>The CPU executes <code>PTU_CheckThrottleForLock</code> where <code>PTUMTP</code> is loaded, compared, or interpolated from ROM address <code>0x899B</code> at line 12451.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Entry Gate Interlock</strong>: Gated with transmission in-gear switch and brake pedal switch.</li>
+<li><strong>Lock State Action</strong>: Enforcing <code>PTU_SetPTUBits</code> sets the output bit in <code>PIA1_A_Buffer</code>, maintaining hydraulic lock.</li>
+<li><strong>Hardware Output Sharing</strong>: Uses the PIA1 output pin originally shared with the Emissions Maintenance Reminder (EMR) lamp.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>PTUMTP</code>
+        </footer>
+    </div>
+</body>
+</html>

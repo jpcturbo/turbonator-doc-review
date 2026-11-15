@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WOTMPH: FullThrottleTimingFromHiMAP | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x81E1</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Spark ➔ Normal Advance</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>WOTMPH: FullThrottleTimingFromHiMAP</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>WOTMPH</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>WOTMPH_FullThrottleTimingFromHiMAP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Spark\Normal_Advance\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x81E1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 7 Constant</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Spark Advance (degrees)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x11                       ;Number of rows in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L342-L374"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L8666"><code>SparkAdvance_LookupFullThrottleTiming</code></a> in <a href="../../T-T3v1.asm.html#L8674"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>WOTMPH</code>: WOTMPH defines the 3D ignition spark advance surface for wide-open throttle (WOT) operation under boost on the Lotus 16-valve DOHC Turbo III engine. Unlike Chrysler 8-valve engines which utilize a 2D curve, the Lotus Turbo III DDIS platform interpolates ignition timing across both engine speed (RPM) and manifold pressure (MAP) simultaneously using the 3D table lookup routine. Because the Lotus 16V pent-roof combustion chamber features a central spark plug and highly efficient intake tumble ports, flame front propagation is drastically faster than in a 2-valve head, requiring lower total spark advance to reach peak cylinder pressure safely after top dead center.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Calibration Strategy</strong>: Raising values in WOTMPH advances ignition timing for wide-open throttle (WOT) operation under boost, increasing torque output and throttle responsiveness. However, because the Lotus 16-valve cylinder head has exceptionally high combustion efficiency, advancing timing too aggressively—particularly under boost—can trigger severe detonation. Always tune with high-octane fuel and monitor knock retard telemetry. Lowering values retards timing, creating a wider safety margin against knock on hot days or low-octane pump fuel at the expense of slight power loss and higher EGTs.</li>
+<li><strong>Raising the Value</strong>: Increases commanded threshold or extends gating limits in the controller.</li>
+<li><strong>Lowering the Value</strong>: Decreases commanded threshold or restricts operational bounds.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during wide-open throttle (WOT) operation under boost whenever manifold pressure is under positive manifold boost pressure with full throttle switch closed.</p>
+<ul>
+<li>Evaluated inside <code>SparkAdvance_LookupFullThrottleTiming</code> at line 8674 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a> (routine starts at line 8666).</li>
+<li>Loads calibration data directly from ROM address <code>0x81E1</code> for runtime sensor comparison and scaling.</li>
+<li>Controls CPU branching, register scaling, and output actuation in <code>SparkAdvance_LookupFullThrottleTiming</code>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- SparkAdvance_LookupFullThrottleTiming (T-T3v1.asm:8672-8678) ---
+           ldx  #MAPHI_HiMAP3DInputModifierFromMAP    ; load index with value
+           jsr  Lookup4ByteTable    ; call subroutine
+           ldx  #WOTMPH_FullThrottleTimingFromHiMAP    ; load index with value
+           bra  SparkAdvance_LookupTimingFrom3DTable    ; branch
+
+SparkAdvance_LookupPartThrottleTiming_LoMAP:
+           cmpa TBLBK3_3DTableBreakPointHiLo          ; compare a with value -01000000-</code></pre>
+<p>The 68HC11 CPU evaluates <code>WOTMPH</code> inside <code>SparkAdvance_LookupFullThrottleTiming</code> at line 8674. The instruction loads, compares, or interpolates the calibration data from ROM address <code>0x81E1</code>.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Lotus 16V 3D Surface</strong>: Full 3D surface interpolated across MAP and RPM via <code>Lookup3DTableRoutine</code>.</li>
+<li><strong>Fast-Burn Pent-Roof Geometry</strong>: Requires significantly less total spark advance than 8-valve Chrysler heads.</li>
+<li><strong>Table Switching</strong>: The 68HC11 firmware compares manifold pressure against <a href="../../Setup/Transfer_Functions/TBLBK3_3DTableBreakPointHiLo.html"><code>TBLBK3</code></a> to select between <a href="../../Spark/Normal_Advance/HOTMPL_PartThrottleLowMAPTiming.html"><code>HOTMPL</code></a> (low MAP) and <a href="../../Spark/Normal_Advance/HOTMPH_PartThrottleHiMAPTiming.html"><code>HOTMPH</code></a> (high MAP).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>WOTMPH</code>
+        </footer>
+    </div>
+</body>
+</html>

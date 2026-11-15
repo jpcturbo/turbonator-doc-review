@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMBLOW: BattTempLowWhenHot | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8499</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Setup - On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>AMBLOW: BattTempLowWhenHot</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>AMBLOW</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_BattTempLowWhenHot</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Setup_-_On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8499</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Temperature (°F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x05                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L5082-L5093"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L1"><code>MainProgramLoop</code></a> in <a href="../T-SBECII_v1.asm.html#L778"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>AMBLOW</code> establishes the lower electrical voltage boundary for the ambient air and battery temperature sensor analog input circuit. Chrysler SBEC-II controllers monitor underhood battery temperature to regulate alternator charging voltage, because lead-acid batteries accept charge more readily when warm and require higher voltage when cold. A negative temperature coefficient thermistor inside the sensor produces lower output voltage as ambient temperatures rise. If the sensor circuit shorts directly to engine ground or if the thermistor element shorts internally, signal voltage drops toward zero volts. In factory calibrations, <code>AMBLOW</code> is set to 5 counts, corresponding to approximately 0.10 volts. If sensor voltage drops below <code>AMBLOW</code>, the engine controller flags <strong>Fault Code 44</strong>, declares an ambient temperature sensor fault, and substitutes a fixed default battery charging target.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Short Circuit Troubleshooting</strong>: * If Fault Code 44 is stored and the sensor wire reads 0.0 volts, inspect the harness connector near the battery tray for pinched or shorted wiring.</li>
+<li><strong>Hot Climate Operating Margin</strong>: * Keep <code>AMBLOW</code> at 5 counts (0.10 volts) to avoid false fault codes under extreme underhood heat soak.</li>
+<li><strong>Edge Cases</strong>: * Setting <code>AMBLOW</code> to zero disables short-circuit fault detection. * Setting <code>AMBLOW</code> higher than normal hot underhood voltage permanently forces fallback charging regulation.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if the sensor circuit shorts directly to engine ground or if the thermistor element shorts internally, signal voltage drops toward zero volts.</p>
+<ul>
+<li>Evaluated inside <code>MainProgramLoop</code> at line 778 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>AMBLOW</code> at ROM address <code>0x8499</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>MainProgramLoop</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- MainProgramLoop (T-SBECII_v1.asm:776-782) ---
+; begin code
+; *****************************************************************************
+
+	.org CodeOrg
+        .msg &quot;Assembling Code...&quot;
+
+ControlAirConditioning_MM:</code></pre>
+<p>The CPU executes <code>MainProgramLoop</code> where <code>AMBLOW</code> is loaded, compared, or interpolated from ROM address <code>0x8499</code> at line 778.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../Setup_-_On-Board_Diagnostics/T_BattTempHighWhenCold.html"><code>AMBHIG</code></a> (upper voltage limit) and <code>CCDBTV</code> (charging voltage trim).</li>
+<li><strong>Diagnostic Code</strong>: DRB-II Fault Code 44 (battery temperature sensor circuit failure).</li>
+<li><strong>Fallback Voltage</strong>: On sensor failure, the alternator charging target defaults to a fixed 0xE8 (approximately 13.8 to 14.0 volts).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>AMBLOW</code>
+        </footer>
+    </div>
+</body>
+</html>

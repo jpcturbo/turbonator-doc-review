@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PEFTBL: PumpingEfficiency FromRpm | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x83A7</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ C - Modifiers</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Base_Modifiers</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PEFTBL: PumpingEfficiency FromRpm</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PEFTBL</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>PEFTBL_PumpingEfficiency</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Base_Modifiers</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\C_-_Modifiers\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x83A7</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (9-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">9 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">RPM 0 8160 rpm</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">PumpEff 0 99.6 percent</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x08                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L2113-L2132"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L6550"><code>INCLUDE_OXYGEN_FEEDBACK_WITHRPM_COMBINATION</code></a> in <a href="../../T-SBEC_v4.asm.html#L6577"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PEFTBL</code> defines the engine pumping efficiency (volumetric efficiency) curve versus engine speed (RPM) in Chrysler speed-density calibrations. Speed-density fuel calculation estimates mass airflow based on intake manifold pressure, displacement, charge air temperature, and the mechanical breathing ability of the engine across the RPM range. <code>PEFTBL</code> scales base fuel pulsewidth across the entire operating range from idle to 8160 RPM to match cylinder head port airflow, camshaft lift and duration, and intake manifold runner resonance. In T-SBEC firmware, the firmware utilizes the proven stock 0 to 99.6 percent volumetric efficiency scaling routine.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Performance Camshaft Profiling</strong>: * Reshape <code>PEFTBL</code> to match the engine's new volumetric efficiency curve when installing aftermarket camshafts (e.g. Taft, FWD-P, or custom grinds).</li>
+<li><strong>RPM-Specific Fuel Shaping</strong>: * Raise values where cylinder filling improves (peak torque and upper mid-range); lower values at low RPM if a large cam causes low-speed airflow reversion.</li>
+<li><strong>Universal Fueling Effect</strong>: * Modifies part-throttle, wide-open throttle, and idle fueling equally at each RPM point because volumetric efficiency is an engine airflow physical property.</li>
+<li><strong>SBEC factory firmware Scaling Architecture</strong>: * T-SBEC firmware re-adopted the stock 0 to 99.6 percent volumetric efficiency routine (experimental 150% scaling code is commented out in assembly).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect continuously across all engine operating conditions once running, scaling base fuel delivery across engine RPM to match the engine's volumetric efficiency.</p>
+<ul>
+<li>Evaluated inside <code>INCLUDE_OXYGEN_FEEDBACK_WITHRPM_COMBINATION</code> at line 6577 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>PEFTBL</code> at ROM address <code>0x83A7</code> for runtime volumetric efficiency interpolation.</li>
+<li>Modifies intermediate fuel delivery according to <code>INCLUDE_OXYGEN_FEEDBACK_WITHRPM_COMBINATION</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- INCLUDE_OXYGEN_FEEDBACK_WITHRPM_COMBINATION (T-SBEC_v4.asm:6575-6581) ---
+           stD *Temp0          ; store D to RAM
+           ldaa EngineRpm_HB    ; load a with memory contents
+           ldx  #PEFTBL_PumpingEfficiency    ; load index with value
+           jsr  Lookup4ByteTable    ; call subroutine
+; 150% PEFTBL code...
+;            ldx  #Temp0
+;            clra</code></pre>
+<p>The CPU executes <code>INCLUDE_OXYGEN_FEEDBACK_WITHRPM_COMBINATION</code> where <code>PEFTBL</code> is loaded from ROM address <code>0x83A7</code> at line 6577 to scale base fuel pulsewidth.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Firmware Architecture</strong>: As documented in the assembly comments at line 6194, factory firmware reverted to the stock <code>ScaleYbyA</code> PEFTBL routine, with experimental 150% code commented out.</li>
+<li><strong>10-Point Curve</strong>: 10-point interpolation curve spanning 0 to 8160 RPM.</li>
+<li><strong>Output Variable</strong>: Stores final cumulative fuel modifier into 16-bit RAM variable <code>SumOfFuelModifiers_HB</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>PEFTBL</code>
+        </footer>
+    </div>
+</body>
+</html>

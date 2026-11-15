@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MLPTPS: MainLoopCountToClearTPSTRansient | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8AB4</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel ➔ Transient Enrichment ➔ Average MAP&amp;TPS</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MLPTPS: MainLoopCountToClearTPSTRansient</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MLPTPS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MLPTPS_MainLoopCountToClearTPSTRansient</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel\Transient_Enrichment\Average_MAP&amp;TPS\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8AB4</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">8-bit Unsigned Scaling Factor (0 to 255 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x5D                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3_22_T3ii_T3_MTX.tpl.html#L2206-L2217"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3_IIv1.asm.html#L5628"><code>TransFuel_CalculateDecreasingMAPTransientFuel</code></a> in <a href="../../../T-T3_IIv1.asm.html#L5679"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MLPTPS</code>: MLPTPS (MainLoopCountToClearTPSTRansient) regulates operational behavior within the Fuel Transient Enrichment Average MAP&amp;TPS subsystem, calibrating engine management functions handled by <code>TransFuel_CalculateDecreasingMAPTransientFuel</code>. The 68HC11 engine controller evaluates this calibration data to govern 8-bit unsigned scaling factor (0 to 255 counts) under active engine operating conditions, maintaining balanced drivability, emissions, and powertrain reliability.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Calibration Strategy</strong>: Adjusting MLPTPS alters the response curve or operational threshold for mainloopcounttocleartpstransient. Raising the value increases the commanded setpoint or expands the gating window in <code>TransFuel_CalculateDecreasingMAPTransientFuel</code>; lowering the value tightens the control response or decreases the commanded output. Calibrate in small, progressive increments while monitoring engine telemetry and road drivability.</li>
+<li><strong>Raising the Value</strong>: Increases commanded threshold or extends gating limits in the controller.</li>
+<li><strong>Lowering the Value</strong>: Decreases commanded threshold or restricts operational bounds.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> routines whenever Fuel Transient Enrichment Average MAP&amp;TPS management is actively commanded.</p>
+<ul>
+<li>Evaluated inside <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> at line 5679 in <a href="../../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a> (routine starts at line 5628).</li>
+<li>Loads calibration data directly from ROM address <code>0x8AB4</code> for runtime sensor comparison and scaling.</li>
+<li>Controls CPU branching, register scaling, and output actuation in <code>TransFuel_CalculateDecreasingMAPTransientFuel</code>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- TransFuel_CalculateDecreasingMAPTransientFuel (T-T3_IIv1.asm:5677-5683) ---
+           cmpa #0x00          ; compare a with value -00000000-
+           bne  LBBFC          ; branch if not equal (not zero)
+           cmpb MLPTPS_MainLoopCountToClearTPSTRansient    ; compare b with memory contents (data is 5d)
+           bhi  LBBFC          ; branch if higher
+   LBBF7:  ldd  #0x0000         ; load d (a&amp;b) with value -00000000 00000000-
+           stD *Temp2          ; store D to RAM
+   LBBFC:  ldaa CoolantTemp    ; load a with memory contents</code></pre>
+<p>The 68HC11 CPU evaluates <code>MLPTPS</code> inside <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> at line 5679. The instruction loads, compares, or interpolates the calibration data from ROM address <code>0x8AB4</code>.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Firmware Location</strong>: Accessed in <a href="../../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a> at line 5679 within <code>TransFuel_CalculateDecreasingMAPTransientFuel</code>.</li>
+<li><strong>ROM Calibration Address</strong>: Stored at ROM address <code>0x8AB4</code> in calibration group <code>Fuel\Transient_Enrichment\Average_MAP&amp;TPS\</code>.</li>
+<li><strong>Data Structure</strong>: 8-bit Unsigned Scaling Factor (0 to 255 counts).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>MLPTPS</code>
+        </footer>
+    </div>
+</body>
+</html>

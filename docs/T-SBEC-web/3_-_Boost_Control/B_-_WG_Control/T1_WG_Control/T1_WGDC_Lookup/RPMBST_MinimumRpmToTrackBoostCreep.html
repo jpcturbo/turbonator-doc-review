@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPMBST: MinimumRpmToTrackBoostCreep | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x87B8</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ B - WG Control ➔ T1 WG Control ➔ T1 WGDC Lookup</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>RPMBST: MinimumRpmToTrackBoostCreep</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>RPMBST</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>RPMBST_MinimumRpmToTrackBoostCreep</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\B_-_WG_Control\T1_WG_Control\T1_WGDC_Lookup\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x87B8</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x6A                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SBEC_25_MTX_A593_Stock.tpl.html#L5017-L5028"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SBEC_v4.asm.html#L10591"><code>VNTBC_LoadMaxVNTDutyCycle</code></a> in <a href="../../../../T-SBEC_v4.asm.html#L10598"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>RPMBST</code> defines the minimum engine speed threshold required to advance the boost ramp countdown timer (<code>Timer_BoostTimer</code>) in T1 wastegate control. The boost ramp timer indexes the time-based allowed boost table (<a href="../../../../3_-_Boost_Control/A_-_Target_Lookup/WSGTIM_AllowedBoost_FromTime.html"><code>WSGTIM</code></a>), allowing boost to ramp upward from base spring pressure to full target boost over a calibrated duration. To ensure that the boost timer does not prematurely advance while the engine is lugging at low RPM where the turbo cannot generate full boost, the controller requires engine speed to exceed <code>RPMBST</code> before incrementing the timer.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Spool Tracking RPM Threshold</strong>: * Prevents <code>Timer_BoostTimer</code> from counting up when engine RPM is too low to produce boost. * Factory setting is 102 counts (approximately 3264 RPM).</li>
+<li><strong>Matching Turbocharger Sizing</strong>: * For small, fast-spooling stock turbos, lower <code>RPMBST</code> to 2200 to 2500 RPM. * For large aftermarket turbos (e.g. Garrett GT30R, Holset HX35), raise <code>RPMBST</code> to 3600 to 4000 RPM.</li>
+<li><strong>T1 vs. T2 Separation</strong>: * <code>RPMBST</code> controls timer advancement in T1 mode; T2 mode uses its dedicated companion <code>T2RPMBST</code>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under turbocharger boost operation to control MinimumRpmToTrackBoostCreep.</p>
+<ul>
+<li>Evaluated inside <code>VNTBC_LoadMaxVNTDutyCycle</code> at line 10598 in <a href="../../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>RPMBST</code> at ROM address <code>0x87B8</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>VNTBC_LoadMaxVNTDutyCycle</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- VNTBC_LoadMaxVNTDutyCycle (T-SBEC_v4.asm:10596-10602) ---
+           bne  VNTBC_JumpToGetBoostTargetFromTables    ; branch if not equal (not zero)
+           ldab EngineRpm_HB    ; load b with memory contents
+           cmpb RPMBST_MinimumRpmToTrackBoostCreep    ; compare b with memory contents (data is 4c)
+           bcs  VNTBC_JumpToGetBoostTargetFromTables    ; branch if lower
+           ldaa Timer_BoostTimer    ; load a with memory contents
+           inca                ; increment a
+           beq  VNTBC_JumpToGetBoostTargetFromTables    ; branch if equal (zero)</code></pre>
+<p>The CPU executes <code>VNTBC_LoadMaxVNTDutyCycle</code> where <code>RPMBST</code> is loaded, compared, or interpolated from ROM address <code>0x87B8</code> at line 10598.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Scaling</strong>: 32 RPM per count (102 counts = 3264 RPM).</li>
+<li><strong>Timer Ceiling</strong>: Increments toward a ceiling of 255 counts (approx 0.72 seconds in <a href="../../../../3_-_Boost_Control/A_-_Target_Lookup/WSGTIM_AllowedBoost_FromTime.html"><code>WSGTIM</code></a>).</li>
+<li><strong>Companion Limiter</strong>: Synchronizes directly with the time-axis breakpoints in <a href="../../../../3_-_Boost_Control/A_-_Target_Lookup/WSGTIM_AllowedBoost_FromTime.html"><code>WSGTIM_AllowedBoost_FromTime</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>RPMBST</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THRPOS: AisPosition FromThrottle | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x85CB</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ A - AIS Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>THRPOS: AisPosition FromThrottle</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>THRPOS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>THRPOS_AisPosition_FromThrottle</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\A_-_AIS_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x85CB</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (4-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">4 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">TPS 0 5 Volts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">out_desc 0 255 scale</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Stepper Motor Position (steps / counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x03                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L3907-L3921"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L2005"><code>HandleAcCutout</code></a> in <a href="../../T-SBEC_v4.asm.html#L2292"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>THRPOS</code> is a 2D calibration curve that establishes a minimum idle air stepper motor position based on throttle position sensor voltage. As the driver depresses the accelerator pedal and drives off-idle, the engine controller tracks throttle plate angle. THRPOS pre-positions the stepper motor further open as throttle opening increases, ensuring that when the driver suddenly lifts off the throttle, the bypass passage is already open to act as a dashpot cushion. In factory calibrations, <code>THRPOS</code> commands 0 steps at minimum throttle opening (below 0.1 Volts delta above idle stop), increasing linearly to 5 steps at approximately 0.3 Volts delta.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Softening Lift-Off Jerk</strong>: * Increase <code>THRPOS</code> steps in the 0.2 to 0.5 Volt range to cushion abrupt throttle lift-off during aggressive part-throttle driving.</li>
+<li><strong>Enhancing Engine Braking</strong>: * Lower <code>THRPOS</code> steps to zero or near-zero to allow the idle valve to close down further during off-idle coasting, increasing engine vacuum braking.</li>
+<li><strong>Zero-Throttle Clearance</strong>: * Ensure the lowest voltage cell is set to zero steps so closed-throttle idle feedback is never obstructed.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect at closed throttle idle to regulate FromThrottle.</p>
+<ul>
+<li>Evaluated inside <code>HandleAcCutout</code> at line 2292 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>THRPOS</code> at ROM address <code>0x85CB</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>HandleAcCutout</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- HandleAcCutout (T-SBEC_v4.asm:2290-2296) ---
+           bcc  L9A62          ; branch if greater or equal
+           clra                ; a = 0
+   L9A62:  ldx  #THRPOS_AisPosition_FromThrottle    ; load index with value
+           jsr  Lookup4ByteTable    ; call subroutine
+           cmpa Temp0          ; compare a with memory contents
+           bcc  L9A6E          ; branch if greater or equal
+           ldaa Temp0          ; load a with memory contents</code></pre>
+<p>The CPU executes <code>HandleAcCutout</code> where <code>THRPOS</code> is loaded, compared, or interpolated from ROM address <code>0x85CB</code> at line 2292.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Hierarchical Maximum Selector</strong>: Blended with <a href="../../5_-_Idle/A_-_AIS_Control/CLDPOS_AisColdPosition_FromTemp.html"><code>CLDPOS</code></a> and <a href="../../5_-_Idle/A_-_AIS_Control/RPMPOS_AisPosition_FromRpm.html"><code>RPMPOS</code></a>; the ECU always selects the maximum of the three tables.</li>
+<li><strong>Delta TPS Input</strong>: Uses relative throttle voltage (<code>TpsVolts - MINTHR</code>) rather than absolute voltage, automatically compensating for physical TPS sensor mounting variances.</li>
+<li><strong>Table Resolution</strong>: 2 points (TPS Volts delta vs Steps).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>THRPOS</code>
+        </footer>
+    </div>
+</body>
+</html>

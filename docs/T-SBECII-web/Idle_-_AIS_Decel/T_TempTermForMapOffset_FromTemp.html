@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPTEMP: TempTermForMapOffset FromTemp | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x9276</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MPTEMP: TempTermForMapOffset FromTemp</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MPTEMP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_TempTermForMapOffset_FromTemp</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x9276</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (3-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">3 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Temp -200 260 degrees</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Factor 0 1 Factor</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Temperature (°F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L9977-L9990"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L1950"><code>CalculateAisPosition</code></a> in <a href="../T-SBECII_v1.asm.html#L1994"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MPTEMP</code> is a 2D calibration curve that provides a coolant-temperature-dependent scaling multiplier applied to the RPM-based deceleration control MAP term. During cold engine operation, separate warm-up tables (such as <a href="../Idle_-_AIS_Decel/T_DecelAis_FromTemp.html"><code>TEMPDC</code></a>) already provide substantial auxiliary bypass airflow. If the full RPM-dependent decel MAP adder from <a href="../Idle_-_AIS_Decel/T_AdditionToControlMap_FromRpm.html"><code>MAPFLR</code></a> were applied on top of these cold offsets, total decel airflow would be excessive, causing the engine to flare or race during cold deceleration. <code>MPTEMP</code> acts as a progressive blend multiplier: it attenuates the RPM-based decel MAP term when the engine is cold and gradually blends it in to full strength as the engine warms up. In factory calibrations, <code>MPTEMP</code> scales from 0.0 (zero contribution) at 36 °F up to 1.0 (100% full contribution) at 170 °F and above.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Warm-Up High Idle Hang</strong>: * If engine speed hangs on decel while the car is warming up, reduce the intermediate multiplier points in <code>MPTEMP</code>.</li>
+<li><strong>Cold High-RPM Stall Catch</strong>: * Elevate cold points in <code>MPTEMP</code> if high-RPM clutch disengagements during warm-up cause the engine to plunge past idle and die.</li>
+<li><strong>Full Operating Range</strong>: * Always maintain a full 1.0 multiplier (255 counts) above 170 °F.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during cold engine operation, separate warm-up tables (such as TEMPDC) already provide substantial auxiliary bypass airflow.</p>
+<ul>
+<li>Evaluated inside <code>CalculateAisPosition</code> at line 1994 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>MPTEMP</code> at ROM address <code>0x9276</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CalculateAisPosition</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateAisPosition (T-SBECII_v1.asm:1992-1998) ---
+           jsr   Lookup4ByteTable    ; call subroutine
+           staa  Temp1         ; store A into memory
+           ldx   #MPTEMP_TempTermForMapOffset_FromTemp    ; load index with value
+           ldaa  CoolantTemp    ; load A with memory contents
+           jsr   Lookup4ByteTable    ; call subroutine
+           ldaa  Temp1         ; load A with memory contents
+           mul                 ; multiply (D=A*B)</code></pre>
+<p>The CPU executes <code>CalculateAisPosition</code> where <code>MPTEMP</code> is loaded, compared, or interpolated from ROM address <code>0x9276</code> at line 1994.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Scaling</strong>: 255 counts = 1.0 (100% full scale).</li>
+<li><strong>Companion Parameter</strong>: Direct scaling partner to <a href="../Idle_-_AIS_Decel/T_AdditionToControlMap_FromRpm.html"><code>MAPFLR</code></a>.</li>
+<li><strong>Table Resolution</strong>: 2 points (Temp vs Multiplier).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>MPTEMP</code>
+        </footer>
+    </div>
+</body>
+</html>

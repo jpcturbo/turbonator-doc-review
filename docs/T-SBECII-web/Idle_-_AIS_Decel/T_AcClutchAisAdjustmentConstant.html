@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PERKCK: AcClutchAisAdjustmentConstant | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x92DD</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PERKCK: AcClutchAisAdjustmentConstant</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PERKCK</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_AcClutchAisAdjustmentConstant</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x92DD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Stepper Motor Position (steps / counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xC0                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L10296-L10307"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L1583"><code>CalculateTargetIdleSpeedAndAisPosition_MM</code></a> in <a href="../T-SBECII_v1.asm.html#L1838"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PERKCK</code> defines the scaling percentage multiplier applied to the off-idle air conditioning airflow adder <a href="../Idle_-_AIS_Decel/T_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a>. Depending on whether the air conditioning system is transitioning between active states or operating in steady-state off-idle cruising, the full airflow step offset looked up from <a href="../Idle_-_AIS_Decel/T_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a> may need to be scaled down. PERKCK acts as a global proportioning scalar applied to the raw speed-dependent steps retrieved from <a href="../Idle_-_AIS_Decel/T_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a>. In factory calibrations, <code>PERKCK</code> is set to 192 counts, representing an airflow scaling factor of exactly 75 percent (192/256).</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Global Scaling of ACCTBL</strong>: * Adjust <code>PERKCK</code> to scale overall off-idle A/C airflow up or down without reshaping the individual speed breakpoints in <a href="../Idle_-_AIS_Decel/T_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a>.</li>
+<li><strong>Increasing Dashpot Air</strong>: * Raise <code>PERKCK</code> to 220 to 255 counts (86% to 100%) to provide stronger overall anti-stall dashpot air with the A/C on.</li>
+<li><strong>Linear Percentage Multiplier</strong>: * 255 counts represents 100% full scale; factory setting of 192 counts represents 75%.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect at closed throttle idle to regulate AcClutchAisAdjustmentConstant.</p>
+<ul>
+<li>Evaluated inside <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at line 1838 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>PERKCK</code> at ROM address <code>0x92DD</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateTargetIdleSpeedAndAisPosition_MM (T-SBECII_v1.asm:1836-1842) ---
+           jsr   Lookup4ByteTable    ; call subroutine
+   L9C73:  brclr *PIA2_Buffer, #$%00000001, L9C7D    ; branch if bit(s) clear
+           ldaa  PERKCK_AcClutchAisAdjustmentConstant    ; load A with memory contents (data is c0)
+           mul                 ; multiply (D=A*B)
+           adca  #0x00         ;  -00000000-
+   L9C7D:  adda  Temp0
+           bcs   L9CA0         ; branch if lower</code></pre>
+<p>The CPU executes <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> where <code>PERKCK</code> is loaded, compared, or interpolated from ROM address <code>0x92DD</code> at line 1838.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Scaling</strong>: 192 counts = 192 / 256 = 0.75 (75%).</li>
+<li><strong>Companion Parameter</strong>: Direct scaling multiplier for <a href="../Idle_-_AIS_Decel/T_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a>.</li>
+<li><strong>Factory Value</strong>: 0xC0 (192 counts).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>PERKCK</code>
+        </footer>
+    </div>
+</body>
+</html>

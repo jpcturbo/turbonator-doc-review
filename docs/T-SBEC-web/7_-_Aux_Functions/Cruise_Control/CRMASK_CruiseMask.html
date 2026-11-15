@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRMASK: CruiseMask | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x899A</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ Cruise Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Cruise_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CRMASK: CruiseMask</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CRMASK</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CRMASK_CruiseMask</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Cruise_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\Cruise_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x899A</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">8-bit Unsigned Scaling Factor (0 to 255 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x11                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L7171-L7182"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L9368"><code>DropOutOfCruise</code></a> in <a href="../../T-SBEC_v4.asm.html#L9802"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CRMASK</code> defines the startup delay count and reset mask applied to <code>Counter_Cruise</code> when cruise control is freshly engaged. Upon engaging cruise control by pressing set or resume, the mechanical throttle cable, vacuum actuator diaphragm, and engine operating conditions require a brief stabilization period before long-term adaptive integration can safely begin. <code>CRMASK</code> enforces a startup delay of 17 counts while initialization bit 0 of <code>CruiseStatus</code> is active, preventing premature integrator adjustments before the vehicle stabilizes at its target speed.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Engagement Stabilization Delay</strong>: * Enforces a 17-count delay immediately following set or resume switch engagement. * Prevents adaptive integrator updates before the vacuum actuator settles the throttle.</li>
+<li><strong>Status Flag Coordination</strong>: * When <code>Counter_Cruise</code> reaches <code>CRMASK</code>, bit 0 of <code>CruiseStatus</code> is cleared and the counter resets to zero.</li>
+<li><strong>Factory Setting</strong>: * Configured to 17 counts in production calibrations.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during cruise switch reading, masking and testing digital switch inputs from the multifunction steering column lever.</p>
+<ul>
+<li>Evaluated inside <code>DropOutOfCruise</code> at line 9802 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>CRMASK</code> at ROM address <code>0x899A</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>DropOutOfCruise</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- DropOutOfCruise (T-SBEC_v4.asm:9800-9806) ---
+           ldaa Counter_Cruise    ; load a with memory contents
+           brclr *CruiseStatus_2, #$%00000001, LD7A2    ; branch if bit(s) clear
+           cmpa CRMASK_CruiseMask    ; compare a with memory contents (data is 11)
+           bcc  LD79C          ; branch if greater or equal
+           inca                ; increment a
+           staa Counter_Cruise    ; store a into memory
+           bra  LD7F7          ; branch</code></pre>
+<p>The CPU executes <code>DropOutOfCruise</code> where <code>CRMASK</code> is loaded, compared, or interpolated from ROM address <code>0x899A</code> at line 9802.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Startup State Bit</strong>: Gates initialization bit 0 (<code>b2f_bit0</code>) in <code>CruiseStatus</code>.</li>
+<li><strong>Stabilization Span</strong>: 17 counts corresponds to approximately 0.19 seconds of foreground execution time.</li>
+<li><strong>Companion Parameter</strong>: Coordinates with periodic timer threshold <a href="../../7_-_Aux_Functions/Cruise_Control/CRSCN1_CruiseComapreConstant1.html"><code>CRSCN1_CruiseComapreConstant1</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>CRMASK</code>
+        </footer>
+    </div>
+</body>
+</html>

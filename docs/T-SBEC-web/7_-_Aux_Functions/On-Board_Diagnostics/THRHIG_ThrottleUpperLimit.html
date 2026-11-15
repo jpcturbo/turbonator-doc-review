@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THRHIG: ThrottleUpperLimit | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8A56</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>THRHIG: ThrottleUpperLimit</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>THRHIG</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>THRHIG_ThrottleUpperLimit</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8A56</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">8-bit Unsigned Scaling Factor (0 to 255 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xE4                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L8216-L8227"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L8545"><code>CheckThrottleRoutine_MM</code></a> in <a href="../../T-SBEC_v4.asm.html#L8551"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>THRHIG</code> defines the upper electrical voltage boundary for the throttle position sensor analog input circuit. Under wide-open throttle conditions, a correctly adjusted factory throttle potentiometer typically delivers an output between 3.8 and 4.4 volts. If the sensor signal wire chafes and shorts directly to the 5.0-volt supply rail or if an internal sensor failure connects the wiper directly to the high reference pin, the signal voltage saturates near 5.0 volts. In factory calibrations, <code>THRHIG</code> is configured to 240 counts, representing approximately 4.71 volts. When the sensor signal equals or exceeds <code>THRHIG</code>, the engine controller flags <strong>Fault Code 24</strong>, latches a defective throttle sensor flag, and replaces live throttle readings with synthetic values derived from manifold pressure.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Full Throttle Clearance</strong>: * Verify that wide-open throttle voltage on aftermarket throttle bodies does not exceed <code>THRHIG</code>. * If wide-open throttle reaches 4.6 volts, raise <code>THRHIG</code> slightly to 248 counts (4.86 volts) to prevent false fault logging.</li>
+<li><strong>Short Circuit Detection</strong>: * If Fault Code 24 sets immediately upon key-on and live TPS voltage reads 4.9 to 5.0 volts, inspect for a harness short between the 5.0-volt reference wire and signal wire.</li>
+<li><strong>Lowering &amp; Edge Cases</strong>: * Lowering <code>THRHIG</code> below wide-open throttle voltage triggers limp-in mode under wide-open throttle. * Setting <code>THRHIG</code> to 255 counts disables 5.0-volt short-circuit detection.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect continuously during throttle sensor diagnostics, flagging fault codes if the TPS voltage reads above 5V.</p>
+<ul>
+<li>Evaluated inside <code>CheckThrottleRoutine_MM</code> at line 8551 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>THRHIG</code> at ROM address <code>0x8A56</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CheckThrottleRoutine_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CheckThrottleRoutine_MM (T-SBEC_v4.asm:8549-8555) ---
+           bcs  CheckThrottle_BadTpsSignal    ; branch if lower
+           incb
+           cmpa THRHIG_ThrottleUpperLimit    ; compare a with memory contents (data is e4)
+           bcc  CheckThrottle_BadTpsSignal    ; branch if greater or equal
+           brclr *b5c_IPL1, #b5c_TpsBadSignal, CheckThrottle_GotTpsValue    ; branch if bit(s) clear
+           ldaa #0x07          ; load a with value -00000111-
+           bita Counter_MainLoop</code></pre>
+<p>The CPU executes <code>CheckThrottleRoutine_MM</code> where <code>THRHIG</code> is loaded, compared, or interpolated from ROM address <code>0x8A56</code> at line 8551.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Complements <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/THRLOW_ThrottleLowerLimit.html"><code>THRLOW</code></a> (lower voltage bound) and <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/MPTHR_MapSwitchPointForFullThrottleOrIdle.html"><code>MPTHR</code></a> (manifold pressure switch point).</li>
+<li><strong>Diagnostic Code</strong>: DRB-II Fault Code 24 (throttle position sensor voltage out of range high).</li>
+<li><strong>Recovery</strong>: If sensor voltage recovers between <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/THRLOW_ThrottleLowerLimit.html"><code>THRLOW</code></a> and <code>THRHIG</code>, error reset timer is called at line 7781.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>THRHIG</code>
+        </footer>
+    </div>
+</body>
+</html>

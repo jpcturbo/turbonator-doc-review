@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRKRPM: BrakeOverrideForAis FromDeltaThrottle | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8CF2</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle ➔ AIS Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BRKRPM: BrakeOverrideForAis FromDeltaThrottle</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BRKRPM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BRKRPM_BrakeOverrideForAis_FromDeltaThrottle</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle\AIS_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8CF2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">2 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">in_desc 0 255 scale</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">out_desc 0 255 scale</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x01                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L3814-L3826"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L1984"><code>HandleAcCutout</code></a> in <a href="../../T-T3v1.asm.html#L2157"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BRKRPM</code> is a 2D calibration curve that establishes an engine speed brake override threshold for off-idle dashpot airflow. Under normal driving, the idle air stepper motor is held partially open off-idle to soften deceleration and prevent driveline bucking. However, when the driver actively presses the brake pedal to slow or stop the vehicle, auxiliary dashpot air is undesirable because it fights the vehicle brakes and reduces engine braking vacuum assist. When the brake switch contacts close, the Turbo III controller references <code>BRKRPM</code> using throttle position sensor voltage delta. If engine speed is above the looked-up threshold, the controller overrides the off-idle stepper opening floor and closes the bypass passage, restoring maximum engine braking.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stronger Engine Braking</strong>: * Lower <code>BRKRPM</code> thresholds if the vehicle resists deceleration or pushes forward against the service brakes during firm stops.</li>
+<li><strong>Hard Braking Stall Prevention</strong>: * Keep low-throttle points above 1000 RPM to prevent the engine from stalling when stopping abruptly from highway speeds.</li>
+<li><strong>Switch Activation</strong>: * Only evaluates when the hydraulic brake pressure switch or brake pedal switch is actively closed.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under normal driving, the idle air stepper motor is held partially open off-idle to soften deceleration and prevent driveline bucking.</p>
+<ul>
+<li>Evaluated inside <code>HandleAcCutout</code> at line 2157 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>BRKRPM</code> at ROM address <code>0x8CF2</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>HandleAcCutout</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- HandleAcCutout (T-T3v1.asm:2155-2161) ---
+           bclr *BitFlags_AIS, #b10_ATXChngGear    ; clear bits
+           brclr *StartupSwitchMirror1, #sw1_Brake, L9A97    ; branch if bit(s) clear
+           ldx  #BRKRPM_BrakeOverrideForAis_FromDeltaThrottle    ; load index with value
+           ldaa TpsVolts       ; load a with memory contents
+           suba MINTHR_LowestSessionTPS
+           jsr  Lookup4ByteTable    ; call subroutine
+           cmpb EngineRpm_HB</code></pre>
+<p>The CPU executes <code>HandleAcCutout</code> where <code>BRKRPM</code> is loaded, compared, or interpolated from ROM address <code>0x8CF2</code> at line 2157.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Safety Interlock</strong>: Provides an active safety cutoff to ensure idle air bypass does not counteract driver braking effort.</li>
+<li><strong>Companion Parameters</strong>: Interacts with <a href="../../Idle/AIS_Control/CLDPOS_AisColdPosition_FromTemp.html"><code>CLDPOS</code></a>, <a href="../../Idle/AIS_Control/RPMPOS_AisPosition_FromRpm.html"><code>RPMPOS</code></a>, and <a href="../../Idle/AIS_Control/THRPOS_AisPosition_FromThrottle.html"><code>THRPOS</code></a>.</li>
+<li><strong>Table Resolution</strong>: 3 points (Throttle delta vs RPM threshold).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>BRKRPM</code>
+        </footer>
+    </div>
+</body>
+</html>

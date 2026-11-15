@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WSGCHG: AllowedBoost FromChargeTemp | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8E3F</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Boost Control ➔ Target Lookup</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>WSGCHG: AllowedBoost FromChargeTemp</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>WSGCHG</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>WSGCHG_AllowedBoost_FromChargeTemp</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Boost_Control\Target_Lookup\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8E3F</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (3-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">3 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">charge_temp -200 260 degrees</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Boost 0 29.4 psi</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Boost Pressure (psi)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3ii_T3_MTX.tpl.html#L4857-L4871"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_IIv1.asm.html#L8972"><code>BC_GetBoostTargetFromTables</code></a> in <a href="../../T-T3_IIv1.asm.html#L8988"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>WSGCHG</code> regulates maximum allowable turbocharger boost pressure according to intake manifold charge air temperature. Highly compressed intake air heats up significantly, and if intercooler heat soak or elevated ambient summer temperatures drive charge temperatures excessively high, cylinder knock and pre-ignition risks multiply dramatically. The engine controller continuously samples the charge temperature sensor and uses this table to scale back the boost target if intake air temperatures exceed safe thermal thresholds, preventing knock before ignition retard must intervene.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Charge Temperature Protection</strong>: * Scales boost target downward when intake manifold air temperatures become excessively hot. * Prevents high-load detonation caused by hot compressed air and intercooler thermal saturation.</li>
+<li><strong>Intercooler Upgrade Tuning</strong>: * Vehicles with large, efficient intercoolers can maintain full boost across wider temperature spans. * Keep a sharp reduction above 140 to 160 degF to guard against bad fuel or hot summer ambient conditions.</li>
+<li><strong>Sensor Voltage Scaling</strong>: * Table x-axis is indexed by charge temperature sensor voltage (0.0 to 5.0 Volts; lower voltage represents hotter air on NTC thermistors).</li>
+<li><strong>Minimum-Wins Priority</strong>: * Enforces the lower value into <code>Temp4</code> whenever high intake temperature calls for boost de-rating.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under elevated intake charge temperatures, lowering the target boost ceiling to prevent detonation when intake air is hot.</p>
+<ul>
+<li>Evaluated inside <code>BC_GetBoostTargetFromTables</code> at line 8988 in <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>WSGCHG</code> at ROM address <code>0x8E3F</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>BC_GetBoostTargetFromTables</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- BC_GetBoostTargetFromTables (T-T3_IIv1.asm:8986-8992) ---
+           ldaa CoolantTemp    ; load a with memory contents
+           jsr  LookupAndKeepSmallerBoostGoal    ; call subroutine
+           ldx  #WSGCHG_AllowedBoost_FromChargeTemp    ; load index with value
+           ldaa ChargeTempVolts    ; load a with memory contents
+           jsr  LookupAndKeepSmallerBoostGoal    ; call subroutine
+           ldx  #MXSBST_AllowedBoost_FromSpeed    ; load index with value
+           ldd  VehicleSpeed_HB    ; load d (a&amp;b) with memory contents</code></pre>
+<p>The CPU executes <code>BC_GetBoostTargetFromTables</code> where <code>WSGCHG</code> is loaded, compared, or interpolated from ROM address <code>0x8E3F</code> at line 8988.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Thermal Safeguard</strong>: Operates before knock spark retard intervenes, preventing thermal knock proactively.</li>
+<li><strong>Voltage Axis Direction</strong>: Factory thermistors exhibit inverse resistance; lower ADC voltage reflects hotter intake air.</li>
+<li><strong>Factory Calibration</strong>: Stock calibrations maintain 8.5 psi boost across normal operating ranges, tapering toward 7.0 psi at extreme temperatures.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>WSGCHG</code>
+        </footer>
+    </div>
+</body>
+</html>

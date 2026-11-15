@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DWELL: DwellTimeFromBatteryVolts | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x93A1</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Spark - Dwell Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DWELL: DwellTimeFromBatteryVolts</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DWELL</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_DwellTimeFromBatteryVolts</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Spark_-_Dwell_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x93A1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 10 Constant</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Battery Voltage (Volts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x82                   ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L10682-L10703"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L9891"><code>CalculateSparkAdvance_MM</code></a> in <a href="../T-SBECII_v1.asm.html#L9893"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DWELL</code> defines the primary ignition coil dwell time curve indexed by battery voltage. Ignition coil dwell represents the duration in microseconds that the ignition driver transistor grounds the coil primary winding, allowing electrical current and magnetic flux to saturate the coil core before opening the circuit to fire the spark plug. Battery voltage is the primary physical factor governing coil saturation: at low battery voltages (such as during cold cranking or charging system faults, between 8 and 10 Volts), current builds slowly through the coil windings, requiring extended dwell times (up to 8.2 milliseconds). At normal vehicle operating voltages (13.5 to 14.5 Volts), the coil charges much faster, requiring only 2.2 to 2.5 milliseconds. The calibration table stores the mathematical one's complement of the dwell period because the controller's 16-bit table interpolation routine requires an upward-sloping curve.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Aftermarket Coil Matching</strong>: * High-performance aftermarket coils (such as MSD Blaster or Accel coils) typically have lower primary resistance; consult coil manufacturer specifications to avoid over-saturating the primary winding.</li>
+<li><strong>Preventing Spark Blowout</strong>: * On high-boost applications (20+ psi), slightly increasing dwell at 13 to 14 Volts ensures full coil saturation to jump large spark plug gaps under dense cylinder pressures.</li>
+<li><strong>Coil Overheating Caution</strong>: * Never set dwell beyond coil saturation; excessive dwell dissipates purely as heat inside the coil casing and power transistor.</li>
+<li><strong>One's Complement Encoding</strong>: * Stored in ROM as the one's complement; MPTune handles the inversion automatically so the tuner views true microseconds.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect across engine operating conditions to establish ignition advance for DwellTimeFromBatteryVoltsComp.</p>
+<ul>
+<li>Evaluated inside <code>CalculateSparkAdvance_MM</code> at line 9893 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>DWELL</code> at ROM address <code>0x93A1</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CalculateSparkAdvance_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateSparkAdvance_MM (T-SBECII_v1.asm:9891-9897) ---
+CalculateSparkAdvance_MM:
+           ldaa  BatteryVolts    ; load A with memory contents
+           ldx   #DWELL_DwellTimeFromBatteryVoltsComp    ; load index with value
+           jsr   Lookup5ByteTable    ; call subroutine
+           coma                ; 1&#x27;s complement A
+           comb                ; 1&#x27;s complement B
+           std   DwellTime_HB</code></pre>
+<p>The CPU executes <code>CalculateSparkAdvance_MM</code> where <code>DWELL</code> is loaded, compared, or interpolated from ROM address <code>0x93A1</code> at line 9893.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Type 10 Table</strong>: 16-bit table storing complement values to accommodate positive-slope lookup firmware requirements.</li>
+<li><strong>Inversion Formula</strong>: True Dwell (microseconds) = 65535 - Table Value.</li>
+<li><strong>Hardware Interaction</strong>: Paired with <code>MINADW</code> to establish floating anti-dwell and prevent duty cycle saturation at high RPM.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>DWELL</code>
+        </footer>
+    </div>
+</body>
+</html>

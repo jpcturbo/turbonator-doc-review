@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCRPML: NoWastegateDutyCycleCorrectionBelowThisRpm | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8245</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Boost - WG Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DCRPML: NoWastegateDutyCycleCorrectionBelowThisRpm</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DCRPML</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_NoWastegateDutyCycleCorrectionBelowThisRpm</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Boost_-_WG_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8245</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x5E                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L2300-L2311"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L12430"><code>BC_IncrementWGAdaptive</code></a> in <a href="../T-SBECII_v1.asm.html#L12445"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DCRPML</code> sets the lower engine speed threshold below which adaptive wastegate duty cycle learning is completely inhibited. At low engine speeds, exhaust mass flow is insufficient to spool the turbocharger to full boost, creating an unavoidable physical underboost condition. If the controller attempted to adapt duty cycle at low RPM, it would erroneously wind the adaptive cells up to maximum. <code>DCRPML</code> locks out adaptive learning below this RPM threshold, ensuring that the controller only adapts in engine operating regions where target boost is physically achievable. Shared between T1 and T2 control routines.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Low-RPM Adaptive Lockout</strong>: * Inhibits adaptive wastegate learning below this engine speed to avoid learning during natural turbo spool lag. * Factory setting is 84 counts (approximately 2688 RPM).</li>
+<li><strong>Large Turbo Upgrades</strong>: * Elevate <code>DCRPML</code> to match the real spool-up RPM of large turbochargers (e.g. 3500 to 4000 RPM) to prevent adaptive cell corruption.</li>
+<li><strong>Stock Turbo Response</strong>: * Small factory Mitsubishi or Garrett T3 turbos can lower <code>DCRPML</code> to 2200 to 2400 RPM for earlier closed-loop trimming.</li>
+<li><strong>Shared Code Usage</strong>: * Enforces low-RPM lockout in both <code>CalcWGDutyCycleT1</code> (line 9715) and <code>CalcWGDutyCycleT2</code> (line 9988).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during boost control, setting the low engine RPM boundary below which adaptive wastegate corrections are disabled.</p>
+<ul>
+<li>Evaluated inside <code>BC_IncrementWGAdaptive</code> at line 12445 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>DCRPML</code> at ROM address <code>0x8245</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>BC_IncrementWGAdaptive</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- BC_IncrementWGAdaptive (T-SBECII_v1.asm:12443-12449) ---
+           bhi   BC_ClearBoostErrTimer    ; branch if higher
+           ldaa  EngineRpm_HB    ; load A with memory contents
+           cmpa  DCRPML_NoWastegateDutyCycleCorrectionBelowThisRpm    ; compare A with memory contents (data is 46)
+           bcs   BC_ClearBoostErrTimer    ; branch if lower
+           cmpa  DCRPMH_NoWastegateDutyCycleCorrectionAboveThisRpm    ; compare A with memory contents (data is bc)
+           bhi   BC_ClearBoostErrTimer    ; branch if higher
+           ldaa  CoolantTemp    ; load A with memory contents</code></pre>
+<p>The CPU executes <code>BC_IncrementWGAdaptive</code> where <code>DCRPML</code> is loaded, compared, or interpolated from ROM address <code>0x8245</code> at line 12445.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Shared Constant</strong>: Evaluated in both T1 and T2 routines under the exact same calibration symbol.</li>
+<li><strong>RPM Scaling</strong>: 32 RPM per count (84 counts = 2688 RPM).</li>
+<li><strong>Spool-Up Alignment</strong>: Must be set higher than the RPM where the turbo reaches base wastegate spring pressure.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>DCRPML</code>
+        </footer>
+    </div>
+</body>
+</html>

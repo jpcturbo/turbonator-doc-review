@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPLMSK: PowerLossLightMask | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x84BB</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Setup - Cal Configuration</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>IPLMSK: PowerLossLightMask</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>IPLMSK</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_PowerLossLightMask</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Setup_-_Cal_Configuration\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x84BB</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 5 (Bitfield Byte)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">8-bit Bitfield Flag Register</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xE6                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L5453-L5465"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L5810"><code>CheckIfCheckEngineLightShouldBeOn_MM</code></a> in <a href="../T-SBECII_v1.asm.html#L5834"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>IPLMSK</code> defines the primary dashboard warning lamp illumination mask register for analog electronic sensor faults. In Chrysler engine controllers, sensor circuit diagnostics continuously update internal status flags in memory. Configured in factory calibrations to two hundred fifty-four counts, <code>IPLMSK</code> dictates which of these sensor faults command the dashboard power loss or check engine light to illuminate while the engine is running. The switches in <code>IPLMSK</code> govern warning light illumination for intake charge temperature sensor failures, engine coolant temperature sensor faults, charging system electrical failures, battery voltage sense faults, manifold absolute pressure electrical failures, throttle position sensor signal faults, and manifold pressure pneumatic tracking errors.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Sensor Warning Lamp Suppression</strong>: * Clearing individual bits in <code>IPLMSK</code> prevents specific sensor failures from illuminating the dashboard check engine light.</li>
+<li><strong>Charge Temperature &amp; MAP Bypass</strong>: * If running an engine conversion without a charge temperature sensor, clearing the charge temp bit stops warning light activation.</li>
+<li><strong>Retains Diagnostic Codes</strong>: * Unlike <code>FLTMSK</code>, clearing a bit in <code>IPLMSK</code> leaves diagnostic trouble code storage intact for scan tool retrieval while silencing the instrument cluster light.</li>
+<li><strong>Factory Default</strong>: * Set to two hundred fifty-four counts, illuminating the lamp for all primary sensor faults.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during active fault condition monitoring, defining which diagnostic error codes trigger illumination of the Power Loss / Check Engine dash light.</p>
+<ul>
+<li>Evaluated inside <code>CheckIfCheckEngineLightShouldBeOn_MM</code> at line 5834 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>IPLMSK</code> at ROM address <code>0x84BB</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CheckIfCheckEngineLightShouldBeOn_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CheckIfCheckEngineLightShouldBeOn_MM (T-SBECII_v1.asm:5832-5838) ---
+           brclr *StartupSwitchMirror2, #$%01000000, LBC9D    ; branch if bit(s) clear
+           ldaa  b5C_IPL1      ; load A with memory contents
+           bita  IPLMSK_PowerLossLightMask    ;  (data is e7)
+           bne   LBC96         ; branch if not equal (not zero)
+           ldx   #CONFIG_ConfigurationFlags    ; load index with value
+           ldaa  b5D_IPL2      ; load A with memory contents
+           brset 0x00, X, #$%01000000, LBC91    ; branch if bit(s) set -00000000-</code></pre>
+<p>The CPU executes <code>CheckIfCheckEngineLightShouldBeOn_MM</code> where <code>IPLMSK</code> is loaded, compared, or interpolated from ROM address <code>0x84BB</code> at line 5834.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Bit Allocations</strong>: Bit 7: MAP Pneumatic, Bit 6: TPS Signal, Bit 5: MAP Signal, Bit 4: Battery Volts, Bit 2: Charging System, Bit 1: Coolant Temp Sensor, Bit 0: Charge Temp Sensor.</li>
+<li><strong>Pairing</strong>: Directly paired with <a href="../Setup_-_Cal_Configuration/T_PowerLossLightMask2.html"><code>IPLMSK2</code></a> to establish comprehensive dashboard warning criteria.</li>
+<li><strong>Active-Low Hardware</strong>: Check engine light hardware is active-low; clearing the buffer bit turns on the lamp.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>IPLMSK</code>
+        </footer>
+    </div>
+</body>
+</html>

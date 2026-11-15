@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTLRPM: LowBatteryVoltageAtThisRpm1500 | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8A4A</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BTLRPM: LowBatteryVoltageAtThisRpm1500</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BTLRPM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BTLRPM_LowBatteryVoltageAtThisRpm1500</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8A4A</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x2E                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L8059-L8070"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L1251"><code>VerifyOperationOfBatteryVoltage_MM</code></a> in <a href="../../T-SBEC_v4.asm.html#L1261"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BTLRPM</code> defines the minimum engine speed threshold required before the engine controller evaluates low-voltage charging system performance. Automotive alternators produce limited electrical current at low engine idle speeds, and high electrical accessory loads such as headlights, heater blower fans, and radiator cooling fans can easily exceed alternator capacity at idle, causing battery voltage to dip temporarily. To prevent nuisance fault codes during prolonged idling, the engine controller suppresses low-voltage alternator fault checking whenever engine speed is below <code>BTLRPM</code>. In factory calibrations, <code>BTLRPM</code> is set to 46 counts, corresponding to approximately 1472 RPM. If engine speed is at or above <code>BTLRPM</code> and battery voltage remains more than 1.0 volt below target charging voltage, the controller flags <strong>Fault Code 41</strong>.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Underdrive Pulleys &amp; Electrical Accessories</strong>: * Underdrive pulleys spin the alternator slower at idle, reducing current output. * Raise <code>BTLRPM</code> from 1472 RPM to 1600-1700 RPM to suppress false Fault Code 41 errors on modified pulley setups.</li>
+<li><strong>Diagnostic Sensitivity</strong>: * Lowering <code>BTLRPM</code> tests charging performance at lower engine speeds, but risks false fault logging during heavy electrical draw at idle.</li>
+<li><strong>Edge Cases</strong>: * Setting <code>BTLRPM</code> to zero triggers Fault Code 41 during normal idle with headlights and heater fan on. * Setting <code>BTLRPM</code> to maximum (e.g., 6000 RPM) disables low-voltage alternator fault monitoring entirely.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if engine speed is at or above BTLRPM and battery voltage remains more than 1.0 volt below target charging voltage, the controller flags Fault Code 41.</p>
+<ul>
+<li>Evaluated inside <code>VerifyOperationOfBatteryVoltage_MM</code> at line 1261 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>BTLRPM</code> at ROM address <code>0x8A4A</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>VerifyOperationOfBatteryVoltage_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- VerifyOperationOfBatteryVoltage_MM (T-SBEC_v4.asm:1259-1265) ---
+           bcs  L928A          ; branch if lower
+           ldaa EngineRpm_HB    ; load a with memory contents
+           cmpa BTLRPM_LowBatteryVoltageAtThisRpm1500    ; compare a with memory contents (data is 2e)
+           bcs  L928A          ; branch if lower
+           ldaa #0x0f          ; load a with value -00001111-
+           brclr *BitFlags70, #b70_bit1, L9245    ; branch if bit(s) clear
+           clra                ; a = 0</code></pre>
+<p>The CPU executes <code>VerifyOperationOfBatteryVoltage_MM</code> where <code>BTLRPM</code> is loaded, compared, or interpolated from ROM address <code>0x8A4A</code> at line 1261.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <code>TargetBatteryVolts</code>, <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/AMBLOW_BattTempLowWhenHot.html"><code>AMBLOW</code></a>, and <a href="../../7_-_Aux_Functions/On-Board_Diagnostics/AMBHIG_BattTempHighWhenCold.html"><code>AMBHIG</code></a>.</li>
+<li><strong>Diagnostic Code</strong>: DRB-II Fault Code 41 (generator field not switching / charging system low output).</li>
+<li><strong>RPM Scaling</strong>: Scaled at 32 RPM per count in high-byte RPM registers (46 counts = 1472 RPM).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>BTLRPM</code>
+        </footer>
+    </div>
+</body>
+</html>

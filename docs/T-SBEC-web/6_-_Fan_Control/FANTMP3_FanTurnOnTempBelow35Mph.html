@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FANTMP3: FanTurnOnTempBelow35Mph | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x887C</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>6 - Fan Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Fan_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>FANTMP3: FanTurnOnTempBelow35Mph</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>FANTMP3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>FANTMP3_FanTurnOnTempBelow35Mph</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fan_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>6_-_Fan_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x887C</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Temperature (°F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xE3                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../T-SBEC_25_MTX_A593_Stock.tpl.html#L6034-L6045"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBEC_v4.asm.html#L1"><code>MainProgramLoop</code></a> in <a href="../T-SBEC_v4.asm.html#L950"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>FANTMP3</code> defines the coolant temperature threshold that energizes the radiator cooling fan during low-speed driving or idle conditions below 35 MPH. When stopped in traffic or driving at low vehicle speeds, no ram airflow enters the front grille to cool the radiator and intercooler cores. Underhood temperatures quickly rise from the turbocharger turbine housing and exhaust manifold. In factory calibrations, <code>FANTMP3</code> is set to 227 counts, corresponding to approximately 199 °F. When coolant temperature exceeds this threshold, the controller turns on the electric cooling fan to draw airflow through the cooling pack, preventing engine overheating during city operation.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Primary Fan Tuning Target</strong>: * Most frequently adjusted cooling parameter; controls stationary idle and slow-traffic engine temperature.</li>
+<li><strong>Thermostat Calibration</strong>: * 180 °F thermostat: calibrate <code>FANTMP3</code> between 188 °F and 192 °F. * 160 °F thermostat: calibrate <code>FANTMP3</code> between 172 °F and 176 °F.</li>
+<li><strong>Detonation Resistance</strong>: * Keeping city idle coolant temperatures below 195 °F sharply reduces manifold heat soak and launch knock.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when driving in slow city traffic or idling below 35 MPH, commanding the radiator cooling fan ON once coolant temperature reaches this threshold.</p>
+<ul>
+<li>Evaluated inside <code>MainProgramLoop</code> at line 950 in <a href="../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>FANTMP3</code> at ROM address <code>0x887C</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>MainProgramLoop</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- MainProgramLoop (T-SBEC_v4.asm:948-954) ---
+; begin code
+; *****************************************************************************
+
+	.org CodeOrg
+        .msg &quot;Assembling Code...&quot;
+
+</code></pre>
+<p>The CPU executes <code>MainProgramLoop</code> where <code>FANTMP3</code> is loaded, compared, or interpolated from ROM address <code>0x887C</code> at line 950.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Indexed Offset</strong>: Stored at offset +2 from <code>FANTMP_FanTurnOnTempAbove45Mph</code>.</li>
+<li><strong>Companion Parameter</strong>: Works directly with <code>FANTMP4_FanTurnOffTempBelow35MPH</code> for low-speed hysteresis.</li>
+<li><strong>A/C Interaction</strong>: When air conditioning is active, the fan is commanded on regardless of <code>FANTMP3</code> unless engine is off.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>FANTMP3</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AFR2NB: WidebandAFRToO2TransferFunction | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x24AE</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ C - Turbonator Features ➔ WB2NB</strong> &nbsp;|&nbsp; Subsystem: <strong>Turbonator_Features</strong>
+        </div>
+        
+        <article class="content">
+            <h1>AFR2NB: WidebandAFRToO2TransferFunction</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>AFR2NB</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>AFR2NB_WidebandAFRToO2TransferFunction</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Turbonator_Features</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\C_-_Turbonator_Features\WB2NB\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x24AE</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (5-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">5 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">AFR 4 19.9375 ratio</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">O2SensorVolts 0 5 volts</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Battery Voltage (Volts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x04                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-SBEC_25_MTX_A593_Stock.tpl.html#L9389-L9404"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-SBEC_v4.asm.html#L12778"><code>LookupWB2NBXferFunc</code></a> in <a href="../../../T-SBEC_v4.asm.html#L12783"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>AFR2NB</code> is the second stage transfer function in the Turbonator wideband-to-narrowband emulation system, translating calculated air-fuel ratio into simulated narrowband oxygen sensor voltage. Stock Chrysler engine controllers expect a non-linear switching signal from a factory zirconium oxygen sensor that transitions sharply between 0.1 volts (lean) and 0.9 volts (rich) around stoichiometry. By passing the measured air-fuel ratio from a wideband controller through <code>AFR2NB</code>, the controller synthesizes this classic switching voltage curve. This allows the factory closed-loop fueling and adaptive memory systems to operate normally while receiving input from an accurate wideband oxygen sensor.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Factory Curve Profile</strong>: Four calibration points generate a steep sigmoidal switching curve centered precisely at 14.7:1 stoichiometric air-fuel ratio.</li>
+<li><strong>Target Air-Fuel Ratio Shifting</strong>: Shifting the steep transition region left or right allows closed-loop cruising to target rich (e.g., 14.2:1) or lean (e.g., 15.2:1) mixtures.</li>
+<li><strong>Alternative Fuel Tuning</strong>: For ethanol blends (E85), re-scale the transition points to match the fuel's stoichiometric ratio (approx 9.8:1 for E85) if the wideband controller outputs true AFR rather than lambda.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when wideband O2 tracking is enabled, converting wideband air-fuel ratio voltage into a simulated narrowband signal for the ECU feedback loop.</p>
+<ul>
+<li>Evaluated inside <code>LookupWB2NBXferFunc</code> at line 12783 in <a href="../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>AFR2NB</code> at ROM address <code>0x24AE</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>LookupWB2NBXferFunc</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- LookupWB2NBXferFunc (T-SBEC_v4.asm:12781-12787) ---
+        jsr  Lookup4ByteTable                     ; call subroutine
+        staa AFRatio
+        ldx  #AFR2NB_WidebandAFRToO2TransferFunction  ; load index with value
+        jsr  Lookup4ByteTable                     ; call subroutine
+        adda NBOFFS_NarrowBandOffsetValue
+
+WB2NB_Return:</code></pre>
+<p>The CPU executes <code>LookupWB2NBXferFunc</code> where <code>AFR2NB</code> is loaded, compared, or interpolated from ROM address <code>0x24AE</code> at line 12783.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Two-Stage Architecture</strong>: Works downstream of <a href="../../../0_-_Setup/C_-_Turbonator_Features/WB2NB/WB2AFR_WidebandToAFRTransferFunction.html"><code>WB2AFR</code></a>, converting the intermediate <code>AFRatio</code> value into simulated narrowband voltage.</li>
+<li><strong>Offset Trimming</strong>: Directly trimmed by signed offset constant <a href="../../../0_-_Setup/C_-_Turbonator_Features/WB2NB/NBOFFS_NarrowBandOffsetValue.html"><code>NBOFFS</code></a> at line 10322.</li>
+<li><strong>Closed-Loop Feedback</strong>: Feeds directly into <code>O2SensorValue</code>, controlling closed-loop PI switching and adaptive cell updates.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>AFR2NB</code>
+        </footer>
+    </div>
+</body>
+</html>

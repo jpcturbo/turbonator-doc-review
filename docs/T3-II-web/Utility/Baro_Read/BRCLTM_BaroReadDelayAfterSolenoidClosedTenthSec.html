@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRCLTM: BaroReadDelayAfterSolenoidClosedTenthSec | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8F0C</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Utility ➔ Baro Read</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BRCLTM: BaroReadDelayAfterSolenoidClosedTenthSec</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BRCLTM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>BRCLTM_BaroReadDelayAfterSolenoidClosedTenthSec</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Utility\Baro_Read\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8F0C</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Time Duration (seconds or loop counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x09                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3ii_T3_MTX.tpl.html#L5611-L5622"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_IIv1.asm.html#L1200"><code>THROTTLE_HASNTCHANGED_STILLNOTPRESSED</code></a> in <a href="../../T-T3_IIv1.asm.html#L1215"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BRCLTM</code> defines the pneumatic stabilization delay after the barometric read solenoid is de-energized before the engine controller resumes using sensor readings for manifold pressure calculations. After the atmospheric barometric reading has been captured, the controller de-energizes the solenoid, closing the atmospheric vent and reconnecting the sensor to the intake manifold. Because the sensor cavity and vacuum line are filled with atmospheric air, manifold vacuum must draw this air out to restore true engine vacuum. In factory calibrations, <code>BRCLTM</code> is configured to 9 counts, providing approximately 0.10 seconds (100 milliseconds) for line vacuum re-establishment before the controller trusts MAP sensor data.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Preventing False Tip-In Enrichment</strong>: * If <code>BRCLTM</code> is too short, residual atmospheric air looks like manifold boost, triggering false acceleration enrichment.</li>
+<li><strong>Hose Volume Compensation</strong>: * Increase <code>BRCLTM</code> to 12 to 15 counts (130 to 160 ms) if relocated sensors use long vacuum plumbing.</li>
+<li><strong>Quick Throttle Recovery</strong>: * Retaining ~100 ms ensures rapid return to closed-loop fuel and spark tracking.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during in-flight baro reading cycles, setting the pneumatic settling delay after switching the baro solenoid closed.</p>
+<ul>
+<li>Evaluated inside <code>THROTTLE_HASNTCHANGED_STILLNOTPRESSED</code> at line 1215 in <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>BRCLTM</code> at ROM address <code>0x8F0C</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>THROTTLE_HASNTCHANGED_STILLNOTPRESSED</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- THROTTLE_HASNTCHANGED_STILLNOTPRESSED (T-T3_IIv1.asm:1213-1219) ---
+           bset *PIA_Buffer1, #pia_Baro    ; set bits
+           ldaa Timer_BaroReadInterval    ; load a with memory contents
+           cmpa BRCLTM_BaroReadDelayAfterSolenoidClosedTenthSec    ; compare a with memory contents (data is 09)
+           bcs  L93CC          ; branch if lower
+           andb #0x7f          ;  -01111111-
+   L93C7:  stab BitFlags68     ; store b into memory
+   L93C9:  clra                ; a = 0</code></pre>
+<p>The CPU executes <code>THROTTLE_HASNTCHANGED_STILLNOTPRESSED</code> where <code>BRCLTM</code> is loaded, compared, or interpolated from ROM address <code>0x8F0C</code> at line 1215.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Mirror Delay Structure</strong>: Matches <a href="../../Utility/Baro_Read/BROPTM_BaroReadDelayAfterSolenoidOpenTenthSec.html"><code>BROPTM</code></a> in timebase scaling (tenths of a second).</li>
+<li><strong>Cycle Completion</strong>: Resets <code>Timer_BaroReadInterval</code> to begin tracking the interval toward the next <a href="../../Utility/Baro_Read/BARTIM_BaroReadMinTimeBetweenReadings179sec.html"><code>BARTIM</code></a> period.</li>
+<li><strong>Sensor Signal Handoff</strong>: Releases the MAP signal from atmospheric sample mode back to dynamic manifold vacuum tracking.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>BRCLTM</code>
+        </footer>
+    </div>
+</body>
+</html>

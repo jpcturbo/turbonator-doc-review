@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAXTHR: CruiseControlDontVacIfThrottleAboveThis | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x9010</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Utility ➔ Cruise Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Cruise_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MAXTHR: CruiseControlDontVacIfThrottleAboveThis</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MAXTHR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MAXTHR_CruiseControlDontVacIfThrottleAboveThis</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Cruise_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Utility\Cruise_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x9010</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Time Duration (seconds or loop counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x66                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3ii_T3_MTX.tpl.html#L6412-L6423"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_IIv1.asm.html#L10918"><code>ControlCruiseServo0_MM</code></a> in <a href="../../T-T3_IIv1.asm.html#L11718"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MAXTHR</code> defines the maximum throttle position ceiling above which the cruise control vacuum solenoid is blocked from applying further vacuum. Cruise control is engineered solely for maintaining highway cruising speed under moderate load, not for wide-open throttle acceleration. If vehicle speed drops on an extremely steep grade or if the vehicle is towing a heavy trailer, the cruise servo must not be permitted to pull the throttle plate wide open or generate sustained high turbocharger boost. In factory calibrations, <code>MAXTHR</code> is set to 80 counts, corresponding to approximately 31.4 percent throttle opening above idle, capping vacuum authority at a safe partial-throttle boundary.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Mountain Climbing Authority</strong>: * If cruise control sags and drops speed on steep highway grades, raise <code>MAXTHR</code> from 80 counts to 96 or 112 counts. * Gives the servo additional throttle authority to maintain speed without driver foot intervention.</li>
+<li><strong>Boost &amp; Safety Ceiling</strong>: * Maintaining <code>MAXTHR</code> below 50 percent throttle opening prevents cruise control from building full turbo boost or pulling wide open.</li>
+<li><strong>Zeroing Out Output</strong>: * When throttle exceeds <code>MAXTHR</code>, vacuum command <code>CruiseControlVar3</code> is zeroed, allowing the return spring to stabilize throttle position.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during cruise control operation, prohibiting vacuum servo pull when throttle opening exceeds this maximum angle ceiling.</p>
+<ul>
+<li>Evaluated inside <code>ControlCruiseServo0_MM</code> at line 11718 in <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>MAXTHR</code> at ROM address <code>0x9010</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>ControlCruiseServo0_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- ControlCruiseServo0_MM (T-T3_IIv1.asm:11716-11722) ---
+           bra  LEAFC          ; branch
+
+   LEAD6:  cmpb MAXTHR_CruiseControlDontVacIfThrottleAboveThis    ; compare b with memory contents (data is 66)
+           bcc  LEAFD          ; branch if greater or equal
+           oraa CRUZ27_UknownConstForCruiseControl27    ;  (data is 01)
+           brclr *CruiseStatus_1, #$%00001000, LEAE7    ; branch if bit(s) clear
+           adda CRUZ29_UknownConstForCruiseControl29    ;  (data is 01)</code></pre>
+<p>The CPU executes <code>ControlCruiseServo0_MM</code> where <code>MAXTHR</code> is loaded, compared, or interpolated from ROM address <code>0x9010</code> at line 11718.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Throttle Ceiling Calculation</strong>: 80 counts / 255 counts total TPS span = 31.4% throttle opening above resting idle stop.</li>
+<li><strong>Turbo Protection</strong>: Prevents the cruise servo from entering wastegate boost control regimes under steady cruising.</li>
+<li><strong>Companion Parameter</strong>: Coordinates with lower throttle floor <a href="../../Utility/Cruise_Control/CLOTHR_CruiseControlDontVentIfThrottleBelowThis.html"><code>CLOTHR_CruiseControlDontVentIfThrottleBelowThis</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>MAXTHR</code>
+        </footer>
+    </div>
+</body>
+</html>

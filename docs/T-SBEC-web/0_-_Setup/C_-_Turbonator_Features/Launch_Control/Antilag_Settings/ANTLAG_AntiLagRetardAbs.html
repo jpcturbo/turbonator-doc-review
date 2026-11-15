@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ANTLAGX: AntiLagRetardAbs | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x2460</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>0 - Setup ➔ C - Turbonator Features ➔ Launch Control ➔ Antilag Settings</strong> &nbsp;|&nbsp; Subsystem: <strong>Turbonator_Features</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ANTLAGX: AntiLagRetardAbs</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ANTLAGX</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ANTLAG_AntiLagRetardAbs</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Turbonator_Features</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>0_-_Setup\C_-_Turbonator_Features\Launch_Control\Antilag_Settings\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x2460</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 19 Constant</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Spark Advance (degrees)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xFD                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SBEC_25_MTX_A593_Stock.tpl.html#L9311-L9321"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SBEC_v4.asm.html#L1"><code>MainProgramLoop</code></a> in <a href="../../../../T-SBEC_v4.asm.html#L950"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ANTLAGX</code> sets the absolute ignition timing commanded by the engine controller when anti-lag launch control is active on the staging line. In turbocharged racing applications, anti-lag burns fuel inside the exhaust manifold and turbine housing rather than pushing down on the piston, spinning the turbocharger turbine wheel to generate boost while the vehicle is stationary. When the engine speed exceeds the anti-lag activation threshold, the controller overrides the normal spark advance schedule and substitutes this absolute ignition angle. The factory setting provides 8 degrees of retard after top dead center, sending burning charge directly past the opening exhaust valve to spool the turbo rapidly.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Ignition Angle Selection</strong>: Positive numbers advance timing toward top dead center, creating gentler anti-lag action with lower exhaust temperatures and slower boost rise. Negative numbers retard timing past top dead center into the exhaust stroke, creating violent exhaust drive pressure that spools large turbochargers instantly.</li>
+<li><strong>Recommended Launch Targets</strong>: Setting timing between 4 degrees and 8 degrees after top dead center typically generates 10 to 15 psi of boost on a transbrake or clutch switch.</li>
+<li><strong>Thermal Management</strong>: Avoid holding anti-lag active for more than three consecutive seconds, as prolonged late combustion causes extreme thermal stress in exhaust valves and turbine housings.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the engine speed exceeds the anti-lag activation threshold, the controller overrides the normal spark advance schedule and substitutes this absolute ignition angle.</p>
+<ul>
+<li>Evaluated inside <code>MainProgramLoop</code> at line 950 in <a href="../../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>ANTLAGX</code> at ROM address <code>0x2460</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>MainProgramLoop</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- MainProgramLoop (T-SBEC_v4.asm:948-954) ---
+; begin code
+; *****************************************************************************
+
+	.org CodeOrg
+        .msg &quot;Assembling Code...&quot;
+
+</code></pre>
+<p>The CPU executes <code>MainProgramLoop</code> where <code>ANTLAGX</code> is loaded, compared, or interpolated from ROM address <code>0x2460</code> at line 950.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Absolute Timing Override</strong>: Unlike knock retard or nitrous retard which subtract a delta angle from base advance, <code>ANTLAGX</code> completely overwrites total ignition advance with an absolute target angle.</li>
+<li><strong>Option Flag Requirement</strong>: Must enable <code>opt_AntiLag</code> in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a> and <code>opt_StageLim</code> in <a href="../../../../0_-_Setup/A_-_Cal_Configuration/OPTN2_CalCustomOptionConfigFlags2.html"><code>OPTN2</code></a>.</li>
+<li><strong>Companion Parameter</strong>: Operates in direct coordination with <a href="../../../../0_-_Setup/C_-_Turbonator_Features/Launch_Control/Antilag_Settings/ANLGRP_AntiLagRetardRPM.html"><code>ANLGRP</code></a>, which defines the engine speed window where anti-lag timing takes over.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>ANTLAGX</code>
+        </footer>
+    </div>
+</body>
+</html>

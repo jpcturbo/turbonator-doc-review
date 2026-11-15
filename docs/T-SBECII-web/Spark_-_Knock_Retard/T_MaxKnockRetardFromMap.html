@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RETMAX: MaxKnockRetardFromMap | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8F98</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Spark - Knock Retard</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>RETMAX: MaxKnockRetardFromMap</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>RETMAX</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_MaxKnockRetardFromMap</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Spark_-_Knock_Retard\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8F98</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (3-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">3 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">MAP -14.7 14.7 psi</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Max_Retard 0 128 degrees</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Spark Advance (degrees)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L8144-L8158"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L10337"><code>CalculateKnockRetard_MM</code></a> in <a href="../T-SBECII_v1.asm.html#L10358"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>RETMAX</code> defines the maximum allowable knock retard ceiling curve indexed by intake manifold pressure. Under heavy turbocharger boost, persistent detonation is destructive and can quickly lead to engine damage. To safeguard the engine under severe detonation, the controller must be authorized to pull significant timing (up to 14.5 degrees in stock calibrations). Conversely, under high vacuum or light load, allowing massive knock retard would be counterproductive, potentially causing combustion to flame out into the exhaust manifold. <code>RETMAX</code> scales the maximum permissible knock retard proportionally with manifold pressure, starting from 3.0 degrees at deep vacuum and ramping up to 14.5 degrees under positive boost.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>High-Boost Safety Expansion</strong>: * Increasing <code>RETMAX</code> to 16-18 degrees in positive boost regions ensures the knock control system has enough authority to extinguish severe detonation under high boost.</li>
+<li><strong>False Knock Protection</strong>: * Restricting <code>RETMAX</code> in light vacuum regions prevents false mechanical noise from pulling excessive timing and bogging the car.</li>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>: * Recalculate pressure breakpoints when upgrading to a 3-bar MAP sensor to maintain appropriate retard ceilings across the expanded scale.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under boost when knock occurs, establishing the maximum allowable ignition knock retard ceiling across manifold pressure.</p>
+<ul>
+<li>Evaluated inside <code>CalculateKnockRetard_MM</code> at line 10358 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>RETMAX</code> at ROM address <code>0x8F98</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CalculateKnockRetard_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateKnockRetard_MM (T-SBECII_v1.asm:10356-10362) ---
+           bra   LDF6F         ; branch
+
+   LDF69:  ldx   #RETMAX_MaxKnockRetardFromMap    ; load index with value
+           jsr   Lookup4ByteTable    ; call subroutine
+   LDF6F:  staa  MaxRetardFromMAP    ; store A into memory
+           ldaa  EngineRpm_HB    ; load A with memory contents
+           ldx   #DLTKNK_KnockSensorVoltageForKnockFromRpm    ; load index with value</code></pre>
+<p>The CPU executes <code>CalculateKnockRetard_MM</code> where <code>RETMAX</code> is loaded, compared, or interpolated from ROM address <code>0x8F98</code> at line 10358.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Dynamic Retard Ceiling</strong>: Enforces the maximum permissible knock retard for all cylinders based on manifold load.</li>
+<li><strong>Type 0 Table</strong>: 2-point curve outputting positive retard values in half-degree increments (0 to 127.5 degrees).</li>
+<li><strong>Stock Settings</strong>: 0x06 (3.0 degrees) at -9.1 psi vacuum, ramping to 0x1D (14.5 degrees) at +14.7 psi boost.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>RETMAX</code>
+        </footer>
+    </div>
+</body>
+</html>

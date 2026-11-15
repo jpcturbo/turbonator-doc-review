@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRIRMP: PrimaryRamp | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x84E2</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ E - O2 Controller ➔ O2 Controller Ramps</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PRIRMP: PrimaryRamp</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PRIRMP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>PRIRMP_PrimaryRamp</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\E_-_O2_Controller\O2_Controller_Ramps\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x84E2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 11 Constant</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Boost Pressure (psi)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0x2F3D                  ;Rpm Low / High Boundary</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-SBEC_25_MTX_A593_Stock.tpl.html#L3168-L3201"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-SBEC_v4.asm.html#L3221"><code>WorkWithPrimaryRamp</code></a> in <a href="../../../T-SBEC_v4.asm.html#L3223"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PRIRMP</code> is a specialized 22-word ramp configuration table that governs short-term oxygen sensor feedback fuel corrections across a 3 by 3 grid of engine speed and manifold pressure load cells, plus a dedicated closed-throttle idle cell. When closed-loop operation is active, the engine controller continuously toggles the air-fuel ratio above and below stoichiometric 14.7:1 by applying rich and lean fuel pulsewidth steps (kicks). <code>PRIRMP</code> defines the RPM and MAP grid boundaries, the individual kick magnitudes for rich and lean corrections, and the accumulation limits for each cell. This table prevents the short-term fuel trim counter from slamming to extremes while ensuring fast, responsive closed-loop tracking.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Curing Rich Closed-Loop Bias</strong>: * Factory Mopar Performance calibrations frequently exhibited a rich closed-loop bias due to asymmetrical kick steps. Equalizing rich and lean kick values across cells 0-8 centers feedback precisely at 14.7:1.</li>
+<li><strong>Relocated O2 Sensor &amp; Header Tuning</strong>: * Long-tube headers increase exhaust transit delay. Slightly raising ramp steps prevents sluggish response, while adjusting limits maintains oscillation stability.</li>
+<li><strong>Table Structure (Type 11)</strong>: * 22 words total: 1 word RPM boundaries, 1 word MAP boundaries, 10 words ramp kick steps (9 cruise + 1 idle), 10 words accumulation limits.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during closed-loop operation, controlling the primary fuel trim ramp rate as the oxygen sensor switches.</p>
+<ul>
+<li>Evaluated inside <code>WorkWithPrimaryRamp</code> at line 3223 in <a href="../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>PRIRMP</code> at ROM address <code>0x84E2</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>WorkWithPrimaryRamp</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- WorkWithPrimaryRamp (T-SBEC_v4.asm:3221-3227) ---
+WorkWithPrimaryRamp:
+           staa Temp0          ; store a into memory
+           ldx  #PRIRMP_PrimaryRamp    ; load index with value
+           jsr  DetermineRampCellFromRPMandMAP    ; call subroutine
+           ldab Timer_OutOfClosedLoopMode    ; load b with memory contents
+           addb 0x00, X        ; add memory at index + value to b
+           sba                 ; subtract (a=a-b)</code></pre>
+<p>The CPU executes <code>WorkWithPrimaryRamp</code> where <code>PRIRMP</code> is loaded, compared, or interpolated from ROM address <code>0x84E2</code> at line 3223.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Table Structure (Type 11)</strong>: * Word 1: RPM Low / High boundary (factory 0x293F = 1312 / 2016 RPM). * Word 2: MAP Low / High boundary (factory 0x335E = 5.9 / 10.8 psia). * Words 3-11: Cruise Cells 0-8 Ramp Step (Rich high byte, Lean low byte). * Word 12: Idle Cell Ramp Step. * Words 13-21: Cruise Cells 0-8 Limits/Rates. * Word 22: Idle Cell Limit/Rate.</li>
+<li><strong>Companion Tables</strong>: Paired with <a href="../../../1_-_Fuel/E_-_O2_Controller/O2_Controller_Ramps/SECRMP_SecondaryRamp.html"><code>SECRMP</code></a> (secondary ramp) and clamped by <a href="../../../1_-_Fuel/E_-_O2_Controller/O2LIMH_O2RangeLimitHigh.html"><code>O2LIMH</code></a>/<a href="../../../1_-_Fuel/E_-_O2_Controller/O2LIML_O2RangeLimitLow.html"><code>O2LIML</code></a>.</li>
+<li><strong>Mathematical Units</strong>: Kick values are scaled as <code>(factor * 512) - 512</code> where 1 bit ≈ 0.2% fuel trim.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>PRIRMP</code>
+        </footer>
+    </div>
+</body>
+</html>

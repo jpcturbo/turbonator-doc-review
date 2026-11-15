@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AC2KCK: AcClutchKickOpenAfterAcEnabled | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x86E9</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>AC2KCK: AcClutchKickOpenAfterAcEnabled</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>AC2KCK</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>AC2KCK_AcClutchKickOpenAfterAcEnabled</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x86E9</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Stepper Motor Position (steps / counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x07                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L4426-L4437"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L2005"><code>HandleAcCutout</code></a> in <a href="../../T-SBEC_v4.asm.html#L2078"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>AC2KCK</code> defines the pre-emptive opening step kick added to the idle air stepper motor when the air conditioning compressor clutch is commanded to engage. When the air conditioning system calls for cooling, the magnetic compressor clutch locks up, suddenly imposing heavy mechanical pumping drag on the engine. If the engine controller waited for engine speed to drop before reacting, closed-loop feedback would be too slow, resulting in a severe idle speed dip or stall. <code>AC2KCK</code> pre-emptively steps the idle air motor open at the exact instant the compressor clutch is energized. In factory calibrations, <code>AC2KCK</code> is set to 4 counts, injecting an immediate 4-step opening kick to absorb the compressor engagement shock.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Curing A/C Engagement RPM Sag</strong>: * Increase <code>AC2KCK</code> from 4 to 7 to 10 steps if engine speed dips noticeably when the compressor clicks on at idle.</li>
+<li><strong>Lightweight Flywheel Drag Cushion</strong>: * Lightened rotational mass is vulnerable to compressor shock; higher <code>AC2KCK</code> values maintain smooth idle stability.</li>
+<li><strong>Preventing Engagement Flare</strong>: * If the engine revs up abruptly upon A/C engagement, trim <code>AC2KCK</code> down to 3 or 4 steps.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect at closed throttle when the A/C compressor clutch is commanded to engage, instantly stepping open the idle air motor to catch engine idle and prevent an RPM dip.</p>
+<ul>
+<li>Evaluated inside <code>HandleAcCutout</code> at line 2078 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>AC2KCK</code> at ROM address <code>0x86E9</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>HandleAcCutout</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- HandleAcCutout (T-SBEC_v4.asm:2076-2082) ---
+           bne  L987D          ; branch if not equal (not zero)
+           brset *BitFlags66, #b66_OffIdle, L988A    ; branch if bit(s) set
+           ldaa AC2KCK_AcClutchKickOpenAfterAcEnabled    ; load a with memory contents (data is 00)
+           jsr  MultiplyTempvar1ByA_Pos    ; call subroutine
+           jsr  StoreAndLimitDesiredAisPosition    ; call subroutine
+           jmp  L9956
+</code></pre>
+<p>The CPU executes <code>HandleAcCutout</code> where <code>AC2KCK</code> is loaded, compared, or interpolated from ROM address <code>0x86E9</code> at line 2078.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameter</strong>: Direct counterpart to <a href="../../5_-_Idle/B_-_AIS_Decel/ACOFFK_ClosedThrottleAcOffKick.html"><code>ACOFFK</code></a> (disengagement step reduction).</li>
+<li><strong>Altitude Scaling</strong>: Scaled dynamically by <code>Temp1</code> (<a href="../../5_-_Idle/A_-_AIS_Control/BARAIS_AISBaroCompensation.html"><code>BARAIS</code></a> altitude factor).</li>
+<li><strong>Factory Value</strong>: 0x04 (4 counts = 4 steps).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>AC2KCK</code>
+        </footer>
+    </div>
+</body>
+</html>

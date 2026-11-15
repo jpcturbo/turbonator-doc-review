@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DECLIM: LowerLimitOnWastegateDutyCycleCorrection | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8EC8</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Boost Control ➔ WG Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DECLIM: LowerLimitOnWastegateDutyCycleCorrection</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DECLIM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DECLIM_LowerLimitOnWastegateDutyCycleCorrection</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Boost_Control\WG_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8EC8</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Duty Cycle (% PWM; 0 to 100%)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x01                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L4972-L4983"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L9548"><code>BC_LoadAdaptiveWGCell</code></a> in <a href="../../T-T3v1.asm.html#L9555"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DECLIM</code> establishes the lower clamp boundary for adaptive wastegate cell values, preventing the adaptive system from trimming baseline duty cycle below a safe authority limit. In Chrysler's adaptive wastegate grid, each cell byte is centered at 128 counts (representing zero correction offset), with values below 128 subtracting duty cycle and values above 128 adding duty cycle. <code>DECLIM</code> prevents the adaptive system from learning an excessively low duty cycle that could cause severe underboost or sluggish spool-up if atmospheric conditions change. Shared between T1 and T2 control routines.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Maximum Downward Adaptive Authority</strong>: * Clamps the lowest value an adaptive cell can reach (offset below 128 counts). * Factory setting is 68 counts (-60 counts offset, or -30.0 percent duty cycle reduction below base table).</li>
+<li><strong>Correcting Authority Limits on Boost Creep</strong>: * Lowering <code>DECLIM</code> allows more downward duty cycle reduction if an engine experiences persistent overboost. * Large negative offsets indicate that <a href="../../Boost_Control/WG_Control/DCWOT_FullThrottleWastegateDutyCycle_C8is100Percent_FromMap.html"><code>DCWOT</code></a> base table values are too high and should be corrected directly.</li>
+<li><strong>Shared Code Architecture</strong>: * Referenced in both <code>CalcWGDutyCycleT1</code> (line 9690) and <code>CalcWGDutyCycleT2</code> (line 10002).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under turbocharger boost operation to control LowerLimitOnWastegateDutyCycleCorrection.</p>
+<ul>
+<li>Evaluated inside <code>BC_LoadAdaptiveWGCell</code> at line 9555 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>DECLIM</code> at ROM address <code>0x8EC8</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>BC_LoadAdaptiveWGCell</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- BC_LoadAdaptiveWGCell (T-T3v1.asm:9553-9559) ---
+           subb WGDCOF_WastegateDutyCycleOffset          ; subtract memory contents from b (data is 00)
+           bcs  LD8A6          ; branch if lower
+           cmpb DECLIM_LowerLimitOnWastegateDutyCycleCorrection    ; compare b with memory contents (data is 01)
+           bhi  LD8A9          ; branch if higher
+   LD8A6:  ldab DECLIM_LowerLimitOnWastegateDutyCycleCorrection    ; load b with memory contents (data is 01)
+   LD8A9:  jmp  BC_UpdateAdaptiveWGControlMemory
+</code></pre>
+<p>The CPU executes <code>BC_LoadAdaptiveWGCell</code> where <code>DECLIM</code> is loaded, compared, or interpolated from ROM address <code>0x8EC8</code> at line 9555.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Signed Offset Centering</strong>: 128 (0x80) represents 0% offset; 68 (0x44) represents -30.0% duty cycle offset.</li>
+<li><strong>Dual Routine Usage</strong>: Enforces lower adaptive authority in both <code>CalcWGDutyCycleT1</code> and <code>CalcWGDutyCycleT2</code>.</li>
+<li><strong>EEPROM Persistence</strong>: Learned cell values are retained in battery-backed RAM / EEPROM across engine ignition cycles.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>DECLIM</code>
+        </footer>
+    </div>
+</body>
+</html>

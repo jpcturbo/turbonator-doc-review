@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOWBST: AllowedBoostLo | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x2148</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Boost Control ➔ Target Lookup</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>LOWBST: AllowedBoostLo</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>LOWBST</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>LOWBST_AllowedBoostLo</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Boost_Control\Target_Lookup\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x2148</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Boost Pressure (psi)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x57                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L8519-L8530"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L9394"><code>BC_LoadLoBoostAndLookup</code></a> in <a href="../../T-T3v1.asm.html#L9395"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>LOWBST</code> sets the fixed turbocharger gauge boost target ceiling enforced when switchable dual-boost control is enabled and the external boost switch is toggled to the low-boost position. When active, the engine controller compares this constant against the running minimum boost target calculated from the tables and enforces whichever value is lower. In factory Turbonator calibrations, this constant is set to 87 counts, corresponding to approximately 10.0 psi of positive boost pressure. This allows the driver to instantly reduce engine output for inclement weather, fuel conservation, valet operation, or pump-gas daily driving while retaining high boost on demand.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Low-Boost Target Ceiling</strong>: * Defines the upper boost limit enforced when the cockpit toggle switch selects low-boost mode. * Useful for valet modes, wet-weather driving, or running on lower-octane pump gasoline.</li>
+<li><strong>Base Spring Boost Calibration</strong>: * Setting <code>LOWBST</code> equal to base actuator spring pressure (e.g. 6 to 7 psi) disables solenoid duty cycle in low mode for mechanical spring boost.</li>
+<li><strong>Race vs. Pump Gas Switching</strong>: * Set <code>LOWBST</code> for safe pump-gas boost (12 to 14 psi) while calibrating <a href="../../Boost_Control/Target_Lookup/WSGRPM_AllowedBoost_FromRpm.html"><code>WSGRPM</code></a> for race-gas boost (20 to 25 psi).</li>
+<li><strong>Hierarchical Minimum Interaction</strong>: * <code>LOWBST</code> cannot force boost higher than <a href="../../Boost_Control/Target_Lookup/WSGRPM_AllowedBoost_FromRpm.html"><code>WSGRPM</code></a> or cold engine limits; it only restricts boost downward via <code>KeepSmallerBoostGoal</code>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the dashboard switchable boost toggle is switched to low-boost mode, clamping maximum boost to this conservative ceiling.</p>
+<ul>
+<li>Evaluated inside <code>BC_LoadLoBoostAndLookup</code> at line 9395 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>LOWBST</code> at ROM address <code>0x2148</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>BC_LoadLoBoostAndLookup</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- BC_LoadLoBoostAndLookup (T-T3v1.asm:9393-9399) ---
+
+BC_LoadLoBoostAndLookup:
+	   ldaa LOWBST_AllowedBoostLo    ; &quot;lo&quot; boost constant
+           jsr  LookupAndKeepSmallerBoostGoal
+
+BC_FinalBoostTarget:
+</code></pre>
+<p>The CPU executes <code>BC_LoadLoBoostAndLookup</code> where <code>LOWBST</code> is loaded, compared, or interpolated from ROM address <code>0x2148</code> at line 9395.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Option Gating</strong>: Relies on <code>opt_SwBoost</code> and <a href="../../Boost_Control/Target_Lookup/BSTSWS_HighBoostSwitchSelect.html"><code>BSTSWS</code></a> in <code>CheckBoostSwitch</code>.</li>
+<li><strong>Minimum Clamping</strong>: Enforces a ceiling; it will never raise boost if another limiter (such as <a href="../../Boost_Control/Target_Lookup/WSGCLT_AllowedBoost_FromTemp.html"><code>WSGCLT</code></a> or <a href="../../Boost_Control/Target_Lookup/WSGTIM_AllowedBoost_FromTime.html"><code>WSGTIM</code></a>) commands a lower value.</li>
+<li><strong>3-Bar MAP Scaling</strong>: In 3-bar calibrations, must be rescaled to prevent commanding twice the intended low-boost pressure.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>LOWBST</code>
+        </footer>
+    </div>
+</body>
+</html>

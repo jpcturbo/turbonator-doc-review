@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLTEMP: TempToStartCLTIMETimer | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8BA6</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel ➔ O2 Feedback Control ➔ Adaptive Memory Timer</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CLTEMP: TempToStartCLTIMETimer</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CLTEMP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>CLTEMP_TempToStartCLTIMETimer</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel\O2_Feedback_Control\Adaptive_Memory_Timer\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8BA6</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Spark Advance (degrees)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x92                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3_22_T3_MTX_A393.tpl.html#L2567-L2578"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3v1.asm.html#L3021"><code>HandleO2Processing_MM</code></a> in <a href="../../../T-T3v1.asm.html#L3058"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CLTEMP</code> defines the absolute minimum engine coolant temperature required before the engine controller will start the closed-loop countdown timer and allow closed-loop oxygen sensor feedback. Below this coolant temperature, the engine is considered completely cold, and fuel condensation on runner walls necessitates dedicated open-loop cold enrichment. In factory calibrations, <code>CLTEMP</code> is set to 146 counts, which corresponds to approximately 70 degF. If coolant temperature is lower than <code>CLTEMP</code>, closed-loop feedback is strictly locked out and fuel pulse width is governed entirely by open-loop base and warmup tables.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Cold Climate Optimization</strong>: * In freezing conditions, raising <code>CLTEMP</code> to 85 or 90 degF ensures thorough engine warmup before closed-loop trimming engages.</li>
+<li><strong>Warm Climate Tuning</strong>: * Lowering <code>CLTEMP</code> toward 55 or 60 degF allows faster closed-loop engagement, improving fuel economy.</li>
+<li><strong>Open-Loop Racing Setup</strong>: * Setting <code>CLTEMP</code> to 255 counts locks the ECU permanently in open loop across all operating temperatures, which is useful for drag racing on race gas or methanol.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if coolant temperature is lower than CLTEMP, closed-loop feedback is strictly locked out and fuel pulse width is governed entirely by open-loop base and warmup tables.</p>
+<ul>
+<li>Evaluated inside <code>HandleO2Processing_MM</code> at line 3058 in <a href="../../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>CLTEMP</code> at ROM address <code>0x8BA6</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>HandleO2Processing_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- HandleO2Processing_MM (T-T3v1.asm:3056-3062) ---
+   LA131:  brset *BitFlags66, #b66_O2Valid, O2_UsingFeedback    ; branch if bit(s) set
+   LA135:  ldab CoolantTemp    ; load b with memory contents
+           cmpb CLTEMP_TempToStartCLTIMETimer    ; compare b with memory contents (data is 92)
+           bcs  O2_StopUsingFeedback    ; branch if lower
+           brset *BitFlags66, #b66_OpenLoop, LA150    ; branch if bit(s) set
+           ldab Counter_MainLoop    ; load b with memory contents
+           bne  O2_StopUsingFeedback    ; branch if not equal (not zero)</code></pre>
+<p>The CPU executes <code>HandleO2Processing_MM</code> where <code>CLTEMP</code> is loaded, compared, or interpolated from ROM address <code>0x8BA6</code> at line 3058.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Directly gates <a href="../../../Fuel/O2_Feedback_Control/Adaptive_Memory_Timer/CLTIME_ClosedLoopTimeFromEngTempAtStartup_FromTemp.html"><code>CLTIME</code></a> countdown timer and feeds into <code>O2_ValidSignal_OutsideMiddleRange</code> logic.</li>
+<li><strong>Units Scaling</strong>: 146 counts equals approximately 70 degF (0x92 hex).</li>
+<li><strong>Persistence</strong>: Evaluated continuously every loop pass; threshold changes immediately update closed-loop qualification.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>CLTEMP</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INCPT: AdaptiveIncAfterThisTime | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8EF0</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Boost Control ➔ WG Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>INCPT: AdaptiveIncAfterThisTime</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>INCPT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>INCPT_AdaptiveIncAfterThisTime</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Boost_Control\WG_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8EF0</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Time Duration (seconds or loop counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x0C                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L5319-L5330"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L9568"><code>BC_ControlBoostCreep</code></a> in <a href="../../T-T3v1.asm.html#L9605"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>INCPT</code> specifies the dwell time threshold that an underboost condition must continuously persist before the controller increments the active adaptive wastegate cell in T1 control. When the throttle is initially opened, turbocharger spool lag naturally creates a temporary underboost condition. <code>INCPT</code> ensures that the error timer must accumulate a steady duration of underboost before the controller concludes that baseline duty cycle is truly insufficient, preventing transient spool-up lag from corrupting steady-state adaptive trims.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Underboost Dwell Time Threshold</strong>: * Number of consecutive error timer counts that underboost must persist before the adaptive cell is incremented. * Factory setting is 32 counts (approximately 0.35 seconds).</li>
+<li><strong>Preventing Premature Adaptation on Lag</strong>: * Higher values (40 to 60 counts, 0.45 to 0.7 seconds) prevent the ECU from adding duty cycle while a large turbo is naturally spooling.</li>
+<li><strong>Fast Convergence for Sluggish Spool</strong>: * Lowering <code>INCPT</code> to 15 to 20 counts speeds up adaptive duty cycle additions if steady-state boost consistently falls short.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during part-throttle boost control, establishing the adaptive duty cycle increment time delay.</p>
+<ul>
+<li>Evaluated inside <code>BC_ControlBoostCreep</code> at line 9605 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>INCPT</code> at ROM address <code>0x8EF0</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>BC_ControlBoostCreep</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- BC_ControlBoostCreep (T-T3v1.asm:9603-9609) ---
+           ldaa Timer_BoostErrTimer    ; load a with memory contents
+           inca                ; increment a
+           cmpa INCPT_AdaptiveIncAfterThisTime    ; compare a with memory contents (data is 0c)
+           bcs  BC_StoreBoostErrTimer    ; branch if lower
+           cmpb DECLIM_LowerLimitOnWastegateDutyCycleCorrection    ; compare b with memory contents (data is 01)
+           bls  LD914          ; branch if lower or same
+           subb WGDCON_WGDCOffsetNegatve    ; subtract memory contents from b (data is 01)</code></pre>
+<p>The CPU executes <code>BC_ControlBoostCreep</code> where <code>INCPT</code> is loaded, compared, or interpolated from ROM address <code>0x8EF0</code> at line 9605.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Loop Rate Dependency</strong>: Increments once per main loop pass while all underboost conditions are satisfied.</li>
+<li><strong>Symmetric Architecture</strong>: Acts as the exact upward counterpart to downward timer threshold <a href="../../Boost_Control/WG_Control/DECPT_AdaptiveDecAfterThisTime.html"><code>DECPT</code></a>.</li>
+<li><strong>Factory Value</strong>: 0x20 = 32 counts = approx 0.35 seconds dwell time.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>INCPT</code>
+        </footer>
+    </div>
+</body>
+</html>

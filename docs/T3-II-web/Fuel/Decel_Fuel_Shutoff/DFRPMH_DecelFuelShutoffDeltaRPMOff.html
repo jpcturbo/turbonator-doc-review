@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFRPMH: DecelFuelShutoffDeltaRPMOff | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x90A4</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel ➔ Decel Fuel Shutoff</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DFRPMH: DecelFuelShutoffDeltaRPMOff</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DFRPMH</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DFRPMH_DecelFuelShutoffDeltaRPMOff</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel\Decel_Fuel_Shutoff\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x90A4</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x1E                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3ii_T3_MTX.tpl.html#L7792-L7803"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_IIv1.asm.html#L5922"><code>Cutout_UseDecelFuelCut</code></a> in <a href="../../T-T3_IIv1.asm.html#L5928"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DFRPMH</code> defines the engine speed delta above target idle speed at which fuel injection is actively shut off during deceleration. While <a href="../../Fuel/Decel_Fuel_Shutoff/DCLRPH_EngineRPMLimitForDecelFuelShutoffHigh.html"><code>DCLRPH</code></a> arms the decel logic, <code>DFRPMH</code> is the execution threshold tested inside the foreground fuel cutout routine. When the decel fuel cut flag is armed, the difference between actual engine RPM and target idle RPM is compared against <code>DFRPMH</code>. If delta RPM exceeds <code>DFRPMH</code>, the controller sets <code>Turbonator_MainFuelOff</code>, cutting fuel injection to all cylinders. In factory calibrations, <code>DFRPMH</code> is set to 30 counts, representing 960 RPM above target idle speed.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Decel Cutoff Onset</strong>: * Controls the exact RPM delta where injector pulses cease upon throttle lift-off.</li>
+<li><strong>Smoothness vs Economy</strong>: * Higher values provide softer deceleration with less driveline lash; lower values maximize fuel savings and engine braking.</li>
+<li><strong>Exhaust Sound Tuning</strong>: * If trailing throttle causes harsh exhaust pops or backfiring, raising <code>DFRPMH</code> softens the transition into fuel cut.</li>
+<li><strong>Hysteresis Relationship</strong>: * Must exceed <a href="../../Fuel/Decel_Fuel_Shutoff/DFRPML_DecelFuelShutoffDeltaRPMOn.html"><code>DFRPML</code></a> (fuel turn-on threshold) by at least 8 to 12 counts to prevent injector chatter.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect while DCLRPH arms the decel logic, DFRPMH is the execution threshold tested inside the foreground fuel cutout routine.</p>
+<ul>
+<li>Evaluated inside <code>Cutout_UseDecelFuelCut</code> at line 5928 in <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>DFRPMH</code> at ROM address <code>0x90A4</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>Cutout_UseDecelFuelCut</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- Cutout_UseDecelFuelCut (T-T3_IIv1.asm:5926-5932) ---
+           bcc  LBD76          ; branch if greater or equal
+           clra                ; a = 0
+   LBD76:  cmpa DFRPMH_DecelFuelShutoffDeltaRPMOff    ; compare a with memory contents (data is 1e)
+           bls  Cutout_CheckForOBConditions    ; branch if lower or same
+           bset *BitFlags6a, #$%00000100    ; set bits
+           rts                 ; return from subroutine
+</code></pre>
+<p>The CPU executes <code>Cutout_UseDecelFuelCut</code> where <code>DFRPMH</code> is loaded, compared, or interpolated from ROM address <code>0x90A4</code> at line 5928.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Foreground Execution</strong>: Evaluated every pass through <code>ControlEngineCutout_MM</code> in the main foreground loop.</li>
+<li><strong>Delta RPM Math</strong>: 30 counts * 32 RPM = 960 RPM above target idle speed (e.g. cuts at 1760 RPM if idle is 800 RPM).</li>
+<li><strong>Transition to Hysteresis</strong>: Once <code>Turbonator_MainFuelOff</code> is set, fuel stays off until evaluated in <code>Cutout_UseHysteresisToDetermineWhenToTurnFuelBackOn</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>DFRPMH</code>
+        </footer>
+    </div>
+</body>
+</html>

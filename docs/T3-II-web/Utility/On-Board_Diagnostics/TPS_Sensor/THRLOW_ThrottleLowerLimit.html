@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THRLOW: ThrottleLowerLimit | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x9079</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Utility ➔ On-Board Diagnostics ➔ TPS Sensor</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>THRLOW: ThrottleLowerLimit</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>THRLOW</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>THRLOW_ThrottleLowerLimit</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Utility\On-Board_Diagnostics\TPS_Sensor\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x9079</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">8-bit Unsigned Scaling Factor (0 to 255 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x08                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3_22_T3ii_T3_MTX.tpl.html#L7265-L7276"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3_IIv1.asm.html#L10558"><code>CheckThrottleRoutine_MM</code></a> in <a href="../../../T-T3_IIv1.asm.html#L10561"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>THRLOW</code> defines the lower electrical voltage boundary for the throttle position sensor analog input circuit. The throttle position sensor is a potentiometer powered by a 5.0-volt reference supply that produces an output voltage proportional to throttle plate angle. Under normal operating conditions, a fully closed throttle plate produces a signal between 0.50 and 0.90 volts. If the signal wire breaks, the wiper loses contact, or the sensor circuit shorts directly to ground, the input voltage drops below <code>THRLOW</code>. In factory calibrations, <code>THRLOW</code> is set to 8 counts, corresponding to approximately 0.16 volts. If sensor voltage drops below <code>THRLOW</code>, the engine controller flags <strong>Fault Code 24</strong>, latches a bad throttle signal error, and activates synthetic throttle emulation from manifold pressure.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Throttle Stop Adjustment &amp; False Codes</strong>: * If an aftermarket throttle body is adjusted so the closed-throttle resting voltage drops near 0.30 volts, raising <code>THRLOW</code> can cause false Fault Code 24 triggers. * Keep <code>THRLOW</code> at or below 8 counts (0.16 volts) to maintain an adequate safety margin below base idle voltage.</li>
+<li><strong>Sensor Wiring Diagnostics</strong>: * A continuous Fault Code 24 with 0.0 volts measured at the sensor signal pin typically indicates a broken signal wire or cracked potentiometer wiper.</li>
+<li><strong>Lowering &amp; Edge Cases</strong>: * Zeroing <code>THRLOW</code> disables short-to-ground detection. * Setting <code>THRLOW</code> higher than base idle voltage forces the vehicle into permanent limp-home throttle emulation.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect continuously during throttle sensor diagnostics, flagging fault codes if the TPS voltage reads below ground.</p>
+<ul>
+<li>Evaluated inside <code>CheckThrottleRoutine_MM</code> at line 10561 in <a href="../../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>THRLOW</code> at ROM address <code>0x9079</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CheckThrottleRoutine_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CheckThrottleRoutine_MM (T-T3_IIv1.asm:10559-10565) ---
+           ldab #0x1a          ; load b with value -00011010-
+           ldaa LastTPSVolts       ; load a with memory contents
+           cmpa THRLOW_ThrottleLowerLimit    ; compare a with memory contents (data is 08)
+           bcs  CheckThrottle_BadTpsSignal    ; branch if lower
+           incb
+           cmpa THRHIG_ThrottleUpperLimit    ; compare a with memory contents (data is e4)
+           bcc  CheckThrottle_BadTpsSignal    ; branch if greater or equal</code></pre>
+<p>The CPU executes <code>CheckThrottleRoutine_MM</code> where <code>THRLOW</code> is loaded, compared, or interpolated from ROM address <code>0x9079</code> at line 10561.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Complements <a href="../../../Utility/On-Board_Diagnostics/TPS_Sensor/THRHIG_ThrottleUpperLimit.html"><code>THRHIG</code></a> (upper voltage limit) and <a href="../../../Setup/Transfer_Functions/MPTHR_MapSwitchPointForFullThrottleOrIdle.html"><code>MPTHR</code></a> (manifold pressure switch point for TPS emulation).</li>
+<li><strong>Diagnostic Code</strong>: DRB-II Fault Code 24 (throttle position sensor voltage out of range low).</li>
+<li><strong>Failsafe Action</strong>: Flags <code>b45_TpsBadSignal</code> and fixes <code>MINTHR_LowestSessionTPS</code> at 0x40 (0.80 volts) while synthesizing throttle from MAP.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>THRLOW</code>
+        </footer>
+    </div>
+</body>
+</html>

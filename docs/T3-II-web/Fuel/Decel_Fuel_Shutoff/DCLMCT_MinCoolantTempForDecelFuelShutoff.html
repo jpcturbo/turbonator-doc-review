@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCLMCT: MinCoolantTempForDecelFuelShutoff | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x90A0</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel ➔ Decel Fuel Shutoff</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DCLMCT: MinCoolantTempForDecelFuelShutoff</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DCLMCT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DCLMCT_MinCoolantTempForDecelFuelShutoff</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel\Decel_Fuel_Shutoff\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x90A0</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Temperature (°F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xD2                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3ii_T3_MTX.tpl.html#L7740-L7751"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_IIv1.asm.html#L1685"><code>CalculateTargetIdleSpeedAndAisPosition_MM</code></a> in <a href="../../T-T3_IIv1.asm.html#L1692"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DCLMCT</code> defines the minimum coolant temperature required before decel fuel shutoff is allowed to arm. Cutting fuel injection during deceleration on a cold engine can cause severe bucking, backfiring, or engine stalling because cold combustion chambers have inadequate heat to sustain instant reignition when fuel turns back on. <code>DCLMCT</code> inhibits decel fuel shutoff until the engine warms to operating temperature. In factory calibrations, <code>DCLMCT</code> is configured to 210 counts, representing approximately 178 degF.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Thermostat Matching</strong>: * Lower <code>DCLMCT</code> to 155-160 degF when running a 160 degF performance thermostat so decel fuel cut functions normally.</li>
+<li><strong>Cold Decel Stall Prevention</strong>: * If lifting off the throttle during warm-up causes the engine to chug or die, raise <code>DCLMCT</code> to lock out decel fuel cut until the engine is hotter.</li>
+<li><strong>Emission &amp; Fuel Economy</strong>: * Proper temperature qualification maximizes coast-down fuel economy without sacrificing cold-engine drivability.</li>
+<li><strong>Closed Throttle Gating</strong>: * Followed immediately by closed-throttle check <code>b4f_OffIdle</code> in the qualification ladder.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during engine running fuel calculation to calibrate MinCoolantTempForDecelFuelShutoff.</p>
+<ul>
+<li>Evaluated inside <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at line 1692 in <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>DCLMCT</code> at ROM address <code>0x90A0</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateTargetIdleSpeedAndAisPosition_MM (T-T3_IIv1.asm:1690-1696) ---
+           bls  L97A1          ; branch if lower or same
+           ldaa CoolantTemp    ; load a with memory contents
+           cmpa DCLMCT_MinCoolantTempForDecelFuelShutoff    ; compare a with memory contents (data is d2)
+           bls  L97A1          ; branch if lower or same
+           brset *BitFlags66, #$%10000000, L97A1    ; branch if bit(s) set
+           ldd  VehicleSpeed_HB    ; load d (a&amp;b) with memory contents
+           asld                ; shift left (d=d*2)</code></pre>
+<p>The CPU executes <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> where <code>DCLMCT</code> is loaded, compared, or interpolated from ROM address <code>0x90A0</code> at line 1692.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Temperature Scale</strong>: 210 counts (0xD2) corresponds to approximately 178 degF on Chrysler's coolant temperature curve.</li>
+<li><strong>Safety Interlock</strong>: Protects the catalytic converter and exhaust valves from unburned fuel buildup during cold coast-down.</li>
+<li><strong>Hysteresis Independence</strong>: Functions as an absolute threshold test; does not have a separate warm re-enable offset.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>DCLMCT</code>
+        </footer>
+    </div>
+</body>
+</html>

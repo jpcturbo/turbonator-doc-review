@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PTENR2: EppPerAmountForDecreasingMultiplier | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x0A26</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel ➔ Transient Enrichment ➔ Part Throttle Enrichment</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PTENR2: EppPerAmountForDecreasingMultiplier</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PTENR2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>PTENR2_EppPerAmountForDecreasingMultiplier</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel\Transient_Enrichment\Part_Throttle_Enrichment\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x0A26</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">8-bit Unsigned Scaling Factor (0 to 255 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x3D                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3_22_T3ii_T3_MTX.tpl.html#L2597-L2607"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3_IIv1.asm.html#L6125"><code>CalculatePartThrottleEnrichmentAndSparkScatterFuel_MM</code></a> in <a href="../../../T-T3_IIv1.asm.html#L6131"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PTENR2</code> sets the distributor reference pulse countdown interval governing the decay rate of part-throttle enrichment when manifold pressure falls below the <a href="../../../Fuel/Transient_Enrichment/Part_Throttle_Enrichment/RPMMAP_SwitchPointForDownUp_FromRpm.html"><code>RPMMAP</code></a> boundary curve. When the driver modulates or lifts off the throttle after accelerating in boost, the engine controller must taper off transient enrichment smoothly to prevent sudden lean surges or unnecessary fuel waste. <code>PTENR2</code> defines how many engine position pulses must occur before the controller decrements the open-loop fraction timer by the negative step value in <a href="../../../Fuel/Transient_Enrichment/Part_Throttle_Enrichment/PTENRD_AmountForDecreasingMultiplier_Negative.html"><code>PTENRD</code></a>. The factory setting of 61 pulses ensures that transient fuel tapers down gradually over approximately 30 engine revolutions on a four-cylinder engine.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Faster Fuel Decay</strong>: Lowering the pulse countdown value causes part-throttle enrichment to decay away more rapidly, returning the engine to standard closed-loop or baseline fueling faster to improve fuel economy.</li>
+<li><strong>Sustained Post-Boost Fueling</strong>: Raising the pulse countdown value sustains enrichment longer after lifting off the throttle, which helps prevent lean popping in the exhaust during rapid gear shifts or when feathering the throttle in road-course driving.</li>
+<li><strong>Coordination with PTENRD</strong>: Coordinate changes to <code>PTENR2</code> with the step decrement value in <a href="../../../Fuel/Transient_Enrichment/Part_Throttle_Enrichment/PTENRD_AmountForDecreasingMultiplier_Negative.html"><code>PTENRD</code></a> to control total decay curve slope.</li>
+<li><strong>Drivability Tuning</strong>: Set high enough to prevent lean bucking when rolling off the throttle at highway speeds.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the driver modulates or lifts off the throttle after accelerating in boost, the engine controller must taper off transient enrichment smoothly to prevent sudden lean surges or unnecessary fuel waste.</p>
+<ul>
+<li>Evaluated inside <code>CalculatePartThrottleEnrichmentAndSparkScatterFuel_MM</code> at line 6131 in <a href="../../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>PTENR2</code> at ROM address <code>0x0A26</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CalculatePartThrottleEnrichmentAndSparkScatterFuel_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculatePartThrottleEnrichmentAndSparkScatterFuel_MM (T-T3_IIv1.asm:6129-6135) ---
+           cmpa MapValue       ; compare a with memory contents
+           rora
+           ldx  #PTENR_EppPerAmountForIncreasing    ; load index with value
+           anda #0x80          ; AND a with value -10000000-
+           bmi  LBF0C          ; branch if minus(hi bit 1)
+           inx                 ; increment index (x=x+1)
+           inx                 ; increment index (x=x+1)</code></pre>
+<p>The CPU executes <code>CalculatePartThrottleEnrichmentAndSparkScatterFuel_MM</code> where <code>PTENR2</code> is loaded, compared, or interpolated from ROM address <code>0x0A26</code> at line 6131.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Indexed Access</strong>: Unlike most parameters referenced directly by label, <code>PTENR2</code> is accessed via double increment (<code>inx; inx</code>) from <a href="../../../Fuel/Transient_Enrichment/Part_Throttle_Enrichment/PTENR_EppPerAmountForIncreasing.html"><code>PTENR_EppPerAmountForIncreasing</code></a>.</li>
+<li><strong>ROM Alignment</strong>: Must remain positioned immediately between <a href="../../../Fuel/Transient_Enrichment/Part_Throttle_Enrichment/PTENR_EppPerAmountForIncreasing.html"><code>PTENR</code></a> and <a href="../../../Fuel/Transient_Enrichment/Part_Throttle_Enrichment/PTENRD_AmountForDecreasingMultiplier_Negative.html"><code>PTENRD</code></a> in the ROM calibration image.</li>
+<li><strong>Companion Parameters</strong>: Works with <a href="../../../Fuel/Transient_Enrichment/Part_Throttle_Enrichment/PTENR_EppPerAmountForIncreasing.html"><code>PTENR</code></a>, <a href="../../../Fuel/Transient_Enrichment/Part_Throttle_Enrichment/PTENRD_AmountForDecreasingMultiplier_Negative.html"><code>PTENRD</code></a>, and <a href="../../../Fuel/Transient_Enrichment/Part_Throttle_Enrichment/RPMMAP_SwitchPointForDownUp_FromRpm.html"><code>RPMMAP</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>PTENR2</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O2LIML: O2RangeLimitLow | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8089</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - O2 Controller</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>O2LIML: O2RangeLimitLow</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>O2LIML</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_O2RangeLimitLow</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_O2_Controller\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8089</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">8-bit Unsigned Scaling Factor (0 to 255 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x80                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L901-L912"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L3371"><code>IncrementO2SensorFeedbackCount</code></a> in <a href="../T-SBECII_v1.asm.html#L3376"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>O2LIML</code> defines the absolute minimum negative fuel trim limit for short-term oxygen sensor feedback. When the oxygen sensor detects a rich mixture, the controller decrements the feedback counter to remove fuel. <code>O2LIML</code> provides a hard lower clamp, preventing the controller from subtracting more fuel than calibrated. In stock calibrations, <code>O2LIML</code> is set to signed -77 counts (stored as 179 unsigned), which corresponds to approximately -15.0 percent maximum fuel reduction. This prevents a failing sensor from dangerously leaning out the engine.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Capping Negative STFT</strong>: * Clamping <code>O2LIML</code> to -25 to -30 counts limits short-term leanout to -5% to -6%, preventing lean misfires on cammed engines.</li>
+<li><strong>Preventing False Leanout</strong>: * Large cams with unburned oxygen at idle cause false rich readings; restricting <code>O2LIML</code> prevents the ECU from pulling needed fuel.</li>
+<li><strong>Mathematical Authority</strong>: * Factory signed -77 counts represents -15.0% maximum fuel reduction (-77 / 512).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the oxygen sensor detects a rich mixture, the controller decrements the feedback counter to remove fuel.</p>
+<ul>
+<li>Evaluated inside <code>IncrementO2SensorFeedbackCount</code> at line 3376 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>O2LIML</code> at ROM address <code>0x8089</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>IncrementO2SensorFeedbackCount</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- IncrementO2SensorFeedbackCount (T-SBECII_v1.asm:3374-3380) ---
+           bvc   DIDNT_2SCOMPLEMENT_OVERFLOW_UNDERFLOW1    ; branch if overflow
+           brclr *Counter_O2SensorFeedbackCount_Signed, #$%10000000, SET_TO_MAX_OR_MIN_VALUE    ; branch if bit(s) clear
+           ldab  O2LIML_O2RangeLimitLow    ; load B with memory contents (data is c0)
+           bra   SET_TO_MAX_OR_MIN_VALUE    ; branch
+
+DIDNT_2SCOMPLEMENT_OVERFLOW_UNDERFLOW1:
+           cba                 ; compare A to B</code></pre>
+<p>The CPU executes <code>IncrementO2SensorFeedbackCount</code> where <code>O2LIML</code> is loaded, compared, or interpolated from ROM address <code>0x8089</code> at line 3376.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Counterpart to <a href="../Fuel_-_O2_Controller/T_O2RangeLimitHigh.html"><code>O2LIMH</code></a> (upper STFT clamp) and mirrors <a href="../Fuel_-_Adaptive_memory/T_MinMultiplierCannotBeBelow80.html"><code>AMLIML</code></a>.</li>
+<li><strong>Mathematical Authority</strong>: Clamps <code>Counter_PrimaryAndSecondaryRamp</code> to signed -77 counts (-15.0% fuel modifier).</li>
+<li><strong>Persistence</strong>: Evaluated on every O2 toggle; clamps RAM variable <code>Counter_PrimaryAndSecondaryRamp</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>O2LIML</code>
+        </footer>
+    </div>
+</body>
+</html>

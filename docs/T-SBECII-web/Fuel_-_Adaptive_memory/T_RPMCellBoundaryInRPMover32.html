@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R1: RPMCellBoundaryInRPMover32 | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x804C</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - Adaptive memory</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>R1: RPMCellBoundaryInRPMover32</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>R1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_RPMCellBoundaryInRPMover32</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_Adaptive_memory\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x804C</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x3A                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L672-L683"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L3540"><code>ONTHROTTLE_OR_RPMTOOHIGHFORIDLE</code></a> in <a href="../T-SBECII_v1.asm.html#L3546"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>R1</code> defines the primary engine speed boundary separating the lower engine speed adaptive memory cells from the upper engine speed cells across all six manifold pressure columns. The 12 off-idle cells are organized as 6 load columns split into low-RPM even cells (0, 2, 4, 6, 8, 10) and high-RPM odd cells (1, 3, 5, 7, 9, 11). In stock calibrations, <code>R1</code> is set to 58 counts in the high-byte RPM scaling (where each count equals 32 RPM), establishing the boundary at approximately 1856 RPM. This splits low-speed city driving from high-speed highway cruising.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Gearing and Transmission Alignment</strong>: * Adjust <code>R1</code> based on axle ratio and highway cruising speed. Raising <code>R1</code> to 2000-2200 RPM fits manual transmissions, while 1600-1850 RPM fits automatic overdrive setups.</li>
+<li><strong>City vs Highway Segmentation</strong>: * Segregates stop-and-go transient city driving (even cells) from steady-state highway cruising (odd cells).</li>
+<li><strong>RPM Scaling</strong>: * Each count represents 32 RPM; 58 counts equals 1856 RPM.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during adaptive fuel memory operation, defining the engine RPM boundary separating low-speed and high-speed adaptive fuel cells.</p>
+<ul>
+<li>Evaluated inside <code>ONTHROTTLE_OR_RPMTOOHIGHFORIDLE</code> at line 3546 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>R1</code> at ROM address <code>0x804C</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>ONTHROTTLE_OR_RPMTOOHIGHFORIDLE</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- ONTHROTTLE_OR_RPMTOOHIGHFORIDLE (T-SBECII_v1.asm:3544-3550) ---
+           cpx   #MP5_AutoCalMapCellBoundary5    ;  -10000000 01001010-
+           bls   LA952         ; branch if lower or same
+   LA96B:  ldaa  R1_RPMCellBoundaryInRPMover32    ; load A with memory contents (data is 3a)
+           lsrb                ; logical shift right B
+           bcs   LA974         ; branch if lower
+           adda  DLTRPM_DeltaRPMAtRPMBoundariesInRPMOver32    ;  (data is 02)
+   LA974:  ldab  Temp0         ; load B with memory contents</code></pre>
+<p>The CPU executes <code>ONTHROTTLE_OR_RPMTOOHIGHFORIDLE</code> where <code>R1</code> is loaded, compared, or interpolated from ROM address <code>0x804C</code> at line 3546.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Works with <a href="../Fuel_-_Adaptive_memory/T_DeltaRPMAtRPMBoundariesInRPMOver32.html"><code>DLTRPM</code></a> (RPM hysteresis) and divides columns set by <a href="../Fuel_-_Adaptive_memory/T_AutoCalMapCellBoundary1.html"><code>MP1</code></a>-<a href="../Fuel_-_Adaptive_memory/T_AutoCalMapCellBoundary5.html"><code>MP5</code></a>.</li>
+<li><strong>Units</strong>: High-byte engine speed scaling where 1 count = 32 RPM.</li>
+<li><strong>Persistence</strong>: Read on every main loop pass; written to <code>PointerIntoAdaptiveMemory</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>R1</code>
+        </footer>
+    </div>
+</body>
+</html>

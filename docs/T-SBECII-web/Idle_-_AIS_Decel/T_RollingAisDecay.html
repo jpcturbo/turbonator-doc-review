@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISPDCY: RollingAisDecay | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x92E2</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ISPDCY: RollingAisDecay</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ISPDCY</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_RollingAisDecay</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x92E2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Stepper Motor Position (steps / counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x04                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L10344-L10355"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L1583"><code>CalculateTargetIdleSpeedAndAisPosition_MM</code></a> in <a href="../T-SBECII_v1.asm.html#L1647"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ISPDCY</code> defines the RPM decrement step size subtracted from target idle speed during rolling idle decay. When a vehicle is operating in rolling idle mode, target idle speed is held at an elevated level. As the vehicle slows or steady rolling conditions continue, this elevated target speed must gently decay back down toward the baseline stationary idle target set in <a href="../Idle_-_AIS_Control/T_IdleSpeedParkNeutral_FromTemp.html"><code>AISPN</code></a> or <a href="../Idle_-_AIS_Control/T_IdleSpeedDrive_FromTemp.html"><code>AISCLD</code></a>. <code>ISPDCY</code> sets the step reduction in target engine speed applied on each decay interval paced by <a href="../Idle_-_AIS_Decel/T_RollingAisUpdateRate_01_03_07_0f_1f_3f_7f_ff.html"><code>DECAIS</code></a>. In factory calibrations, <code>ISPDCY</code> is set to 4 counts, which decrements the target idle speed by approximately 32 RPM on each decay step until the base target is reached.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Faster Rolling Idle Ramp-Down</strong>: * Increase <code>ISPDCY</code> from 4 to 6 to 8 counts if elevated rolling idle lingers too long during coasting.</li>
+<li><strong>Smoother Idle Landing</strong>: * Lower <code>ISPDCY</code> to 2 counts (16 RPM) to smooth out the step-down transition on sensitive drivetrains.</li>
+<li><strong>Companion Tuning</strong>: * Adjust in concert with <a href="../Idle_-_AIS_Decel/T_RollingAisUpdateRate_01_03_07_0f_1f_3f_7f_ff.html"><code>DECAIS</code></a>, which controls the time interval between these decay steps.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when a vehicle is operating in rolling idle mode, target idle speed is held at an elevated level.</p>
+<ul>
+<li>Evaluated inside <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at line 1647 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>ISPDCY</code> at ROM address <code>0x92E2</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateTargetIdleSpeedAndAisPosition_MM (T-SBECII_v1.asm:1645-1651) ---
+           asld                ; shift left (D=D*2)
+           asld                ; shift left (D=D*2)
+           suba  ISPDCY_RollingAisDecay    ;  (data is 04)
+           bcs   L9AD4         ; branch if lower
+           cmpa  Temp0         ; compare A with memory contents
+           bcc   L9AD6         ; branch if greater or equal
+   L9AD4:  ldaa  Temp0         ; load A with memory contents</code></pre>
+<p>The CPU executes <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> where <code>ISPDCY</code> is loaded, compared, or interpolated from ROM address <code>0x92E2</code> at line 1647.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Lower Clamp</strong>: The decay logic will never ramp target speed below the baseline temperature curve in <code>Temp0</code> (<a href="../Idle_-_AIS_Control/T_IdleSpeedParkNeutral_FromTemp.html"><code>AISPN</code></a>/<a href="../Idle_-_AIS_Control/T_IdleSpeedDrive_FromTemp.html"><code>AISCLD</code></a>).</li>
+<li><strong>Companion Parameter</strong>: Direct decay partner to <a href="../Idle_-_AIS_Decel/T_RollingAisUpdateRate_01_03_07_0f_1f_3f_7f_ff.html"><code>DECAIS</code></a>.</li>
+<li><strong>Factory Value</strong>: 0x04 (4 counts = 32 RPM decay step).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>ISPDCY</code>
+        </footer>
+    </div>
+</body>
+</html>

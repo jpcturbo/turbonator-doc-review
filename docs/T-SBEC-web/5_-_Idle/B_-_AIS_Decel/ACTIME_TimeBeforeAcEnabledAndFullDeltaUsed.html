@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACTIME: TimeBeforeAcEnabledAndFullDeltaUsed | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x86EA</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>5 - Idle ➔ B - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ACTIME: TimeBeforeAcEnabledAndFullDeltaUsed</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ACTIME</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ACTIME_TimeBeforeAcEnabledAndFullDeltaUsed</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>5_-_Idle\B_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x86EA</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Time Duration (seconds or loop counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x10                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L4439-L4450"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L2005"><code>HandleAcCutout</code></a> in <a href="../../T-SBEC_v4.asm.html#L2128"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ACTIME</code> defines the transition delay timer that paces the blending of air conditioning idle airflow compensation during clutch engagement. When the air conditioning system calls for compressor engagement, applying the entire auxiliary airflow offset instantaneously can cause a momentary engine surge before compressor head pressure builds up. ACTIME establishes a calibrated delay timer loaded into the A/C transition counter upon clutch engagement. During this delay, auxiliary idle airflow is smoothly ramped into the calculation rather than applied as an abrupt shock. In factory calibrations, <code>ACTIME</code> is set to 36 counts, providing a smooth transition blending window of approximately 2.25 seconds.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Smoothing A/C Engagement Surge</strong>: * Lengthen <code>ACTIME</code> to 3.0 seconds if the engine surges upward slightly when the A/C button is pressed before settling.</li>
+<li><strong>Eliminating Engagement Lag</strong>: * Shorten <code>ACTIME</code> to 1.5 seconds if the full A/C idle air offset arrives too late to catch compressor drag.</li>
+<li><strong>Timer Operation</strong>: * Loaded into <code>Timer_AisOrO2Sensor</code>, which decrements every loop tick.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the A/C is turned on at idle, setting the ramp-in timer before the full idle airflow compensation is applied.</p>
+<ul>
+<li>Evaluated inside <code>HandleAcCutout</code> at line 2128 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>ACTIME</code> at ROM address <code>0x86EA</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>HandleAcCutout</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- HandleAcCutout (T-SBEC_v4.asm:2126-2132) ---
+           lslb
+           adca #0x00          ;  -00000000-
+           ldab ACTIME_TimeBeforeAcEnabledAndFullDeltaUsed    ; load b with memory contents (data is 20)
+           cmpa MPHREF_SwitchPointForDecelIdleAisControl    ; compare a with memory contents (data is 07)
+           bhi  L9908          ; branch if higher
+           brset *BitFlags66, #b66_OffIdle, L9908    ; branch if bit(s) set
+           ldab ACTDEF_TimeBeforeAcEnabledAndFullDeltaUsed_Default    ; load b with memory contents (data is 2a)</code></pre>
+<p>The CPU executes <code>HandleAcCutout</code> where <code>ACTIME</code> is loaded, compared, or interpolated from ROM address <code>0x86EA</code> at line 2128.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameter</strong>: Works in parallel with <a href="../../5_-_Idle/B_-_AIS_Decel/ACTIM2_TimeBeforeAcEnabledAndFullDeltaUsed2.html"><code>ACTIM2</code></a> (secondary engagement delay timer).</li>
+<li><strong>Timer Clock</strong>: Decrements on foreground loop ticks (~16 Hz, 36 counts = ~2.25 seconds).</li>
+<li><strong>Factory Value</strong>: 0x24 (36 counts).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>ACTIME</code>
+        </footer>
+    </div>
+</body>
+</html>

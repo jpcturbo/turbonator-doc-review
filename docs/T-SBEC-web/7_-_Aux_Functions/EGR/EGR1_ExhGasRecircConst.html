@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EGR1: ExhGasRecircConst1 | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x89E7</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ EGR</strong> &nbsp;|&nbsp; Subsystem: <strong>EGR_Emissions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>EGR1: ExhGasRecircConst1</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>EGR1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>EGR1_ExhGasRecircConst</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">EGR_Emissions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\EGR\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x89E7</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">16-bit Word Value</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0x01D1                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L7458-L7469"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L12051"><code>ExhGasRecirc_MM</code></a> in <a href="../../T-SBEC_v4.asm.html#L12117"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>EGR1</code> (ExhGasRecircConst) establishes the Phase 1 diagnostic sampling timer threshold for the onboard Exhaust Gas Recirculation flow verification system (Fault Code 32). During closed-loop cruising, the engine controller requires stable operating conditions before testing whether the EGR valve actually delivers exhaust gas to the intake manifold. The controller tests that manifold pressure, throttle angle, and engine speed remain within prescribed test windows while the EGR solenoid is energized. While these conditions hold, an internal diagnostic counter increments once per background execution loop pass. The factory setting of 455 loop counts corresponds to approximately 4.5 to 6.8 seconds of continuous, undisturbed cruising. If the vehicle operates steadily for this entire period, the controller freezes its filtered baseline oxygen sensor fuel trim and advances to Phase 2 of the diagnostic test.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Raising EGR1</strong>: Increases the duration of steady cruising required to satisfy Phase 1 baseline sampling. This reduces diagnostic test frequency during stop-and-go driving, requiring longer highway cruises to complete.</li>
+<li><strong>Lowering EGR1</strong>: Shortens the required Phase 1 sampling window, accelerating the transition to Phase 2 EGR shutoff testing. If lowered excessively below 200 counts (roughly 2 seconds), baseline fuel trim may not stabilize, increasing the risk of false Fault Code 32 triggers.</li>
+<li><strong>EGR Elimination Scenarios</strong>: Setting <code>EGR1</code> to its maximum 16-bit ceiling (65535 counts) ensures the diagnostic timer never elapses during ordinary driving cycles. This cleanly prevents Phase 2 testing and suppresses Fault Code 32 when an EGR block-off plate is installed on modified turbo builds.</li>
+<li><strong>Stock Applications</strong>: Retaining the factory calibration of 455 counts preserves complete OBD-I emissions compliance and provides robust immunity against false diagnostic failures.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle cruising, modulating the exhaust gas recirculation (EGR) solenoid duty cycle to control combustion temperatures.</p>
+<ul>
+<li>Evaluated inside <code>ExhGasRecirc_MM</code> at line 12117 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>EGR1</code> at ROM address <code>0x89E7</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>ExhGasRecirc_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- ExhGasRecirc_MM (T-SBEC_v4.asm:12115-12121) ---
+           ldx  ErrorCodeBufferHB
+           brset *EGRVar2, #$%10000000, LE9D3    ; branch if bit(s) set
+           cpx  EGR1_ExhGasRecircConst    ;  (data is 01c6)
+           bhi  LE9C5          ; branch if higher
+           ldaa MapValue       ; load a with memory contents
+           ldx  #EGR18_ExhGasRecircConstLoLimit    ; load index with value
+           bsr  EGR_CheckHiLoLimits    ; call subroutine</code></pre>
+<p>The CPU executes <code>ExhGasRecirc_MM</code> where <code>EGR1</code> is loaded, compared, or interpolated from ROM address <code>0x89E7</code> at line 12117.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>16-Bit Word Constant</strong>: Configured as Type 4 (word constant) spanning two consecutive ROM bytes at calibration address 0x19E0 (calculated ROM address 0x86D6 / template org 0x881E).</li>
+<li><strong>State Machine Architecture</strong>: Serves as the primary time gateway separating Phase 1 baseline sampling from Phase 2 solenoid de-energization.</li>
+<li><strong>EGR Delete Synergy</strong>: Can be adjusted in conjunction with <code>cfg_EGR</code> configuration flags or <a href="../../0_-_Setup/A_-_Cal_Configuration/FLTMSK_ErrorBitsMask1.html"><code>FLTMSK</code></a> diagnostic fault masks when deleting the EGR system on racing engines.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>EGR1</code>
+        </footer>
+    </div>
+</body>
+</html>

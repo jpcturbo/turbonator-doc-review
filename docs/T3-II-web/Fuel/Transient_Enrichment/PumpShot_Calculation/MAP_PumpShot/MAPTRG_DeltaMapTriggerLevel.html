@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAPTRG: DeltaMapTriggerLevel | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8A7B</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel ➔ Transient Enrichment ➔ PumpShot Calculation ➔ MAP PumpShot</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MAPTRG: DeltaMapTriggerLevel</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MAPTRG</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MAPTRG_DeltaMapTriggerLevel</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel\Transient_Enrichment\PumpShot_Calculation\MAP_PumpShot\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8A7B</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Boost Pressure (psi)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x0A                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-T3_22_T3ii_T3_MTX.tpl.html#L2000-L2012"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-T3_IIv1.asm.html#L5609"><code>TransFuel_CalculateIncreasingMAPFullThrottlePW</code></a> in <a href="../../../../T-T3_IIv1.asm.html#L5614"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MAPTRG</code> defines the minimum rate of intake manifold pressure increase required to trigger a MAP-based acceleration enrichment pump shot. As the throttle opens and manifold pressure rises from vacuum toward atmospheric pressure or positive boost, the air density in the intake plenum increases rapidly. If the instantaneous manifold pressure exceeds the rolling average manifold pressure by more than <code>MAPTRG</code>, the engine controller calculates an immediate transient fuel addition. The factory threshold of 13 counts corresponds to approximately 1.5 psi of sudden pressure rise, effectively screening out harmless vacuum ripples caused by camshaft overlap and normal intake valve cycling while responding promptly to real engine load spikes.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Sensitivity Adjustment</strong>: Lowering <code>MAPTRG</code> increases sensitivity to manifold pressure changes, triggering transient enrichment on smaller throttle modulations to eliminate light-throttle tip-in hesitation.</li>
+<li><strong>Camshaft Pulsation Filtering</strong>: Raising <code>MAPTRG</code> prevents false triggers on rough-idling engines or aggressive high-overlap camshafts where vacuum fluctuates naturally.</li>
+<li><strong>3-Bar MAP Scaling</strong>: When converting to a 3-bar MAP sensor, scale down <code>MAPTRG</code> by roughly 33 percent (e.g. from 13 counts down to 8 or 9 counts) to preserve the stock 1.5 psi sensitivity threshold.</li>
+<li><strong>Coordination with MAPMAX</strong>: Ensure <code>MAPTRG</code> remains well below <a href="../../../../Fuel/Transient_Enrichment/PumpShot_Calculation/MAP_PumpShot/MAPMAX_MaxDeltaMapAllowed.html"><code>MAPMAX</code></a> to provide a functional linear calculation window.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if the instantaneous manifold pressure exceeds the rolling average manifold pressure by more than MAPTRG, the engine controller calculates an immediate transient fuel addition.</p>
+<ul>
+<li>Evaluated inside <code>TransFuel_CalculateIncreasingMAPFullThrottlePW</code> at line 5614 in <a href="../../../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>MAPTRG</code> at ROM address <code>0x8A7B</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>TransFuel_CalculateIncreasingMAPFullThrottlePW</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- TransFuel_CalculateIncreasingMAPFullThrottlePW (T-T3_IIv1.asm:5612-5618) ---
+           staa Factor_LeanoutOrEnrichTime_MAP    ; store a into memory
+           ldaa Temp0          ; load a with memory contents
+           suba MAPTRG_DeltaMapTriggerLevel    ;  (data is 0a)
+           bcs  LBB1D          ; branch if lower
+           cmpa MAPMAX_MaxDeltaMapAllowed    ; compare a with memory contents (data is 1c)
+           bcs  LBB6B          ; branch if lower
+           ldaa MAPMAX_MaxDeltaMapAllowed    ; load a with memory contents (data is 1c)</code></pre>
+<p>The CPU executes <code>TransFuel_CalculateIncreasingMAPFullThrottlePW</code> where <code>MAPTRG</code> is loaded, compared, or interpolated from ROM address <code>0x8A7B</code> at line 5614.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Pressure Scaling</strong>: In a 2-bar MAP calibration, each count represents approximately 0.115 psi (0.23 inHg).</li>
+<li><strong>Sensor Conversion Criticality</strong>: When converting to a 3-bar MAP sensor, each count represents approximately 0.176 psi, requiring <code>MAPTRG</code> to be lowered by approximately one-third.</li>
+<li><strong>Companion Parameter</strong>: Directly paired with <a href="../../../../Fuel/Transient_Enrichment/PumpShot_Calculation/MAP_PumpShot/MAPMAX_MaxDeltaMapAllowed.html"><code>MAPMAX</code></a>, <a href="../../../../Fuel/Transient_Enrichment/PumpShot_Calculation/MAP_PumpShot/AESLOP_DeltaMAPEnrichmentPT.html"><code>AESLOP</code></a>, and <a href="../../../../Fuel/Transient_Enrichment/PumpShot_Calculation/MAP_PumpShot/AETIME_EnrichmentTime_FromTemp.html"><code>AETIME</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>MAPTRG</code>
+        </footer>
+    </div>
+</body>
+</html>

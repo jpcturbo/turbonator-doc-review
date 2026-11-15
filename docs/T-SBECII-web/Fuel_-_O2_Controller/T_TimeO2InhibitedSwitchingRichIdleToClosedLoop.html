@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O2ITIM: TimeO2InhibitedSwitchingRichIdleToClosedLoop | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x802C</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - O2 Controller</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>O2ITIM: TimeO2InhibitedSwitchingRichIdleToClosedLoop</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>O2ITIM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_TimeO2InhibitedSwitchingRichIdleToClosedLoop</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_O2_Controller\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x802C</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Time Duration (seconds or loop counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xFF                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L499-L510"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L7376"><code>DealWithSpecialIdle_SetBasicTiming_MM</code></a> in <a href="../T-SBECII_v1.asm.html#L7387"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>O2ITIM</code> defines the duration that closed-loop oxygen sensor feedback is inhibited when transitioning from a rich idle state back to standard closed-throttle closed-loop operation. During specific idle diagnostic routines, such as setting basic ignition distributor timing or calibrating minimum throttle plate airflow opening via a diagnostic scan tool, the engine controller commands deliberate rich open-loop fueling for combustion stability. When these test routines finish, residual fuel vapors in the intake manifold and cylinder ports require time to clear. <code>O2ITIM</code> provides a calibrated delay timer that prevents the oxygen sensor from prematurely trying to lean out the mixture, ensuring a smooth transition back to stoichiometric closed-loop control without engine surging. In factory calibrations, <code>O2ITIM</code> is set to 255 counts.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Idle Stability Tuning</strong>: * Lengthening the delay by raising <code>O2ITIM</code> helps prevent idle hunting on cammed engines with low intake vacuum when returning from rich idle conditions.</li>
+<li><strong>Lowering the Value</strong>: * Commands the engine controller to re-engage closed-loop stoichiometric feedback more quickly after idle diagnostic testing or throttle closures.</li>
+<li><strong>Zeroing Out</strong>: * Disables the delay timer completely, immediately restoring closed loop once test flags clear.</li>
+<li><strong>Diagnostic Relevance</strong>: * Active specifically after disengaging basic timing lock mode (coolant sensor disconnect or scan tool command).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during specific idle diagnostic routines, such as setting basic ignition distributor timing or calibrating minimum throttle plate airflow opening via a diagnostic scan tool, the engine controller commands deliberate rich open-loop fueling for combustion stability.</p>
+<ul>
+<li>Evaluated inside <code>DealWithSpecialIdle_SetBasicTiming_MM</code> at line 7387 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>O2ITIM</code> at ROM address <code>0x802C</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>DealWithSpecialIdle_SetBasicTiming_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- DealWithSpecialIdle_SetBasicTiming_MM (T-SBECII_v1.asm:7385-7391) ---
+           tsta                ; test A
+           bne   LOAD_FUELENRICHVAR    ; branch if not equal (not zero)
+           ldaa  O2ITIM_TimeO2InhibitedSwitchingRichIdleToClosedLoop    ; load A with memory contents (data is ff)
+           staa  Timer_O2InhibitSwitchingRichIdleToClosedLoop    ; store A into memory
+THROTTLE_PRESSED1:
+           clra                ; A = 0
+LOAD_FUELENRICHVAR:</code></pre>
+<p>The CPU executes <code>DealWithSpecialIdle_SetBasicTiming_MM</code> where <code>O2ITIM</code> is loaded, compared, or interpolated from ROM address <code>0x802C</code> at line 7387.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Works directly with <a href="../Idle_-_Special_setup/T_OpenLoopEnrichFactorWhenSettingBasicTiming.html"><code>RICHSA</code></a> (rich idle factor during basic timing) and <a href="../Idle_-_Special_setup/T_OpenLoopEnrichFactorWhenSettingMinThrottleOpening.html"><code>RIDLST</code></a> (rich idle factor during min throttle opening).</li>
+<li><strong>Timer Units</strong>: Stored as 8-bit timer counts decremented by the background main loop.</li>
+<li><strong>Persistence</strong>: Stored in calibration ROM; written into RAM countdown variable <code>Timer_O2InhibitSwitchingRichIdleToClosedLoop</code> upon mode transition.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>O2ITIM</code>
+        </footer>
+    </div>
+</body>
+</html>

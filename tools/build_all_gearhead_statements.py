@@ -472,8 +472,12 @@ def update_descriptor_file(filepath):
     for k, d in descs.items():
         current_op = d.get('operating_conditions', '')
         
-        # Check if statement is already prepended
-        if current_op.strip().startswith('Takes effect '):
+        # Check if statement is already prepended or is not applicable
+        if (current_op.strip().startswith('Takes effect ') or
+            current_op.strip().startswith('Not applicable') or
+            current_op.strip().startswith('Evaluated ') or
+            'filler' in d.get('long_name', '').lower() or
+            d.get('metadata', {}).get('table_type') == 'Type 9'):
             already_updated_count += 1
             continue
             
@@ -495,7 +499,11 @@ def update_descriptor_file(filepath):
 def main():
     target_files = [
         os.path.abspath('docs/t_lm_descriptors.json'),
-        os.path.abspath('docs/t_smec_descriptors.json')
+        os.path.abspath('docs/t_smec_descriptors.json'),
+        os.path.abspath('docs/t_sbec_descriptors.json'),
+        os.path.abspath('docs/t_sbecii_descriptors.json'),
+        os.path.abspath('docs/t_t3_i_descriptors.json'),
+        os.path.abspath('docs/t_t3_ii_descriptors.json')
     ]
     
     for f in target_files:

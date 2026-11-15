@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEGSL2: DeltaMAPLeanout FromTemp | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8AD5</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel ➔ Transient Enrichment ➔ Decel Lean-out ➔ Decreasing MAP LO</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>NEGSL2: DeltaMAPLeanout FromTemp</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>NEGSL2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>NEGSL2_DeltaMAPLeanout_FromTemp</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel\Transient_Enrichment\Decel_Lean-out\Decreasing_MAP_LO\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8AD5</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (3-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">3 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Temp -200 260 degrees</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">out_desc 0 100 percent</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Temperature (°F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-T3_22_T3_MTX_A393.tpl.html#L2095-L2108"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-T3v1.asm.html#L5792"><code>TransFuel_CalculateDecreasingMAPTransientFuel</code></a> in <a href="../../../../T-T3v1.asm.html#L5825"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>NEGSL2</code>: NEGSL2 (DeltaMAPLeanout_FromTemp) calibrates decel fuel lean-out factors, delta-MAP decay slopes, and time constants applied when the throttle plate snaps shut. During sudden deceleration, excess fuel pooling on intake runner walls evaporates rapidly due to rising manifold vacuum; this table reduces fuel pulsewidths to prevent rich stumble and emissions spikes.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Calibration Strategy</strong>: Raising values leans out fuel more aggressively on throttle lift, maximizing engine braking and fuel economy. Lowering values keeps fueling slightly richer on lift-off, smoothing driveline snatch and enabling subtle exhaust burble.</li>
+<li><strong>Raising the Value</strong>: Increases commanded threshold or extends gating limits in the controller.</li>
+<li><strong>Lowering the Value</strong>: Decreases commanded threshold or restricts operational bounds.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during closed-throttle deceleration and rapid throttle lift-off.</p>
+<ul>
+<li>Evaluated inside <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> at line 5825 in <a href="../../../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a> (routine starts at line 5792).</li>
+<li>Loads calibration data directly from ROM address <code>0x8AD5</code> for runtime sensor comparison and scaling.</li>
+<li>Controls CPU branching, register scaling, and output actuation in <code>TransFuel_CalculateDecreasingMAPTransientFuel</code>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- TransFuel_CalculateDecreasingMAPTransientFuel (T-T3v1.asm:5823-5829) ---
+           staa Timer_O2InhibitSwitchingRichIdleToClosedLoop    ; store a into memory
+           ldaa CoolantTemp    ; load a with memory contents
+           ldx  #NEGSL2_DeltaMAPLeanout_FromTemp    ; load index with value
+           jsr  Lookup4ByteTable    ; call subroutine
+           bra  StoreDecelLOMAPFactor          ; branch
+
+IncrementDecelLOMAPFactor:</code></pre>
+<p>The 68HC11 CPU evaluates <code>NEGSL2</code> inside <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> at line 5825. The instruction loads, compares, or interpolates the calibration data from ROM address <code>0x8AD5</code>.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Decel Fuel Management</strong>: Coordinates wall-wetting fuel compensation during coastdown.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>NEGSL2</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POSSLP: Enrichment FromTemp | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x83EE</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ D - Transient Enrichment ➔ PumpShot Calculation ➔ TPS PumpShot</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>POSSLP: Enrichment FromTemp</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>POSSLP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>POSSLP_DeltaTPSEnrichment_FromTemp</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\D_-_Transient_Enrichment\PumpShot_Calculation\TPS_PumpShot\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x83EE</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (5-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">5 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Temp -200 260 degrees</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">pw 0 60 ms/volt</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Temperature (°F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x04                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SBEC_25_MTX_A593_Stock.tpl.html#L2192-L2208"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SBEC_v4.asm.html#L5826"><code>TransFuel_IncludeTPSTransients</code></a> in <a href="../../../../T-SBEC_v4.asm.html#L5845"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>POSSLP</code> establishes the temperature-dependent gain curve for throttle-based acceleration enrichment pump shots. When the throttle blade opens rapidly, incoming air rushes in faster than liquid fuel can atomize and travel through intake runners, causing fuel to condense on cold manifold walls. To maintain stoichiometric combustion during this transition, the engine controller calculates a transient fuel pulse by multiplying the effective throttle delta voltage by the slope from <code>POSSLP</code>. The table provides high gain when the engine coolant is cold, tapering down to lower values at normal operating temperatures. The factory calibration delivers approximately 13.8 milliseconds per volt at 116 degF, decreasing to 7.3 milliseconds per volt at 205 degF.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Curing Tip-in Hesitation</strong>: Raising table values increases the size of the throttle pump shot, curing lean tip-in stumbles, intake manifold pops, or hesitations upon sudden acceleration.</li>
+<li><strong>Injector Upsizing Rescaling</strong>: Lowering table values reduces transient fuel volume, which is essential when installing larger fuel injectors. Scale down <code>POSSLP</code> across all temperature points by the ratio of stock injector flow to new injector flow.</li>
+<li><strong>Cold Engine Compensation</strong>: Keep cold-temperature points significantly higher than operating temperature points to compensate for poor fuel atomization in cold intake runners.</li>
+<li><strong>Coordination with AESLOP</strong>: Balanced tip-in performance requires harmonizing <code>POSSLP</code> (immediate pedal movement) with <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/MAP_PumpShot/AESLOP_DeltaMAPEnrichmentPT.html"><code>AESLOP</code></a> (manifold filling).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the throttle blade opens rapidly, incoming air rushes in faster than liquid fuel can atomize and travel through intake runners, causing fuel to condense on cold manifold walls.</p>
+<ul>
+<li>Evaluated inside <code>TransFuel_IncludeTPSTransients</code> at line 5845 in <a href="../../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>POSSLP</code> at ROM address <code>0x83EE</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>TransFuel_IncludeTPSTransients</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- TransFuel_IncludeTPSTransients (T-SBEC_v4.asm:5843-5849) ---
+   LB8D7:  staa Temp1          ; store a into memory
+           ldaa CoolantTemp    ; load a with memory contents
+           ldx  #POSSLP_DeltaTPSEnrichment_FromTemp    ; load index with value
+           jsr  Lookup4ByteTable    ; call subroutine
+           ldaa Temp1          ; load a with memory contents
+           mul                 ; multiply (d=a*b)
+           addd Temp2          ; d = d + memory contents</code></pre>
+<p>The CPU executes <code>TransFuel_IncludeTPSTransients</code> where <code>POSSLP</code> is loaded, compared, or interpolated from ROM address <code>0x83EE</code> at line 5845.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Primary Accelerator Pump Curve</strong>: This is the primary parameter governing throttle tip-in fueling.</li>
+<li><strong>Injector Flow Rate Dependency</strong>: In stock form, calibrated for 27 lb/hr or 33 lb/hr injectors. Upgrading to +40% (46 lb/hr) or +52 lb/hr injectors requires reducing table values by 30 to 45 percent.</li>
+<li><strong>Companion Parameter</strong>: Works in direct conjunction with <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/MAP_PumpShot/AESLOP_DeltaMAPEnrichmentPT.html"><code>AESLOP</code></a>, <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/POSTRG_PositiveTransientTriggerLevel.html"><code>POSTRG</code></a>, and <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/PumpShot_Calculation/TPS_PumpShot/THRTCN_EnrichmentTime_FromTemp.html"><code>THRTCN</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>POSSLP</code>
+        </footer>
+    </div>
+</body>
+</html>

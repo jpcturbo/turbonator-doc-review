@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WSGTIM: AllowedBoost FromTime | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8113</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Boost - Target Lookup</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>WSGTIM: AllowedBoost FromTime</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>WSGTIM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_AllowedBoost_FromTime</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Boost_-_Target_Lookup\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8113</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (3-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">3 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Time 0 0.72 Sec</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Boost 0 29.4 psi</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Boost Pressure (psi)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L1554-L1568"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L12157"><code>BC_GetBoostTargetFromTables</code></a> in <a href="../T-SBECII_v1.asm.html#L12178"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>WSGTIM</code> governs the rate at which turbocharger boost is permitted to ramp upward over time once wide-open throttle is applied. The engine controller monitors an internal boost timer that increments while the engine is producing power above minimum tracking RPM. By looking up allowed boost as a function of elapsed timer counts, the controller prevents instantaneous boost spikes and delivers a progressive, predictable torque onset. Factory calibrations use this table to smooth powertrain shock loads on front-wheel-drive transaxles and prevent sudden tire spin when the throttle snaps open.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Spool-Up Ramp Tuning</strong>: * Controls how quickly full boost target is made available after entering wide-open throttle. * Setting high boost targets at 0.0 seconds allows instant maximum boost onset for drag racing.</li>
+<li><strong>Drivetrain Protection &amp; Traction</strong>: * Ramping boost progressively over 0.4 to 0.7 seconds reduces front-wheel-drive torque steer and preserves manual transaxle gearsets.</li>
+<li><strong>Minimum-Wins Limitation</strong>: * Evaluated as the second table in <code>GetBoostTargetFromTables</code>; lower values will restrict the boost target calculated from <a href="../Boost_-_Target_Lookup/T_AllowedBoost_FromRpm.html"><code>WSGRPM</code></a>.</li>
+<li><strong>Timer Incrementing Dependency</strong>: * <code>Timer_BoostTimer</code> increments only while engine speed exceeds <code>RPMBST</code> (T1) or <code>T2RPMBST</code> (T2).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during sustained wide-open throttle boost, limiting peak overboost duration before stepping boost back to continuous levels.</p>
+<ul>
+<li>Evaluated inside <code>BC_GetBoostTargetFromTables</code> at line 12178 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>WSGTIM</code> at ROM address <code>0x8113</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>BC_GetBoostTargetFromTables</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- BC_GetBoostTargetFromTables (T-SBECII_v1.asm:12176-12182) ---
+           ldaa  IPLBST_MaximumBoostWhenKnockSensorFault    ; load A with memory contents (data is 00)
+           staa  Temp4         ; store A into memory
+   LED2E:  ldx   #WSGTIM_AllowedBoost_FromTime    ; load index with value
+           ldaa  Timer_BoostTimer    ; load A with memory contents
+           jsr   LookupAndKeepSmallerBoostGoal    ; call subroutine
+           ldx   #WSGCLT_AllowedBoost_FromTemp    ; load index with value
+           ldaa  CoolantTemp    ; load A with memory contents</code></pre>
+<p>The CPU executes <code>BC_GetBoostTargetFromTables</code> where <code>WSGTIM</code> is loaded, compared, or interpolated from ROM address <code>0x8113</code> at line 12178.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Timer Architecture</strong>: Indexed by <code>Timer_BoostTimer</code>, which is decremented every 32 loops when below boost activation threshold (<code>MAPPT2</code>).</li>
+<li><strong>2-Point Factory Curve</strong>: Stock calibrations use 2 points spanning 0.0 to 0.72 seconds, capping boost at 8.5 psi until the timer elapses.</li>
+<li><strong>Instant Spool Bypass</strong>: Setting both points in <code>WSGTIM</code> to maximum boost (e.g. 29.4 psi) completely eliminates time-delayed boost ramp-in.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>WSGTIM</code>
+        </footer>
+    </div>
+</body>
+</html>

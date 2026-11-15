@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACOUT: DeltaAboveMinThrottleToCutOutAc | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x82AF</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>AC Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Aux_Vehicle_Functions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ACOUT: DeltaAboveMinThrottleToCutOutAc</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ACOUT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_DeltaAboveMinThrottleToCutOutAc</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Aux_Vehicle_Functions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>AC_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x82AF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">8-bit Unsigned Scaling Factor (0 to 255 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x85                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L3120-L3131"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L782"><code>ControlAirConditioning_MM</code></a> in <a href="../T-SBECII_v1.asm.html#L786"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ACOUT</code> defines the throttle position sensor voltage delta above learned closed throttle (<code>MINTHR</code>) that disengages the air conditioning compressor clutch during heavy acceleration. When the driver depresses the accelerator pedal for passing, merging, or wide-open throttle acceleration, disengaging the mechanical A/C compressor eliminates 5 to 10 horsepower of parasitic crankshaft load, delivering maximum engine power to the drive wheels. In factory calibrations, <code>ACOUT</code> is configured to 133 counts, corresponding to approximately 2.60 Volts above closed throttle (approximately 70% to 75% throttle opening). Once throttle opening exceeds this threshold, the controller cuts off the A/C clutch, smoothly re-engaging it when the throttle is released.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Mid-Throttle Passing Response</strong>: * Lower <code>ACOUT</code> to 90 to 100 counts (~50% throttle) to drop compressor drag during moderate passing maneuvers.</li>
+<li><strong>Sustained Cabin Cooling</strong>: * Raise <code>ACOUT</code> to 160 to 180 counts to maintain air conditioning during moderately aggressive mountain driving.</li>
+<li><strong>Disabling Wide-Open Cutout</strong>: * Set <code>ACOUT</code> to 255 counts to keep the A/C clutch engaged across all throttle angles.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during heavy or wide-open throttle acceleration, immediately disengaging the A/C compressor clutch to eliminate accessory drag and maximize engine power.</p>
+<ul>
+<li>Evaluated inside <code>ControlAirConditioning_MM</code> at line 786 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>ACOUT</code> at ROM address <code>0x82AF</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>ControlAirConditioning_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- ControlAirConditioning_MM (T-SBECII_v1.asm:784-790) ---
+           brclr *PIA2_Buffer, #$%00000001, L9408    ; branch if bit(s) clear
+           adda  #0x03         ;  -00000011-
+   L9408:  cmpa  ACOUT_DeltaAboveMinThrottleToCutOutAc    ; compare A with memory contents (data is 85)
+           bcc   SHUTOFF_AIRCONDITIONING    ; branch if greater or equal
+           ldaa  Counter_AirCond    ; load A with memory contents
+           cmpa  #0x01         ; compare a with value -00000001-
+           bls   L941C         ; branch if lower or same</code></pre>
+<p>The CPU executes <code>ControlAirConditioning_MM</code> where <code>ACOUT</code> is loaded, compared, or interpolated from ROM address <code>0x82AF</code> at line 786.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>MINTHR Referencing</strong>: Relative to <code>MINTHR_LowestSessionTPS</code>, making the cutout point self-calibrating against throttle sensor wear.</li>
+<li><strong>Built-In Hysteresis</strong>: 3 counts (~0.059 V) of hysteresis are automatically added when the compressor is currently disengaged.</li>
+<li><strong>Wide-Open Throttle Flag</strong>: Functions independently of the binary <code>b4f_FullThrottle</code> status bit.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>ACOUT</code>
+        </footer>
+    </div>
+</body>
+</html>

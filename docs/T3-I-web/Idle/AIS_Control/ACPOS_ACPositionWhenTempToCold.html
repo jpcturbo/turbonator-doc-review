@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACPOS: ACPositionWhenTempToCold | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8CCC</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle ➔ AIS Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ACPOS: ACPositionWhenTempToCold</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ACPOS</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ACPOS_ACPositionWhenTempToCold</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle\AIS_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8CCC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Temperature (°F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x16                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L3731-L3742"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L1984"><code>HandleAcCutout</code></a> in <a href="../../T-T3v1.asm.html#L2284"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ACPOS</code> defines the fixed auxiliary step opening added to the idle air stepper motor when the air conditioning compressor engages while engine coolant temperature is cold. A cold air conditioning compressor pump contains thick, viscous refrigeration lubricant that imposes substantial mechanical drag when the magnetic clutch locks up. On a cold engine that is already dealing with high internal mechanical friction, this compressor engagement shock can easily cause a severe RPM plunge or cold stall. When the air conditioning clutch engages and coolant temperature is below the threshold set in <a href="../../Idle/AIS_Decel/ACTMP_Use_ACCTBL_WhenTempAboveThisElseUse_ACPOS.html"><code>ACTMP</code></a>, the controller injects <code>ACPOS</code> as a dedicated fixed step adder. In factory calibrations, <code>ACPOS</code> commands an opening offset of 18 steps.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Cold A/C Stall Prevention</strong>: * Increase <code>ACPOS</code> from 18 to 22 to 26 steps if activating air conditioning or windshield defrost on cold mornings threatens to stall the engine.</li>
+<li><strong>Taming Cold A/C Flare</strong>: * If cold A/C engagement causes an annoying flare above 1600 RPM, reduce <code>ACPOS</code> steps.</li>
+<li><strong>Temperature Threshold Companion</strong>: * Active exclusively when coolant temperature is below <a href="../../Idle/AIS_Decel/ACTMP_Use_ACCTBL_WhenTempAboveThisElseUse_ACPOS.html"><code>ACTMP</code></a> (factory 77 °F).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during cold engine idle when the A/C is turned on, defining the baseline idle stepper motor opening when coolant temperature is low.</p>
+<ul>
+<li>Evaluated inside <code>HandleAcCutout</code> at line 2284 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>ACPOS</code> at ROM address <code>0x8CCC</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>HandleAcCutout</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- HandleAcCutout (T-T3v1.asm:2282-2288) ---
+           lslb
+           adca #0x00          ;  -00000000-
+           ldab ACPOS_ACPositionWhenTempToCold          ; load b with memory contents (data is 16)
+           cmpa MPHREF_SwitchPointForDecelIdleAisControl    ; compare a with memory contents (data is 07)
+           bhi  L9BA0          ; branch if higher
+           ldab ACPOS2_ACPositionWhenTempToCold2    ; load b with memory contents (data is 18)
+   L9BA0:  brset *BitFlags69, #b69_AtIdle, L9BC1    ; branch if bit(s) set</code></pre>
+<p>The CPU executes <code>HandleAcCutout</code> where <code>ACPOS</code> is loaded, compared, or interpolated from ROM address <code>0x8CCC</code> at line 2284.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameter</strong>: Direct alternative to <a href="../../Idle/AIS_Decel/ACCTBL_ACOffIdleDelta_FromSpeed.html"><code>ACCTBL</code></a> (warm speed table), gated by <a href="../../Idle/AIS_Decel/ACTMP_Use_ACCTBL_WhenTempAboveThisElseUse_ACPOS.html"><code>ACTMP</code></a>.</li>
+<li><strong>Compressor Drag Buffer</strong>: Compensates for cold, uncirculated refrigerant oil in the compressor head.</li>
+<li><strong>Factory Value</strong>: 0x12 (18 counts = 18 steps).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>ACPOS</code>
+        </footer>
+    </div>
+</body>
+</html>

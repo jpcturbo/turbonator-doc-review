@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERRRPM: RPMLimitforErrorCodeSetting | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x9076</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Utility ➔ On-Board Diagnostics ➔ Error Codes</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ERRRPM: RPMLimitforErrorCodeSetting</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ERRRPM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ERRRPM_RPMLimitforErrorCodeSetting</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Utility\On-Board_Diagnostics\Error_Codes\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x9076</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x38                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3_22_T3ii_T3_MTX.tpl.html#L7225-L7236"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3_IIv1.asm.html#L5114"><code>CheckForErrorsAndSetCodes_MM</code></a> in <a href="../../../T-T3_IIv1.asm.html#L5131"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ERRRPM</code> defines the minimum engine speed threshold required before the engine controller latches major system fault codes and illuminates the check engine lamp. In Chrysler Turbo III controller firmware, minor transient electrical faults are filtered and held in pending registers, while major system faults that affect emissions and drivability must be confirmed before escalating to a latched error state. During low-speed operation or idle, minor sensor fluctuations or engine speed dips could trigger nuisance error codes. In factory calibrations, <code>ERRRPM</code> is set to 56 counts, corresponding to approximately 1792 RPM. The engine controller requires engine speed to reach or exceed <code>ERRRPM</code> before it will escalate qualifying pending faults into a confirmed major fault state.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Major Fault Code Escalation Gate</strong>: * Confirms pending error flags into latched <code>b46_MajorFault</code> status, turning on the check engine lamp.</li>
+<li><strong>Raising for Stumble Suppression</strong>: * Raising <code>ERRRPM</code> to 2200 RPM prevents rough low-speed cruising on radical cam engines from latching major trouble codes.</li>
+<li><strong>Lowering &amp; Edge Cases</strong>: * Lowering <code>ERRRPM</code> below 1000 RPM allows major codes to set during idle. * Setting <code>ERRRPM</code> to maximum (255 counts / 8160 RPM) prevents major fault code confirmation and keeps the check engine light off for these checks.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during ECU self-diagnostics, establishing the minimum engine speed required before recording diagnostic trouble codes.</p>
+<ul>
+<li>Evaluated inside <code>CheckForErrorsAndSetCodes_MM</code> at line 5131 in <a href="../../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>ERRRPM</code> at ROM address <code>0x9076</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CheckForErrorsAndSetCodes_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CheckForErrorsAndSetCodes_MM (T-T3_IIv1.asm:5129-5135) ---
+           brclr *BitFlags66, #$%10000000, LB128    ; branch if bit(s) clear
+           ldaa EngineRpm_HB    ; load a with memory contents
+           cmpa ERRRPM_RPMLimitforErrorCodeSetting    ; compare a with memory contents (data is 38)
+           bcs  LB128          ; branch if lower
+           ldaa BaroPressure    ; load a with memory contents
+           suba MapValue
+           bcc  LB10D          ; branch if greater or equal</code></pre>
+<p>The CPU executes <code>CheckForErrorsAndSetCodes_MM</code> where <code>ERRRPM</code> is loaded, compared, or interpolated from ROM address <code>0x9076</code> at line 5131.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../../../Utility/On-Board_Diagnostics/Error_Codes/ERRMAP_MAPLimitforErrorCodeSetting.html"><code>ERRMAP</code></a> (manifold vacuum gate) and <a href="../../../Utility/On-Board_Diagnostics/Error_Codes/ERRTMP_CoolantTempLimitforErrorCodeSetting.html"><code>ERRTMP</code></a> (coolant temperature gate).</li>
+<li><strong>Escalation Role</strong>: Directly controls when critical error 0x2320 is thrown to assert <code>b46_MajorFault</code> and turn on the CEL.</li>
+<li><strong>RPM Scaling</strong>: Scaled at 32 RPM per count (56 counts = 1792 RPM).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>ERRRPM</code>
+        </footer>
+    </div>
+</body>
+</html>

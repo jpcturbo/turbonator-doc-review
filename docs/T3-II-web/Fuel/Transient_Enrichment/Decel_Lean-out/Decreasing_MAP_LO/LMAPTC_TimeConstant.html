@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMAPTC: TimeConstant | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8B4B</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel ➔ Transient Enrichment ➔ Decel Lean-out ➔ Decreasing MAP LO</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>LMAPTC: TimeConstant</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>LMAPTC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>LMAPTC_TimeConstant</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel\Transient_Enrichment\Decel_Lean-out\Decreasing_MAP_LO\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8B4B</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (2-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">2 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Temp -200 260 degrees</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">time_const 0 100 percent</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Time Duration (seconds or loop counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x01                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-T3_22_T3ii_T3_MTX.tpl.html#L2508-L2520"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-T3_IIv1.asm.html#L5628"><code>TransFuel_CalculateDecreasingMAPTransientFuel</code></a> in <a href="../../../../T-T3_IIv1.asm.html#L5629"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>LMAPTC</code> establishes the digital filter time constant for the rolling average manifold pressure during deceleration conditions. When manifold pressure drops below the rolling average, the engine controller calculates the rate of vacuum increase by comparing instantaneous pressure against the rolling average. <code>LMAPTC</code> dictates how rapidly the rolling average catches up to the falling manifold pressure. The factory calibration uses a filter weight of 40 counts, providing smooth digital filtering that prevents minor intake pulses from distorting the calculated deceleration rate.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Prolonging Decel Leaning</strong>: Lowering table values causes the rolling average to lag further behind the falling manifold pressure, prolonging the calculated pressure delta and extending deceleration lean-out duration.</li>
+<li><strong>Shortening Decel Window</strong>: Raising table values causes the rolling average to adapt more quickly, shortening the deceleration fuel reduction window.</li>
+<li><strong>Filter Stability</strong>: In most applications, keeping this value at its factory setting ensures optimal filter stability.</li>
+<li><strong>Companion Parameter</strong>: Symmetrical counterpart to <a href="../../../../Fuel/Transient_Enrichment/PumpShot_Calculation/MAP_PumpShot/AETIME_EnrichmentTime_FromTemp.html"><code>AETIME</code></a> (which governs increasing manifold pressure).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when manifold pressure drops below the rolling average, the engine controller calculates the rate of vacuum increase by comparing instantaneous pressure against the rolling average.</p>
+<ul>
+<li>Evaluated inside <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> at line 5629 in <a href="../../../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>LMAPTC</code> at ROM address <code>0x8B4B</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- TransFuel_CalculateDecreasingMAPTransientFuel (T-T3_IIv1.asm:5627-5633) ---
+
+TransFuel_CalculateDecreasingMAPTransientFuel:
+           ldx  #LMAPTC_TimeConstant    ; load index with value
+           jsr  Lookup4ByteTable    ; call subroutine
+           staa Factor_LeanoutOrEnrichTime_MAP    ; store a into memory
+           brset *BitFlags6e, #$%10000000, LBBE1    ; branch if bit(s) set
+           brset *BitFlags66, #$%00000001, LBBE1    ; branch if bit(s) set</code></pre>
+<p>The CPU executes <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> where <code>LMAPTC</code> is loaded, compared, or interpolated from ROM address <code>0x8B4B</code> at line 5629.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Rolling Filter Role</strong>: Dictates the smoothing filter update rate for falling manifold pressure in <code>ProcessMapOrTpsBlockData</code>.</li>
+<li><strong>Factory Single Point</strong>: Stock calibration utilizes a single-point table representing 40 counts (0.156 filter weight) across all temperatures.</li>
+<li><strong>Companion Parameter</strong>: Mirror counterpart to <a href="../../../../Fuel/Transient_Enrichment/PumpShot_Calculation/MAP_PumpShot/AETIME_EnrichmentTime_FromTemp.html"><code>AETIME_EnrichmentTime_FromTemp</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>LMAPTC</code>
+        </footer>
+    </div>
+</body>
+</html>

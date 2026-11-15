@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KDCINC: WastegateDutyCycleIncreaseStepWhenKnocking | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x87B9</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>3 - Boost Control ➔ B - WG Control ➔ T1 WG Control ➔ T1 WGDC Knock Adj</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>KDCINC: WastegateDutyCycleIncreaseStepWhenKnocking</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>KDCINC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>KDCINC_WastegateDutyCycleIncreaseStepWhenKnocking</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>3_-_Boost_Control\B_-_WG_Control\T1_WG_Control\T1_WGDC_Knock_Adj\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x87B9</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Duty Cycle (% PWM; 0 to 100%)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x08                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SBEC_25_MTX_A593_Stock.tpl.html#L5030-L5041"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SBEC_v4.asm.html#L10203"><code>Boost_LookAtCylRetards</code></a> in <a href="../../../../T-SBEC_v4.asm.html#L10217"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>KDCINC</code> establishes the incremental duty cycle reduction step added to the knock reduction penalty each time detonation is detected while operating under boost in T1 control. In T1 bleed-style wastegate systems, reducing solenoid duty cycle bleeds less air away from the actuator canister, allowing boost pressure to push the wastegate open and lower intake manifold pressure. When knocking occurs above 5 psi of boost, the controller adds <code>KDCINC</code> counts to the knock reduction penalty counter to lower duty cycle and reduce boost, providing emergency relief alongside ignition timing retard.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Knock Step Reduction Rate</strong>: * Sets the duty cycle decrement added to the knock reduction penalty per confirmed detonation event under boost. * Factory setting is 8 counts (4.0 percent duty cycle drop per knock cycle).</li>
+<li><strong>Pump Gasoline Protection</strong>: * Increasing <code>KDCINC</code> to 12 or 16 counts pulls boost down faster when bad fuel is encountered, protecting head gaskets.</li>
+<li><strong>False Knock Smoothing</strong>: * If aggressive forged pistons or valvetrain noise trigger false knock, lower <code>KDCINC</code> to 4 counts to avoid harsh power cutouts.</li>
+<li><strong>T1 Bleed Subtraction Mechanics</strong>: * The knock penalty value is subtracted from final WGDC at line 9746, reducing solenoid bleed and opening the gate.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under boost when spark knock is detected, controlling the duty cycle reduction steps applied to the wastegate solenoid to bleed off boost.</p>
+<ul>
+<li>Evaluated inside <code>Boost_LookAtCylRetards</code> at line 10217 in <a href="../../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>KDCINC</code> at ROM address <code>0x87B9</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>Boost_LookAtCylRetards</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- Boost_LookAtCylRetards (T-SBEC_v4.asm:10215-10221) ---
+           bclr *BitFlags70, #b70_bit6    ; clear bits
+           ldab WastegateDutyCycleIncreaseFromKnock    ; load b with memory contents
+           addb KDCINC_WastegateDutyCycleIncreaseStepWhenKnocking    ;  (data is 02)
+           bcc  LDA97          ; branch if greater or equal
+           ldab #0xff          ; load b with value -11111111-
+   LDA97:  ldaa KDCMAX_WastegateDutyCycleIncreaseMaxWhenKnocking    ; load a with memory contents (data is 14)
+           cba</code></pre>
+<p>The CPU executes <code>Boost_LookAtCylRetards</code> where <code>KDCINC</code> is loaded, compared, or interpolated from ROM address <code>0x87B9</code> at line 10217.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Duty Cycle Scaling</strong>: 1 count = 0.5% duty cycle (8 counts = 4.0% duty cycle drop).</li>
+<li><strong>Knock Memory Subtraction</strong>: At line 9746, this accumulator is subtracted from <code>Temp4</code> via <code>suba WastegateDutyCycleIncreaseFromKnock</code>.</li>
+<li><strong>T1 vs. T2 Polarity</strong>: T1 subtracts this reduction total from WGDC; T2 adds it due to opposite plumbing topology.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>KDCINC</code>
+        </footer>
+    </div>
+</body>
+</html>

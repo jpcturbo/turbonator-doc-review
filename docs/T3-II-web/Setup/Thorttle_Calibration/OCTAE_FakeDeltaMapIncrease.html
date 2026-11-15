@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCTAE: FakeDeltaMapIncrease | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8AAE</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Setup ➔ Thorttle Calibration</strong> &nbsp;|&nbsp; Subsystem: <strong>Setup_Calibration</strong>
+        </div>
+        
+        <article class="content">
+            <h1>OCTAE: FakeDeltaMapIncrease</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>OCTAE</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>OCTAE_FakeDeltaMapIncrease</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Setup_Calibration</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Setup\Thorttle_Calibration\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8AAE</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Boost Pressure (psi)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3ii_T3_MTX.tpl.html#L2139-L2151"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_IIv1.asm.html#L10603"><code>CheckThrottle_AtFullThrottle</code></a> in <a href="../../T-T3_IIv1.asm.html#L10643"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>OCTAE</code> defines the artificial manifold pressure delta step injected during off-idle throttle transitions. When the driver steps on the accelerator pedal and the throttle blade opens, intake manifold pressure rises rapidly. Because physical pressure sensor filtering introduces a brief mathematical lag in the running average manifold pressure variable, the engine controller subtracts <code>OCTAE</code> from instantaneous manifold pressure when leaving idle. This subtraction artificially suppresses the historical average pressure baseline, creating an instantaneous positive delta pressure jump that triggers immediate transient fuel enrichment and responsive ignition advance before the physical sensor filter catches up. Factory calibrations configure <code>OCTAE</code> to two counts, representing approximately zero point two three psi.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Tip-In Hesitation Cure</strong>: * Increasing <code>OCTAE</code> to three or four counts forces a sharper delta manifold pressure step, curing light off-idle lean stumbles.</li>
+<li><strong>Large Fuel Injector Tuning</strong>: * On engines with oversized injectors, lowering <code>OCTAE</code> softens off-idle transient fuel delivery to prevent rich bogging.</li>
+<li><strong>Clamped Lower Floor</strong>: * If the subtraction of <code>OCTAE</code> would reduce average pressure below minimum thresholds, <a href="../../Setup/Transfer_Functions/MINAMP_MinimumAverageMAP.html"><code>MINAMP</code></a> enforces a hard lower boundary.</li>
+<li><strong>Factory Setting</strong>: * Set to two counts (approx 0.23 psi) in factory 2.5L calibrations.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the driver steps on the accelerator pedal and the throttle blade opens, intake manifold pressure rises rapidly.</p>
+<ul>
+<li>Evaluated inside <code>CheckThrottle_AtFullThrottle</code> at line 10643 in <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>OCTAE</code> at ROM address <code>0x8AAE</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CheckThrottle_AtFullThrottle</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CheckThrottle_AtFullThrottle (T-T3_IIv1.asm:10641-10647) ---
+           orab #0x40          ;  -01000000-
+   LE279:  ldaa MapValue       ; load a with memory contents
+           suba OCTAE_FakeDeltaMapIncrease    ;  (data is 02)
+           bcc  LE282          ; branch if greater or equal
+           ldaA MINAMP_MinimumAverageMAP          ; load a with value -00000110-
+   LE282:  staa MapAverageValue_HB    ; store a into memory
+           ldaa TpsVolts       ; load a with memory contents</code></pre>
+<p>The CPU executes <code>CheckThrottle_AtFullThrottle</code> where <code>OCTAE</code> is loaded, compared, or interpolated from ROM address <code>0x8AAE</code> at line 10643.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Immediate Trigger</strong>: Directly resets <code>AverageMAPValue</code> on the first program loop after leaving closed-throttle idle.</li>
+<li><strong>Pairing</strong>: Directly paired with <a href="../../Setup/Transfer_Functions/MINAMP_MinimumAverageMAP.html"><code>MINAMP_MinimumAverageMAP</code></a> to prevent mathematical underflow.</li>
+<li><strong>Units Translation</strong>: 1 count represents approximately 0.115 psi (0.23 psi for 2 counts).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>OCTAE</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWMIN: NoCellUpdateBelow PWMIN Pulsewidth | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8BE8</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel ➔ O2 Feedback Control ➔ Adaptive memory</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>PWMIN: NoCellUpdateBelow PWMIN Pulsewidth</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>PWMIN</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>PWMIN_NoCellUpdateBelow_PWMIN_Pulsewidth</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel\O2_Feedback_Control\Adaptive_memory\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8BE8</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">16-bit Word Value</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0x00AF                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3_22_T3ii_T3_MTX.tpl.html#L3038-L3050"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3_IIv1.asm.html#L3175"><code>UpdateAdaptive_OffIdle</code></a> in <a href="../../../T-T3_IIv1.asm.html#L3180"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>PWMIN</code> establishes the absolute minimum injector pulse width required before the engine controller will permit an adaptive fuel memory cell update. At very short pulse widths, such as during deceleration or light coastdown, fuel injector opening and closing dead times represent a large percentage of total injection duration, causing non-linear fuel flow delivery that does not represent accurate engine volumetric efficiency. In factory calibrations, <code>PWMIN</code> is set to a 16-bit value of 275 counts, which corresponds to 1100 microseconds (1.10 milliseconds) of total effective injection time. If calculated pulse width falls below <code>PWMIN</code>, adaptive cell updating is blocked.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Large Injector Scaling</strong>: * When upgrading from stock 27 lb/hr injectors to 42 lb/hr or larger injectors, base idle pulse width drops below 1.10 ms. <code>PWMIN</code> must be reduced to 0.70-0.85 ms (175-212 counts) to allow adaptive learning at idle.</li>
+<li><strong>16-Bit Word Units</strong>: * Stored as a 16-bit word where each count represents 4 microseconds (275 counts = 1100 us = 1.10 ms).</li>
+<li><strong>Non-Linear Injector Guard</strong>: * Blocks adaptive updates when injectors operate in their non-linear opening/closing dead-time regime.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if calculated pulse width falls below PWMIN, adaptive cell updating is blocked.</p>
+<ul>
+<li>Evaluated inside <code>UpdateAdaptive_OffIdle</code> at line 3180 in <a href="../../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>PWMIN</code> at ROM address <code>0x8BE8</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>UpdateAdaptive_OffIdle</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- UpdateAdaptive_OffIdle (T-T3_IIv1.asm:3178-3184) ---
+           ldd  InjectorPulsewidth_HB    ; load d (a&amp;b) with memory contents
+           addd Pulsewidth_PartThrottleEnrichment_HB    ; d = d + memory contents
+           subd PWMIN_NoCellUpdateBelow_PWMIN_Pulsewidth    ;  (data is 00af)
+           ldab Temp0          ; load b with memory contents
+           bcs  DontUpdateCell_MaybeUpdateTimer    ; branch if lower
+           sei                 ; disable interrupts
+           ldaa AdaptiveCellUpdateTimer_IncrementedEveryCamRisingEdge    ; load a with memory contents</code></pre>
+<p>The CPU executes <code>UpdateAdaptive_OffIdle</code> where <code>PWMIN</code> is loaded, compared, or interpolated from ROM address <code>0x8BE8</code> at line 3180.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Evaluates sum of <code>InjectorPulsewidth_HB</code> and <code>Pulsewidth_PartThrottleEnrichment_HB</code>.</li>
+<li><strong>Units</strong>: 16-bit word, 4 microseconds per count. Factory 0x0113 = 275 counts = 1.10 ms.</li>
+<li><strong>Persistence</strong>: Evaluated on every potential update cycle; does not write to EEPROM when blocked.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>PWMIN</code>
+        </footer>
+    </div>
+</body>
+</html>

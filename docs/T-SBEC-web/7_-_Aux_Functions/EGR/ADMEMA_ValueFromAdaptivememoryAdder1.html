@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADMEMA: ValueFromAdaptivememoryAdder1 | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x89FC</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>7 - Aux Functions ➔ EGR</strong> &nbsp;|&nbsp; Subsystem: <strong>EGR_Emissions</strong>
+        </div>
+        
+        <article class="content">
+            <h1>ADMEMA: ValueFromAdaptivememoryAdder1</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>ADMEMA</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>ADMEMA_ValueFromAdaptivememoryAdder1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">EGR_Emissions</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>7_-_Aux_Functions\EGR\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x89FC</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">8-bit Unsigned Scaling Factor (0 to 255 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x00                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L7706-L7717"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L6529"><code>INCLUDE_ADAPTIVE_MEMORY</code></a> in <a href="../../T-SBEC_v4.asm.html#L6547"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>ADMEMA</code> (ValueFromAdaptivememoryAdder1) establishes an adaptive memory fuel trim modifier offset applied specifically while Phase 2 of the Exhaust Gas Recirculation diagnostic verification routine is running. During Phase 2, the engine controller commands the EGR valve closed to observe whether closed-loop oxygen sensor feedback registers a corresponding shift. In the adaptive memory calculation at line 6180, if Phase 2 is active, the controller adds <code>ADMEMA</code> directly to the closed-loop integrator before applying final fuel pulsewidth scaling. The factory calibration setting of 0 counts injects zero offset, allowing the closed-loop feedback loop to respond naturally to the change in cylinder gas composition without artificial fuel trim bias.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Raising ADMEMA</strong>: Injects positive fuel trim offset into the closed-loop integrator during Phase 2 flow verification, enriching injector pulsewidth during the test.</li>
+<li><strong>Diagnostic Impact</strong>: Artificially inflating the integrator during Phase 2 distorts the delta calculation (<a href="../../7_-_Aux_Functions/EGR/EGR7_ExhGasRecircConst7.html"><code>EGR7</code></a>), creating a risk of false pass results on vehicles with inoperative or blocked EGR valves.</li>
+<li><strong>Overflow Clamping</strong>: The assembly math clamps at 127 counts (signed 8-bit positive ceiling) if addition overflows the signed 8-bit limit.</li>
+<li><strong>Factory Recommendation</strong>: Keep at 0 counts to maintain accurate stoichiometric closed-loop feedback.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect continuously during running fuel calculation, applying a calibration offset adder to the learned adaptive fuel memory cell value.</p>
+<ul>
+<li>Evaluated inside <code>INCLUDE_ADAPTIVE_MEMORY</code> at line 6547 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>ADMEMA</code> at ROM address <code>0x89FC</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>INCLUDE_ADAPTIVE_MEMORY</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- INCLUDE_ADAPTIVE_MEMORY (T-SBEC_v4.asm:6545-6551) ---
+           ldab Counter_O2SensorFeedbackCount_Signed    ; load b with memory contents
+           brclr *EGRVar2, #$%10000000, INCLUDE_OXYGEN_FEEDBACK_WITHRPM_COMBINATION    ; branch if bit(s) clear
+           addb ADMEMA_ValueFromAdaptivememoryAdder1    ;  (data is 00)
+           bvc  INCLUDE_OXYGEN_FEEDBACK_WITHRPM_COMBINATION    ; branch if overflow
+           ldab #0x7f          ; load b with value -01111111-
+INCLUDE_OXYGEN_FEEDBACK_WITHRPM_COMBINATION:
+           tstb</code></pre>
+<p>The CPU executes <code>INCLUDE_ADAPTIVE_MEMORY</code> where <code>ADMEMA</code> is loaded, compared, or interpolated from ROM address <code>0x89FC</code> at line 6547.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Single-Byte Type 3 Constant</strong>: Located at calibration address 0x1AE4 (calculated ROM address 0x86EB / template org 0x8833).</li>
+<li><strong>Subsystem Cross-Talk</strong>: Interlinks the EGR diagnostic state machine (<code>EGRVar2</code>) with core fuel pulsewidth modifier calculations.</li>
+<li><strong>Signed Integer Math</strong>: Arithmetic is executed on signed 8-bit fuel trim values with saturation protection.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>ADMEMA</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STFBAR: FuelStartReductionFromBaro | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x864C</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel ➔ Starting</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Base_Modifiers</strong>
+        </div>
+        
+        <article class="content">
+            <h1>STFBAR: FuelStartReductionFromBaro</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>STFBAR</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>STFBAR_FuelStartReductionFromBaro</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Base_Modifiers</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel\Starting\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x864C</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (3-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">3 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Baro -14.7 14.7 psi</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Inverse 0 1 factor</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Temperature (°F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3ii_T3_MTX.tpl.html#L1411-L1425"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_IIv1.asm.html#L5771"><code>CalculateInjectorPulsewidthForStarting_MM</code></a> in <a href="../../T-T3_IIv1.asm.html#L5808"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>STFBAR</code> defines the barometric pressure compensation curve for cranking fuel delivery. At high altitudes or during low ambient barometric pressure conditions, the air is less dense and contains fewer oxygen molecules per cylinder fill. If sea-level cranking fuel were injected at mountain elevations, the air-fuel mixture would be excessively rich, causing spark plug fouling and extended cranking. <code>STFBAR</code> generates an altitude-based reduction factor that scales down cranking fuel as atmospheric pressure decreases.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>High Altitude Starting</strong>: * Increasing <code>STFBAR</code> values removes cranking fuel at low barometric pressures, preventing flooded plugs in mountain passes.</li>
+<li><strong>Sea Level Preservation</strong>: * Keep <code>STFBAR</code> at zero near sea-level pressure (14.7 psi absolute) so full cold start enrichment is delivered.</li>
+<li><strong>3-Bar MAP Sensor Calibration</strong>: * Barometric pressure is sampled from the MAP sensor at key-on; ensure sensor transfer curves match the sensor hardware.</li>
+<li><strong>Lean Stumble at Altitude</strong>: * If high-altitude starts pop lean, decrease <code>STFBAR</code> reduction factors to restore cranking pulsewidth.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if sea-level cranking fuel were injected at mountain elevations, the air-fuel mixture would be excessively rich, causing spark plug fouling and extended cranking.</p>
+<ul>
+<li>Evaluated inside <code>CalculateInjectorPulsewidthForStarting_MM</code> at line 5808 in <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>STFBAR</code> at ROM address <code>0x864C</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CalculateInjectorPulsewidthForStarting_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateInjectorPulsewidthForStarting_MM (T-T3_IIv1.asm:5806-5812) ---
+           stD *Temp0          ; store D to RAM
+   LBD07:  ldaa BaroPressure    ; load a with memory contents
+           ldx  #STFBAR_FuelStartReductionFromBaro    ; load index with value
+           jsr  Lookup4ByteTable    ; call subroutine
+           staa Temp4          ; store a into memory
+           ldaa CoolantTemp    ; load a with memory contents
+           ldx  #STFTM2_FuelStartFuelFromCoolant2    ; load index with value</code></pre>
+<p>The CPU executes <code>CalculateInjectorPulsewidthForStarting_MM</code> where <code>STFBAR</code> is loaded, compared, or interpolated from ROM address <code>0x864C</code> at line 5808.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Dual-Factor Interaction</strong>: Works strictly in multiplication with <a href="../../Fuel/Starting/STFTMP_FuelStartFuelFromCoolant.html"><code>STFTMP</code></a>. If either <code>STFBAR</code> or <a href="../../Fuel/Starting/STFTMP_FuelStartFuelFromCoolant.html"><code>STFTMP</code></a> evaluates to zero, no reduction is subtracted.</li>
+<li><strong>Atmospheric Units</strong>: Atmospheric pressure is scaled from -14.7 to 14.7 psi relative to calibration baseline.</li>
+<li><strong>Key-On Baro</strong>: Barometric pressure is latched before starter engagement and remains locked during cranking.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>STFBAR</code>
+        </footer>
+    </div>
+</body>
+</html>

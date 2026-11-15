@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCDECK: WastegateDutyCycleDecrementWhenSparkStillDerated | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8EC3</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Boost Control ➔ WG Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DCDECK: WastegateDutyCycleDecrementWhenSparkStillDerated</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DCDECK</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DCDECK_WastegateDutyCycleDecrementWhenSparkStillDerated</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Boost_Control\WG_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8EC3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Spark Advance (degrees)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L4904-L4915"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L9217"><code>Boost_LookAtCylRetards</code></a> in <a href="../../T-T3v1.asm.html#L9254"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DCDECK</code> controls the rate at which wastegate duty cycle is restored after a knock event has subsided in T1 control. Once detonation ceases, the engine controller does not instantly snap boost back to full target, which could immediately re-trigger knock. Instead, the controller gradually bleeds down the knock reduction penalty by <code>DCDECK</code> counts on periodic timer intervals, steadily ramping solenoid duty cycle and manifold pressure back to normal levels as long as combustion remains knock-free.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Knock Recovery Step Rate</strong>: * Controls how many duty cycle counts are restored per recovery timer interval once knock ceases. * Factory setting is 2 counts (1.0 percent duty cycle recovery per step).</li>
+<li><strong>Fast Recovery vs. Knock Cycling</strong>: * Raising <code>DCDECK</code> to 4 or 6 counts restores boost quickly on race fuel or drag strip passes. * Lowering <code>DCDECK</code> to 1 count prevents re-triggering detonation if fuel octane or intake temperature is marginal.</li>
+<li><strong>Underflow Clamping</strong>: * Subtracts from <code>WastegateDutyCycleIncreaseFromKnock</code>; clamps at zero when fully recovered.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under boost when spark knock retard is active, stepping down wastegate duty cycle per time interval to bleed off boost.</p>
+<ul>
+<li>Evaluated inside <code>Boost_LookAtCylRetards</code> at line 9254 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>DCDECK</code> at ROM address <code>0x8EC3</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>Boost_LookAtCylRetards</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- Boost_LookAtCylRetards (T-T3v1.asm:9252-9258) ---
+           bcs  LD692          ; branch if lower
+           ldab WastegateDutyCycleIncreaseFromKnock    ; load b with memory contents
+           subb DCDECK_WastegateDutyCycleDecrementWhenSparkStillDerated    ; subtract memory contents from b (data is 02)
+           bcc  LD6A7          ; branch if greater or equal
+   LD6A6:  clrb                ; b = 0
+   LD6A7:  stab WastegateDutyCycleIncreaseFromKnock    ; store b into memory
+   LD6A9:  jmp  BoostControlRoutine</code></pre>
+<p>The CPU executes <code>Boost_LookAtCylRetards</code> where <code>DCDECK</code> is loaded, compared, or interpolated from ROM address <code>0x8EC3</code> at line 9254.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Time Base Prescaler</strong>: Paced by <a href="../../Boost_Control/WG_Control/DECTIM_TimeScaleFor_DCDECK.html"><code>DECTIM_TimeScaleFor_DCDECK</code></a> (factory bitmask 0x01 = every 2nd main loop pass).</li>
+<li><strong>Ignition Timing Synchronization</strong>: Allows boost to ramp back up in lockstep with knock spark retard recovery.</li>
+<li><strong>Zero Ceiling</strong>: Once the accumulator reaches zero, knock duty cycle reduction is completely inactive.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>DCDECK</code>
+        </footer>
+    </div>
+</body>
+</html>

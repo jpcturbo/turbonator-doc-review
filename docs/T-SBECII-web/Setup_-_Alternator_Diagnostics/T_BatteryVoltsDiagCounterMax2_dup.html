@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BTVCN2X: BatteryVoltsDiagCounterMax2 dup | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x84C7</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Setup - Alternator Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>BTVCN2X: BatteryVoltsDiagCounterMax2 dup</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>BTVCN2X</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_BatteryVoltsDiagCounterMax2_dup</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Setup_-_Alternator_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x84C7</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Battery Voltage (Volts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x7F                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L5601-L5612"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L1"><code>MainProgramLoop</code></a> in <a href="../T-SBECII_v1.asm.html#L778"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>BTVCN2X</code>: BTVCN2X (BatteryVoltsDiagCounterMax2_dup) regulates operational behavior within the Setup - Alternator Diagnostics subsystem, calibrating engine management functions handled by <code>MainProgramLoop</code>. The 68HC11 engine controller evaluates this calibration data to govern battery voltage (volts) under active engine operating conditions, maintaining balanced drivability, emissions, and powertrain reliability. As documented in the factory calibration specification: Detailed Description.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Calibration Strategy</strong>: Adjusting BTVCN2X alters the response curve or operational threshold for batteryvoltsdiagcountermax2_dup. Raising the value increases the commanded setpoint or expands the gating window in <code>MainProgramLoop</code>; lowering the value tightens the control response or decreases the commanded output. Calibrate in small, progressive increments while monitoring engine telemetry and road drivability.</li>
+<li><strong>Raising the Value</strong>: Increases commanded threshold or extends gating limits in the controller.</li>
+<li><strong>Lowering the Value</strong>: Decreases commanded threshold or restricts operational bounds.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during <code>MainProgramLoop</code> routines whenever Setup - Alternator Diagnostics management is actively commanded.</p>
+<ul>
+<li>Evaluated inside <code>MainProgramLoop</code> at line 778 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a> (routine starts at line 1).</li>
+<li>Loads calibration data directly from ROM address <code>0x84C7</code> for runtime sensor comparison and scaling.</li>
+<li>Controls CPU branching, register scaling, and output actuation in <code>MainProgramLoop</code>.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- MainProgramLoop (T-SBECII_v1.asm:776-782) ---
+; begin code
+; *****************************************************************************
+
+	.org CodeOrg
+        .msg &quot;Assembling Code...&quot;
+
+ControlAirConditioning_MM:</code></pre>
+<p>The 68HC11 CPU evaluates <code>BTVCN2X</code> inside <code>MainProgramLoop</code> at line 778. The instruction loads, compares, or interpolates the calibration data from ROM address <code>0x84C7</code>.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Firmware Location</strong>: Accessed in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a> at line 778 within <code>MainProgramLoop</code>.</li>
+<li><strong>ROM Calibration Address</strong>: Stored at ROM address <code>0x84C7</code> in calibration group <code>Setup_-_Alternator_Diagnostics\</code>.</li>
+<li><strong>Data Structure</strong>: Battery Voltage (Volts).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>BTVCN2X</code>
+        </footer>
+    </div>
+</body>
+</html>

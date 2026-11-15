@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPMDEF: RPMDefaultForIdleControl | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8C8F</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle ➔ AIS Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>RPMDEF: RPMDefaultForIdleControl</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>RPMDEF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>RPMDEF_RPMDefaultForIdleControl</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle\AIS_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8C8F</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xA0                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3ii_T3_MTX.tpl.html#L3778-L3789"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_IIv1.asm.html#L1685"><code>CalculateTargetIdleSpeedAndAisPosition_MM</code></a> in <a href="../../T-T3_IIv1.asm.html#L1798"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>RPMDEF</code> defines the default baseline engine speed target utilized by the idle control logic during engine cranking and initial stall recovery. When the starter motor is turning the crankshaft, actual engine speed is typically only 150 to 250 RPM, which is well below normal operating idle speed. If the closed-loop idle control routines were allowed to calculate an error delta against true engine cranking speed, the proportional and integral feedback loops would saturate, commanding maximum opening steps and causing severe over-fueling or high-RPM flare upon catching. To prevent this control loop windup, whenever engine speed is below the threshold set in <a href="../../Idle/AIS_Control/RPMTHS_RPMThresholdForIdleControl.html"><code>RPMTHS</code></a>, the Turbo III controller substitutes <code>RPMDEF</code> as a synthetic engine speed target. In factory calibrations, <code>RPMDEF</code> is set to 160 counts, representing an equivalent engine speed target of approximately 1280 RPM.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Factory Baseline</strong>: * Keep <code>RPMDEF</code> at 160 counts (1280 RPM) for stock and mild street calibrations.</li>
+<li><strong>Aggressive Camshaft Catch</strong>: * For race camshafts with significant overlap, raising <code>RPMDEF</code> to 1350 to 1450 RPM can help the engine bridge the transition from cranking to steady idle.</li>
+<li><strong>Overshoot &amp; Flare Warning</strong>: * Setting <code>RPMDEF</code> higher than 1500 RPM produces excessive throttle flare upon initial firing.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the starter motor is turning the crankshaft, actual engine speed is typically only 150 to 250 RPM, which is well below normal operating idle speed.</p>
+<ul>
+<li>Evaluated inside <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> at line 1798 in <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>RPMDEF</code> at ROM address <code>0x8C8F</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateTargetIdleSpeedAndAisPosition_MM (T-T3_IIv1.asm:1796-1802) ---
+           cmpa RPMTHS_RPMThresholdForIdleControl    ; compare a with memory contents (data is 10)
+           bcc  L9870          ; branch if greater or equal
+           ldaa RPMDEF_RPMDefaultForIdleControl    ; load a with memory contents (data is a0)
+           jmp  L9B65
+
+   L9870:  bset *BitFlags_36, #$%00010000    ; set bits
+           bra  L9888          ; branch</code></pre>
+<p>The CPU executes <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> where <code>RPMDEF</code> is loaded, compared, or interpolated from ROM address <code>0x8C8F</code> at line 1798.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Paired Parameter</strong>: Must always be tuned in coordination with <a href="../../Idle/AIS_Control/RPMTHS_RPMThresholdForIdleControl.html"><code>RPMTHS</code></a>, which establishes the RPM threshold below which <code>RPMDEF</code> is active.</li>
+<li><strong>Scaling</strong>: 1 count = 8 RPM in the 16-bit register context, or 1 count = 32 RPM on the 8-bit scale (160 counts = 1280 RPM).</li>
+<li><strong>Factory Value</strong>: 0xA0 (160 counts).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>RPMDEF</code>
+        </footer>
+    </div>
+</body>
+</html>

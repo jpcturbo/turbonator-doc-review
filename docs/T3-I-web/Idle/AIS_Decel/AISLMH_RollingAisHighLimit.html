@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AISLMH: RollingAisHighLimit | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8DD7</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle ➔ AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>AISLMH: RollingAisHighLimit</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>AISLMH</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>AISLMH_RollingAisHighLimit</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle\AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8DD7</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Stepper Motor Position (steps / counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x1A                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L4396-L4407"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L1984"><code>HandleAcCutout</code></a> in <a href="../../T-T3v1.asm.html#L2244"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>AISLMH</code> defines the upper step limit offset added to baseline idle position to clamp the maximum opening of the idle stepper motor during rolling idle mode. While operating in rolling idle mode, closed-loop feedback dynamically adjusts stepper motor position to match target rolling idle speed. If an unexpected load or manifold pressure transient occurs, or if the driver coasts downhill with the throttle closed, unconstrained closed-loop feedback could drive the stepper motor open to near-maximum travel, causing the engine to flare loudly upon clutching in. <code>AISLMH</code> establishes a protective upper boundary: the desired motor position during rolling idle is never permitted to exceed baseline steps plus <code>AISLMH</code>. In factory calibrations, <code>AISLMH</code> is set to 32 counts, capping rolling idle opening at 32 steps above baseline.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Preventing Rolling Idle Flare</strong>: * Lower <code>AISLMH</code> from 32 to 16 to 20 steps if engine speed flares upward while coasting in neutral.</li>
+<li><strong>Heavy Load Headroom</strong>: * Increase <code>AISLMH</code> to 40 to 45 steps if large dual cooling fans pull down rolling idle speed below target.</li>
+<li><strong>Pairing with AISLML</strong>: * Forms the upper boundary of the rolling idle window; balance against <a href="../../Idle/AIS_Decel/AISLML_RollingAisLowLimit.html"><code>AISLML</code></a> (lower floor).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect while operating in rolling idle mode, closed-loop feedback dynamically adjusts stepper motor position to match target rolling idle speed.</p>
+<ul>
+<li>Evaluated inside <code>HandleAcCutout</code> at line 2244 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>AISLMH</code> at ROM address <code>0x8DD7</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>HandleAcCutout</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- HandleAcCutout (T-T3v1.asm:2242-2248) ---
+   L9B3E:  ldaa #0xff          ; load a with value -11111111-
+   L9B40:  staa Temp0          ; store a into memory
+           adda AISLMH_RollingAisHighLimit    ;  (data is 1a)
+           bcs  L9B4B          ; branch if lower
+           cmpa DesiredNewAisPosition    ; compare a with memory contents
+           bcs  L9B56          ; branch if lower
+   L9B4B:  ldaa Temp0          ; load a with memory contents</code></pre>
+<p>The CPU executes <code>HandleAcCutout</code> where <code>AISLMH</code> is loaded, compared, or interpolated from ROM address <code>0x8DD7</code> at line 2244.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameter</strong>: Direct counterpart to <a href="../../Idle/AIS_Decel/AISLML_RollingAisLowLimit.html"><code>AISLML</code></a> (rolling idle low limit).</li>
+<li><strong>Window Architecture</strong>: Together, <code>AISLMH</code> and <a href="../../Idle/AIS_Decel/AISLML_RollingAisLowLimit.html"><code>AISLML</code></a> create a dynamic control band centered around baseline idle steps.</li>
+<li><strong>Factory Value</strong>: 0x20 (32 counts = +32 steps).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>AISLMH</code>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCLMER: MinTimeEngineRunningForDecelFuelShutoff | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x84CB</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Decel Fuel Shutoff</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DCLMER: MinTimeEngineRunningForDecelFuelShutoff</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DCLMER</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_MinTimeEngineRunningForDecelFuelShutoff</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Decel_Fuel_Shutoff\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x84CB</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Time Duration (seconds or loop counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L5649-L5660"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L1870"><code>DecideToUseDecelFuelCut</code></a> in <a href="../T-SBECII_v1.asm.html#L1873"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DCLMER</code> defines the minimum engine run time required after startup before decel fuel shutoff logic is permitted to activate. Immediately following engine start, combustion chamber temperatures are stabilizing, oil pressure is building, and idle speed is settling. <code>DCLMER</code> enforces an initial grace period where fuel injection is never cut on deceleration, ensuring smooth drivability when maneuvering out of a driveway or parking space immediately after starting. In factory calibrations, <code>DCLMER</code> is set to 2 counts, corresponding to approximately 2 seconds of engine run time.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Post-Start Stall Prevention</strong>: * Increase <code>DCLMER</code> to 5-10 seconds if the engine hesitates or stalls when closing the throttle shortly after startup.</li>
+<li><strong>Cold Driveaway Cushioning</strong>: * Ensures the engine has established stable manifold vacuum before fuel cutouts engage.</li>
+<li><strong>Disarming Decel Logic</strong>: * If run time has not reached <code>DCLMER</code>, the decel fuel cut flag is forced clear.</li>
+<li><strong>Companion Qualifications</strong>: * Evaluated directly ahead of <a href="../Decel_Fuel_Shutoff/T_MinCoolantTempForDecelFuelShutoff.html"><code>DCLMCT</code></a> in the primary decel fuel qualification sequence.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect after startup before decel fuel shutoff logic is permitted to activate.</p>
+<ul>
+<li>Evaluated inside <code>DecideToUseDecelFuelCut</code> at line 1873 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>DCLMER</code> at ROM address <code>0x84CB</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>DecideToUseDecelFuelCut</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- DecideToUseDecelFuelCut (T-SBECII_v1.asm:1871-1877) ---
+           brset *BitFlags_AIS, #$%00001000, ClearDFCFlag    ; branch if bit(s) set
+           ldaa  KeyOnOrEngineRunningTime    ; load A with memory contents
+           cmpa  DCLMER_MinTimeEngineRunningForDecelFuelShutoff    ; compare A with memory contents (data is 02)
+           bls   ClearDFCFlag         ; branch if lower or same
+           ldaa  CoolantTemp    ; load A with memory contents
+           cmpa  DCLMCT_MinCoolantTempForDecelFuelShutoff    ; compare A with memory contents (data is d2)
+           bls   ClearDFCFlag         ; branch if lower or same</code></pre>
+<p>The CPU executes <code>DecideToUseDecelFuelCut</code> where <code>DCLMER</code> is loaded, compared, or interpolated from ROM address <code>0x84CB</code> at line 1873.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>T-SBECII Architecture</strong>: Part of the complete Decel Fuel Shutoff subsystem implemented in T-SBECII sequential firmware.</li>
+<li><strong>Counter Variable</strong>: <code>KeyOnOrEngineRunningTime</code> tracks elapsed time in seconds since key-on.</li>
+<li><strong>Transmission Safety</strong>: Automatic vehicles in gear (<code>b0c_ATXInGear</code> set) bypass the entire decel fuel cut routine to prevent torque converter shudder.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>DCLMER</code>
+        </footer>
+    </div>
+</body>
+</html>

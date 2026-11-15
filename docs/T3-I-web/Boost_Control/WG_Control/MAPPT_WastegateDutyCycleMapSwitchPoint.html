@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAPPT: WastegateDutyCycleMapSwitchPoint | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8ED5</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Boost Control ➔ WG Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MAPPT: WastegateDutyCycleMapSwitchPoint</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MAPPT</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MAPPT_WastegateDutyCycleMapSwitchPoint</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Boost_Control\WG_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8ED5</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Boost Pressure (psi)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x46                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L5142-L5154"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L9505"><code>BC_LookupWGDutyCycleBase</code></a> in <a href="../../T-T3v1.asm.html#L9524"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MAPPT</code> sets the manifold gauge pressure switch point that divides low-load adaptive wastegate learning from high-load RPM-split adaptive learning in T1 control. In Chrysler's 5-cell adaptive wastegate architecture, Cell 1 handles boost levels below <code>MAPPT</code> across all engine speeds. Once target boost exceeds barometric pressure plus <code>MAPPT</code>, the controller switches into Cells 2 through 5, which are partitioned by engine speed. In factory calibrations, <code>MAPPT</code> is set to 68 counts (approximately 7.8 psi of boost).</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Adaptive Cell Switch Point</strong>: * Boost threshold dividing low-load Cell 1 from RPM-split high-load Cells 2 through 5. * Factory setting is 68 counts (approximately 7.8 psi boost above atmospheric pressure).</li>
+<li><strong>Positioning Relative to Spring Pressure</strong>: * Set <code>MAPPT</code> 1 to 2 psi above mechanical wastegate spring pressure so low-load spooling stays in Cell 1.</li>
+<li><strong>3-Bar MAP Sensor Rescaling</strong>: * When converting to a 3-bar MAP sensor, divide count value by approximately 1.5 to maintain proper physical psi switching.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect once target boost exceeds barometric pressure plus MAPPT, the controller switches into Cells 2 through 5, which are partitioned by engine speed.</p>
+<ul>
+<li>Evaluated inside <code>BC_LookupWGDutyCycleBase</code> at line 9524 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>MAPPT</code> at ROM address <code>0x8ED5</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>BC_LookupWGDutyCycleBase</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- BC_LookupWGDutyCycleBase (T-T3v1.asm:9522-9528) ---
+           ldaa BoostTarget    ; load a with memory contents
+           ldab BaroPressure    ; load b with memory contents
+           addb MAPPT_WastegateDutyCycleMapSwitchPoint    ;  (data is 46)
+           bcc  BC_SelectAdaptiveWGCell    ; branch if greater or equal
+           ldab #0xff          ; load b with value -11111111-
+BC_SelectAdaptiveWGCell:
+           ldx  #DCCOR1_AdaptiveWastegateCellBelow3psi    ; load index with value</code></pre>
+<p>The CPU executes <code>BC_LookupWGDutyCycleBase</code> where <code>MAPPT</code> is loaded, compared, or interpolated from ROM address <code>0x8ED5</code> at line 9524.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Grid Partition</strong>: Defines the gateway into the 4 RPM-partitioned high-boost adaptive cells.</li>
+<li><strong>Factory Value</strong>: 0x44 = 68 counts = approx 7.8 psi boost over barometric pressure.</li>
+<li><strong>T1 vs. T2 Separation</strong>: T1 uses <code>MAPPT</code>; T2 uses its dedicated constant <code>T2MAPPT</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>MAPPT</code>
+        </footer>
+    </div>
+</body>
+</html>

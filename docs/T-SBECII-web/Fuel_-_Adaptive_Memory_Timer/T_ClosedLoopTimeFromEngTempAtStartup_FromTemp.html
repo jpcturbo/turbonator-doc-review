@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLTIME: ClosedLoopTimeFromEngTempAtStartup FromTemp | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x803E</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel - Adaptive Memory Timer</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>CLTIME: ClosedLoopTimeFromEngTempAtStartup FromTemp</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>CLTIME</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_ClosedLoopTimeFromEngTempAtStartup_FromTemp</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel_-_Adaptive_Memory_Timer\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x803E</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 0 (3-point Curve unsigned)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">3 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">Coolant_Temp -200 260 degrees</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">out_desc 0 255 scale</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Temperature (°F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x02                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L568-L581"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L3577"><code>HandleAmTimer_MM</code></a> in <a href="../T-SBECII_v1.asm.html#L3584"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>CLTIME</code> is a two-dimensional lookup table that specifies the elapsed delay time required before the engine controller transitions from open-loop startup enrichment into closed-loop oxygen sensor feedback, indexed against startup coolant temperature. Freshly cranked engines require rich open-loop fuel delivery to maintain steady combustion until cylinders warm and intake manifold air velocity stabilizes. In stock calibrations, <code>CLTIME</code> specifies approximately 8.4 seconds at 84 degF and approximately 14 seconds at 132 degF, where each count represents approximately 2.8 seconds. This programmed delay ensures the engine runs smoothly during post-start idle before closed-loop feedback takes authority.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Cold Start Driveability</strong>: * Increasing table points extends open-loop enrichment after starting, curing lean stumbles and idle surging during cold drive-away.</li>
+<li><strong>Alternative Fuels (E85)</strong>: * Ethanol requires higher latent heat of vaporization; lengthening <code>CLTIME</code> prevents the narrowband sensor from pulling needed warmup fuel.</li>
+<li><strong>Warm Restart Optimization</strong>: * Lowering points at warm temperatures reduces fuel smell and stabilizes hot restart idle more quickly.</li>
+<li><strong>Minimum Value</strong>: * Setting to zero allows instantaneous closed-loop entry if <a href="../Fuel_-_Adaptive_Memory_Timer/T_TempToStartCLTIMETimer.html"><code>CLTEMP</code></a> is satisfied.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect after engine startup, defining the delay timer across coolant temperature before closed-loop oxygen sensor feedback is enabled.</p>
+<ul>
+<li>Evaluated inside <code>HandleAmTimer_MM</code> at line 3584 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>CLTIME</code> at ROM address <code>0x803E</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>HandleAmTimer_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- HandleAmTimer_MM (T-SBECII_v1.asm:3582-3588) ---
+           staa  Timer_O2CNTR_CountdownFromAbove196FtoEnableClosedLoop    ; store A into memory
+           ldaa  CoolantTemp    ; load A with memory contents
+           ldx   #CLTIME_ClosedLoopTimeFromEngTempAtStartup_FromTemp    ; load index with value
+           jsr   Lookup4ByteTable    ; call subroutine
+           staa  Timer_CLTIME_ClosedLoopTimer    ; store A into memory
+           bclr  *BitFlags66, #b66_OpenLoop    ; clear bits
+AMTimer_EngineRunning:</code></pre>
+<p>The CPU executes <code>HandleAmTimer_MM</code> where <code>CLTIME</code> is loaded, compared, or interpolated from ROM address <code>0x803E</code> at line 3584.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Paired with <a href="../Fuel_-_Adaptive_Memory_Timer/T_TempToStartCLTIMETimer.html"><code>CLTEMP</code></a> (coolant temp threshold to start this timer) and <a href="../Fuel_-_O2_Controller/T_DelayTimeToClosedLoop.html"><code>O2TIME</code></a> (delayed qualification timer).</li>
+<li><strong>Table Scaling</strong>: Type 0 curve with 2 calibration points; X-axis is Coolant Temperature (-200 to 260 degF), Y-axis is delay counts (2.8 seconds per count).</li>
+<li><strong>Persistence</strong>: Loaded into RAM variable <code>Timer_CLTIME_ClosedLoopTimer</code> at key-on; decrements toward zero while running.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>CLTIME</code>
+        </footer>
+    </div>
+</body>
+</html>

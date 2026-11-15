@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DLYTM3: AisDelayAfterThrottleClosesWhenRpmAbove DLYRPM | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8DA3</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle ➔ AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DLYTM3: AisDelayAfterThrottleClosesWhenRpmAbove DLYRPM</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DLYTM3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DLYTM3_AisDelayAfterThrottleClosesWhenRpmAbove_DLYRPM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle\AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8DA3</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xD0                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L4123-L4134"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L11380"><code>CheckThrottle_AtIdle</code></a> in <a href="../../T-T3v1.asm.html#L11394"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DLYTM3</code> defines the extended time delay that the engine controller holds the idle air stepper motor in open dashpot position when the throttle snaps shut at a standstill with engine speed above <a href="../../Idle/AIS_Decel/DLYRPM_RpmTriggerForAisDelay.html"><code>DLYRPM</code></a>. When an engine is revved up to high RPM in neutral and the throttle is abruptly released, the rotating assembly generates massive momentum, and intake manifold vacuum plunges violently. To safely catch the engine from high RPM without risking a severe vacuum undershoot stall, the controller enforces an extended dashpot delay before allowing closed-loop idle feedback to take over. Whenever closed throttle is detected at low vehicle speed (below <a href="../../Idle/AIS_Decel/MPHREF_SwitchPointForDecelIdleAisControl.html"><code>MPHREF</code></a>) and engine speed is at or above <a href="../../Idle/AIS_Decel/DLYRPM_RpmTriggerForAisDelay.html"><code>DLYRPM</code></a>, the controller loads <code>DLYTM3</code> into the feedback lockout timer. In factory calibrations, <code>DLYTM3</code> is set to 255 counts, providing a prolonged dashpot hold of approximately 16 seconds until engine speed settles safely.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Crisper Free-Rev RPM Return</strong>: * Lower <code>DLYTM3</code> from 255 counts (~16 seconds) down to 50 to 80 counts (~3 to 5 seconds) to eliminate excessive idle hang after revving the engine in neutral.</li>
+<li><strong>High-RPM Neutral Stall Protection</strong>: * Ensure <code>DLYTM3</code> remains at or above 40 counts (~2.5 seconds) so aggressive camshafts have adequate time to catch descending revs.</li>
+<li><strong>Threshold Trigger</strong>: * Only triggers when engine speed exceeds <a href="../../Idle/AIS_Decel/DLYRPM_RpmTriggerForAisDelay.html"><code>DLYRPM</code></a> (factory ~1500 RPM) at standstill.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when the throttle snaps shut from elevated RPM, extending the idle air dashpot hold delay before resuming closed-loop idle control.</p>
+<ul>
+<li>Evaluated inside <code>CheckThrottle_AtIdle</code> at line 11394 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>DLYTM3</code> at ROM address <code>0x8DA3</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CheckThrottle_AtIdle</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CheckThrottle_AtIdle (T-T3v1.asm:11392-11398) ---
+           bhi  CheckThrottle_VehicleSpeedStillAboveDecelIdle    ; branch if higher
+           inx                 ; increment index (x=x+1)
+           ldaa DLYTM3_AisDelayAfterThrottleClosesWhenRpmAbove_DLYRPM    ; load a with memory contents (data is d0)
+           ldab EngineRpm_HB    ; load b with memory contents
+           cmpb DLYRPM_RpmTriggerForAisDelay    ; compare b with memory contents (data is 3d)
+           bcc  LED10          ; branch if greater or equal
+CheckThrottle_VehicleSpeedStillAboveDecelIdle:</code></pre>
+<p>The CPU executes <code>CheckThrottle_AtIdle</code> where <code>DLYTM3</code> is loaded, compared, or interpolated from ROM address <code>0x8DA3</code> at line 11394.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameter</strong>: Direct gating partner to <a href="../../Idle/AIS_Decel/DLYRPM_RpmTriggerForAisDelay.html"><code>DLYRPM</code></a>.</li>
+<li><strong>Maximum Delay Ceiling</strong>: Factory value 0xFF represents maximum timer saturation (~16 seconds).</li>
+<li><strong>Alternative Branch</strong>: When RPM is below <a href="../../Idle/AIS_Decel/DLYRPM_RpmTriggerForAisDelay.html"><code>DLYRPM</code></a>, execution falls through to load <a href="../../Idle/AIS_Decel/DLYTM2_AisDelayAfterThrottleClosesWhenStopped.html"><code>DLYTIM2</code></a> instead.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>DLYTM3</code>
+        </footer>
+    </div>
+</body>
+</html>

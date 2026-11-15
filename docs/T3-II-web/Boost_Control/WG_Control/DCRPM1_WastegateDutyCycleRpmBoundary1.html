@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCRPM1: WastegateDutyCycleRpmBoundary1 | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8EE9</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Boost Control ➔ WG Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DCRPM1: WastegateDutyCycleRpmBoundary1</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DCRPM1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DCRPM1_WastegateDutyCycleRpmBoundary1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Boost_Control\WG_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8EE9</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x7D                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3ii_T3_MTX.tpl.html#L5357-L5368"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_IIv1.asm.html#L9161"><code>BC_SelectAdaptiveWGCell</code></a> in <a href="../../T-T3_IIv1.asm.html#L9167"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DCRPM1</code> establishes the first engine speed boundary dividing the RPM-split adaptive wastegate cells in high-boost operation. When target boost exceeds the <a href="../../Boost_Control/WG_Control/MAPPT_WastegateDutyCycleMapSwitchPoint.html"><code>MAPPT</code></a> switch point, the controller assigns adaptive duty cycle trims across four separate RPM cells (Cells 2 through 5). <code>DCRPM1</code> defines the boundary between Cell 2 (low-to-mid RPM spool-up) and Cell 3 (mid-range torque band). Shared between T1 and T2 control routines.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>First RPM Adaptive Boundary</strong>: * Engine speed threshold separating adaptive Cell 2 from Cell 3 in high-boost mode. * Factory setting is 125 counts (approximately 4000 RPM in template, or 4200 RPM in ASM).</li>
+<li><strong>Spool-Up Partitioning</strong>: * Keep <code>DCRPM1</code> positioned at the top of the initial spool-up curve so spool transients stay isolated in Cell 2.</li>
+<li><strong>Shared Code Usage</strong>: * Evaluated in both <code>CalcWGDutyCycleT1</code> (line 9656) and <code>CalcWGDutyCycleT2</code> (line 9936).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when target boost exceeds the MAPPT switch point, the controller assigns adaptive duty cycle trims across four separate RPM cells (Cells 2 through 5).</p>
+<ul>
+<li>Evaluated inside <code>BC_SelectAdaptiveWGCell</code> at line 9167 in <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>DCRPM1</code> at ROM address <code>0x8EE9</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>BC_SelectAdaptiveWGCell</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- BC_SelectAdaptiveWGCell (T-T3_IIv1.asm:9165-9171) ---
+           inx                 ; increment index (x=x+1)
+           ldab EngineRpm_HB    ; load b with memory contents
+           cmpb DCRPM1_WastegateDutyCycleRpmBoundary1    ; compare b with memory contents (data is 7d)
+           bcs  LD748          ; branch if lower
+           inx                 ; increment index (x=x+1)
+           cmpb DCRPM2_WastegateDutyCycleRpmBoundary2    ; compare b with memory contents (data is 96)
+           bcs  LD748          ; branch if lower</code></pre>
+<p>The CPU executes <code>BC_SelectAdaptiveWGCell</code> where <code>DCRPM1</code> is loaded, compared, or interpolated from ROM address <code>0x8EE9</code> at line 9167.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Shared Constant</strong>: Referenced by both T1 and T2 adaptive selection algorithms.</li>
+<li><strong>Scaling</strong>: 32 RPM per count (125 counts = 4000 RPM).</li>
+<li><strong>Cell Range</strong>: Cell 2 governs high-boost adaptation from <a href="../../Boost_Control/WG_Control/DCRPML_NoWastegateDutyCycleCorrectionBelowThisRpm.html"><code>DCRPML</code></a> up to <code>DCRPM1</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>DCRPM1</code>
+        </footer>
+    </div>
+</body>
+</html>

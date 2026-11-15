@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOTRG2: SecondDecelLeanoutTrigger | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x841F</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ D - Transient Enrichment ➔ Decel Lean-out ➔ Decreasing TPS LO</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>LOTRG2: SecondDecelLeanoutTrigger</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>LOTRG2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>LOTRG2_SecondDecelLeanoutTrigger</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\D_-_Transient_Enrichment\Decel_Lean-out\Decreasing_TPS_LO\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x841F</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Time Duration (seconds or loop counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x0A                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SBEC_25_MTX_A593_Stock.tpl.html#L2298-L2309"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-SBEC_v4.asm.html#L5852"><code>TransFuel_CalculateDecreasingTPSTransientFuel</code></a> in <a href="../../../../T-SBEC_v4.asm.html#L5867"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>LOTRG2</code> defines the second, more aggressive trigger threshold for throttle-based deceleration lean-out. While small throttle closures between the primary trigger and <code>LOTRG2</code> cause the engine controller to increment lean-out gradually, rapid throttle closures that exceed <code>LOTRG2</code> immediately engage full deceleration lean-out from the temperature table. In the stock calibration, this parameter is set to 255 counts, preventing maximum throttle decel lean-out from ever being triggered.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Two-Stage Deceleration Tuning</strong>: When enabling throttle deceleration lean-out, set <code>LOTRG2</code> approximately 5 to 10 counts higher than <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_TPS_LO/LOTTRG_DeltaTriggerForDecelLeanout.html"><code>LOTTRG</code></a> (e.g. <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_TPS_LO/LOTTRG_DeltaTriggerForDecelLeanout.html"><code>LOTTRG</code></a> = 5 counts, <code>LOTRG2</code> = 10 counts).</li>
+<li><strong>Immediate Full Lean-out</strong>: Abrupt pedal lift-offs that exceed <code>LOTRG2</code> bypass the gradual ramping logic and jump directly to full table lean-out.</li>
+<li><strong>Incremental-Only Configuration</strong>: Leaving <code>LOTRG2</code> at 255 counts while lowering <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_TPS_LO/LOTTRG_DeltaTriggerForDecelLeanout.html"><code>LOTTRG</code></a> limits deceleration lean-out to gradual, incremental mode only.</li>
+<li><strong>Threshold Alignment</strong>: Must always be set strictly greater than <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_TPS_LO/LOTTRG_DeltaTriggerForDecelLeanout.html"><code>LOTTRG</code></a>.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during aggressive throttle drop-off, activating a secondary, stronger deceleration leanout rate.</p>
+<ul>
+<li>Evaluated inside <code>TransFuel_CalculateDecreasingTPSTransientFuel</code> at line 5867 in <a href="../../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>LOTRG2</code> at ROM address <code>0x841F</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>TransFuel_CalculateDecreasingTPSTransientFuel</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- TransFuel_CalculateDecreasingTPSTransientFuel (T-SBEC_v4.asm:5865-5871) ---
+   LB906:  cmpa LOTTRG_DeltaTriggerForDecelLeanout    ; compare a with memory contents (data is 0b)
+           bcs  TransFuel_ClearLeanOutFactor    ; branch if lower
+           cmpa LOTRG2_SecondDecelLeanoutTrigger    ; compare a with memory contents (data is 0b)
+           bcs  LB91A          ; branch if lower
+           ldaa CoolantTemp    ; load a with memory contents
+           ldx  #LOTTHR_DecelLeanoutFactor_FromTemp    ; load index with value
+           jsr  Lookup4ByteTable    ; call subroutine</code></pre>
+<p>The CPU executes <code>TransFuel_CalculateDecreasingTPSTransientFuel</code> where <code>LOTRG2</code> is loaded, compared, or interpolated from ROM address <code>0x841F</code> at line 5867.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Stage-Two Threshold</strong>: Directly separates single-step incremental lean-out from full-table lean-out.</li>
+<li><strong>Template Disabling</strong>: Set to 0xFF in stock calibrations.</li>
+<li><strong>Companion Parameters</strong>: Coordinates with <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_TPS_LO/LOTTRG_DeltaTriggerForDecelLeanout.html"><code>LOTTRG</code></a>, <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_TPS_LO/LOTHYS_LeanoutDeltaThrottleHysteresis.html"><code>LOTHYS</code></a>, and <a href="../../../../1_-_Fuel/D_-_Transient_Enrichment/Decel_Lean-out/Decreasing_TPS_LO/LOTTHR_DecelLeanoutFactor_FromTemp.html"><code>LOTTHR</code></a>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>LOTRG2</code>
+        </footer>
+    </div>
+</body>
+</html>

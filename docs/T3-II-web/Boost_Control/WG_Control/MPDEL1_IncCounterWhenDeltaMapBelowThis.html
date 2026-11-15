@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MPDEL1: IncCounterWhenDeltaMapBelowThis | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8ED7</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Boost Control ➔ WG Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MPDEL1: IncCounterWhenDeltaMapBelowThis</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MPDEL1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MPDEL1_IncCounterWhenDeltaMapBelowThis</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Boost_Control\WG_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8ED7</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Boost Pressure (psi)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x07                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3ii_T3_MTX.tpl.html#L5118-L5130"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_IIv1.asm.html#L8901"><code>Boost_LookAtCylRetards</code></a> in <a href="../../T-T3_IIv1.asm.html#L8935"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MPDEL1</code> defines the minimum positive boost error threshold (overboost) required before the engine controller begins timing an adaptive duty cycle reduction in T1 control. If actual manifold pressure exceeds the target boost by at least <code>MPDEL1</code>, the controller starts incrementing an internal error timer (<code>Timer_BoostErrTimer</code>). If the overboost condition persists continuously until the timer expires, the active adaptive wastegate cell is decremented, reducing base duty cycle to bring sustained boost back down to target.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Overboost Adaptive Sensitivity</strong>: * Minimum pressure delta above target (<code>Actual - Target</code>) required to start timing an adaptive cell decrement. * Factory setting is 2 counts (approximately 0.23 psi overboost).</li>
+<li><strong>Preventing False Downward Trims</strong>: * Setting <code>MPDEL1</code> higher (0.5 to 1.0 psi) prevents brief gear-change spikes from causing downward adaptation of base WGDC.</li>
+<li><strong>3-Bar MAP Scaling</strong>: * On 3-bar MAP conversions, divide the count value in half to preserve the same physical psi sensitivity threshold.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during boost control, setting the first manifold pressure delta threshold for incrementing the boost control counter.</p>
+<ul>
+<li>Evaluated inside <code>Boost_LookAtCylRetards</code> at line 8935 in <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>MPDEL1</code> at ROM address <code>0x8ED7</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>Boost_LookAtCylRetards</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- Boost_LookAtCylRetards (T-T3_IIv1.asm:8933-8939) ---
+           beq  LD5B6          ; branch if equal (zero)
+           ldaa 0x00, X        ; load a with memory at index + value
+           cmpa MPDEL1_IncCounterWhenDeltaMapBelowThis    ; compare a with memory contents (data is 07)
+           bcs  LD5A2          ; branch if lower
+           ldab WastegateDutyCycleIncreaseFromKnock    ; load b with memory contents
+           subb DCDECK_WastegateDutyCycleDecrementWhenSparkStillDerated    ; subtract memory contents from b (data is 02)
+           bcc  LD5B7          ; branch if greater or equal</code></pre>
+<p>The CPU executes <code>Boost_LookAtCylRetards</code> where <code>MPDEL1</code> is loaded, compared, or interpolated from ROM address <code>0x8ED7</code> at line 8935.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Adaptive Gate</strong>: Must be exceeded continuously for <a href="../../Boost_Control/WG_Control/DECPT_AdaptiveDecAfterThisTime.html"><code>DECPT</code></a> timer counts before adaptive cell decrements.</li>
+<li><strong>Factory Value</strong>: 0x02 = 2 counts = approx 0.23 psi above target.</li>
+<li><strong>Stability Pairing</strong>: Paired directly with <a href="../../Boost_Control/WG_Control/MPFLOR_StopAdaptiveWGWhenDeltaMapIsLessThanThis.html"><code>MPFLOR</code></a> (manifold noise filter) in the downward adaptive branch.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>MPDEL1</code>
+        </footer>
+    </div>
+</body>
+</html>

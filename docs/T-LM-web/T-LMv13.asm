@@ -163,7 +163,7 @@ CodeOrg == 0xc900 ;C800
 ; 
 ; !!! This line is now written by MP Tuner when you specify the template to build with. !!!
 
-.define CalDataFile /F:\Thumbdrive\BoostButton\Products\Cal Data\Source Files\87T2_Master\v13\T-LM_25_MTX_CUST.tpl/
+.define CalDataFile /C:\Users\jpctu\Dropbox\ROM\T-Cals AI Review\cals\LM-87\JPC_KCAR_T_LM_22_ATX_S-IV_WideBand_12-updated.tpl/
 
 ; only change the filename portion of this line; the '.asm' is not needed
 

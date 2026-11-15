@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMBHIG: BattTempHighWhenCold | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x849A</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Setup - On-Board Diagnostics</strong> &nbsp;|&nbsp; Subsystem: <strong>Diagnostics_OBD</strong>
+        </div>
+        
+        <article class="content">
+            <h1>AMBHIG: BattTempHighWhenCold</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>AMBHIG</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_BattTempHighWhenCold</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Diagnostics_OBD</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Setup_-_On-Board_Diagnostics\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x849A</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Temperature (°F)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xF9                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L5094-L5105"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L1004"><code>CheckFor_FANMAP</code></a> in <a href="../T-SBECII_v1.asm.html#L1008"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>AMBHIG</code> establishes the upper electrical voltage boundary for the ambient air and battery temperature sensor analog input circuit. An internal 5.0-volt pull-up resistor inside the engine controller biases the circuit so that a broken wire, loose connector pin, or disconnected sensor pulls the signal to 5.0 volts. In factory calibrations, <code>AMBHIG</code> is configured to 250 counts, representing approximately 4.90 volts (equivalent to extreme sub-freezing temperatures below -30 deg F). If measured ambient temperature sensor voltage exceeds <code>AMBHIG</code>, the engine controller flags <strong>Fault Code 44</strong>, logs an ambient temperature sensor fault, and substitutes the fixed 13.8-volt default charging target.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Open Circuit Diagnostics</strong>: * If Fault Code 44 is present, verify that the battery temperature sensor located under the battery tray is plugged in securely.</li>
+<li><strong>Winter Climate Margin</strong>: * Avoid lowering <code>AMBHIG</code> below 248 counts to prevent false open-circuit faults during sub-zero winter cold starts.</li>
+<li><strong>Edge Cases</strong>: * Setting <code>AMBHIG</code> to 255 counts disables open-circuit detection. * Setting <code>AMBHIG</code> lower than normal ambient temperature voltage locks the charging system permanently into fallback mode.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if measured ambient temperature sensor voltage exceeds AMBHIG, the engine controller flags Fault Code 44, logs an ambient temperature sensor fault, and substitutes the fixed 13.8-volt default charging target.</p>
+<ul>
+<li>Evaluated inside <code>CheckFor_FANMAP</code> at line 1008 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>AMBHIG</code> at ROM address <code>0x849A</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CheckFor_FANMAP</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CheckFor_FANMAP (T-SBECII_v1.asm:1006-1012) ---
+           bcc   L9608         ; branch if greater or equal
+           ldaa  AmbientAirTempVolts    ; load A with memory contents
+           cmpa  AMBHIG_BattTempHighWhenCold    ; compare A with memory contents (data is f9)
+           bhi   L9608         ; branch if higher
+           brclr *StartupSwitchMirror2, #$%10000000, L95E2    ; branch if bit(s) clear
+           brset *BitFlags6E, #$%01000000, L95E6    ; branch if bit(s) set
+           bra   L95E8         ; branch</code></pre>
+<p>The CPU executes <code>CheckFor_FANMAP</code> where <code>AMBHIG</code> is loaded, compared, or interpolated from ROM address <code>0x849A</code> at line 1008.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Identifiers</strong>: Works with <a href="../Setup_-_On-Board_Diagnostics/T_BattTempLowWhenHot.html"><code>AMBLOW</code></a> (low voltage limit) and <code>CCDBTV</code> (charging voltage output).</li>
+<li><strong>Diagnostic Code</strong>: DRB-II Fault Code 44 (battery temperature sensor circuit failure).</li>
+<li><strong>Alternator Control</strong>: When valid, target charging voltage varies between 13.5 volts (hot battery) and 14.8 volts (freezing battery).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>AMBHIG</code>
+        </footer>
+    </div>
+</body>
+</html>

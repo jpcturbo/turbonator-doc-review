@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MINADW: MinAntiDwellPeriod | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x04CE</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>2 - Spark ➔ E - Dwell Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>MINADW: MinAntiDwellPeriod</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>MINADW</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>MINADW_MinAntiDwellPeriod</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>2_-_Spark\E_-_Dwell_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x04CE</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 4 (16-bit Word Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">16-bit Word Value</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.word 0x0190                     ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L1229-L1239"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L7275"><code>IncludeDwellTime</code></a> in <a href="../../T-SBEC_v4.asm.html#L7278"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>MINADW</code> defines the minimum anti-dwell period (time between spark firing and the start of the next coil charge cycle) enforced by the engine controller. After the ignition driver transistor opens to collapse the coil primary magnetic field and fire the spark plug, the coil secondary winding produces a high-voltage spark arc across the plug gap that burns for a distinct physical duration (typically 0.8 to 1.5 milliseconds). If the controller were to turn the coil primary back on before the spark arc fully extinguishes, the arc would be cut short, leading to incomplete combustion, and the driver transistor would suffer thermal overlap stress. In factory calibrations, <code>MINADW</code> is calibrated to 200 counts, corresponding to approximately 400 microseconds, enforcing an absolute minimum non-conductive rest time for the coil between firing events.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Hardware Protection Floor</strong>: * <code>MINADW</code> protects the ignition coil and ECU power transistor from 100% duty cycle lockup at high engine speeds.</li>
+<li><strong>High-RPM Dwell Clamping</strong>: * If total cylinder pulse period minus desired dwell drops below <code>MINADW</code>, dwell is automatically reduced so anti-dwell never falls below this floor.</li>
+<li><strong>Retain Factory Setting</strong>: * Maintain 400 microseconds (200 counts) unless utilizing specialized external capacitive discharge ignition (CDI) modules.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if the controller were to turn the coil primary back on before the spark arc fully extinguishes, the arc would be cut short, leading to incomplete combustion, and the driver transistor would suffer thermal overlap stress.</p>
+<ul>
+<li>Evaluated inside <code>IncludeDwellTime</code> at line 7278 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>MINADW</code> at ROM address <code>0x04CE</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>IncludeDwellTime</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- IncludeDwellTime (T-SBEC_v4.asm:7276-7282) ---
+           subd  DwellTime_HB
+           bls   UseMaxDwell         ; branch if lower or same
+           cpd   MINADW_MinAntiDwellPeriod
+           bcc   StoreAntiDwell         ; branch if greater or equal
+UseMaxDwell:
+           ldd   MINADW_MinAntiDwellPeriod
+StoreAntiDwell:</code></pre>
+<p>The CPU executes <code>IncludeDwellTime</code> where <code>MINADW</code> is loaded, compared, or interpolated from ROM address <code>0x04CE</code> at line 7278.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Floating vs. Clamped Anti-Dwell</strong>: When period allows, anti-dwell floats (Period - Dwell); at high RPM, clamps to <code>MINADW</code>.</li>
+<li><strong>Type 4 Constant</strong>: 16-bit word constant. Factory setting 0x00C8 = 200 counts ≈ 400 microseconds.</li>
+<li><strong>Hardware Output Compare</strong>: Directly loaded into CPU timer compare register OC5 during ignition sequencing.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>MINADW</code>
+        </footer>
+    </div>
+</body>
+</html>

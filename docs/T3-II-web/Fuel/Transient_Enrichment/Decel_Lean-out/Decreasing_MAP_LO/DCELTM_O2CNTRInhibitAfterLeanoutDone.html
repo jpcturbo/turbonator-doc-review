@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCELTM: O2CNTRInhibitAfterLeanoutDone | Turbo III (Gen 2) 16-Valve (T-T3_II) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8B1E</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel ➔ Transient Enrichment ➔ Decel Lean-out ➔ Decreasing MAP LO</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Transient</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DCELTM: O2CNTRInhibitAfterLeanoutDone</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DCELTM</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DCELTM_O2CNTRInhibitAfterLeanoutDone</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Transient</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel\Transient_Enrichment\Decel_Lean-out\Decreasing_MAP_LO\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8B1E</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">8-bit Unsigned Scaling Factor (0 to 255 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x69                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../../T-T3_22_T3ii_T3_MTX.tpl.html#L2437-L2448"><code>T-T3_22_T3ii_T3_MTX.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../../T-T3_IIv1.asm.html#L5628"><code>TransFuel_CalculateDecreasingMAPTransientFuel</code></a> in <a href="../../../../T-T3_IIv1.asm.html#L5666"><code>T-T3_IIv1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DCELTM</code> defines the duration for which closed-loop oxygen sensor feedback is inhibited following maximum deceleration lean-out. When an engine decelerates with leaned-out fuel delivery, the exhaust gas stream temporarily goes very lean. If closed-loop feedback remains active, the oxygen sensor would detect this excess oxygen and command large rich fuel trim corrections, causing the engine to surge rich upon re-opening the throttle. <code>DCELTM</code> freezes oxygen sensor feedback integration during and immediately following deceleration. The factory setting is 0 counts in this calibration, but performance calibrations often incorporate a hold timer.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Preventing False Rich Trims</strong>: Increase <code>DCELTM</code> to 10 to 30 counts (approximately 110 to 330 milliseconds) if wideband data logging shows rich overshooting or fuel trim distortion immediately after deceleration events.</li>
+<li><strong>Exhaust Scavenging Interval</strong>: Inhibiting closed-loop feedback gives the exhaust system time to scavenge fresh air and return to normal stoichiometric conditions before the controller resumes adaptive learning.</li>
+<li><strong>Fuel Economy Considerations</strong>: Setting this timer excessively high keeps the engine in open-loop mode longer than necessary, slightly reducing fuel economy.</li>
+<li><strong>Timing Resolution</strong>: Each count provides 11 milliseconds of inhibit delay.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect following deceleration leanout, setting the lockout time before oxygen sensor closed-loop integration is allowed to resume.</p>
+<ul>
+<li>Evaluated inside <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> at line 5666 in <a href="../../../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>.</li>
+<li>Accesses <code>DCELTM</code> at ROM address <code>0x8B1E</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../../T-T3_IIv1.asm.html"><code>T-T3_IIv1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- TransFuel_CalculateDecreasingMAPTransientFuel (T-T3_IIv1.asm:5664-5670) ---
+           mul                 ; multiply (d=a*b)
+           adca #0x00          ;  -00000000-
+           ldab DCELTM_O2CNTRInhibitAfterLeanoutDone    ; load b with memory contents (data is 69)
+           stab Timer_O2InhibitSwitchingRichIdleToClosedLoop    ; store b into memory
+           nega                ; negate a (set high bit)
+           bra  LBBE6          ; branch
+</code></pre>
+<p>The CPU executes <code>TransFuel_CalculateDecreasingMAPTransientFuel</code> where <code>DCELTM</code> is loaded, compared, or interpolated from ROM address <code>0x8B1E</code> at line 5666.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Timer Scaling</strong>: Scaled at 11 milliseconds per count (e.g. 10 counts = 110 ms, 30 counts = 330 ms).</li>
+<li><strong>Closed-Loop Protection</strong>: Prevents post-deceleration rich bogging caused by false lean oxygen sensor readings during decel.</li>
+<li><strong>Companion Parameters</strong>: Triggered by <a href="../../../../Fuel/Transient_Enrichment/Decel_Lean-out/Decreasing_MAP_LO/DTRG2_DeltaMapTriggerForMaxLeanout.html"><code>DTRG2</code></a> alongside <code>DECEL_DecelLeanoutFactorMAP</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 2) 16-Valve (T-T3_II) Calibration Reference &bull; Generated from <code>DCELTM</code>
+        </footer>
+    </div>
+</body>
+</html>

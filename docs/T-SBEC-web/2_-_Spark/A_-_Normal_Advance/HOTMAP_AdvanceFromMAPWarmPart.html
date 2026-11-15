@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOTMAP: AdvanceFromMAPWarmPart | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8024</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>2 - Spark ➔ A - Normal Advance</strong> &nbsp;|&nbsp; Subsystem: <strong>Spark</strong>
+        </div>
+        
+        <article class="content">
+            <h1>HOTMAP: AdvanceFromMAPWarmPart</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>HOTMAP</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>HOTMAP_AdvanceFromMAPWarmPart</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>2_-_Spark\A_-_Normal_Advance\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8024</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 2 (7-point Signed Curve / Table)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Number of Points</strong></td>
+<td style="text-align: left;">7 Points</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>X-Axis</strong></td>
+<td style="text-align: left;">MAP -14.7 14.7 psi</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Y-Axis</strong></td>
+<td style="text-align: left;">Spark_Advance -64 63.5 Degrees</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Spark Advance (degrees)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x06                       ;Number of points in table</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L663-L681"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L8817"><code>DetermineHotAdvanceFromMap</code></a> in <a href="../../T-SBEC_v4.asm.html#L8823"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>HOTMAP</code> defines the primary warm part-throttle manifold pressure spark advance curve used when the engine is fully warmed up and operating at partial throttle. In Chrysler speed-density engine management, ignition timing is decomposed into an engine speed component and a manifold load component. Under light-load cruising with deep manifold vacuum, the cylinder air-fuel charge is lean and low in density, burning substantially slower than a dense wide-open throttle mixture. To achieve optimal combustion efficiency and fuel economy, <code>HOTMAP</code> commands high advance (up to 15 degrees BTDC) under deep vacuum, progressively reducing timing toward atmospheric pressure and transitioning into retard (down to -8 degrees BTDC at 14.7 psi boost) as manifold pressure builds.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Cruising Efficiency &amp; Throttle Snap</strong>: * Increasing timing in <code>HOTMAP</code> throughout the light-load vacuum range improves fuel mileage and sharpens engine response during light pedal tip-in.</li>
+<li><strong>Boost Transition Caution</strong>: * Avoid excessive advance in the 0 to 5 psi boost region; part-throttle boost knock often occurs here when climbing grades in higher gears.</li>
+<li><strong>WOTMAP Floor Relationship</strong>: * The firmware clamps part-throttle timing so that it cannot drop below the full-throttle curve (<a href="../../2_-_Spark/A_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP</code></a>), ensuring a smooth and predictable timing transition as the driver floors the accelerator.</li>
+<li><strong>3D Surface Synthesis (<code>PTTIME</code>)</strong>: * In MPTune, <code>HOTMAP</code> is visually synthesized with <a href="../../2_-_Spark/A_-_Normal_Advance/GOVNER_AdvanceFromRPM.html"><code>GOVNER</code></a> to produce the full 3D part-throttle spark table (<code>PTTIME</code>).</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during warm, part-throttle driving (engine coolant above operating temperature), establishing the primary manifold vacuum ignition advance curve.</p>
+<ul>
+<li>Evaluated inside <code>DetermineHotAdvanceFromMap</code> at line 8823 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>HOTMAP</code> at ROM address <code>0x8024</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>DetermineHotAdvanceFromMap</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- DetermineHotAdvanceFromMap (T-SBEC_v4.asm:8821-8827) ---
+           brset *BitFlags66, #b66_FullThrottle, LD01C    ; branch if bit(s) set
+           staa Temp0          ; store a into memory
+           ldx  #HOTMAP_AdvanceFromMAPWarmPart    ; load index with value
+           ldaa MapValue       ; load a with memory contents
+           jsr  Lookup4ByteTable    ; call subroutine
+           staa Temp1          ; store a into memory
+           ldx  #ADVCLS_AdvanceAddedForClosedLoopFromTimer    ; load index with value</code></pre>
+<p>The CPU executes <code>DetermineHotAdvanceFromMap</code> where <code>HOTMAP</code> is loaded, compared, or interpolated from ROM address <code>0x8024</code> at line 8823.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Signed Half-Degree Units</strong>: Output values are signed two's complement integers representing half-degrees (e.g., 0x1E = +15.0°, 0x00 = 0.0°, 0xF0 = -8.0°).</li>
+<li><strong>MPTblDesc Role</strong>: Serves as the primary warm MAP table; combines mathematically with <a href="../../2_-_Spark/A_-_Normal_Advance/GOVNER_AdvanceFromRPM.html"><code>GOVNER_AdvanceFromRPM</code></a> to form <code>PTTIME_PartThrottleTotalTiming</code>.</li>
+<li><strong>Floor Enforced</strong>: <a href="../../2_-_Spark/A_-_Normal_Advance/WOTMAP_AdvanceFromMAPWarmFull.html"><code>WOTMAP</code></a> timing is calculated prior to <code>HOTMAP</code> and acts as a strict lower clamp on part-throttle advance.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>HOTMAP</code>
+        </footer>
+    </div>
+</body>
+</html>

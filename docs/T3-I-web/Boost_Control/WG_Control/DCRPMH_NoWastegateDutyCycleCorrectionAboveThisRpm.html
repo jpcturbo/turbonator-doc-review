@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCRPMH: NoWastegateDutyCycleCorrectionAboveThisRpm | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8ECF</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Boost Control ➔ WG Control</strong> &nbsp;|&nbsp; Subsystem: <strong>Boost_Control</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DCRPMH: NoWastegateDutyCycleCorrectionAboveThisRpm</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DCRPMH</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>DCRPMH_NoWastegateDutyCycleCorrectionAboveThisRpm</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Boost_Control</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Boost_Control\WG_Control\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8ECF</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xBE                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-T3_22_T3_MTX_A393.tpl.html#L5065-L5076"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-T3v1.asm.html#L9621"><code>BC_IncrementWGAdaptive</code></a> in <a href="../../T-T3v1.asm.html#L9640"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DCRPMH</code> defines the upper engine speed threshold above which adaptive wastegate duty cycle learning is completely inhibited in T2 control. At high engine speeds approaching redline, exhaust gas pulsation and rapid changes in volumetric efficiency can introduce noise into closed-loop boost calculations. <code>DCRPMH</code> establishes an upper RPM boundary to freeze adaptive cell learning, ensuring that the controller relies on established feed-forward baseline tables and prevents high-RPM transients from corrupting learned adaptive trims.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>High-RPM Adaptive Lockout</strong>: * Engine speed threshold above which adaptive wastegate cell learning is frozen. * Factory setting is 188 counts (approximately 6016 RPM in template, 79 counts / 2528 RPM in legacy calibrations).</li>
+<li><strong>High-Revving Engines</strong>: * For engines with upgraded valvetrain revving to 6800 to 7200 RPM, raise <code>DCRPMH</code> to 6400 to 6800 RPM to maintain closed-loop adaptation up to redline.</li>
+<li><strong>Freezing Adaptives on Dyno</strong>: * Setting <code>DCRPMH</code> low locks out adaptive learning, allowing tuners to dial in open-loop base tables without adaptive interference.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during boost control, setting the high engine RPM boundary above which adaptive wastegate corrections are disabled.</p>
+<ul>
+<li>Evaluated inside <code>BC_IncrementWGAdaptive</code> at line 9640 in <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>DCRPMH</code> at ROM address <code>0x8ECF</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>BC_IncrementWGAdaptive</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- BC_IncrementWGAdaptive (T-T3v1.asm:9638-9644) ---
+           cmpa DCRPML_NoWastegateDutyCycleCorrectionBelowThisRpm    ; compare a with memory contents (data is 55)
+           bcs  BC_ClearBoostErrTimer    ; branch if lower
+           cmpa DCRPMH_NoWastegateDutyCycleCorrectionAboveThisRpm    ; compare a with memory contents (data is be)
+           bhi  BC_ClearBoostErrTimer    ; branch if higher
+           ldaa CoolantTemp    ; load a with memory contents
+           cmpa DCCTSL_NoWastegateDutyCycleCorrectionBelowThisCoolantTemp    ; compare a with memory contents (data is b1)
+           bcs  BC_ClearBoostErrTimer    ; branch if lower</code></pre>
+<p>The CPU executes <code>BC_IncrementWGAdaptive</code> where <code>DCRPMH</code> is loaded, compared, or interpolated from ROM address <code>0x8ECF</code> at line 9640.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>RPM Scaling</strong>: 32 RPM per count (188 counts = 6016 RPM).</li>
+<li><strong>RPM Window</strong>: Combines with <a href="../../Boost_Control/WG_Control/DCRPML_NoWastegateDutyCycleCorrectionBelowThisRpm.html"><code>DCRPML</code></a> to establish the complete RPM window (<a href="../../Boost_Control/WG_Control/DCRPML_NoWastegateDutyCycleCorrectionBelowThisRpm.html"><code>DCRPML</code></a> to <code>DCRPMH</code>) for closed-loop adaptation in T2 mode.</li>
+<li><strong>Factory Evolution</strong>: Early factory calibrations used 0x4F (2528 RPM) to focus adaptives solely on spool-up; later Stage cals expanded this to 6016 RPM.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>DCRPMH</code>
+        </footer>
+    </div>
+</body>
+</html>

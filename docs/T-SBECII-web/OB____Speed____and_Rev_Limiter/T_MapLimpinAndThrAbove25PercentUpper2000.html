@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REVLMT2: MapLimpinAndThrAbove25PercentUpper2000 | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x80C5</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>OB    Speed    and Rev Limiter</strong> &nbsp;|&nbsp; Subsystem: <strong>Limiters_Limp</strong>
+        </div>
+        
+        <article class="content">
+            <h1>REVLMT2: MapLimpinAndThrAbove25PercentUpper2000</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>REVLMT2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_MapLimpinAndThrAbove25PercentUpper2000</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Limiters_Limp</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>OB____Speed____and_Rev_Limiter\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x80C5</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Engine Speed (RPM)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x3E                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L1130-L1141"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L6908"><code>Cutout_CheckRevLimiters</code></a> in <a href="../T-SBECII_v1.asm.html#L6909"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>REVLMT2</code> establishes the upper engine speed fuel cutout threshold enforced whenever the manifold absolute pressure sensor experiences a circuit fault and the throttle is opened past 25 percent. Under MAP limp-in conditions, the engine controller synthesizes intake manifold pressure using the throttle position sensor and engine speed. Because synthetic fueling cannot account for dynamic airflow variations or turbocharger boost spikes, allowing high engine speeds under load could cause severe engine damage. In factory calibrations, <code>REVLMT2</code> is set to 62 counts, representing approximately 2000 RPM. When engine speed climbs to this upper boundary under MAP limp-in with the throttle depressed, the controller immediately cuts fuel injection to govern the engine safely.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Limp Ceiling Adjustment</strong>: * Raising <code>REVLMT2</code> expands the allowable engine speed window when running on synthetic MAP limp-in.</li>
+<li><strong>Hysteresis Gap</strong>: * Keep <code>REVLMT2</code> at least 150 to 200 RPM above <a href="../OB____Speed____and_Rev_Limiter/T_MapLimpinAndThrAbove25PercentLower1850.html"><code>REVLMT</code></a> to guarantee clean recovery without fuel cut chattering.</li>
+<li><strong>Safety Margin</strong>: * Keeping <code>REVLMT2</code> near 2000 to 2500 RPM prevents high-load operation on unverified synthetic MAP estimations.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under MAP limp-in conditions, the engine controller synthesizes intake manifold pressure using the throttle position sensor and engine speed.</p>
+<ul>
+<li>Evaluated inside <code>Cutout_CheckRevLimiters</code> at line 6909 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>REVLMT2</code> at ROM address <code>0x80C5</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>Cutout_CheckRevLimiters</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- Cutout_CheckRevLimiters (T-SBECII_v1.asm:6907-6913) ---
+
+Cutout_CheckRevLimiters:
+           ldx   #REVLMT2_MapLimpinAndThrAbove25PercentUpper2000    ; load index with value
+           brclr *b5C_IPL1, #$%10100000, MAPSENSOR_OKAY_OR_LIGHTTHROTTLE    ; branch if bit(s) clear
+           ldab  THRTHR_25PctThrValueFromShutoff    ; load B with memory contents (data is 66)
+           addb  MINTHR_LowestSessionTPS    ; B=B+memory contents
+           cmpb  TPSVolts</code></pre>
+<p>The CPU executes <code>Cutout_CheckRevLimiters</code> where <code>REVLMT2</code> is loaded, compared, or interpolated from ROM address <code>0x80C5</code> at line 6909.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Hysteresis Pair</strong>: <code>REVLMT2</code> is the upper shutoff threshold (approx 2000 RPM) paired with <a href="../OB____Speed____and_Rev_Limiter/T_MapLimpinAndThrAbove25PercentLower1850.html"><code>REVLMT</code></a> as the lower restore threshold (approx 1850 RPM).</li>
+<li><strong>Template Text Note</strong>: The original calibration description calls this 'Fuel On RPM for bad MAP', but assembly inspection reveals <code>REVLMT2</code> is the shutoff limit in <code>Cutout_CheckRevLimiters</code> while <a href="../OB____Speed____and_Rev_Limiter/T_MapLimpinAndThrAbove25PercentLower1850.html"><code>REVLMT</code></a> is the restore limit.</li>
+<li><strong>RPM Scaling</strong>: Scaled at 32 RPM per count. 62 counts equals 62 × 32 = 1984 RPM.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>REVLMT2</code>
+        </footer>
+    </div>
+</body>
+</html>

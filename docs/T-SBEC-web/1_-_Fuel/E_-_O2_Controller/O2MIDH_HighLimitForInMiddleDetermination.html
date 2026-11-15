@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O2MIDH: HighLimitForInMiddleDetermination | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8512</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ E - O2 Controller</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>O2MIDH: HighLimitForInMiddleDetermination</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>O2MIDH</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>O2MIDH_HighLimitForInMiddleDetermination</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\E_-_O2_Controller\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8512</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">8-bit Unsigned Scaling Factor (0 to 255 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x1C                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L3269-L3280"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L3107"><code>O2_UsingFeedback</code></a> in <a href="../../T-SBEC_v4.asm.html#L3111"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>O2MIDH</code> defines the upper voltage limit of the stuck-in-the-middle diagnostic zone for active closed-loop operation. A healthy narrowband oxygen sensor constantly swings between rich (above 0.6V) and lean (below 0.3V). If the sensor voltage remains trapped between <a href="../../1_-_Fuel/E_-_O2_Controller/O2MIDL_LowLimitForInMiddleDetermination.html"><code>O2MIDL</code></a> and <code>O2MIDH</code>, it indicates that the sensor is cold, poisoned, unplugged, or suffering from a high-resistance wiring fault. In factory calibrations, <code>O2MIDH</code> is set to 28 counts, corresponding to approximately 0.55 volts. If the signal remains in this middle zone, the controller increments a fault timer toward clearing adaptive memory and setting diagnostic codes.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Stuck Sensor Diagnostics</strong>: * Defines the upper edge (0.55V) of the inactive sensor detection zone.</li>
+<li><strong>Idle Exhaust Cooling</strong>: * If free-flowing exhaust causes sensor cooling at idle that dampens voltage swings, lowering <code>O2MIDH</code> slightly prevents false fault timers.</li>
+<li><strong>Switching Threshold Hierarchy</strong>: * Must be maintained higher than <a href="../../1_-_Fuel/E_-_O2_Controller/O2HSWP_HighLimitForO2RampSwitching.html"><code>O2HSWP</code></a> (0.49V) to preserve normal switching.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect during oxygen sensor diagnostic checks, identifying whether the sensor is stuck in the inactive mid-voltage range.</p>
+<ul>
+<li>Evaluated inside <code>O2_UsingFeedback</code> at line 3111 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>O2MIDH</code> at ROM address <code>0x8512</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>O2_UsingFeedback</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- O2_UsingFeedback (T-SBEC_v4.asm:3109-3115) ---
+           cmpb O2MIDX_HighLimitForInMiddleDeterminationX    ; compare b with memory contents (data is 3e)
+           bcc  O2Signal_InOuterMiddleRange    ; branch if greater or equal
+           cmpb O2MIDH_HighLimitForInMiddleDetermination    ; compare b with memory contents (data is 1c)
+           bcc  LA076          ; branch if greater or equal
+           cmpb O2MIDL_LowLimitForInMiddleDetermination    ; compare b with memory contents (data is 12)
+           bcs  LA076          ; branch if lower
+           ldaa KeyOnOrEngineRunningTime    ; load a with memory contents</code></pre>
+<p>The CPU executes <code>O2_UsingFeedback</code> where <code>O2MIDH</code> is loaded, compared, or interpolated from ROM address <code>0x8512</code> at line 3111.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Pairs with <a href="../../1_-_Fuel/E_-_O2_Controller/O2MIDL_LowLimitForInMiddleDetermination.html"><code>O2MIDL</code></a> to form the stuck-sensor detection window.</li>
+<li><strong>Fault Action</strong>: Prolonged operation in this band calls <code>Save_CLTIME_ToOtherTimers_O2InMiddle</code>, erasing all 15 adaptive cells and clearing <code>b4f_O2Valid</code>.</li>
+<li><strong>Voltage Conversion</strong>: 28 counts equals approximately 0.55 volts.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>O2MIDH</code>
+        </footer>
+    </div>
+</body>
+</html>

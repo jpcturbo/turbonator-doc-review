@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DCLMN2: NoAisControlIfMapAndControlMapBelowThis | Single Board Engine Controller II (T-SBECII) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x929B</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Idle - AIS Decel</strong> &nbsp;|&nbsp; Subsystem: <strong>Idle_AIS</strong>
+        </div>
+        
+        <article class="content">
+            <h1>DCLMN2: NoAisControlIfMapAndControlMapBelowThis</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>DCLMN2</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>T_NoAisControlIfMapAndControlMapBelowThis</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Idle_AIS</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Idle_-_AIS_Decel\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x929B</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Manifold Boost Pressure (psi)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x16                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../92_25_t1_xtx_125.tpl.html#L10131-L10143"><code>92_25_t1_xtx_125.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../T-SBECII_v1.asm.html#L1027"><code>StoreTimer_MinFanRun</code></a> in <a href="../T-SBECII_v1.asm.html#L1034"><code>T-SBECII_v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>DCLMN2</code> defines the master safety manifold absolute pressure lockout threshold below which all deceleration idle stepper motor control and air conditioning kick routines are inhibited. Under conditions of extreme closed-throttle engine overrun from high RPM (such as downhill engine braking), intake manifold absolute pressure can plummet to near total vacuum. At these extreme vacuum levels, erratic pressure transients can occur, and attempting to actuate the idle stepper motor or engage A/C kicks can cause unexpected engine flare or motor hunting. If both actual manifold pressure and calculated control manifold pressure are below <code>DCLMN2</code>, all stepper motor manipulation is completely suspended. In factory calibrations, <code>DCLMN2</code> is set to 13 counts, corresponding to an absolute pressure lockout threshold of approximately 1.5 psi absolute (3.0 inHg / 26.9 inHg vacuum).</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Deep Overrun Lockout Safety</strong>: * Keep <code>DCLMN2</code> at 13 counts (~1.5 psi absolute) to preserve the safety envelope during extreme engine braking.</li>
+<li><strong>Premature Lockout Hazard</strong>: * Do not raise <code>DCLMN2</code> above 20 counts, as this will disable dashpot control during normal deceleration, causing frequent stalls.</li>
+<li><strong>Multi-Routine Enforcement</strong>: * Enforces identical safety lockouts across both the decel dashpot routines and the A/C clutch transition routines.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect under conditions of extreme closed-throttle engine overrun from high RPM (such as downhill engine braking), intake manifold absolute pressure can plummet to near total vacuum.</p>
+<ul>
+<li>Evaluated inside <code>StoreTimer_MinFanRun</code> at line 1034 in <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>.</li>
+<li>Accesses <code>DCLMN2</code> at ROM address <code>0x929B</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>StoreTimer_MinFanRun</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../T-SBECII_v1.asm.html"><code>T-SBECII_v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- StoreTimer_MinFanRun (T-SBECII_v1.asm:1032-1038) ---
+   L9608:  brset *StartupSwitchMirror2, #$%10000000, L9627    ; branch if bit(s) set
+           brset *BitFlags6E, #$%00010000, L9620    ; branch if bit(s) set
+           ldaa  DCLMN2_NoAisControlIfMapAndControlMapBelowThis    ; load A with memory contents (data is 16)
+           cmpa  TempX         ; compare A with memory contents
+           bls   L9624         ; branch if lower or same
+           cmpa  MapValue      ; compare A with memory contents
+           bls   L9624         ; branch if lower or same</code></pre>
+<p>The CPU executes <code>StoreTimer_MinFanRun</code> where <code>DCLMN2</code> is loaded, compared, or interpolated from ROM address <code>0x929B</code> at line 1034.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Shared Master Lockout</strong>: Verified in both <code>CalculateAisPosition_MM</code> (lines 1985, 1988) and <code>CalculateTargetIdleSpeedAndAisPosition_MM</code> (lines 2252, 2295).</li>
+<li><strong>Dual-Condition Logic</strong>: Both control MAP and actual MAP must be below <code>DCLMN2</code> for lockout to engage.</li>
+<li><strong>Factory Value</strong>: 0x0D (13 counts = approximately 1.5 psi absolute).</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller II (T-SBECII) Calibration Reference &bull; Generated from <code>DCLMN2</code>
+        </footer>
+    </div>
+</body>
+</html>

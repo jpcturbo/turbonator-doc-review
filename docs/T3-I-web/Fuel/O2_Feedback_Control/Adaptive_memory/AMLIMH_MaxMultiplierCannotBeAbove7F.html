@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMLIMH: MaxMultiplierCannotBeAbove7F | Turbo III (Gen 1) 16-Valve (T-T3v1) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8BBB</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>Fuel ➔ O2 Feedback Control ➔ Adaptive memory</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_O2_Adaptive</strong>
+        </div>
+        
+        <article class="content">
+            <h1>AMLIMH: MaxMultiplierCannotBeAbove7F</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>AMLIMH</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>AMLIMH_MaxMultiplierCannotBeAbove7F</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_O2_Adaptive</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>Fuel\O2_Feedback_Control\Adaptive_memory\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8BBB</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">8-bit Unsigned Scaling Factor (0 to 255 counts)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x7F                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3_22_T3_MTX_A393.tpl.html#L2861-L2872"><code>T-T3_22_T3_MTX_A393.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../../T-T3v1.asm.html#L3400"><code>UpdateAdaptive_OffIdle</code></a> in <a href="../../../T-T3v1.asm.html#L3418"><code>T-T3v1.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>AMLIMH</code> establishes the maximum allowable positive fuel enrichment ceiling for all long-term adaptive fuel memory cells (AutoCal cells). The Turbo III controller firmware applies adaptive fuel trims as a signed modifier where each bit equals approximately 0.1953 percent of base fuel delivery. In stock calibrations, <code>AMLIMH</code> is set to 127 counts (positive 127), which limits maximum learned enrichment to approximately +24.8 percent above the base calibration. This cap prevents vacuum leaks, failing fuel pumps, or dirty injectors from causing the engine controller to excessively enrich base fuel calculations into runaway conditions.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Constraining Adaptive Authority</strong>: * Clamping <code>AMLIMH</code> to 25-50 counts limits positive fuel trim learning to +5% to +10%, preventing runaway enrichment.</li>
+<li><strong>Zeroing for Wideband Tuning</strong>: * Setting <code>AMLIMH</code> to 0 disables positive long-term fuel trim learning, essential when mapping base fuel tables.</li>
+<li><strong>Formula &amp; Resolution</strong>: * Maximum fuel modifier is <code>1 + (AMLIMH / 512)</code>. 127 counts represents +24.8% enrichment.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect whenever adaptive fuel trims are updated during driving, capping the maximum allowable positive enrichment to prevent runaway rich conditions.</p>
+<ul>
+<li>Evaluated inside <code>UpdateAdaptive_OffIdle</code> at line 3418 in <a href="../../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>.</li>
+<li>Accesses <code>AMLIMH</code> at ROM address <code>0x8BBB</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>UpdateAdaptive_OffIdle</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../../T-T3v1.asm.html"><code>T-T3v1.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- UpdateAdaptive_OffIdle (T-T3v1.asm:3416-3422) ---
+           bpl  LA3D7          ; branch if plus (hi bit 0)
+           nega                ; negate a (set high bit)
+   LA3D7:  ldab AMLIMH_MaxMultiplierCannotBeAbove7F    ; load b with memory contents (data is 7f)
+           adda 0x00, X
+           bvc  Adaptive_Overflowed    ; branch if overflow
+           ldaa 0x00, X        ; load a with memory at index + value
+           bpl  Adaptive_SetCellToMaxOrMinValue    ; branch if plus (hi bit 0)</code></pre>
+<p>The CPU executes <code>UpdateAdaptive_OffIdle</code> where <code>AMLIMH</code> is loaded, compared, or interpolated from ROM address <code>0x8BBB</code> at line 3418.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Companion Parameters</strong>: Counterpart to <a href="../../../Fuel/O2_Feedback_Control/Adaptive_memory/AMLIML_MinMultiplierCannotBeBelow80.html"><code>AMLIML</code></a> (lower limit) and applies across all 13 <code>AutoCalCell</code> locations.</li>
+<li><strong>Mathematical Formula</strong>: Maximum fuel multiplier = <code>1 + (AMLIMH / 512)</code> = <code>1 + (127 / 512)</code> = 1.248 (+24.8%).</li>
+<li><strong>Persistence</strong>: Clamped value is written directly into active EEPROM cell and mirrored in <code>ValueFromAdaptiveMemory</code>.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Turbo III (Gen 1) 16-Valve (T-T3v1) Calibration Reference &bull; Generated from <code>AMLIMH</code>
+        </footer>
+    </div>
+</body>
+</html>

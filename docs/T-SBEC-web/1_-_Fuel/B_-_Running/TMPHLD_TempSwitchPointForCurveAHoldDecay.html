@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMPHLD: TempSwitchPointForCurveAHoldDecay | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x832D</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>1 - Fuel ➔ B - Running</strong> &nbsp;|&nbsp; Subsystem: <strong>Fuel_Base_Modifiers</strong>
+        </div>
+        
+        <article class="content">
+            <h1>TMPHLD: TempSwitchPointForCurveAHoldDecay</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>TMPHLD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>TMPHLD_TempSwitchPointForCurveAHoldDecay</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Fuel_Base_Modifiers</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>1_-_Fuel\B_-_Running\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x832D</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Spark Advance (degrees)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0xB1                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L1892-L1903"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L6381"><code>CalculateSumOfAllFuelModifiers_MM</code></a> in <a href="../../T-SBEC_v4.asm.html#L6383"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>TMPHLD</code> defines the coolant temperature switch point that divides cold starts from hot restarts for after-start enrichment hold and decay timing. When an engine starts with coolant temperature below <code>TMPHLD</code>, the controller selects cold hold duration (<a href="../../1_-_Fuel/B_-_Running/CLDHLD_CurveAColdHoldTime.html"><code>CLDHLD</code></a>) and cold decay rate (<a href="../../1_-_Fuel/B_-_Running/DCYTMC_CurveAColdDecayTime.html"><code>DCYTMC</code></a>). When starting above <code>TMPHLD</code>, the controller switches to hot hold duration (<a href="../../1_-_Fuel/B_-_Running/HOTHLD_CurveAHotHoldTime.html"><code>HOTHLD</code></a>) and hot decay rate (<a href="../../1_-_Fuel/B_-_Running/DCYTMH_CurveAHotDecayTime.html"><code>DCYTMH</code></a>). In factory calibrations, <code>TMPHLD</code> is set to 177 counts, corresponding to approximately 176 degF, matching OEM 180 degF thermostat operating temperatures.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Thermostat Matching</strong>: * Lower <code>TMPHLD</code> to 155-160 degF when running a 160 degF performance thermostat to prevent warm restarts from triggering cold hold logic.</li>
+<li><strong>Cold vs Hot Hold Selection</strong>: * Determines whether <a href="../../1_-_Fuel/B_-_Running/CLDHLD_CurveAColdHoldTime.html"><code>CLDHLD</code></a> or <a href="../../1_-_Fuel/B_-_Running/HOTHLD_CurveAHotHoldTime.html"><code>HOTHLD</code></a> governs after-start enrichment dwell.</li>
+<li><strong>Indexed Group Anchor</strong>: * Functions as the ROM base pointer for indexed lookups of <a href="../../1_-_Fuel/B_-_Running/CLDHLD_CurveAColdHoldTime.html"><code>CLDHLD</code></a> and <a href="../../1_-_Fuel/B_-_Running/HOTHLD_CurveAHotHoldTime.html"><code>HOTHLD</code></a>.</li>
+<li><strong>Over-Enrichment Prevention</strong>: * Proper setting prevents dark exhaust smoke and flooded plugs when restarting a fully warmed engine.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect when an engine starts with coolant temperature below TMPHLD, the controller selects cold hold duration (CLDHLD) and cold decay rate (DCYTMC).</p>
+<ul>
+<li>Evaluated inside <code>CalculateSumOfAllFuelModifiers_MM</code> at line 6383 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>TMPHLD</code> at ROM address <code>0x832D</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>CalculateSumOfAllFuelModifiers_MM</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- CalculateSumOfAllFuelModifiers_MM (T-SBEC_v4.asm:6381-6387) ---
+CalculateSumOfAllFuelModifiers_MM:
+           brset *BitFlags6d, #b6d_FuelEngineNotRunning, ClearTemp0ForResultStorage    ; branch if bit(s) set
+           ldx  #TMPHLD_TempSwitchPointForCurveAHoldDecay    ; load index with value
+           ldaa CoolantTemp    ; load a with memory contents
+           cmpa 0x00, X        ; compare a with memory at index + value
+           bcs  LBCDF          ; branch if lower
+           inx                 ; increment index (x=x+1)</code></pre>
+<p>The CPU executes <code>CalculateSumOfAllFuelModifiers_MM</code> where <code>TMPHLD</code> is loaded, compared, or interpolated from ROM address <code>0x832D</code> at line 6383.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Indexed Offset Architecture</strong>: Anchor symbol in ROM for the hold/decay cluster: <code>TMPHLD</code> (0x82B0), <a href="../../1_-_Fuel/B_-_Running/CLDHLD_CurveAColdHoldTime.html"><code>CLDHLD</code></a> (0x82B1), <a href="../../1_-_Fuel/B_-_Running/HOTHLD_CurveAHotHoldTime.html"><code>HOTHLD</code></a> (0x82B2).</li>
+<li><strong>Pointer Offset Logic</strong>: When cold, <code>0x01,x</code> evaluates <a href="../../1_-_Fuel/B_-_Running/CLDHLD_CurveAColdHoldTime.html"><code>CLDHLD</code></a>; when hot, <code>inx</code> makes <code>0x01,x</code> evaluate <a href="../../1_-_Fuel/B_-_Running/HOTHLD_CurveAHotHoldTime.html"><code>HOTHLD</code></a>.</li>
+<li><strong>Stock Calibration</strong>: 177 raw counts equates to approximately 176 degF.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>TMPHLD</code>
+        </footer>
+    </div>
+</body>
+</html>

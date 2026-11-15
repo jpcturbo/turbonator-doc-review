@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RVLSPD: CarSpeedForRevLimitWithTBOff | Single Board Engine Controller (T-SBEC) Reference</title>
+    <script>
+        (function() {
+            function syncTheme() {
+                try {
+                    var params = new URLSearchParams(window.location.search);
+                    var t = params.get('theme') || localStorage.getItem('mptune_theme');
+                    if (!t && window.name && window.name.indexOf('mptune_theme=') === 0) {
+                        t = window.name.split('=')[1];
+                    }
+                    if (t !== 'light' && t !== 'dark') {
+                        t = 'dark';
+                    }
+                    document.documentElement.setAttribute('data-theme', t);
+                    localStorage.setItem('mptune_theme', t);
+                    window.name = 'mptune_theme=' + t;
+                    var btn = document.getElementById('themeToggle');
+                    if (btn) btn.textContent = t === 'dark' ? 'Light Theme' : 'Dark Theme';
+                } catch (e) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+            syncTheme();
+            window.toggleMptuneTheme = function() {
+                var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+                var next = cur === 'dark' ? 'light' : 'dark';
+                document.documentElement.setAttribute('data-theme', next);
+                try {
+                    localStorage.setItem('mptune_theme', next);
+                    window.name = 'mptune_theme=' + next;
+                } catch (e) {}
+                var btn = document.getElementById('themeToggle');
+                if (btn) btn.textContent = next === 'dark' ? 'Light Theme' : 'Dark Theme';
+            };
+            window.addEventListener('DOMContentLoaded', syncTheme);
+            window.addEventListener('pageshow', syncTheme);
+            window.addEventListener('storage', syncTheme);
+        })();
+    </script>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+        <nav class="nav-bar">
+            <a href="../../index.html" class="nav-link">← Master Calibration Index</a>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span class="badge badge-addr">0x8551</span>
+                <button id="themeToggle" class="theme-toggle-btn" type="button" onclick="toggleMptuneTheme()">Light Theme</button>
+            </div>
+        </nav>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+            MP Group: <strong>4 - OB, Speed, and Rev Limiter ➔ D - Misc, Limp Mode</strong> &nbsp;|&nbsp; Subsystem: <strong>Limiters_Limp</strong>
+        </div>
+        
+        <article class="content">
+            <h1>RVLSPD: CarSpeedForRevLimitWithTBOff</h1>
+<h2>Metadata</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Attribute</th>
+<th style="text-align: left;">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Short / Calibration Name</strong></td>
+<td style="text-align: left;"><code>RVLSPD</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Full Identifier Label</strong></td>
+<td style="text-align: left;"><code>RVLSPD_CarSpeedForRevLimitWithTBOff</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Subsystem</strong></td>
+<td style="text-align: left;">Limiters_Limp</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MP Group</strong></td>
+<td style="text-align: left;"><code>4_-_OB,_Speed,_and_Rev_Limiter\D_-_Misc,_Limp_Mode\</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Calibration Address</strong></td>
+<td style="text-align: left;"><code>0x8551</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Table Type</strong></td>
+<td style="text-align: left;">Type 3 (8-bit Byte Constant)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Units / Scaling</strong></td>
+<td style="text-align: left;">Vehicle Road Speed (MPH)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Factory Setting / Raw Data</strong></td>
+<td style="text-align: left;"><code>.byte 0x14                       ;Point 1</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Source Template</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_25_MTX_A593_Stock.tpl.html#L3568-L3579"><code>T-SBEC_25_MTX_A593_Stock.tpl</code></a></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Assembly Routine</strong></td>
+<td style="text-align: left;"><a href="../../T-SBEC_v4.asm.html#L6077"><code>MAPSENSOR_OKAY_OR_LIGHTTHROTTLE</code></a> in <a href="../../T-SBEC_v4.asm.html#L6081"><code>T-SBEC_v4.asm</code></a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>1. Overview &amp; Purpose</h2>
+<p><code>RVLSPD</code> establishes the vehicle speed threshold that determines how the engine controller handles rev limiting when the throttle position sensor signal is invalid or failing. If the throttle position sensor produces a bad signal (for instance, an open wiper trace or erratic voltage), the controller cannot ascertain throttle blade position. If the vehicle is moving at road speeds, the controller presumes the driver is cruising and permits normal engine operation up to the standard rev limiter (<a href="../../4_-_OB,_Speed,_and_Rev_Limiter/B_-_Rev_Limiter/REVLMT6_RPMLimiterNormalOffRPM.html"><code>REVLMT6</code></a>). However, if the vehicle is stationary or moving at very low speeds, the controller enforces the restrictive plausibility rev limiter (<a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/REVLMT4_MapAbove75PctAndThrLimpin2000.html"><code>REVLMT4</code></a> and <a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/REVLMT3_MapAbove75PctAndIdleSwitchClosed2000.html"><code>REVLMT3</code></a>) to prevent accidental runaway. In factory calibrations, <code>RVLSPD</code> is set to 20 counts, representing 10.0 mph on a 0 to 127.5 mph scale.</p>
+<hr />
+<h2>2. Tuner's Guide &amp; Real-World Calibration</h2>
+<ul>
+<li><strong>Fault Gating Threshold</strong>: * When <code>b45_TpsBadSignal</code> is active, speeds above <code>RVLSPD</code> allow normal engine rev limits (<a href="../../4_-_OB,_Speed,_and_Rev_Limiter/B_-_Rev_Limiter/REVLMT6_RPMLimiterNormalOffRPM.html"><code>REVLMT6</code></a>), while speeds below <code>RVLSPD</code> enforce safety rev limits (<a href="../../4_-_OB,_Speed,_and_Rev_Limiter/D_-_Misc,_Limp_Mode/REVLMT4_MapAbove75PctAndThrLimpin2000.html"><code>REVLMT4</code></a>).</li>
+<li><strong>Raising for Paddock Safety</strong>: * Increasing <code>RVLSPD</code> to 25 mph prevents high-speed driving if the throttle sensor fails during competition.</li>
+<li><strong>Preserving Factory Setting</strong>: * The 10 mph factory threshold prevents stationary runaway while allowing normal road speeds.</li>
+</ul>
+<hr />
+<h2>3. Operating Conditions (When Does This Take Effect?)</h2>
+<p>Takes effect if the throttle position sensor produces a bad signal (for instance, an open wiper trace or erratic voltage), the controller cannot ascertain throttle blade position.</p>
+<ul>
+<li>Evaluated inside <code>MAPSENSOR_OKAY_OR_LIGHTTHROTTLE</code> at line 6081 in <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>.</li>
+<li>Accesses <code>RVLSPD</code> at ROM address <code>0x8551</code> for runtime comparison or scaling.</li>
+<li>Governs branching and parameter scaling within <code>MAPSENSOR_OKAY_OR_LIGHTTHROTTLE</code> control flow.</li>
+</ul>
+<hr />
+<h2>4. Technical / Assembly Mechanics (Reference)</h2>
+<p>Inside <a href="../../T-SBEC_v4.asm.html"><code>T-SBEC_v4.asm</code></a>:</p>
+<pre><code class="language-motorola6803">; --- MAPSENSOR_OKAY_OR_LIGHTTHROTTLE (T-SBEC_v4.asm:6079-6085) ---
+           brclr *b5c_IPL1, #b5c_TpsBadSignal, THROTTLESENSOR_OKAY    ; branch if bit(s) clear
+           ldaa Temp0          ; load a with memory contents
+           cmpa RVLSPD_CarSpeedForRevLimitWithTBOff    ; compare a with memory contents (data is 14)
+           bcc  LBAB1          ; branch if greater or equal
+           bra  LBAA7          ; branch
+
+THROTTLESENSOR_OKAY:</code></pre>
+<p>The CPU executes <code>MAPSENSOR_OKAY_OR_LIGHTTHROTTLE</code> where <code>RVLSPD</code> is loaded, compared, or interpolated from ROM address <code>0x8551</code> at line 6081.</p>
+<hr />
+<h2>5. Calibration Notes &amp; System Dependencies</h2>
+<ul>
+<li><strong>Speed Resolution</strong>: Scaled at 0.5 mph per count. 20 counts equals 20 × 0.5 = 10.0 mph.</li>
+<li><strong>Label Consistency</strong>: Spelled <code>RVLSPD_CarSpeedForRevLimitWithTBOff</code> across both templates and assembly.</li>
+<li><strong>Stage IV Setting</strong>: Retained at 20 counts (10 mph) in Stage IV calibrations.</li>
+</ul>
+        </article>
+        <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 13px; color: var(--text-muted); text-align: center;">
+            Single Board Engine Controller (T-SBEC) Calibration Reference &bull; Generated from <code>RVLSPD</code>
+        </footer>
+    </div>
+</body>
+</html>
